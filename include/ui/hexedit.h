@@ -26,6 +26,7 @@
 #include "ui/fileblobmodel.h"
 #include "ui/gotoaddressdialog.h"
 #include "util/encoders/hex_encoder.h"
+#include "util/encoders/text_encoder.h"
 
 namespace veles {
 namespace ui {
@@ -36,16 +37,19 @@ class HexEdit : public QAbstractScrollArea {
   HexEdit(FileBlobModel *dataModel,
           QItemSelectionModel *selectionModel = nullptr, QWidget *parent = 0);
   /** Mark bytes as selected and optionally scroll screen to make these bytes visible */
-  void setSelection(qint64 start, qint64 size, bool setVisable = false);
+  void setSelection(qint64 start, qint64 size, bool set_visible = false);
   /** Sets how many bytes should be displayed in the single hex row or optionaly
    *  turn on automatic mode which will adjust bytes per row to window size */
   void setBytesPerRow(int bytesCount, bool automatic = false);
   /** Scroll screen to make byte visible */
   void scrollToByte(qint64 bytePos, bool doNothingIfVisable = false);
+  void scrollRows(qint64 num_rows);
   FileBlobModel *dataModel() { return dataModel_;};
   void setParserIds(QStringList ids);
+  void processMoveEvent(QKeyEvent *event);
+  void processSelectionChangeEvent(QKeyEvent *event);
 
- public slots:
+public slots:
   void newBinData();
   void dataChanged();
   void modelSelectionChanged();
@@ -58,6 +62,7 @@ class HexEdit : public QAbstractScrollArea {
   void mouseDoubleClickEvent(QMouseEvent *event) override;
   void contextMenuEvent(QContextMenuEvent *event) override;
   void keyPressEvent(QKeyEvent *event) override;
+  bool focusNextPrevChild(bool next) override;
 
  signals:
   void selectionChanged(qint64 start_addr, qint64 selection_size);
@@ -105,10 +110,21 @@ class HexEdit : public QAbstractScrollArea {
   /** Number of first pixel from left which should be displayed on the screen */
   qint64 startPosX_;
 
+  enum class WindowArea {
+    ADDRESS,
+    HEX,
+    ASCII,
+    OUTSIDE,
+  };
+
   /** Number of byte where selection starts (counting from beginning of blob) */
-  qint64 selectionStart_;
+  qint64 current_position_;
   /** Number of bytes in selection */
-  qint64 selectionSize_;
+  qint64 selection_size_;
+
+  WindowArea current_area_;
+  qint64 cursor_pos_in_byte_;
+  bool cursor_visible_;
 
   CreateChunkDialog *createChunkDialog_;
   GoToAddressDialog *goToAddressDialog_;
@@ -121,13 +137,19 @@ class HexEdit : public QAbstractScrollArea {
   QStringList parsers_ids_;
   QMenu menu_;
   QMenu parsers_menu_;
+  QTimer cursor_timer_;
   QScopedPointer<util::encoders::HexEncoder> hexEncoder_;
+  QScopedPointer<util::encoders::TextEncoder> textEncoder_;
 
   void recalculateValues();
   void initParseMenu();
   void adjustBytesPerRowToWindowSize();
   QRect bytePosToRect(qint64 pos, bool ascii = false);
+  qint64 pointToRowNum(QPoint pos);
+  qint64 pointToColumnNum(QPoint pos);
   qint64 pointToBytePos(QPoint pos);
+  void flipCursorVisibility();
+  WindowArea pointToWindowArea(QPoint pos);
   QString addressAsText(qint64 pos);
   QString hexRepresentationFromBytePos(qint64 pos);
   QString asciiRepresentationFromBytePos(qint64 pos);
@@ -154,6 +176,7 @@ class HexEdit : public QAbstractScrollArea {
   void saveSelectionToFile(QString path);
   void scrollToCurrentChunk();
   void parse(QAction *action);
+  void resetCursor();
 };
 
 }  // namespace ui
