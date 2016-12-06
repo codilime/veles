@@ -29,13 +29,9 @@ SelectRangeDialog::SelectRangeDialog(QWidget* parent) :
       QDialog(parent), ui(new Ui::SelectRangeDialog) {
   ui->setupUi(this);
 
-  // QSpinBox uses overloaded signal, so we need this crap to get unambiguous
-  // pointer, yay
-  auto valueChangedPtr =
-    static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged);
-  connect(ui->start_address_spinbox_, valueChangedPtr,
+  connect(ui->start_address_spinbox_, &veles::ui::SpinBox::valueChanged,
           this, &SelectRangeDialog::addressChanged);
-  connect(ui->end_address_spinbox_, valueChangedPtr,
+  connect(ui->end_address_spinbox_, &veles::ui::SpinBox::valueChanged,
           this, &SelectRangeDialog::addressChanged);
 
   // More overloaded signal bs
@@ -88,7 +84,7 @@ void SelectRangeDialog::addressChanged(int) {
   setAddressRanges();
 }
 
-void SelectRangeDialog::numberBaseChanged(QSpinBox* box, const QString& base) {
+void SelectRangeDialog::numberBaseChanged(veles::ui::SpinBox* box, const QString& base) {
   if (base == "Hex") {
     box->setDisplayIntegerBase(16);
   } else {

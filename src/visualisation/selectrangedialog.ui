@@ -60,7 +60,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QSpinBox" name="start_address_spinbox_">
+        <widget class="veles::ui::SpinBox" name="start_address_spinbox_">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -96,7 +96,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QSpinBox" name="end_address_spinbox_">
+        <widget class="veles::ui::SpinBox" name="end_address_spinbox_">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -114,6 +114,14 @@
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>veles::ui::SpinBox</class>
+   <extends>QSpinBox</extends>
+   <header location="global">ui/spinbox.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

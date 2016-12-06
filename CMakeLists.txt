@@ -197,6 +197,8 @@ add_executable(main_ui
     ${INCLUDE_DIR}/ui/fileblobmodel.h
     ${INCLUDE_DIR}/ui/createchunkdialog.h
     ${INCLUDE_DIR}/ui/databaseinfo.h
+    ${INCLUDE_DIR}/ui/spinbox.h
+    ${INCLUDE_DIR}/ui/spinboxvalidator.h
     ${SRC_DIR}/ui/main.cc
     ${SRC_DIR}/ui/veles_mainwindow.cc
     ${SRC_DIR}/ui/hexedittab.cc
@@ -210,6 +212,8 @@ add_executable(main_ui
     ${SRC_DIR}/ui/fileblobmodel.cc
     ${SRC_DIR}/ui/createchunkdialog.cc
     ${SRC_DIR}/ui/databaseinfo.cc
+    ${SRC_DIR}/ui/spinbox.cc
+    ${SRC_DIR}/ui/spinboxvalidator.cc
     ${RESOURCES}
     ${VISUALISATION_SHADERS}
     ${FORMS})

@@ -19,7 +19,8 @@
 
 #include <QDialog>
 #include <QString>
-#include <QSpinBox>
+
+#include <ui/spinbox.h>
 
 namespace Ui {
 class SelectRangeDialog;
@@ -42,7 +43,7 @@ class SelectRangeDialog : public QDialog {
 
  private slots:
   void addressChanged(int);
-  void numberBaseChanged(QSpinBox*, const QString&);
+  void numberBaseChanged(veles::ui::SpinBox*, const QString&);
 
  private:
   void setAddressRanges();
