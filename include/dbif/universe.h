@@ -35,21 +35,21 @@ class ObjectHandleBase {
     QPointer<InfoPromise> promise = getInfo(req);
     PInfoReply res;
     PError err;
-    QObject::connect(promise, &InfoPromise::gotInfo, [&res] (PInfoReply reply) {
+    QObject::connect(static_cast<InfoPromise*>(promise), &InfoPromise::gotInfo, [&res] (PInfoReply reply) {
       res = reply;
     });
-    QObject::connect(promise, &InfoPromise::gotError, [&err] (PError error) {
+    QObject::connect(static_cast<InfoPromise*>(promise), &InfoPromise::gotError, [&err] (PError error) {
       err = error;
     });
     while (true) {
       if (res) {
         if (!promise.isNull())
-          delete &*promise;
+          delete static_cast<InfoPromise*>(promise);
         return res;
       }
       if (err) {
         if (!promise.isNull())
-          delete &*promise;
+          delete static_cast<InfoPromise*>(promise);
         throw err;
       }
       QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
@@ -60,21 +60,21 @@ class ObjectHandleBase {
     QPointer<MethodResultPromise> promise = runMethod(req);
     PMethodReply res;
     PError err;
-    QObject::connect(promise, &MethodResultPromise::gotResult, [&res] (PMethodReply reply) {
+    QObject::connect(static_cast<MethodResultPromise*>(promise), &MethodResultPromise::gotResult, [&res] (PMethodReply reply) {
       res = reply;
     });
-    QObject::connect(promise, &MethodResultPromise::gotError, [&err] (PError error) {
+    QObject::connect(static_cast<MethodResultPromise*>(promise), &MethodResultPromise::gotError, [&err] (PError error) {
       err = error;
     });
     while (true) {
       if (res) {
         if (!promise.isNull())
-          delete &*promise;
+          delete static_cast<MethodResultPromise*>(promise);
         return res;
       }
       if (err) {
         if (!promise.isNull())
-          delete &*promise;
+          delete static_cast<MethodResultPromise*>(promise);
         throw err;
       }
       QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
