@@ -61,6 +61,10 @@ void MinimapPanel::setSampler(util::ISampler *sampler) {
   select_range_button_->setEnabled(!sampler_->empty());
 }
 
+QPair<size_t, size_t> MinimapPanel::getSelection() {
+  return selection_;
+}
+
 /*****************************************************************************/
 /* Private methods */
 /*****************************************************************************/
@@ -160,8 +164,8 @@ void MinimapPanel::removeMinimap() {
   }
   remove_minimap_button_->setEnabled(minimaps_.length() > 1);
 
-  auto new_range = minimaps_.back()->getSelectedRange();
-  emit selectionChanged(new_range.first, new_range.second);
+  selection_ = minimaps_.back()->getSelectedRange();
+  emit selectionChanged(selection_.first, selection_.second);
 }
 
 void MinimapPanel::changeMinimapMode() {
@@ -176,6 +180,7 @@ void MinimapPanel::changeMinimapMode() {
 void MinimapPanel::updateSelection(int minimap_index,
                                    size_t start, size_t end) {
   if (minimap_index == minimaps_.length() - 1) {
+    selection_ = qMakePair(start, end);
     emit selectionChanged(start, end);
   } else {
     minimaps_[minimap_index + 1]->setRange(start, end, false);

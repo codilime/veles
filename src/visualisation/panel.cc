@@ -139,6 +139,8 @@ void VisualisationPanel::setSamplingMethod(const QString &name) {
 
   auto old_sampler = sampler_;
   sampler_ = getSampler(new_sampler_type, data_, sample_size_);
+  auto selection = minimap_->getSelection();
+  sampler_->setRange(selection.first, selection.second);
   visualisation_->setSampler(sampler_);
   if (old_sampler != nullptr) {
     delete old_sampler;

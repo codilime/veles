@@ -18,6 +18,7 @@
 #define VELES_VISUALISATION_MINIMAP_PANEL_H
 
 #include <QBoxLayout>
+#include <QPair>
 #include <QPushButton>
 #include <QSpacerItem>
 #include <QVector>
@@ -37,6 +38,7 @@ class MinimapPanel : public QWidget {
   ~MinimapPanel();
 
   void setSampler(util::ISampler *sampler);
+  QPair<size_t, size_t> getSelection();
 
  signals:
   void selectionChanged(size_t start, size_t end);
@@ -57,6 +59,8 @@ class MinimapPanel : public QWidget {
   QVector<util::ISampler*> minimap_samplers_;
   QVector<VisualisationMinimap*> minimaps_;
   QVector<QSpacerItem*> minimap_spacers_;
+
+  QPair<size_t, size_t> selection_;
 
   VisualisationMinimap::MinimapMode mode_;
 
