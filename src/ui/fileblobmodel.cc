@@ -364,7 +364,7 @@ void FileBlobModel::uploadNewData(const QByteArray& buf) {
 
 bool FileBlobModel::isRemovable(const QModelIndex &index) {
   auto item = itemFromIndex(index);
-  return item != nullptr && item->isRemovable();
+  return index.isValid() && item != nullptr && item->isRemovable();
 }
 
 dbif::ObjectHandle FileBlobModel::blob(const QModelIndex& index) {
