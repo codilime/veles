@@ -59,6 +59,8 @@ void MinimapPanel::setSampler(util::ISampler *sampler) {
   minimap_samplers_.push_back(sampler_->clone());
   minimaps_[0]->setSampler(minimap_samplers_[0]);
   select_range_button_->setEnabled(!sampler_->empty());
+  auto range = sampler_->getRange();
+  selection_ = qMakePair(range.first, range.second);
 }
 
 QPair<size_t, size_t> MinimapPanel::getSelection() {

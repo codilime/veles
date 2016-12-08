@@ -43,6 +43,10 @@ void ISampler::setRange(size_t start, size_t end) {
   initialised_ = false;
 }
 
+std::pair<size_t, size_t> ISampler::getRange() {
+  return std::make_pair(start_, end_);
+}
+
 void ISampler::setSampleSize(size_t size) {
   sample_size_ = size;
   resample_trigger_ = std::min(sample_size_, resample_trigger_);
