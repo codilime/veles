@@ -17,6 +17,7 @@
 #ifndef ISAMPLER_H
 #define ISAMPLER_H
 
+#include <utility>
 #include <QByteArray>
 
 namespace veles {
@@ -53,6 +54,11 @@ class ISampler {
    * data() method.
    */
   void setRange(size_t start, size_t end);
+
+  /**
+   * Get the range of bytes from data used as a base for sampling.
+   */
+  std::pair<size_t, size_t> getRange();
 
   /**
    * Request sampler to return the sample of a given size.
