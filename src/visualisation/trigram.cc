@@ -316,7 +316,16 @@ void TrigramWidget::paintGL() {
 
   QMatrix4x4 mp, m;
   mp.setToIdentity();
-  mp.perspective(45, static_cast<double>(width) / height, 0.01f, 100.0f);
+  if (width > height) {
+    mp.perspective(45, static_cast<double>(width) / height, 0.01f, 100.0f);
+  } else {
+    // wtf h4x.  gluPerspective fixes the viewport wrt y field of view, and
+    // we need to fix it to x instead.  So, rotate the world, fix to new y,
+    // rotate it back.
+    mp.rotate(90, 0, 0, 1);
+    mp.perspective(45, static_cast<double>(height) / width, 0.01f, 100.0f);
+    mp.rotate(-90, 0, 0, 1);
+  }
   m.setToIdentity();
   m.translate(0.0f, 0.0f, -5.0f);
   m.rotate(90, 0, 0, 1);
