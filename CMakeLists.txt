@@ -136,7 +136,7 @@ add_library(parser
 
 qt5_use_modules(parser Core)
 add_dependencies(parser zlib)
-target_link_libraries(parser veles_db veles_dbif ${ZLIB_LIBRARY})
+target_link_libraries(parser veles_db veles_dbif ${ZLIB_LIBRARIES})
 
 # LIB: veles_db
 add_library(veles_db
