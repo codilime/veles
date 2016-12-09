@@ -63,15 +63,20 @@ builders['mingw32'] = { node('windows') {
           bat script: "md build_mingw", returnStatus: true
           dir('build_mingw') {
             bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGTEST_SRC_PATH=%GTEST_DIR% -G \"MinGW Makefiles\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."
-            bat script: "cmake --build . --config ${buildConfiguration}"
+            bat script: "cmake --build . --config ${buildConfiguration} 2> error_and_warnings.txt"
+            bat script: "type error_and_warnings.txt"
             bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-mingw -G ZIP -C ${buildConfiguration}"
           }
         }
         junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
         step([$class: 'ArtifactArchiver', artifacts: 'build_mingw/veles-mingw.zip', fingerprint: true])
+        step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false,
+              defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
+              parserConfigurations: [[parserName: 'GNU Make + GNU C Compiler (gcc)',pattern: 'build_mingw/error_and_warnings.txt']], unHealthy: ''])
         }
         catch (error){
           post_stage_failure(env.JOB_NAME, "windows-mingw32",error,env.BUILD_URL)
+          bat script: "type build_mingw\\error_and_warnings.txt"
           throw error
         }
       }
@@ -100,14 +105,19 @@ builders['msvc2015_64'] = { node('windows'){
             bat script: "md build_${version}", returnStatus: true
             dir ("build_${version}") {
               bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGTEST_SRC_PATH=%GTEST_DIR% -G \"${generator}\" ..\\"
-              bat script: "cmake --build . --config ${buildConfiguration}"
+              bat script: "cmake --build . --config ${buildConfiguration} > error_and_warnings.txt"
+              bat script: "type error_and_warnings.txt"
               bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G ZIP -C ${buildConfiguration}"
             }
             junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
             step([$class: 'ArtifactArchiver', artifacts: "build_${version}/veles-${version}.zip", fingerprint: true])
+            step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
+                  excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
+                  parserConfigurations: [[parserName: 'MSBuild', pattern: "build_${version}/error_and_warnings.txt"]], unHealthy: ''])
           }
         }  catch (error) {
           post_stage_failure(env.JOB_NAME, "windows-msvc2015-x64",error,env.BUILD_URL)
+          bat script: "type build_${version}\\error_and_warnings.txt"
           throw error
         }
       }
@@ -135,13 +145,18 @@ builders['msvc2015'] = {node('windows'){
             bat script: "md build_${version}", returnStatus: true
             dir ("build_${version}") {
               bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGTEST_SRC_PATH=%GTEST_DIR% -G \"${generator}\" ..\\"
-              bat script: "cmake --build . --config ${buildConfiguration}"
+              bat script: "cmake --build . --config ${buildConfiguration} > error_and_warnings.txt"
+              bat script: "type error_and_warnings.txt"
               bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G ZIP -C ${buildConfiguration}"
             }
             junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
             step([$class: 'ArtifactArchiver', artifacts: "build_${version}/veles-${version}.zip", fingerprint: true])
+            step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
+                  excludePattern: '', healthy: '',includePattern: '', messagesPattern: '',
+                  parserConfigurations: [[parserName: 'MSBuild', pattern: "build_${version}/error_and_warnings.txt"]], unHealthy: ''])
           }
         }catch (error) {
+          bat script: "type build_${version}\\error_and_warnings.txt"
           post_stage_failure(env.JOB_NAME, "windows-msvc2015-x86",error,env.BUILD_URL)
           throw error
         }
@@ -160,10 +175,13 @@ builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
         def version = getVersion()
         def branch = getBranch()
         sh "cmake -DGTEST_SRC_PATH=\"${tool 'gtest'}\" -DCMAKE_BUILD_TYPE=${buildConfiguration} CMakeLists.txt"
-        sh 'cmake --build . --config ${buildConfiguration}'
+        sh 'cmake --build . --config ${buildConfiguration} 2>&1 | tee error_and_warnings.txt'
         sh 'cpack -D CPACK_PACKAGE_FILE_NAME=veles-ubuntu1604 -G ZIP -C ${buildConfiguration}'
         junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
         step([$class: 'ArtifactArchiver', artifacts: '*.zip', fingerprint: true])
+        step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
+        excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
+        parserConfigurations: [[parserName: 'GNU Make + GNU C Compiler (gcc)', pattern: 'error_and_warnings.txt']], unHealthy: ''])
       } catch (error) {
         post_stage_failure(env.JOB_NAME, "ubuntu-16.04-amd64",error,env.BUILD_URL)
         throw error
@@ -181,10 +199,13 @@ builders['macosx'] = { node ('macosx'){
         def version = getVersion()
         def branch = getBranch()
         sh "cmake CMakeLists.txt -G \"Xcode\" -DCMAKE_PREFIX_PATH=$QT/5.7/clang_64 -DGTEST_SRC_PATH=\"${tool 'gtest'}\""
-        sh 'cmake --build . --config ${buildConfiguration}'
+        sh 'cmake --build . --config ${buildConfiguration} 2>&1 | tee error_and_warnings.txt'
         sh 'cpack -D CPACK_PACKAGE_FILE_NAME=veles-osx -G ZIP -C ${buildConfiguration}'
         junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
         step([$class: 'ArtifactArchiver', artifacts: '*.zip', fingerprint: true])
+        step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
+        excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
+        parserConfigurations: [[parserName: 'Clang (LLVM based)', pattern: 'error_and_warnings.txt']], unHealthy: ''])
       } catch (error) {
         post_stage_failure(env.JOB_NAME, "macOS-10.12",error,env.BUILD_URL)
         throw error
