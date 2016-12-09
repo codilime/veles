@@ -111,21 +111,22 @@ void LocalObject::description_updated() {
 void LocalObject::kill() {
   db_ = nullptr;
   killed();
-  QMutableSetIterator<PLocalObject> iter(children_);
-  while (iter.hasNext()) {
-    PLocalObject obj = iter.next();
+
+  auto children = children_;
+  for (auto obj: children) {
     obj->kill();
   }
-  QMutableSetIterator<InfoGetter *> witer(children_watchers_);
-  while (witer.hasNext()) {
-    InfoGetter *getter = witer.next();
+
+  auto children_watchers = children_watchers_;
+  for (auto getter: children_watchers) {
     getter->sendError<dbif::ObjectGoneError>();
   }
-  QMutableSetIterator<InfoGetter *> witer2(description_watchers_);
-  while (witer2.hasNext()) {
-    InfoGetter *getter = witer2.next();
+
+  auto description_watchers = description_watchers_;
+  for (auto getter: description_watchers) {
     getter->sendError<dbif::ObjectGoneError>();
   }
+
   Q_ASSERT(children_.empty());
 }
 
@@ -226,9 +227,8 @@ void DataBlobObject::runMethod(MethodRunner *runner, PMethodRequest req) {
 void DataBlobObject::killed() {
   LocalObject::killed();
   parent_->delChild(sharedFromThis());
-  QMutableMapIterator<InfoGetter *, std::pair<uint64_t, uint64_t>> miter(data_watchers_);
-  while (miter.hasNext()) {
-    InfoGetter *getter = miter.next().key();
+  auto data_watchers = data_watchers_.keys();
+  for (auto getter: data_watchers) {
     getter->sendError<dbif::ObjectGoneError>();
   }
 }
@@ -343,9 +343,8 @@ void ChunkObject::killed() {
   else
     blob_->delChild(sharedFromThis());
 
-  QMutableSetIterator<InfoGetter *> witer(parse_watchers_);
-  while (witer.hasNext()) {
-    InfoGetter *getter = witer.next();
+  auto parse_watchers = parse_watchers_;
+  for (auto getter: parse_watchers) {
     getter->sendError<dbif::ObjectGoneError>();
   }
 }
