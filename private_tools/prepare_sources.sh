@@ -71,7 +71,7 @@ rm -rf .git private_tools
 rm Jenkinsfile REVISION .gitignore CONTRIBUTING.md
 cd ..
 
-mv "eax" "veles_${version}"
+mv "eax" "veles-${version}"
 tar -czvf "Veles_${version}_Source.tar.gz" "veles-${version}/"
 get_file "veles-msvc2015.zip" "32bit_Windows" "build_msvc2015"
 get_file "veles-msvc2015_64.zip" "64bit_Windows" "build_msvc2015_64"
