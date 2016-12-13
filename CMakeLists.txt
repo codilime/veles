@@ -11,7 +11,7 @@ options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release
 RelWithDebInfo MinSizeRel.")
 ENDIF()
 
-project(VELES CXX)
+project(VELES C CXX)
 if(WIN32)
   cmake_minimum_required(VERSION 3.7.0)
 else(WIN32)
@@ -27,9 +27,12 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VELES hex editor")
 include("cmake/googletest.cmake")
 include("cmake/qt.cmake")
 include("cmake/zlib.cmake")
+include("cmake/protobuf.cmake")
 # Compiler flags
 set(CMAKE_CXX_STANDARD_REQUIRED 11) # Use c++11
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+set(CMAKE_INSTALL_RPATH ".")
 if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall --std=c++11") # All warnings
   set(ADDITIONAL_LINK_LIBRARIES "pthread")
@@ -296,7 +299,10 @@ endif(WIN32 AND NOT MSVC)
 
 #Unix paths
 if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
+  # Load shared objects located in the same location as executable
+  # Install targets
   install(TARGETS main_ui RUNTIME DESTINATION bin)
+  install(FILES $<$<CONFIG:Debug>:${PROTOBUF_LIBRARY_DEBUG}> $<$<NOT:$<CONFIG:Debug>>:${PROTOBUF_LIBRARY}> DESTINATION bin)
 endif(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
 
 # Windows
@@ -308,6 +314,17 @@ if(WIN32)
     COMMAND ${WINDEPLOYQT_EXECUTABLE} ${WINDEPLOYQT_ARGS} $<TARGET_FILE:main_ui>
     DEPENDS $<TARGET_FILE:main_ui>)
   install(DIRECTORY $<TARGET_FILE_DIR:main_ui> DESTINATION "bin")
+  add_custom_command(TARGET protobuf POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${PROTOBUF_DLL_DIR}/libprotobuf$<$<CONFIG:Debug>:d>.dll"
+    ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Copying protobuf dll")
+  if(MSVC)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libprotobuf$<$<CONFIG:Debug>:d>.dll" DESTINATION "bin/$<CONFIG>/")
+  else(MSVC)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libprotobuf$<$<CONFIG:Debug>:d>.dll" DESTINATION "bin/bin/")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/prefix/bin/libzlib.dll" DESTINATION "bin/bin/")
+  endif(MSVC)
   set(CPACK_PACKAGE_EXECUTABLES "veles.exe" "VELES")
 endif(WIN32)
 
@@ -326,6 +343,17 @@ if(APPLE)
     DEPENDS $<TARGET_FILE:main_ui>)
   set_target_properties(main_ui PROPERTIES MACOSX_BUNDLE TRUE)
   install(TARGETS main_ui BUNDLE DESTINATION "veles")
+  set(new_dynlib_target "@executable_path/../Frameworks/libprotobuf$<$<CONFIG:Debug>:d>.dylib")
+  add_custom_command(TARGET protobuf POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    $<$<CONFIG:Debug>:${PROTOBUF_LIBRARY_DEBUG}> $<$<NOT:$<CONFIG:Debug>>:${PROTOBUF_LIBRARY}>
+    ${CMAKE_CURRENT_BINARY_DIR})
+  add_custom_command(TARGET main_ui POST_BUILD
+    COMMENT "Ensuring correct protobuf dylib name"
+    COMMAND install_name_tool -id ${new_dynlib_target} "${CMAKE_CURRENT_BINARY_DIR}/libprotobuf$<$<CONFIG:Debug>:d>.dylib"
+    COMMAND install_name_tool -change "libprotobuf$<$<CONFIG:Debug>:d>.dylib" ${new_dynlib_target} $<TARGET_FILE:main_ui>
+    DEPENDS $<TARGET_FILE:main_ui>)
+  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libprotobuf$<$<CONFIG:Debug>:d>.dylib" DESTINATION "veles/$<TARGET_PROPERTY:main_ui,OUTPUT_NAME>.app/Contents/Frameworks/")
   set(CPACK_PACKAGE_EXECUTABLES "veles.app" "VELES")
 endif(APPLE)
 
