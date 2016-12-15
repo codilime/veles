@@ -19,5 +19,8 @@
         <file>images/error.ico</file>
         <file>images/newTab.png</file>
         <file>images/parse.png</file>
+        <file>images/manipulator_spin.png</file>
+        <file>images/manipulator_trackball.png</file>
+        <file>images/manipulator_free.png</file>
     </qresource>
 </RCC>

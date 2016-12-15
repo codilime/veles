@@ -87,6 +87,7 @@ add_library(veles_visualisation
     ${INCLUDE_DIR}/visualisation/minimap.h
     ${INCLUDE_DIR}/visualisation/minimap_panel.h
     ${INCLUDE_DIR}/visualisation/selectrangedialog.h
+    ${INCLUDE_DIR}/visualisation/manipulator.h
     ${SRC_DIR}/visualisation/panel.cc
     ${SRC_DIR}/visualisation/base.cc
     ${SRC_DIR}/visualisation/digram.cc
@@ -94,6 +95,7 @@ add_library(veles_visualisation
     ${SRC_DIR}/visualisation/minimap.cc
     ${SRC_DIR}/visualisation/minimap_panel.cc
     ${SRC_DIR}/visualisation/selectrangedialog.cc
+    ${SRC_DIR}/visualisation/manipulator.cc
     ${VISUALISATION_FORMS}
     ${VISUALISATION_SHADERS})
 
@@ -229,7 +231,8 @@ add_executable(main_ui
     ${CMAKE_SOURCE_DIR}/moc_optionsdialog.cpp
     ${CMAKE_SOURCE_DIR}/moc_hexedit.cpp
     ${CMAKE_SOURCE_DIR}/moc_searchdialog.cpp
-    ${CMAKE_SOURCE_DIR}/moc_trigram.cpp)
+    ${CMAKE_SOURCE_DIR}/moc_trigram.cpp
+    ${CMAKE_SOURCE_DIR}/moc_manipulator.cpp)
 
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${GENERATED_MOC_FILES})
 

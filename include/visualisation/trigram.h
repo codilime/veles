@@ -14,8 +14,8 @@
  * limitations under the License.
  *
  */
-#ifndef TRIGRAM_H
-#define TRIGRAM_H
+#ifndef VELES_VISUALISATION_TRIGRAM_H
+#define VELES_VISUALISATION_TRIGRAM_H
 
 #include "visualisation/trigram.h"
 
@@ -33,8 +33,12 @@
 #include <QPushButton>
 #include <QSlider>
 #include <QCheckBox>
+#include <QTime>
+#include <QToolBar>
+#include <QAction>
 
 #include "visualisation/base.h"
+#include "visualisation/manipulator.h"
 
 namespace veles {
 namespace visualisation {
@@ -52,6 +56,8 @@ class TrigramWidget : public VisualisationWidget {
   bool prepareOptionsPanel(QBoxLayout *layout) override;
   void setMode(EVisualisationMode mode, bool animate = true);
 
+  static float vfovDeg(float min_fov_deg, float aspect_ratio);
+
  public slots:
   void brightnessSliderMoved(int value);
 
@@ -59,6 +65,7 @@ class TrigramWidget : public VisualisationWidget {
   void refresh() override;
   void initializeVisualisationGL() override;
 
+  bool event(QEvent *event) override;
   void timerEvent(QTimerEvent *e) override;
 
   void resizeGL(int w, int h) override;
@@ -68,10 +75,19 @@ class TrigramWidget : public VisualisationWidget {
   void initTextures();
   void initGeometry();
 
+  QAction* createAction(const QIcon& icon, Manipulator* manipulator,
+      const QList<QKeySequence>& sequences);
+  QPushButton* createActionButton(QAction* action);
+  virtual void prepareManipulatorToolbar(QBoxLayout *layout);
+
+ signals:
+  void manipulatorChanged(Manipulator* manipulator);
+
  private slots:
   void playPause();
   void setShape(EVisualisationShape shape);
   void setUseBrightnessHeuristic(int state);
+  void setManipulator(Manipulator* manipulator);
 
  private:
   void setBrightness(int value);
@@ -96,9 +112,16 @@ class TrigramWidget : public VisualisationWidget {
   QSlider *brightness_slider_;
   QCheckBox *use_heuristic_checkbox_;
   bool is_playing_, use_brightness_heuristic_;
+
+  QList<Manipulator*> manipulators_;
+  Manipulator* current_manipulator_;
+  SpinManipulator* spin_manipulator_;
+  TrackballManipulator* trackball_manipulator_;
+  FreeManipulator* free_manipulator_;
+  QTime time_;
 };
 
 }  // namespace visualisation
 }  // namespace veles
 
-#endif
+#endif // VELES_VISUALISATION_TRIGRAM_H
