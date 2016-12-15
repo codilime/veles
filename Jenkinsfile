@@ -58,11 +58,11 @@ builders['mingw32'] = { node('windows') {
         def branch = getBranch()
         withEnv(["PATH+QT=${env.QT}\\Tools\\mingw530_32\\bin;${env.QT}\\5.7\\mingw53_32\\bin",
                  "PATH+CMAKE=${env.CMAKE}\\bin",
-                 "GTEST_DIR=${tool 'gtest'}"]) {
+                 "GOOGLETEST_DIR=${tool 'googletest'}"]) {
           bat(script: "rd /s /q build_mingw", returnStatus: true)
           bat script: "md build_mingw", returnStatus: true
           dir('build_mingw') {
-            bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGTEST_SRC_PATH=%GTEST_DIR% -G \"MinGW Makefiles\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."
+            bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -G \"MinGW Makefiles\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."
             bat script: "cmake --build . --config ${buildConfiguration}"
             bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-mingw -G ZIP -C ${buildConfiguration}"
           }
@@ -90,7 +90,7 @@ builders['msvc2015_64'] = { node('windows'){
           withEnv(["PATH+QT=${env.QT}\\Tools\\${version}\\bin;${env.QT}\\5.7\\${version}\\bin",
                    "PATH+CMAKE=${env.CMAKE}\\bin",
                    "CMAKE_PREFIX_PATH+QT=${env.QT}\\5.7\\${version}",
-                   "GTEST_DIR=${tool 'gtest'}"
+                   "GOOGLETEST_DIR=${tool 'googletest'}"
                    ]){
             if(version.contains("64")){
               generator = "${generator} Win64"
@@ -98,7 +98,7 @@ builders['msvc2015_64'] = { node('windows'){
             bat(script: "rd /s /q build_${version}", returnStatus: true)
             bat script: "md build_${version}", returnStatus: true
             dir ("build_${version}") {
-              bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGTEST_SRC_PATH=%GTEST_DIR% -G \"${generator}\" ..\\"
+              bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -G \"${generator}\" ..\\"
               bat script: "cmake --build . --config ${buildConfiguration} > error_and_warnings.txt"
               bat script: "type error_and_warnings.txt"
               bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G ZIP -C ${buildConfiguration}"
@@ -131,14 +131,14 @@ builders['msvc2015'] = {node('windows'){
           withEnv(["PATH+QT=${env.QT}\\Tools\\${version}\\bin;${env.QT}\\5.7\\${version}\\bin",
                    "PATH+CMAKE=${env.CMAKE}\\bin",
                    "CMAKE_PREFIX_PATH+QT=${env.QT}\\5.7\\${version}",
-                   "GTEST_DIR=${tool 'gtest'}"]){
+                   "GOOGLETEST_DIR=${tool 'googletest'}"]){
             if(version.contains("64")){
               generator = "${generator} Win64"
             }
             bat(script: "rd /s /q build_${version}", returnStatus: true)
             bat script: "md build_${version}", returnStatus: true
             dir ("build_${version}") {
-              bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGTEST_SRC_PATH=%GTEST_DIR% -G \"${generator}\" ..\\"
+              bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -G \"${generator}\" ..\\"
               bat script: "cmake --build . --config ${buildConfiguration}"
               bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G ZIP -C ${buildConfiguration}"
             }
@@ -163,7 +163,7 @@ builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
         checkout scm
         def version = getVersion()
         def branch = getBranch()
-        sh "cmake -DGTEST_SRC_PATH=\"${tool 'gtest'}\" -DCMAKE_BUILD_TYPE=${buildConfiguration} CMakeLists.txt"
+        sh "cmake -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\" -DCMAKE_BUILD_TYPE=${buildConfiguration} CMakeLists.txt"
         sh 'cmake --build . --config ${buildConfiguration} 2>&1 | tee error_and_warnings.txt'
         sh 'cpack -D CPACK_PACKAGE_FILE_NAME=veles-ubuntu1604 -G ZIP -C ${buildConfiguration}'
         junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
@@ -187,7 +187,7 @@ builders['macosx'] = { node ('macosx'){
         checkout scm
         def version = getVersion()
         def branch = getBranch()
-        sh "cmake CMakeLists.txt -G \"Xcode\" -DCMAKE_PREFIX_PATH=$QT/5.7/clang_64 -DGTEST_SRC_PATH=\"${tool 'gtest'}\""
+        sh "cmake CMakeLists.txt -G \"Xcode\" -DCMAKE_PREFIX_PATH=$QT/5.7/clang_64 -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\""
         sh 'cmake --build . --config ${buildConfiguration} 2>&1 | tee error_and_warnings.txt'
         sh 'cpack -D CPACK_PACKAGE_FILE_NAME=veles-osx -G ZIP -C ${buildConfiguration}'
         junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
@@ -234,4 +234,3 @@ build_platform('macosx')
 node(){
   post_build_finished(env.JOB_NAME, env.BUILD_URL)
 }
-

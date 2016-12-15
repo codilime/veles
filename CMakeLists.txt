@@ -1,3 +1,5 @@
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
 # HACK: ugly hack to provide default compilation type
 IF(DEFINED CMAKE_BUILD_TYPE)
    SET(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of
@@ -22,7 +24,7 @@ set(CPACK_PACKAGE_NAME "veles")
 set(CPACK_DEBIAN_PACKAGE_SECTION "Editors")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VELES hex editor")
 
-include("cmake/gtest.cmake")
+include("cmake/googletest.cmake")
 include("cmake/qt.cmake")
 include("cmake/zlib.cmake")
 # Compiler flags
@@ -234,8 +236,8 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${GENERATED_M
 qt5_use_modules(main_ui Core Gui Widgets)
 
 target_link_libraries(veles_visualisation veles_base)
-if(GTEST_FOUND)
-    include_directories(${GTEST_INCLUDE_DIR})
+if(GTEST_FOUND AND GMOCK_FOUND)
+    include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
     add_executable(run_test
         ${TEST_DIR}/run_test.cc
         ${TEST_DIR}/data/bindata.cc
@@ -244,21 +246,22 @@ if(GTEST_FOUND)
         ${TEST_DIR}/util/encoders/hex_encoder.cc
         ${TEST_DIR}/util/encoders/base64_encoder.cc
         ${TEST_DIR}/util/encoders/factory.cc
+        ${TEST_DIR}/util/sampling/isampler.cc
     )
 
     qt5_use_modules(run_test Core)
 
-    target_link_libraries(run_test veles_db veles_base ${GTEST_LIBRARY})
+    target_link_libraries(run_test veles_db veles_base ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES})
 
     add_custom_command(TARGET run_test
       COMMENT "Running tests"
       COMMAND $<TARGET_FILE:run_test> "--gtest_output=xml:results.xml"
       DEPENDS $<TARGET_FILE:run_test>)
-else(GTEST_FOUND)
+else(GTEST_FOUND AND GMOCK_FOUND)
 
-    message("gtest not found - tests won't be built")
+    message("gtest and/or gmock not found - tests won't be built")
 
-endif(GTEST_FOUND)
+endif(GTEST_FOUND AND GMOCK_FOUND)
 
 
 #target_link_libraries(test_veles veles)
