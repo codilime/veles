@@ -140,6 +140,7 @@ class HexEdit : public QAbstractScrollArea {
   bool isByteVisible(qint64 bytePos);
   void setSelectionEnd(qint64 bytePos);
   void saveSelectionToFile(QString path);
+  void scrollToCurrentChunk();
 };
 
 }  // namespace ui

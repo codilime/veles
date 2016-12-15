@@ -101,7 +101,10 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
 
   if (chunkSelectionModel_) {
     connect(chunkSelectionModel_, &QItemSelectionModel::currentChanged,
-            [this]() { viewport()->update(); });
+            [this]() {
+              scrollToCurrentChunk();
+              viewport()->update();
+            });
   }
 
   recalculateValues();
@@ -622,6 +625,14 @@ void HexEdit::scrollToByte(qint64 bytePos, bool doNothingIfVisable) {
   recalculateValues();
 
   viewport()->update();
+}
+
+void HexEdit::scrollToCurrentChunk() {
+  qint64 start, size;
+  getRangeFromIndex(selectedChunk(), &start, &size);
+  if (size) {
+    scrollToByte(start, true);
+  }
 }
 
 void HexEdit::saveSelectionToFile(QString path) {
