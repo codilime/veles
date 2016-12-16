@@ -63,20 +63,14 @@ builders['mingw32'] = { node('windows') {
           bat script: "md build_mingw", returnStatus: true
           dir('build_mingw') {
             bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGTEST_SRC_PATH=%GTEST_DIR% -G \"MinGW Makefiles\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."
-            bat script: "cmake --build . --config ${buildConfiguration} 2> error_and_warnings.txt"
-            bat script: "type error_and_warnings.txt"
+            bat script: "cmake --build . --config ${buildConfiguration}"
             bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-mingw -G ZIP -C ${buildConfiguration}"
           }
         }
         junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
         step([$class: 'ArtifactArchiver', artifacts: 'build_mingw/veles-mingw.zip', fingerprint: true])
-        step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false,
-              defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
-              parserConfigurations: [[parserName: 'GNU Make + GNU C Compiler (gcc)',pattern: 'build_mingw/error_and_warnings.txt']], unHealthy: ''])
-        }
-        catch (error){
+        } catch (error) {
           post_stage_failure(env.JOB_NAME, "windows-mingw32",error,env.BUILD_URL)
-          bat script: "type build_mingw\\error_and_warnings.txt"
           throw error
         }
       }
@@ -145,18 +139,13 @@ builders['msvc2015'] = {node('windows'){
             bat script: "md build_${version}", returnStatus: true
             dir ("build_${version}") {
               bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGTEST_SRC_PATH=%GTEST_DIR% -G \"${generator}\" ..\\"
-              bat script: "cmake --build . --config ${buildConfiguration} > error_and_warnings.txt"
-              bat script: "type error_and_warnings.txt"
+              bat script: "cmake --build . --config ${buildConfiguration}"
               bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G ZIP -C ${buildConfiguration}"
             }
             junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
             step([$class: 'ArtifactArchiver', artifacts: "build_${version}/veles-${version}.zip", fingerprint: true])
-            step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
-                  excludePattern: '', healthy: '',includePattern: '', messagesPattern: '',
-                  parserConfigurations: [[parserName: 'MSBuild', pattern: "build_${version}/error_and_warnings.txt"]], unHealthy: ''])
           }
         }catch (error) {
-          bat script: "type build_${version}\\error_and_warnings.txt"
           post_stage_failure(env.JOB_NAME, "windows-msvc2015-x86",error,env.BUILD_URL)
           throw error
         }
