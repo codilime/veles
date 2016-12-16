@@ -112,9 +112,11 @@ char UniformSampler::getSampleByte(size_t index) {
 const char* UniformSampler::getData() {
   if (buffer_ == nullptr) {
     size_t size = getSampleSize();
+    const char *raw_data = getRawData();
     char *tmp_buffer = new char[size];
     for (size_t i=0; i < size; ++i) {
-      tmp_buffer[i] = operator[](i);
+      size_t base_index = windows_[i / window_size_];
+      tmp_buffer[i] = raw_data[base_index + (i % window_size_)];
     }
     buffer_ = tmp_buffer;
   }
