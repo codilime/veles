@@ -83,8 +83,13 @@ else(PROTOBUF_FOUND AND (NOT ${PROTOBUF_PROTOC_EXECUTABLE} STREQUAL "PROTOBUF_PR
       add_custom_command(TARGET protobuf POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${protobuf_install}/lib/libprotobuf$<$<CONFIG:Debug>:d>.dylib"
-        "${protobuf_install}/lib/libprotoc$<$<CONFIG:Debug>:d>.dylib"
         ${CMAKE_CURRENT_BINARY_DIR})
+      # copy protoc and probouf libraries so that protoc can use it
+      add_custom_command(TARGET protobuf POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${protobuf_install}/lib/libprotoc$<$<CONFIG:Debug>:d>.dylib"
+        "${protobuf_install}/lib/libprotobuf$<$<CONFIG:Debug>:d>.dylib"
+        ${CMAKE_CURRENT_BINARY_DIR}/protobuf)
     else(APPLE)
       set(PROTOBUF_LIBRARIES "${protobuf_install}/lib/libprotobuf$<$<CONFIG:Debug>:d>.so")
     endif(APPLE)

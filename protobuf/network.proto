@@ -1,0 +1,51 @@
+syntax = "proto3";
+package veles.network;
+
+// This is very "hackish" temporary protobuf definiton, for schema before refactoring
+
+message ChunkDataItem {
+    uint64 start = 1;
+    uint64 end = 2;
+    string name = 3;
+    // Add more properties ?
+}
+
+message LocalObject {
+    uint64 id = 1;
+    string name = 2;
+    string comment = 3;
+    repeated LocalObject children = 4;
+    uint64 type = 5;
+
+    string file_blob_path = 101;
+
+    uint64 chunk_start = 201;
+    uint64 chunk_end = 202;
+    string chunk_type = 203;
+    repeated ChunkDataItem items = 204;
+}
+
+message Request {
+    // 1 - list children
+    // 2 - list children recursive
+    // 3 - add child chunk
+    // 4 - delete object
+    uint64 type = 1;
+    // full path to object we want to operate on
+    // (i.e. if we want to delete chunk with id 3 in file with id 2 it would be [2,3])
+    // this is just a temporary hack to enable semi efficent state-less comunication
+    // w/o random access to objects on server side
+    repeated uint64 id = 2;
+
+    string name = 101;
+
+    uint64 chunk_start = 201;
+    uint64 chunk_end = 202;
+    string chunk_type = 203;
+}
+
+message Response {
+    bool ok = 1;
+    string error_msg = 2;
+    repeated LocalObject results = 3;
+}

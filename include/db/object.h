@@ -17,6 +17,8 @@
 #ifndef VELES_DB_OBJECT_H
 #define VELES_DB_OBJECT_H
 
+#include <atomic>
+
 #include <QSet>
 #include <QMap>
 #include <QtGlobal>
@@ -33,6 +35,8 @@ class LocalObject : public QEnableSharedFromThis<LocalObject> {
   Universe *db_;
   QString name_;
   QString comment_;
+  static std::atomic<uint64_t> static_id_;
+  uint64_t id_;
   QSet<PLocalObject> children_;
   QSet<InfoGetter *> children_watchers_;
   QSet<InfoGetter *> description_watchers_;
@@ -45,10 +49,9 @@ class LocalObject : public QEnableSharedFromThis<LocalObject> {
   void description_updated();
   virtual void children_updated();
   virtual void description_reply(InfoGetter *getter);
-  const QSet<PLocalObject> &children() { return children_; }
 
  public:
-  LocalObject(Universe *db, QString name) : db_(db), name_(name) {}
+  LocalObject(Universe *db, QString name) : db_(db), name_(name), id_(++static_id_) {}
   virtual ~LocalObject() { Q_ASSERT(dead()); }
   virtual void getInfo(InfoGetter *getter, PInfoRequest req, bool once);
   virtual void runMethod(MethodRunner *runner, PMethodRequest req);
@@ -60,6 +63,8 @@ class LocalObject : public QEnableSharedFromThis<LocalObject> {
   virtual dbif::ObjectType type() const = 0;
   QString name() const { return name_; }
   QString comment() const { return comment_; }
+  uint64_t id() const { return id_; }
+  const QSet<PLocalObject> &children() { return children_; }
 };
 
 class RootLocalObject : public LocalObject {
@@ -182,6 +187,10 @@ class ChunkObject : public LocalObject {
       blob->addChild(res);
     return res;
   }
+  uint64_t start() const { return start_; }
+  uint64_t end() const { return end_; }
+  QString chunkType() const { return chunk_type_; }
+  const std::vector<data::ChunkDataItem>& items() const { return items_; }
 };
 
 };

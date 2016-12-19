@@ -1,0 +1,8 @@
+*.pyc
+build/
+veles.egg-info
+dist/
+*_pb2.py
+AUTHORS
+ChangeLog
+.eggs
