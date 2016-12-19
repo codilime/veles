@@ -487,7 +487,7 @@ void VelesMainWindow::about() {
          "Version: %1\n"
          "\n"
          "Report bugs to veles@codisec.com\n"
-         "codisec.com/veles/\n"
+         "https://codisec.com/veles/\n"
          "\n"
          "Copyright 2016 CodiLime\n"
          "Licensed under the Apache License, Version 2.0\n"

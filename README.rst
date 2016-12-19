@@ -1,7 +1,7 @@
 veles - A new age tool for binary analysis
 ==========================================
 
-See our home page at http://codisec.com/.
+See our home page at https://codisec.com/.
 
 
 Building, installing
