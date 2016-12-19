@@ -25,6 +25,8 @@
 namespace veles {
 namespace db {
 
+std::atomic<uint64_t> LocalObject::static_id_;
+
 void LocalObject::getInfo(InfoGetter *getter, PInfoRequest req, bool once) {
   if (req.dynamicCast<dbif::ChildrenRequest>()) {
     children_reply(getter);
