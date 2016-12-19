@@ -50,6 +50,7 @@ set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(TEST_DIR ${CMAKE_SOURCE_DIR}/test)
 
 include_directories(${INCLUDE_DIR})
+include_directories(${CMAKE_BINARY_DIR}/protobuf)
 
 # VELES build rules
 # LIB: veles_base
@@ -152,6 +153,9 @@ qt5_use_modules(parser Core)
 add_dependencies(parser zlib)
 target_link_libraries(parser veles_db veles_dbif ${ZLIB_LIBRARIES})
 
+# generate protobuf files
+add_subdirectory(protobuf)
+
 # LIB: veles_db
 add_library(veles_db
     ${INCLUDE_DIR}/db/db.h
@@ -166,7 +170,7 @@ add_library(veles_db
 )
 
 qt5_use_modules(veles_db Core)
-
+add_dependencies(veles_db veles_network)
 target_link_libraries(veles_db veles_dbif parser)
 
 # EXE: dbif_test
@@ -174,14 +178,14 @@ add_executable(dbif_test ${SRC_DIR}/dbif_test.cc)
 
 qt5_use_modules(dbif_test Core)
 
-target_link_libraries(dbif_test veles_db)
+target_link_libraries(dbif_test veles_db veles_network)
 
 # EXE: unpyc
 add_executable(unpyc ${SRC_DIR}/unpyc.cc)
 
 qt5_use_modules(unpyc Core)
 
-target_link_libraries(unpyc veles_db parser)
+target_link_libraries(unpyc veles_db parser veles_network)
 
 #target_link_libraries(test_veles veles)
 
@@ -288,7 +292,7 @@ endif(GTEST_FOUND AND GMOCK_FOUND)
 
 
 #target_link_libraries(test_veles veles)
-target_link_libraries(main_ui veles_base veles_db veles_visualisation Qt5::Widgets parser)
+target_link_libraries(main_ui veles_base veles_db veles_network veles_visualisation Qt5::Widgets parser)
 set_target_properties(main_ui PROPERTIES OUTPUT_NAME "veles")
 if(WIN32 AND NOT MSVC)
   set_target_properties(main_ui PROPERTIES RUNTIME_OUTPUT_DIRECTORY "bin")
@@ -296,6 +300,8 @@ endif(WIN32 AND NOT MSVC)
 
 
 # Post-build packaging
+
+install(FILES ${PROTO_PY} DESTINATION python)
 
 #Unix paths
 if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
