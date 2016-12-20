@@ -41,8 +41,8 @@ void CreateChunkDialog::init() {
   displayPath();
 
   connect(chunksModel_, &FileBlobModel::newBinData, [this]() {
-    ui->beginSpinBox->setMaximum(chunksModel_->binData().size());
-    ui->endSpinBox->setMaximum(chunksModel_->binData().size());
+    ui->beginSpinBox->setMaximum(static_cast<int>(chunksModel_->binData().size()));
+    ui->endSpinBox->setMaximum(static_cast<int>(chunksModel_->binData().size()));
   });
 }
 

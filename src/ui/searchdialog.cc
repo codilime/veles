@@ -206,19 +206,17 @@ data::BinData SearchDialog::getContent(int comboIndex, const QString &input) {
 qint64 SearchDialog::replaceOccurrence(qint64 idx,
                                        const data::BinData &replaceBa) {
   int result = QMessageBox::Yes;
-  if (replaceBa.size() >= 0) {
-    if (ui->cbPrompt->isChecked()) {
-      result = QMessageBox::question(
-          this, tr("HexEdit"), tr("Replace occurrence?"),
-          QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+  if (ui->cbPrompt->isChecked()) {
+    result = QMessageBox::question(
+        this, tr("HexEdit"), tr("Replace occurrence?"),
+        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 
-      if (result == QMessageBox::Yes) {
-         replace(idx, replaceBa.size(), replaceBa);
-        _hexEdit->update();
-      }
-    } else {
-      replace(idx, _findBa.size(), replaceBa);
+    if (result == QMessageBox::Yes) {
+       replace(idx, replaceBa.size(), replaceBa);
+      _hexEdit->update();
     }
+  } else {
+    replace(idx, _findBa.size(), replaceBa);
   }
   return result;
 }

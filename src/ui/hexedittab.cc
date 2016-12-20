@@ -236,7 +236,7 @@ bool HexEditTab::saveFile(const QString &fileName) {
   QFile file(tmpFileName);
   file.open(QIODevice::WriteOnly);
   bool ok = file.write(QByteArray((const char *)dataModel->binData().rawData(),
-                                  dataModel->binData().size())) != -1;
+                                  static_cast<int>(dataModel->binData().size()))) != -1;
   if (QFile::exists(fileName)) ok = QFile::remove(fileName);
   if (ok) {
     ok = file.copy(fileName);
@@ -273,7 +273,7 @@ bool HexEditTab::saveAs() {
 void HexEditTab::showVisualisation() {
   auto *panel = new visualisation::VisualisationPanel;
   panel->setData(QByteArray((const char *)dataModel->binData().rawData(),
-                            dataModel->binData().size()));
+                            static_cast<int>(dataModel->binData().size())));
   panel->setWindowTitle(curFilePath);
   panel->setAttribute(Qt::WA_DeleteOnClose);
 
