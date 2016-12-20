@@ -29,7 +29,7 @@ namespace util {
 ISampler::ISampler(const QByteArray &data) :
     data_(data), start_(0),
     sample_size_(0), resample_trigger_(0), initialised_(false) {
-  end_ = (data_.size() > 0) ? (data_.size() - 1) : 0;
+  end_ = data_.size();
 }
 
 void ISampler::setRange(size_t start, size_t end) {
@@ -88,7 +88,7 @@ size_t ISampler::getFileOffset(size_t index) {
   size_t sample_s = getRequestedSampleSize();
   assert(index < sample_s);
   if (index == 0) return start_;
-  if (index == sample_s - 1) return end_;
+  if (index == sample_s - 1) return end_ - 1;
   if (!samplingRequired()) {
     return index + start_;
   }
