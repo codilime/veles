@@ -254,6 +254,7 @@ if(GTEST_FOUND AND GMOCK_FOUND)
         ${TEST_DIR}/util/encoders/base64_encoder.cc
         ${TEST_DIR}/util/encoders/factory.cc
         ${TEST_DIR}/util/sampling/isampler.cc
+        ${TEST_DIR}/util/sampling/uniform_sampler.cc
     )
 
     qt5_use_modules(run_test Core)
