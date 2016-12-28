@@ -131,6 +131,7 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   void createDb();
   void createFileBlob(QString);
   void createHexEditTab(QString, dbif::ObjectHandle);
+  void createLogWindow();
 
   QMenu *fileMenu;
   QMenu *visualisationMenu;

@@ -35,6 +35,7 @@
 #include "ui/veles_mainwindow.h"
 #include "ui/hexedittab.h"
 #include "ui/optionsdialog.h"
+#include "ui/logwidget.h"
 
 namespace veles {
 namespace ui {
@@ -501,6 +502,7 @@ void VelesMainWindow::about() {
 void VelesMainWindow::init() {
   createActions();
   createMenus();
+  createLogWindow();
   createDb();
 
   optionsDialog = new OptionsDialog(this);
@@ -570,7 +572,12 @@ void VelesMainWindow::createDb() {
       QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
   dock_widget->setWidget(database_info);
   dock_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-  addDockWidget(Qt::LeftDockWidgetArea, dock_widget);
+  auto children = findChildren<DockWidget*>();
+  if (!children.empty()) {
+    tabifyDockWidget(children.back(), dock_widget);
+  } else {
+    addDockWidget(Qt::LeftDockWidgetArea, dock_widget);
+  }
 
   connect(database_info, &DatabaseInfo::goFile,
           [this](dbif::ObjectHandle fileBlob, QString fileName) {
@@ -617,6 +624,23 @@ void VelesMainWindow::createHexEditTab(QString fileName,
       new FileBlobModel(fileBlob, {QFileInfo(fileName).fileName()});
   HexEditTab *hex = new HexEditTab(this, dataModel);
   addTab(hex, dataModel->path().join(" : ") + " - Hex");
+}
+
+void VelesMainWindow::createLogWindow() {
+  DockWidget* dock_widget = new DockWidget;
+  dock_widget->setAllowedAreas(Qt::AllDockWidgetAreas);
+  dock_widget->setWindowTitle("Log");
+  dock_widget->setFeatures(
+      QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+  dock_widget->setWidget(new LogWidget);
+  dock_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+
+  auto children = findChildren<DockWidget*>();
+  if (!children.empty()) {
+    tabifyDockWidget(children.back(), dock_widget);
+  } else {
+    addDockWidget(Qt::LeftDockWidgetArea, dock_widget);
+  }
 }
 
 }  // namespace ui
