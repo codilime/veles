@@ -50,7 +50,7 @@ TrigramWidget::TrigramWidget(QWidget *parent) :
     shape_(EVisualisationShape::CUBE), mode_(EVisualisationMode::TRIGRAM),
     brightness_((k_maximum_brightness + k_minimum_brightness) / 2),
     pause_button_(nullptr), brightness_slider_(nullptr), is_playing_(true),
-    use_brightness_heuristic_(true) {
+    use_brightness_heuristic_(true), show_labels_and_rf_(true) {
   manipulators_.push_back(spin_manipulator_ = new SpinManipulator(this));
   manipulators_.push_back(trackball_manipulator_ = new TrackballManipulator(this));
   manipulators_.push_back(free_manipulator_ = new FreeManipulator(this));
@@ -64,6 +64,8 @@ TrigramWidget::~TrigramWidget() {
   makeCurrent();
   delete texture;
   delete databuf;
+  releaseLabels();
+  releaseRF();
   doneCurrent();
 }
 
@@ -176,6 +178,12 @@ bool TrigramWidget::prepareOptionsPanel(QBoxLayout *layout) {
 
   layout->addLayout(shape_box);
   prepareManipulatorToolbar(layout);
+
+  show_labels_and_rf_checkbox_ = new QCheckBox(tr("Show reference frame"));
+  show_labels_and_rf_checkbox_->setChecked(show_labels_and_rf_);
+  layout->addWidget(show_labels_and_rf_checkbox_);
+  connect(show_labels_and_rf_checkbox_, &QCheckBox::toggled,
+      [this](bool toggled){show_labels_and_rf_ = toggled;});
 
   return true;
 }
@@ -323,6 +331,7 @@ void TrigramWidget::initializeVisualisationGL() {
   initializeOpenGLFunctions();
 
   glClearColor(0, 0, 0, 1);
+  glEnable(GL_DEPTH_TEST);
 
   autoSetBrightness();
 
@@ -330,6 +339,8 @@ void TrigramWidget::initializeVisualisationGL() {
   initTextures();
   initGeometry();
   setBrightness(brightness_);
+  initLabels();
+  initRF();
 }
 
 void TrigramWidget::initShaders() {
@@ -458,6 +469,7 @@ void TrigramWidget::paintGL() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_BLEND);
   glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
+  glDepthFunc(GL_ALWAYS);
   unsigned size = getDataSize();
 
   program.bind();
@@ -487,6 +499,279 @@ void TrigramWidget::paintGL() {
   program.setUniformValue("c_brightness", c_brightness);
   glUniform1ui(loc_sz, size);
   glDrawArrays(GL_POINTS, 0, size - 2);
+
+  vao.release();
+  texture->release();
+  program.release();
+
+  if (show_labels_and_rf_) {
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    QMatrix4x4 mvp = mp * m;
+    paintRF(mvp);
+    glDepthFunc(GL_LESS);
+    paintLabels(mp, m);
+  }
+}
+
+void TrigramWidget::paintLabels(QMatrix4x4& scene_mp, QMatrix4x4& scene_m) {
+  QMatrix4x4 screen_mp;
+  screen_mp.ortho(0, width, 0, height, -1.f, 1.f);
+
+  QMatrix4x4 scene_to_screen;
+  scene_to_screen.setToIdentity();
+  scene_to_screen.scale(width * .5f, height * .5f, -1.f);
+  scene_to_screen.translate(1.f, 1.f, 0.f);
+  scene_to_screen = scene_to_screen * scene_mp * scene_m;
+
+  label_program_.bind();
+  label_vao_.bind();
+
+  texture_0_->bind();
+  paintLabel(lpm_0_, scene_to_screen, screen_mp);
+  texture_1_->bind();
+  paintLabel(lpm_1_, scene_to_screen, screen_mp);
+  texture_2_->bind();
+  paintLabel(lpm_2_, scene_to_screen, screen_mp);
+  texture_3_->bind();
+  paintLabel(lpm_3_, scene_to_screen, screen_mp);
+  texture_pos_->bind();
+  paintLabel(lpm_pos_, scene_to_screen, screen_mp);
+  texture_N0_->bind();
+  paintLabel(lpm_N0_, scene_to_screen, screen_mp);
+  texture_N0_->release();
+
+  label_vao_.release();
+  label_program_.release();
+}
+
+void TrigramWidget::paintLabel(LabelPositionMixer& mixer,
+    QMatrix4x4& scene_to_screen, QMatrix4x4& screen_mp) {
+  QVector4D world_pos = mixer.mix(c_sph, c_cyl, c_pos);
+  QVector3D screen_pos = calcScreenPosForLabel(
+          world_pos.toVector3D(), scene_to_screen,
+          texture_0_->width(), texture_0_->height());
+  float scale_x = texture_0_->width() * world_pos.w();
+  float scale_y = texture_0_->height() * world_pos.w();
+  QMatrix4x4 mvp = screen_mp;
+  mvp.translate(screen_pos);
+  mvp.scale(scale_x, scale_y, 1.f);
+  label_program_.setUniformValue("mvp", mvp);
+  label_program_.setUniformValue("texture_sampler", 0);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+void TrigramWidget::initLabels() {
+  initLabelPositionMixers();
+
+  label_program_.create();
+  label_program_.addShaderFromSourceFile(QOpenGLShader::Vertex,
+      ":/trigram/label_vshader.glsl");
+  label_program_.addShaderFromSourceFile(QOpenGLShader::Fragment,
+      ":/trigram/label_fshader.glsl");
+  label_program_.link();
+  label_program_.bind();
+
+  static const float label_vert[] = {
+      0.f, 0.f, 0.f, 0.0, 0.0,
+      1.f, 0.f, 0.f, 1.0, 0.0,
+      1.f, 1.f, 0.f, 1.0, 1.0,
+      1.f, 1.f, 0.f, 1.0, 1.0,
+      0.f, 1.f, 0.f, 0.0, 1.0,
+      0.f, 0.f, 0.f, 0.0, 0.0
+    };
+
+  label_vao_.create();
+  label_vao_.bind();
+
+  label_vb_ = QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
+  label_vb_.create();
+  label_vb_.setUsagePattern(QOpenGLBuffer::StaticDraw);
+  label_vb_.bind();
+  label_vb_.allocate(label_vert, 36 * sizeof(float));
+
+  label_program_.setAttributeBuffer(label_program_.attributeLocation("vert"),
+      GL_FLOAT, 0, 3, 5 * sizeof(float));
+  label_program_.enableAttributeArray(
+      label_program_.attributeLocation("vert"));
+  label_program_.setAttributeBuffer(label_program_.attributeLocation("tex_coord_in"),
+      GL_FLOAT, 3 * sizeof(float), 2, 5 * sizeof(float));
+  label_program_.enableAttributeArray(
+      label_program_.attributeLocation("tex_coord_in"));
+
+  label_vb_.release();
+  label_vao_.release();
+  label_program_.release();
+
+  texture_0_ = new QOpenGLTexture(QImage(":/images/label_zero.png").mirrored());
+  texture_1_ = new QOpenGLTexture(QImage(":/images/label_one.png").mirrored());
+  texture_2_ = new QOpenGLTexture(QImage(":/images/label_two.png").mirrored());
+  texture_3_ = new QOpenGLTexture(QImage(":/images/label_three.png").mirrored());
+  texture_pos_ = new QOpenGLTexture(QImage(":/images/label_pos.png").mirrored());
+  texture_N0_ = new QOpenGLTexture(QImage(":/images/label_N0.png").mirrored());
+}
+
+void TrigramWidget::releaseLabels() {
+  label_vao_.destroy();
+  label_vb_.destroy();
+  delete texture_0_;
+  delete texture_1_;
+  delete texture_2_;
+  delete texture_3_;
+  delete texture_pos_;
+  delete texture_N0_;
+}
+
+QVector3D TrigramWidget::calcScreenPosForLabel(QVector3D world_pos,
+    QMatrix4x4& scene_to_screen, int width, int height) {
+  QVector3D world_zero(0.f, 0.f, 0.f);
+  QVector3D zero_on_screen = scene_to_screen.map(world_zero);
+  QVector3D pos_on_screen = scene_to_screen.map(world_pos);
+  QVector3D label_pos = pos_on_screen - zero_on_screen;
+  label_pos.setZ(0.f);
+  float length = label_pos.length();
+  float factor = length >= 50.f ? 1.f : length / 50.f;
+  label_pos.normalize();
+  label_pos *= factor * 1.2 * std::sqrt((.5f * width) * (.5f * width)
+      + (.5f * height) * (.5f * height));
+  label_pos += pos_on_screen - QVector3D(width >> 1, height >> 1, 0.f);
+  return label_pos;
+}
+
+void TrigramWidget::paintRF(QMatrix4x4& mvp) {
+  glEnable(GL_LINE_SMOOTH);
+
+  rf_vao_.bind();
+  rf_program_.bind();
+  rf_program_.setUniformValue("mvp", mvp);
+  switch (shape_) {
+  case EVisualisationShape::CUBE:
+    if (c_cyl == 0.f && c_sph == 0.f) {
+      glDrawArrays(GL_LINES, 0, 6);
+    }
+    break;
+  case EVisualisationShape::CYLINDER:
+    if (c_cyl == 1.f) {
+      glDrawArrays(GL_LINES, 6, 4);
+    }
+    break;
+  case EVisualisationShape::SPHERE:
+    if (c_sph == 1.f) {
+      glDrawArrays(GL_LINES, 10, 2);
+    }
+    break;
+  default:
+    break;
+  }
+  rf_program_.release();
+  rf_vao_.release();
+}
+
+void TrigramWidget::initRF() {
+  rf_program_.create();
+  rf_program_.addShaderFromSourceFile(QOpenGLShader::Vertex,
+      ":/trigram/rf_vshader.glsl");
+  rf_program_.addShaderFromSourceFile(QOpenGLShader::Fragment,
+      ":/trigram/rf_fshader.glsl");
+  rf_program_.link();
+  rf_program_.bind();
+
+  static const float rf_vert[] = {
+      //cube
+      -1.f, -1.f, -1.f,
+      1.f, -1.f, -1.f,
+      -1.f, -1.f, -1.f,
+      -1.f, 1.f, -1.f,
+      -1.f, -1.f, -1.f,
+      -1.f, -1.f, 1.f,
+
+      //cylinder
+      0.f, 0.f, -1.f,
+      0.f, 0.f, 1.f,
+      0.f, 0.f, -1.f,
+      1.f, 0.f, -1.f,
+
+      //sphere
+      0.f, 0.f, 0.f,
+      0.f, 0.f, 1.f,
+    };
+
+  rf_vao_.create();
+  rf_vao_.bind();
+
+  rf_vb_ = QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
+  rf_vb_.create();
+  rf_vb_.setUsagePattern(QOpenGLBuffer::StaticDraw);
+  rf_vb_.bind();
+  rf_vb_.allocate(rf_vert, 36 * sizeof(float));
+
+  rf_program_.setAttributeBuffer(rf_program_.attributeLocation("vert"),
+  GL_FLOAT, 0, 3, 3 * sizeof(float));
+  rf_program_.enableAttributeArray(rf_program_.attributeLocation("vert"));
+
+  rf_vb_.release();
+  rf_vao_.release();
+  rf_program_.release();
+}
+
+void TrigramWidget::releaseRF() {
+  rf_vao_.destroy();
+  rf_vb_.destroy();
+}
+
+void TrigramWidget::initLabelPositionMixers() {
+  lpm_0_ = LabelPositionMixer(
+      QVector4D(-1.f, -1.f, -1.f, 1.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f),
+      QVector4D(0.f, 0.f, -1.f, 1.f),
+      QVector4D(0.f, 0.f, -1.f, 1.f),
+      QVector4D(-1.f, -1.f, -1.f, 1.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f)
+      );
+
+  lpm_1_ = LabelPositionMixer(
+      QVector4D(1.f, -1.f, -1.f, 1.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f),
+      QVector4D(1.f, -1.f, -1.f, 1.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f)
+      );
+
+  lpm_2_ = LabelPositionMixer(
+      QVector4D(-1.f, 1.f, -1.f, 1.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f),
+      QVector4D(1.f, 0.f, -1.f, 1.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f),
+      QVector4D(-1.f, 1.f, -1.f, 1.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f)
+      );
+
+  lpm_3_ = LabelPositionMixer(
+      QVector4D(-1.f, -1.f, 1.f, 1.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f),
+      QVector4D(0.f, 0.f, 1.f, 1.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f)
+      );
+
+  lpm_pos_ = LabelPositionMixer(
+      QVector4D(0.f, 0.f, 0.f, 0.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f),
+      QVector4D(0.f, 0.f, 1.f, 1.f),
+      QVector4D(-1.f, -1.f, 1.f, 1.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f)
+      );
+
+  lpm_N0_ = LabelPositionMixer(
+      QVector4D(1.f, 1.f, 1.f, 1.f),
+      QVector4D(0.f, 0.f, 1.f, 1.f),
+      QVector4D(1.f, 0.f, 1.f, 1.f),
+      QVector4D(1.f, 0.f, -1.f, 1.f),
+      QVector4D(1.f, 1.f, -1.f, 1.f),
+      QVector4D(0.f, 0.f, 0.f, 0.f)
+      );
 }
 
 }  // namespace visualisation
