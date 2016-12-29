@@ -129,8 +129,12 @@ size_t UniformSampler::getFileOffsetImpl(size_t index) {
 }
 
 size_t UniformSampler::getSampleOffsetImpl(size_t address) {
-  auto previous_window = std::lower_bound(windows_.begin(), windows_.end(),
+  // we want the last window less or equal to address (or first window if
+  // no such window exists)
+  if (address < windows_[0]) return 0;
+  auto previous_window = std::upper_bound(windows_.begin(), windows_.end(),
                                           address);
+  if (previous_window != windows_.begin()) --previous_window;
   size_t base_index = static_cast<size_t>(
     std::distance(windows_.begin(), previous_window) * window_size_);
   return base_index + std::min(window_size_ - 1, address - (*previous_window));
