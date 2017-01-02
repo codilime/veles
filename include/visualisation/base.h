@@ -47,17 +47,22 @@ class VisualisationWidget : public QOpenGLWidget,
 
  protected:
   void initializeGL() override;
+  void resizeGL(int w, int h) override;
+  void paintGL() override;
 
-  virtual void initializeVisualisationGL() = 0;
+  virtual bool initializeVisualisationGL() = 0;
   virtual void refresh() = 0;
+  virtual void paintGLImpl() = 0;
+  virtual void resizeGLImpl(int w, int h) = 0;
 
   size_t getDataSize();
   const char* getData();
   char getByte(size_t index);
 
  private:
+
   bool initialised_;
-  bool gl_initialised_;
+  bool gl_initialised_, gl_broken_, error_message_set_;
   util::ISampler *sampler_;
 };
 

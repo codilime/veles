@@ -261,7 +261,7 @@ float* VisualisationMinimap::calculateEntropyTextureSingleWindow(
 
 void VisualisationMinimap::initializeGL() {
   if (!gl_initialised_) {
-    initializeOpenGLFunctions();
+    if (!initializeOpenGLFunctions()) return;
     glClearColor(0, 0, 0, 1);
     initShaders();
     initGeometry();
@@ -355,7 +355,7 @@ void VisualisationMinimap::initTextures() {
 }
 
 void VisualisationMinimap::resizeGL(int w, int h) {
-  if (empty()) return;
+  if (!initialised_ || !gl_initialised_ || empty()) return;
   size_t rows = (h / k_round_size_to) * k_round_size_to / k_px_per_point;
   size_t cols = (w / k_round_size_to) * k_round_size_to / k_px_per_point;
   if (rows != rows_ || cols != cols_) {

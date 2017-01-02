@@ -46,8 +46,9 @@ const int k_brightness_heuristic_max = 66;
 const double k_brightness_heuristic_scaling = 2.5;
 
 TrigramWidget::TrigramWidget(QWidget *parent) :
-    VisualisationWidget(parent), angle(0), c_sph(0), c_cyl(0), c_pos(0),
-    shape_(EVisualisationShape::CUBE), mode_(EVisualisationMode::TRIGRAM),
+    VisualisationWidget(parent), texture(nullptr), databuf(nullptr), angle(0),
+    c_sph(0), c_cyl(0), c_pos(0), shape_(EVisualisationShape::CUBE),
+    mode_(EVisualisationMode::TRIGRAM),
     brightness_((k_maximum_brightness + k_minimum_brightness) / 2),
     pause_button_(nullptr), brightness_slider_(nullptr), is_playing_(true),
     use_brightness_heuristic_(true) {
@@ -61,6 +62,7 @@ TrigramWidget::TrigramWidget(QWidget *parent) :
 }
 
 TrigramWidget::~TrigramWidget() {
+  if (texture == nullptr && databuf == nullptr) return;
   makeCurrent();
   delete texture;
   delete databuf;
@@ -319,8 +321,8 @@ void TrigramWidget::timerEvent(QTimerEvent *e) {
   update();
 }
 
-void TrigramWidget::initializeVisualisationGL() {
-  initializeOpenGLFunctions();
+bool TrigramWidget::initializeVisualisationGL() {
+  if (!initializeOpenGLFunctions()) return false;
 
   glClearColor(0, 0, 0, 1);
 
@@ -330,6 +332,7 @@ void TrigramWidget::initializeVisualisationGL() {
   initTextures();
   initGeometry();
   setBrightness(brightness_);
+  return true;
 }
 
 void TrigramWidget::initShaders() {
@@ -449,12 +452,12 @@ void TrigramWidget::prepareManipulatorToolbar(QBoxLayout *layout) {
   layout->addWidget(group);
 }
 
-void TrigramWidget::resizeGL(int w, int h) {
+void TrigramWidget::resizeGLImpl(int w, int h) {
   width = w;
   height = h;
 }
 
-void TrigramWidget::paintGL() {
+void TrigramWidget::paintGLImpl() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_BLEND);
   glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
