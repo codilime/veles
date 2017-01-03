@@ -20,14 +20,20 @@
 #include <atomic>
 #include <functional>
 #include <mutex>
+#include <condition_variable>
+#include <future>
 #include <utility>
+#include <vector>
 #include <QByteArray>
 
 namespace veles {
 namespace util {
 
-typedef std::mutex SamplerMutex;
+typedef std::recursive_mutex SamplerMutex;
+typedef std::condition_variable_any SamplerConditionVariable;
+typedef std::function<void()> ResampleCallback;
 
+// TODO(Maciek): fix this docstring to describe asynchronous version
 /**
  * Abstract interface for Sampler classes.
  * The idea is that any Sampler wraps a byte stream and performs sampling
@@ -80,16 +86,6 @@ class ISampler {
    * data() method.
    */
   void setSampleSize(size_t size);
-
-  /**
-   * Request sampler to automatically re-sample once the effective sample
-   * size gets smaller than sample_size (perhaps due to shrinking sample
-   * range with setRange).
-   *
-   * This does not guarantee that the sample size will never be smaller than
-   * sample_size!
-   */
-  void setResampleTrigger(size_t sample_size);
 
   /**
    * Take new sample from underlying file.
@@ -173,24 +169,25 @@ class ISampler {
 
   /**
    * Return true if there is no resampling currently going.
-   * Note that while the check is atomic there may be a resampling scheduled
-   * just after it is done. To be sure nothing is going on you should hold
-   * the sampler lock while calling this.
+   * This does not use any synchronisation and may give false positives
+   * or false negatives unless you're holding sampler lock when calling this.
    */
   bool isFinished();
 
   /**
    * Register a callback that will be called when resampling is finished.
    * There is no guarantee in which thread the callback will be called.
-   * If lock_required is true the callback will be called while keeping
-   * the sampler lock.
+   * Thread calling callbacks will keep sampler lock() while doing so,
+   * so it's prefered if they're reasonably cheap.
    * If multiple callbacks are registered they will be called in reverse
    * registration order (stack).
+   * This method needs to acquire sampler lock, so it may block.
    */
-  void registerResampleCallback(std::function<void()> cb, bool requires_lock);
+  void registerResampleCallback(ResampleCallback cb);
 
   /**
    * Remove all registered resample callbacks.
+   * This method needs to acquire sampler lock, so it may block.
    */
   void clearResampleCallbacks();
 
@@ -198,7 +195,20 @@ class ISampler {
    * Create a copy of this sampler.
    * This will block until all resampling is done and create a copy afterwards.
    */
-  virtual ISampler* clone() = 0;
+  ISampler* clone();
+
+  /**
+   * Set if you want to allow asynchronous resampling.
+   * If true any resampling operation will be run asynchronously, you need to
+   * use locks and register callbacks.
+   * Otherwise all calls are synchronous and blocking. No locks are being used
+   * in this case and calling any methods from multiple threads will have
+   * undefined behaviour. No callbacks will be executed.
+   * Calling this method while any other method is being run (synchronously
+   * or asynchronously) will result in undefined behaviour.
+   * Default value is false.
+   */
+  void allowAsynchronousResampling(bool allow);
 
  protected:
   /**
@@ -212,13 +222,17 @@ class ISampler {
    * This is required if working on sampler in different state then the current
    * state (ex. when asynchronously resyncing after setRange).
    */
-  typedef std::pair<size_t, size_t> SamplerConfig;
+  struct SamplerConfig {
+    size_t start, end, sample_size;
+  };
 
   /**
    * Return the size of the data to sample.
    * This already takes into account limiting the size of input with setRange().
    * If sc is provided it uses the range represented by sc instead of this
    * stored by sampler.
+   * This does not do any locking, which doesn't matter if sc != nullptr and
+   * may be pretty bad otherwise.
    */
   size_t getDataSize(SamplerConfig *sc = nullptr);
 
@@ -232,19 +246,9 @@ class ISampler {
   char getDataByte(size_t index, SamplerConfig *sc = nullptr);
 
   /**
-   * Called by Sampler implementation to trigger re-initialisation of Sampler.
-   * This will cause isInitialised() to return false. Upon next data access
-   * the class will be re-initialised (causing call to initialiseSample()), as
-   * well as re-initialisation of some variables in ISampler.
-   */
-  void reinitialisationRequired();
-
-  bool isInitialised();
-
-  /**
    * Return the size of sample requested by user (with setSampleSize).
    */
-  size_t getRequestedSampleSize();
+  size_t getRequestedSampleSize(SamplerConfig *sc = nullptr);
 
   /**
    * Return real size of the sample. This method must be overriden by any
@@ -263,13 +267,6 @@ class ISampler {
   ISampler(const ISampler& other);
 
  private:
-  /**
-   * Do any work that is require to initialise internal Sampler state here.
-   * May be called multiple times in object lifecycle (meaning that Sampler
-   * should be re-initialised).
-   */
-  virtual void initialiseSample(size_t size) = 0;
-
   /**
    * Get n-th byte of sample. This will only be called after initialiseSample().
    */
@@ -310,6 +307,7 @@ class ISampler {
    * sampler state by applying whatever was produced by prepareResample.
    * Ideally this should be a cheap operation (as it will be executed
    * synchronously).
+   * This method takes ownership of passed ResampleData.
    */
   virtual void applyResample(ResampleData *rd) = 0;
 
@@ -318,15 +316,21 @@ class ISampler {
    */
   virtual ISampler* cloneImpl() = 0;
 
-  void init();
-  size_t samplingRequired();
+
+  size_t samplingRequired(SamplerConfig *sc = nullptr);
+  void applySamplerConfig(SamplerConfig *sc);
+  void runResample(SamplerConfig *sc);
+  void resampleAsync(int target_version, SamplerConfig *sc);
 
   const QByteArray &data_;
-  size_t start_, end_, sample_size_, resample_trigger_;
-  bool initialised_;
+  size_t start_, end_, sample_size_;
+  bool allow_async_;
 
   SamplerMutex sampler_mutex_;
+  SamplerConditionVariable sampler_condition_;
+  SamplerConfig last_config_;
   std::atomic<int> current_version_, requested_version_;
+  std::vector<ResampleCallback> callbacks_;
 };
 
 }  // namespace util

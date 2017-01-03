@@ -29,16 +29,22 @@ class UniformSampler : public ISampler {
   ~UniformSampler();
 
   void setWindowSize(size_t size);
-  UniformSampler* clone() override;
  private:
+  struct UniformSamplerResampleData : public ResampleData {
+    size_t window_size, windows_count;
+    std::vector<size_t> windows;
+    char *data;
+  };
+
   UniformSampler(const UniformSampler& other);
-  void initialiseSample(size_t size) override;
   char getSampleByte(size_t index) override;
   const char* getData() override;
   size_t getRealSampleSize() override;
   size_t getFileOffsetImpl(size_t index) override;
   size_t getSampleOffsetImpl(size_t address) override;
-  void resampleImpl() override;
+  ResampleData* prepareResample(SamplerConfig *sc) override;
+  void applyResample(ResampleData *rd) override;
+  UniformSampler* cloneImpl() override;
 
   size_t window_size_, windows_count_;
   bool use_default_window_size_;

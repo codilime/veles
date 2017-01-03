@@ -27,6 +27,10 @@
 namespace veles {
 namespace util {
 
+/*****************************************************************************/
+/* Public methods */
+/*****************************************************************************/
+
 UniformSampler::UniformSampler(const QByteArray &data) :
     ISampler(data), window_size_(0), use_default_window_size_(true),
     buffer_(nullptr) {}
@@ -37,69 +41,19 @@ UniformSampler::~UniformSampler() {
   }
 }
 
-UniformSampler::UniformSampler(const UniformSampler& other) :
-    ISampler(other), window_size_(other.window_size_), buffer_(nullptr) {}
-
-UniformSampler* UniformSampler::clone() {
-  return new UniformSampler(*this);
-}
-
 void UniformSampler::setWindowSize(size_t size) {
+  auto lc = waitAndLock();
   window_size_ = size;
   use_default_window_size_ = size == 0;
-  if (buffer_ != nullptr) {
-    delete[] buffer_;
-    buffer_ = nullptr;
-  }
-  reinitialisationRequired();
+  resample();
 }
 
-size_t UniformSampler::getRealSampleSize() {
-  if (!isInitialised()) {
-    return 0;
-  }
-  return window_size_ * windows_count_;
-}
+/*****************************************************************************/
+/* Private methods */
+/*****************************************************************************/
 
-void UniformSampler::initialiseSample(size_t size) {
-  // default size == sqrt(sample size)
-  if (buffer_ != nullptr) {
-    delete[] buffer_;
-    buffer_ = nullptr;
-  }
-
-  if (use_default_window_size_ || window_size_ == 0) {
-    window_size_ = (size_t)floor(sqrt(size));
-  }
-  windows_count_ = (size_t)floor(size / window_size_);
-
-  // Algorithm:
-  // First let's mark windows_count_ as m, window_size_ as k and
-  // getDataSize() as n.
-  // 1. Take m numbers from {0, 1 ... n - m*k} with repetitions,
-  //    marked as (c_i) sequence.
-  // 2. Sort (c_i) sequence.
-  // 3. Produce the result indices (d_i) in the following way:
-  //    d_i = c_i + i*k
-  //
-  // And why that works:
-  // - The smallest value of d_0 is 0.
-  // - The largest value of d_{m-1} is
-  //   n - m*k + (m-1)*k = n - k
-  //   which is exactly what we want because the piece length is k.
-  // - For each i the distance d_{i+1}-d_i >= k.
-  size_t max_index = getDataSize() - windows_count_ * window_size_;
-  std::default_random_engine generator;
-  std::uniform_int_distribution<size_t> distribution(0, max_index);
-  windows_.resize(windows_count_);
-  for (size_t i = 0; i < windows_count_; ++i) {
-    windows_[i] = distribution(generator);
-  }
-  std::sort(windows_.begin(), windows_.end());
-  for (size_t i = 0; i < windows_count_; ++i) {
-    windows_[i] += i*window_size_;
-  }
-}
+UniformSampler::UniformSampler(const UniformSampler& other) :
+    ISampler(other), window_size_(other.window_size_), buffer_(nullptr) {}
 
 char UniformSampler::getSampleByte(size_t index) {
   if (buffer_ != nullptr) {
@@ -110,17 +64,11 @@ char UniformSampler::getSampleByte(size_t index) {
 }
 
 const char* UniformSampler::getData() {
-  if (buffer_ == nullptr) {
-    size_t size = getSampleSize();
-    const char *raw_data = getRawData();
-    char *tmp_buffer = new char[size];
-    for (size_t i=0; i < size; ++i) {
-      size_t base_index = windows_[i / window_size_];
-      tmp_buffer[i] = raw_data[base_index + (i % window_size_)];
-    }
-    buffer_ = tmp_buffer;
-  }
   return buffer_;
+}
+
+size_t UniformSampler::getRealSampleSize() {
+  return window_size_ * windows_count_;
 }
 
 size_t UniformSampler::getFileOffsetImpl(size_t index) {
@@ -140,7 +88,70 @@ size_t UniformSampler::getSampleOffsetImpl(size_t address) {
   return base_index + std::min(window_size_ - 1, address - (*previous_window));
 }
 
-void UniformSampler::resampleImpl() {
+ISampler::ResampleData* UniformSampler::prepareResample(SamplerConfig *sc) {
+  size_t size = getRequestedSampleSize(sc);
+  size_t window_size = window_size_;
+  if (use_default_window_size_ || window_size_ == 0) {
+    window_size = (size_t)floor(sqrt(size));
+  }
+  size_t windows_count = (size_t)floor(size / window_size);
+  std::vector<size_t> windows(windows_count);
+
+  // Algorithm:
+  // First let's mark windows_count_ as m, window_size_ as k and
+  // getDataSize() as n.
+  // 1. Take m numbers from {0, 1 ... n - m*k} with repetitions,
+  //    marked as (c_i) sequence.
+  // 2. Sort (c_i) sequence.
+  // 3. Produce the result indices (d_i) in the following way:
+  //    d_i = c_i + i*k
+  //
+  // And why that works:
+  // - The smallest value of d_0 is 0.
+  // - The largest value of d_{m-1} is
+  //   n - m*k + (m-1)*k = n - k
+  //   which is exactly what we want because the piece length is k.
+  // - For each i the distance d_{i+1}-d_i >= k.
+  size_t max_index = getDataSize(sc) - windows_count * window_size;
+  std::default_random_engine generator;
+  std::uniform_int_distribution<size_t> distribution(0, max_index);
+  for (size_t i = 0; i < windows_count; ++i) {
+    windows[i] = distribution(generator);
+  }
+  std::sort(windows.begin(), windows.end());
+  for (size_t i = 0; i < windows_count; ++i) {
+    windows[i] += i * window_size;
+  }
+
+  // Now let's create data array (it's more efficient to do it here,
+  // than later calculate values)
+  const char *raw_data = getRawData(sc);
+  char *tmp_buffer = new char[size];
+  for (size_t i = 0; i < size; ++i) {
+    size_t base_index = windows[i / window_size];
+    tmp_buffer[i] = raw_data[base_index + (i % window_size)];
+  }
+
+  UniformSamplerResampleData *rd = new UniformSamplerResampleData;
+  rd->window_size = window_size;
+  rd->windows_count = windows_count;
+  rd->windows = std::move(windows);
+  rd->data = tmp_buffer;
+  return rd;
+}
+
+void UniformSampler::applyResample(ResampleData *rd) {
+  UniformSamplerResampleData *usrd =
+    static_cast<UniformSamplerResampleData*>(rd);
+  window_size_ = usrd->window_size;
+  windows_count_ = usrd->windows_count;
+  windows_ = std::move(usrd->windows);
+  buffer_ = usrd->data;
+  delete usrd;
+}
+
+UniformSampler* UniformSampler::cloneImpl() {
+  return new UniformSampler(*this);
 }
 
 }  // namespace util

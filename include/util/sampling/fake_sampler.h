@@ -25,16 +25,16 @@ namespace util {
 class FakeSampler : public ISampler {
  public:
   explicit FakeSampler(const QByteArray &data) : ISampler(data) {}
-  FakeSampler* clone() override;
  protected:
   size_t getRealSampleSize() override;
  private:
-  void initialiseSample(size_t size) override;
   char getSampleByte(size_t index) override;
   const char* getData() override;
   size_t getFileOffsetImpl(size_t index) override;
   size_t getSampleOffsetImpl(size_t address) override;
-  void resampleImpl() override;
+  ResampleData* prepareResample(SamplerConfig *sc) override;
+  void applyResample(ResampleData *rd) override;
+  FakeSampler* cloneImpl() override;
 };
 
 }  // namespace util

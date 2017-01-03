@@ -20,8 +20,10 @@
 namespace veles {
 namespace util {
 
+using testing::Mock;
 using testing::Return;
 using testing::Expectation;
+using testing::_;
 
 QByteArray prepare_data(size_t size) {
   QByteArray result;
@@ -82,10 +84,12 @@ TEST(ISamplerSmallData, offsetsAfterSetRange) {
 TEST(ISamplerWithSampling, basic) {
   auto data = prepare_data(100);
   testing::NiceMock<MockSampler> sampler(data);
+  Expectation init1 = EXPECT_CALL(sampler, prepareResample(_));
+  Expectation init2 = EXPECT_CALL(sampler, applyResample(_))
+    .After(init1);
   sampler.setSampleSize(10);
-  Expectation init = EXPECT_CALL(sampler, initialiseSample(10));
   EXPECT_CALL(sampler, getRealSampleSize())
-    .After(init)
+    .After(init2)
     .WillRepeatedly(Return(10));
   ASSERT_EQ(10, sampler.getSampleSize());
   EXPECT_CALL(sampler, getSampleByte(0))
@@ -145,11 +149,18 @@ TEST(ISamplerWithSampling, offsetsAfterSetRange) {
 TEST(ISamplerWithSampling, getDataFromIsampler) {
   auto data = prepare_data(100);
   testing::StrictMock<MockSampler> sampler(data);
+  Expectation init1 = EXPECT_CALL(sampler, prepareResample(_));
+  Expectation init2 = EXPECT_CALL(sampler, applyResample(_))
+    .After(init1);
   sampler.setSampleSize(10);
   ASSERT_EQ(100, sampler.proxy_getDataSize());
   ASSERT_EQ(0, sampler.proxy_getDataByte(0));
   ASSERT_EQ(5, sampler.proxy_getDataByte(5));
   ASSERT_EQ(99, sampler.proxy_getDataByte(99));
+  Mock::VerifyAndClear(&sampler);
+  Expectation update1 = EXPECT_CALL(sampler, prepareResample(_));
+  Expectation update2 = EXPECT_CALL(sampler, applyResample(_))
+    .After(update1);
   sampler.setRange(40, 60);
   ASSERT_EQ(20, sampler.proxy_getDataSize());
   ASSERT_EQ(40, sampler.proxy_getDataByte(0));

@@ -27,64 +27,52 @@ namespace util {
 /*****************************************************************************/
 
 ISampler::ISampler(const QByteArray &data) :
-    data_(data), start_(0),
-    sample_size_(0), resample_trigger_(0), initialised_(false) {
+    data_(data), start_(0), sample_size_(0),
+    allow_async_(false), current_version_(0),
+    requested_version_(0) {
   end_ = data_.size();
+  last_config_.start = start_;
+  last_config_.end = end_;
+  last_config_.sample_size = sample_size_;
 }
 
 void ISampler::setRange(size_t start, size_t end) {
   assert(!empty());
   assert(end < static_cast<size_t>(data_.size()));
-  start_ = start;
-  end_ = end;
-  if (start - end < resample_trigger_) {
-    resample();
-  }
-  initialised_ = false;
+  auto lc = lock();
+  last_config_.start = start;
+  last_config_.end = end;
+  runResample(new SamplerConfig(last_config_));
 }
 
 std::pair<size_t, size_t> ISampler::getRange() {
+  auto lc = lock();
   return std::make_pair(start_, end_);
 }
 
 void ISampler::setSampleSize(size_t size) {
-  sample_size_ = size;
-  resample_trigger_ = std::min(sample_size_, resample_trigger_);
-  initialised_ = false;
-}
-
-void ISampler::setResampleTrigger(size_t sample_size) {
-  resample_trigger_ = sample_size;
+  auto lc = lock();
+  last_config_.sample_size = size;
+  runResample(new SamplerConfig(last_config_));
 }
 
 void ISampler::resample() {
-  if (samplingRequired()) resampleImpl();
+  auto lc = lock();
+  runResample(new SamplerConfig(last_config_));
 }
 
 size_t ISampler::getSampleSize() {
   if (empty()) return 0;
-  if (!initialised_) {
-    init();
-  }
+  auto lc = lock();
   if (!samplingRequired()) {
     return getDataSize();
   }
   return getRealSampleSize();
 }
 
-size_t ISampler::getRealSampleSize() {
-  return getRequestedSampleSize();
-}
-
-size_t ISampler::getRequestedSampleSize() {
-  return std::min(getDataSize(), sample_size_);
-}
-
 size_t ISampler::getFileOffset(size_t index) {
   assert(!empty());
-  if (!initialised_) {
-    init();
-  }
+  auto lc = lock();
   size_t sample_s = getRequestedSampleSize();
   assert(index < sample_s);
   if (index == 0) return start_;
@@ -97,11 +85,9 @@ size_t ISampler::getFileOffset(size_t index) {
 
 size_t ISampler::getSampleOffset(size_t index) {
   assert(!empty());
+  auto lc = lock();
   assert(index >= start_);
   assert(index < end_);
-  if (!initialised_) {
-    init();
-  }
   if (index == start_) return 0;
   if (index == end_ - 1) return getSampleSize() - 1;
   if (!samplingRequired()) {
@@ -112,9 +98,7 @@ size_t ISampler::getSampleOffset(size_t index) {
 
 char ISampler::operator[](size_t index) {
   assert(!empty());
-  if (!initialised_) {
-    init();
-  }
+  auto lc = lock();
   assert(index < getRequestedSampleSize());
   if (!samplingRequired()) {
     return getDataByte(index);
@@ -124,9 +108,7 @@ char ISampler::operator[](size_t index) {
 
 const char* ISampler::data() {
   assert(!empty());
-  if (!initialised_) {
-    init();
-  }
+  auto lc = lock();
   if (!samplingRequired()) {
     return getRawData();
   }
@@ -137,6 +119,50 @@ bool ISampler::empty() {
   return data_.isEmpty();
 }
 
+std::unique_lock<SamplerMutex> ISampler::lock() {
+  return std::unique_lock<SamplerMutex>(sampler_mutex_);
+}
+
+void ISampler::wait() {
+  if (!allow_async_) return;
+  waitAndLock();
+}
+
+std::unique_lock<SamplerMutex> ISampler::waitAndLock() {
+  auto lc = lock();
+  if (!allow_async_) return lc;
+  while (!isFinished()) {
+    sampler_condition_.wait(lc);
+  }
+  return lc;
+}
+
+bool ISampler::isFinished() {
+  return (current_version_.load() == requested_version_.load());
+}
+
+void ISampler::registerResampleCallback(ResampleCallback cb) {
+  auto lc = lock();
+  callbacks_.push_back(cb);
+}
+
+void ISampler::clearResampleCallbacks() {
+  auto lc = lock();
+  callbacks_.clear();
+}
+
+ISampler* ISampler::clone() {
+  auto lc = waitAndLock();
+  ISampler* result = cloneImpl();
+  result->resample();
+  result->wait();
+  return result;
+}
+
+void ISampler::allowAsynchronousResampling(bool allow) {
+  allow_async_ = allow;
+}
+
 /*****************************************************************************/
 /* Protected methods */
 /*****************************************************************************/
@@ -144,42 +170,93 @@ bool ISampler::empty() {
 ISampler::ISampler(const ISampler& other) : data_(other.data_),
                    start_(other.start_), end_(other.end_),
                    sample_size_(other.sample_size_),
-                   resample_trigger_(other.resample_trigger_),
-                   initialised_(false) {}
+                   allow_async_(other.allow_async_),
+                   last_config_(other.last_config_),
+                   current_version_(0), requested_version_(0),
+                   callbacks_(other.callbacks_) {}
 
-size_t ISampler::getDataSize() {
-  return std::min((size_t)data_.size(), end_ - start_);
+size_t ISampler::getDataSize(SamplerConfig *sc) {
+  if (sc == nullptr) {
+    return std::min((size_t)data_.size(), end_ - start_);
+  }
+  return std::min((size_t)data_.size(), sc->end - sc->start);
 }
 
-char ISampler::getDataByte(size_t index) {
-  return data_[static_cast<int>(start_ + index)];
+char ISampler::getDataByte(size_t index, SamplerConfig *sc) {
+  size_t start = (sc == nullptr) ? start_ : sc->start;
+  return data_[static_cast<int>(start + index)];
 }
 
-void ISampler::reinitialisationRequired() {
-  initialised_ = false;
+size_t ISampler::getRealSampleSize() {
+  return getRequestedSampleSize();
 }
 
-bool ISampler::isInitialised() {
-  return initialised_;
+size_t ISampler::getRequestedSampleSize(SamplerConfig *sc) {
+  size_t sample_size = (sc == nullptr) ? sample_size_ : sc->sample_size;
+  return std::min(getDataSize(sc), sample_size);
 }
 
-const char* ISampler::getRawData() {
-  return data_.data() + start_;
+const char* ISampler::getRawData(SamplerConfig *sc) {
+  size_t start = (sc == nullptr) ? start_ : sc->start;
+  return data_.data() + start;
 }
 
 /*****************************************************************************/
 /* Private methods */
 /*****************************************************************************/
 
-void ISampler::init() {
-  if (samplingRequired()) {
-    initialiseSample(getRequestedSampleSize());
-  }
-  initialised_ = true;
+size_t ISampler::samplingRequired(SamplerConfig *sc) {
+  return ((!empty()) && getRequestedSampleSize(sc) < getDataSize(sc));
 }
 
-size_t ISampler::samplingRequired() {
-  return ((!empty()) && getRequestedSampleSize() < getDataSize());
+void ISampler::applySamplerConfig(SamplerConfig *sc) {
+  if (sc != nullptr) {
+    start_ = sc->start;
+    end_ = sc->end;
+    sample_size_ = sc->sample_size;
+  }
+}
+
+void ISampler::runResample(SamplerConfig *sc) {
+  if (allow_async_) {
+    if (!samplingRequired(sc)) {
+      auto lc = lock();
+      current_version_ = ++requested_version_;
+      applySamplerConfig(sc);
+      delete sc;
+      return;
+    }
+    // XXX: we really just want to run this in some thread pool, we don't care
+    // about return value and the returned future and we _really_ don't want
+    // any lazy evaluation, so we should probably move to some thread pool at
+    // some point
+    std::async(std::launch::async, &ISampler::resampleAsync, this,
+               ++requested_version_, sc);
+  } else {
+    if (samplingRequired(sc)) {
+      ResampleData *prepared = prepareResample(sc);
+      applyResample(prepared);
+    }
+    applySamplerConfig(sc);
+    delete sc;
+  }
+}
+
+void ISampler::resampleAsync(int target_version, SamplerConfig *sc) {
+  if (target_version < requested_version_.load()) return;
+  ResampleData *prepared = prepareResample(sc);
+  auto lc = lock();
+  if (target_version > current_version_) {
+    applyResample(prepared);
+    applySamplerConfig(sc);
+    current_version_ = target_version;
+  }
+  for (auto i = callbacks_.rbegin(); i != callbacks_.rend(); ++i) {
+    (*i)();
+  }
+  lc.unlock();
+  delete sc;
+  sampler_condition_.notify_all();
 }
 
 }  // namespace util
