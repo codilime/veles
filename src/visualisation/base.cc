@@ -20,12 +20,13 @@
 #include <QComboBox>
 #include <QLabel>
 
+
 namespace veles {
 namespace visualisation {
 
 VisualisationWidget::VisualisationWidget(QWidget *parent) :
   QOpenGLWidget(parent), initialised_(false), gl_initialised_(false),
-  sampler_(nullptr) {}
+  gl_broken_(false), error_message_set_(false), sampler_(nullptr) {}
 
 void VisualisationWidget::setSampler(util::ISampler *sampler) {
   sampler_ = sampler;
@@ -34,14 +35,41 @@ void VisualisationWidget::setSampler(util::ISampler *sampler) {
 }
 
 void VisualisationWidget::refreshVisualisation() {
-  if (gl_initialised_) {
+  if (gl_initialised_ && !error_message_set_) {
     refresh();
   }
 }
 
+void VisualisationWidget::paintGL() {
+  if (error_message_set_) return;
+  if (gl_broken_) {
+    QVBoxLayout *layout = new QVBoxLayout();
+    auto error_label = new QLabel(tr(
+      "Failed to initialize OpenGL functions. Veles visualization requires "
+      "OpenGL 3.3 core profile support. Please check if this is supported "
+      "by your graphic card and drivers."));
+    error_label->setAlignment(Qt::AlignCenter);
+    error_label->setWordWrap(true);
+    layout->addWidget(error_label);
+    setLayout(layout);
+    error_message_set_ = true;
+  } else if (gl_initialised_) {
+    paintGLImpl();
+  }
+}
+
+void VisualisationWidget::resizeGL(int w, int h) {
+  if (!gl_initialised_ || gl_broken_) return;
+  resizeGLImpl(w, h);
+}
+
 void VisualisationWidget::initializeGL() {
-  initializeVisualisationGL();
-  gl_initialised_ = true;
+  if (gl_initialised_ || gl_broken_) return;
+  if (initializeVisualisationGL()) {
+    gl_initialised_ = true;
+  } else {
+    gl_broken_ = true;
+  }
 }
 
 size_t VisualisationWidget::getDataSize() {

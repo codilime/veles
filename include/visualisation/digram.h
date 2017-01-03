@@ -46,10 +46,10 @@ class DigramWidget : public VisualisationWidget {
 
  protected:
   void refresh() override;
-  void initializeVisualisationGL() override;
+  bool initializeVisualisationGL() override;
 
-  void resizeGL(int w, int h) override;
-  void paintGL() override;
+  void resizeGLImpl(int w, int h) override;
+  void paintGLImpl() override;
 
   void initShaders();
   void initTextures();
