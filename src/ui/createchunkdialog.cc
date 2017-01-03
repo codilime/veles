@@ -26,8 +26,8 @@ CreateChunkDialog::CreateChunkDialog(FileBlobModel *chunksModel,
     : QDialog(parent),
       ui(new Ui::CreateChunkDialog),
       chunksModel_(chunksModel),
-      chunkSelectionModel_(selectionModel),
-      useChildOfSelected_(false) {
+      useChildOfSelected_(false),
+      chunkSelectionModel_(selectionModel) {
   ui->setupUi(this);
   init();
 }
@@ -42,13 +42,8 @@ void CreateChunkDialog::init() {
   ui->typeBox->addItem("png");
   ui->typeBox->setCurrentIndex(0);
   displayPath();
-
-  connect(chunksModel_, &FileBlobModel::newBinData, [this]() {
-    ui->beginSpinBox->setMaximum(
-        static_cast<int>(chunksModel_->binData().size()));
-    ui->endSpinBox->setMaximum(
-        static_cast<int>(chunksModel_->binData().size()));
-  });
+  updateBinDataSize();
+  connect(chunksModel_, &FileBlobModel::newBinData, this, &CreateChunkDialog::updateBinDataSize);
 }
 
 QModelIndex CreateChunkDialog::parentChunk() {
@@ -87,6 +82,12 @@ void CreateChunkDialog::accept() {
                          ui->endSpinBox->value(), parentChunk());
   emit accepted();
   QDialog::hide();
+}
+
+void CreateChunkDialog::updateBinDataSize() {
+  ui->beginSpinBox->setMaximum(
+      static_cast<int>(chunksModel_->binData().size()));
+  ui->endSpinBox->setMaximum(static_cast<int>(chunksModel_->binData().size()));
 }
 
 void CreateChunkDialog::setRange(uint64_t begin, uint64_t end) {

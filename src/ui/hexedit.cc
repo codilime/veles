@@ -102,21 +102,14 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
       selectionSize_(0) {
   setFont(util::settings::theme::font());
 
-  connect(dataModel_, &FileBlobModel::newBinData, [this]() {
-    recalculateValues();
-    goToAddressDialog_->setRange(startOffset_, startOffset_ + dataBytesCount_);
-    viewport()->update();
-  });
-
+  connect(dataModel_, &FileBlobModel::newBinData,
+      this, &HexEdit::newBinData);
   connect(dataModel_, &FileBlobModel::dataChanged,
-          [this]() { viewport()->update(); });
+      this, &HexEdit::dataChanged);
 
   if (chunkSelectionModel_) {
     connect(chunkSelectionModel_, &QItemSelectionModel::currentChanged,
-            [this]() {
-              scrollToCurrentChunk();
-              viewport()->update();
-            });
+        this, &HexEdit::selectionChanged);
   }
 
   recalculateValues();
@@ -144,6 +137,7 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
   connect(goToAddressDialog_, &QDialog::accepted, [this]() {
     scrollToByte(goToAddressDialog_->address() - startOffset_);
   });
+  goToAddressDialog_->setRange(startOffset_, startOffset_ + dataBytesCount_);
 
   goToAddressAction_ = new QAction(tr("&Go to address"), this);
   connect(goToAddressAction_, &QAction::triggered,
@@ -642,6 +636,21 @@ void HexEdit::scrollToByte(qint64 bytePos, bool doNothingIfVisable) {
   verticalScrollBar()->setValue(bytePos / bytesPerRow_);
   recalculateValues();
 
+  viewport()->update();
+}
+
+void HexEdit::newBinData() {
+  recalculateValues();
+  goToAddressDialog_->setRange(startOffset_, startOffset_ + dataBytesCount_);
+  viewport()->update();
+}
+
+void HexEdit::dataChanged() {
+  viewport()->update();
+}
+
+void HexEdit::selectionChanged() {
+  scrollToCurrentChunk();
   viewport()->update();
 }
 

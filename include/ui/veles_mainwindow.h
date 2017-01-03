@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 CodiLime
+ * Copyright 2017 CodiLime
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,9 +76,13 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
  public:
   MainWindowWithDetachableDockWidgets(QWidget* parent = nullptr);
   virtual ~MainWindowWithDetachableDockWidgets();
-  void addTab(QWidget *widget, const QString &title);
+  DockWidget* addTab(QWidget *widget, const QString &title,
+      DockWidget* sibling = nullptr);
   void bringDockWidgetToFront(QDockWidget* dock_widget);
   void moveDockWidgetToWindow(DockWidget* dock_widget);
+  void findTwoNonTabifiedDocks(DockWidget*& sibling1, DockWidget*& sibling2);
+  DockWidget* findDockNotTabifiedWith(DockWidget* dock_widget);
+  DockWidget* findDockNotTabifiedWith(QWidget* widget);
 
   static bool intersectsWithAnyMainWindow(DockWidget* dock_widget);
   static MainWindowWithDetachableDockWidgets* getParentCandidateForDockWidget(
@@ -115,6 +119,7 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
  public:
   VelesMainWindow();
   void addFile(QString path);
+  QStringList parsersList() {return parsers_list_;}
 
  protected:
   void dropEvent(QDropEvent *ev) Q_DECL_OVERRIDE;
@@ -150,7 +155,7 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   dbif::ObjectHandle database;
   OptionsDialog *optionsDialog;
 
-  QStringList _parsers_list;
+  QStringList parsers_list_;
 };
 
 }  // namespace ui

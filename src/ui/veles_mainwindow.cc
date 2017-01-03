@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 CodiLime
+ * Copyright 2017 CodiLime
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,8 @@
 #include "util/version.h"
 #include "ui/databaseinfo.h"
 #include "ui/veles_mainwindow.h"
-#include "ui/hexedittab.h"
+#include "ui/hexeditwidget.h"
+#include "ui/nodetreewidget.h"
 #include "ui/optionsdialog.h"
 #include "ui/logwidget.h"
 
@@ -218,8 +219,8 @@ MainWindowWithDetachableDockWidgets::~MainWindowWithDetachableDockWidgets() {
   }
 }
 
-void MainWindowWithDetachableDockWidgets::addTab(QWidget *widget,
-    const QString &title) {
+DockWidget* MainWindowWithDetachableDockWidgets::addTab(QWidget *widget,
+    const QString &title, DockWidget* sibling) {
   DockWidget* dock_widget = new DockWidget;
   dock_widget->setAllowedAreas(Qt::AllDockWidgetAreas);
   dock_widget->setWindowTitle(title);
@@ -228,16 +229,22 @@ void MainWindowWithDetachableDockWidgets::addTab(QWidget *widget,
       QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable);
   dock_widget->setWidget(widget);
 
-  QList<QDockWidget*> dock_widgets = findChildren<QDockWidget*>();
-  if (dock_widgets.size() > 0) {
-    tabifyDockWidget(dock_widgets.back(), dock_widget);
+  if (sibling != nullptr) {
+    tabifyDockWidget(sibling, dock_widget);
   } else {
-    addDockWidget(Qt::RightDockWidgetArea, dock_widget);
+    QList<QDockWidget*> dock_widgets = findChildren<QDockWidget*>();
+    if (dock_widgets.size() > 0) {
+      tabifyDockWidget(dock_widgets.back(), dock_widget);
+    } else {
+      addDockWidget(Qt::RightDockWidgetArea, dock_widget);
+    }
   }
 
   QApplication::processEvents();
   updateCloseButtonsOnTabBars();
   bringDockWidgetToFront(dock_widget);
+
+  return dock_widget;
 }
 
 void MainWindowWithDetachableDockWidgets::bringDockWidgetToFront(
@@ -283,6 +290,51 @@ void MainWindowWithDetachableDockWidgets::moveDockWidgetToWindow(
 
   QApplication::processEvents();
   bringDockWidgetToFront(dock_widget);
+}
+
+void MainWindowWithDetachableDockWidgets::findTwoNonTabifiedDocks(
+    DockWidget*& sibling1, DockWidget*& sibling2) {
+  QList<DockWidget*> dock_widgets = findChildren<DockWidget*>();
+  for (auto dock_widget : dock_widgets) {
+    if (sibling1 == nullptr) {
+      sibling1 = sibling2 = dock_widget;
+    } else if (!tabifiedDockWidgets(dock_widget).contains(sibling1)) {
+      sibling2 = dock_widget;
+      break;
+    }
+  }
+}
+
+DockWidget* MainWindowWithDetachableDockWidgets::findDockNotTabifiedWith(
+    DockWidget* dock_widget) {
+  if (dock_widget == nullptr) {
+    return nullptr;
+  }
+
+  QList<DockWidget*> dock_widgets = findChildren<DockWidget*>();
+  for (auto dock : dock_widgets) {
+    if (dock != dock_widget && !tabifiedDockWidgets(dock_widget).contains(dock)) {
+      return dock;
+    }
+  }
+
+  return nullptr;
+}
+
+DockWidget* MainWindowWithDetachableDockWidgets::findDockNotTabifiedWith(
+    QWidget* widget) {
+  DockWidget* dock_widget = nullptr;
+  while (widget) {
+    dock_widget = dynamic_cast<DockWidget*>(widget);
+    if(dock_widget) break;
+    widget = widget->parentWidget();
+  }
+
+  if(dock_widget) {
+    return findDockNotTabifiedWith(dock_widget);
+  }
+
+  return nullptr;
 }
 
 bool MainWindowWithDetachableDockWidgets::intersectsWithAnyMainWindow(
@@ -405,7 +457,7 @@ bool MainWindowWithDetachableDockWidgets::event(QEvent* event) {
 QDockWidget* MainWindowWithDetachableDockWidgets::tabToDockWidget(
     QTabBar* tab_bar, int index) {
   if(tab_bar) {
-    // Based on undocumented feature (tested with Qt 5.7).
+    // Based on undocumented feature (tested with Qt 5.5/5.7).
     // QTabBars that control visibility of QDockWidgets grouped in
     // QDockWidgetGroupWindows hold ids of respective QDockAreaLayoutInfos
     // in tabData. Conveniently those ids are just pointers to
@@ -510,8 +562,8 @@ void VelesMainWindow::init() {
   connect(optionsDialog, &QDialog::accepted, [this]() {
     QList<QDockWidget*> dock_widgets = findChildren<QDockWidget*>();
     for(auto dock : dock_widgets) {
-      if(auto hexTab = dynamic_cast<HexEditTab *>(dock->widget())) {
-        hexTab->reapplySettings();
+      if(auto hex_tab = dynamic_cast<HexEditWidget *>(dock->widget())) {
+        hex_tab->reapplySettings();
       }
     }
   });
@@ -563,11 +615,13 @@ void VelesMainWindow::createMenus() {
 }
 
 void VelesMainWindow::updateParsers(dbif::PInfoReply reply) {
-  _parsers_list = reply.dynamicCast<dbif::ParsersListRequest::ReplyType>()->parserIds;
+  parsers_list_ = reply.dynamicCast<dbif::ParsersListRequest::ReplyType>()->parserIds;
   QList<QDockWidget*> dock_widgets = findChildren<QDockWidget*>();
   for(auto dock : dock_widgets) {
-    if(auto hexTab = dynamic_cast<HexEditTab *>(dock->widget())) {
-      hexTab->setParserIds(_parsers_list);
+    if(auto hex_tab = dynamic_cast<HexEditWidget *>(dock->widget())) {
+      hex_tab->setParserIds(parsers_list_);
+    } else if(auto node_tab = dynamic_cast<NodeTreeWidget *>(dock->widget())) {
+      node_tab->setParserIds(parsers_list_);
     }
   }
 }
@@ -615,9 +669,8 @@ void VelesMainWindow::createFileBlob(QString fileName) {
   auto promise =
       database->asyncRunMethod<dbif::RootCreateFileBlobFromDataRequest>(
           this, data, fileName);
-  connect(promise, &dbif::MethodResultPromise::gotResult, [this, fileName](
-                                                              dbif::PMethodReply
-                                                                  reply) {
+  connect(promise, &dbif::MethodResultPromise::gotResult,
+      [this, fileName](dbif::PMethodReply reply) {
     createHexEditTab(
         fileName.isEmpty() ? "untitled" : fileName,
         reply.dynamicCast<dbif::RootCreateFileBlobFromDataRequest::ReplyType>()
@@ -627,17 +680,34 @@ void VelesMainWindow::createFileBlob(QString fileName) {
   connect(promise, &dbif::MethodResultPromise::gotError,
           [this, fileName](dbif::PError error) {
             QMessageBox::warning(this, tr("Veles"),
-                                 tr("Cannot load file %1.").arg(fileName));
+                tr("Cannot load file %1.").arg(fileName));
           });
 }
 
 void VelesMainWindow::createHexEditTab(QString fileName,
                                      dbif::ObjectHandle fileBlob) {
-  auto dataModel =
-      new FileBlobModel(fileBlob, {QFileInfo(fileName).fileName()});
-  HexEditTab *hex = new HexEditTab(this, dataModel);
-  hex->setParserIds(_parsers_list);
-  addTab(hex, dataModel->path().join(" : ") + " - Hex");
+  QSharedPointer<FileBlobModel> data_model(
+      new FileBlobModel(fileBlob, {QFileInfo(fileName).fileName()}));
+  QSharedPointer<QItemSelectionModel> selection_model(
+      new QItemSelectionModel(data_model.data()));
+
+  DockWidget* sibling1 = nullptr;
+  DockWidget* sibling2 = nullptr;
+  findTwoNonTabifiedDocks(sibling1, sibling2);
+
+  NodeTreeWidget *node_tree = new NodeTreeWidget(this,
+      data_model, selection_model);
+   addTab(node_tree,
+       data_model->path().join(" : ") + " - Node tree", sibling1);
+
+  HexEditWidget *hex_edit = new HexEditWidget(this,
+      data_model, selection_model);
+  DockWidget* hex_edit_tab = addTab(hex_edit,
+      data_model->path().join(" : ") + " - Hex", sibling2);
+
+  if (sibling1 == sibling2) {
+    addDockWidget(Qt::RightDockWidgetArea, hex_edit_tab);
+  }
 }
 
 void VelesMainWindow::createLogWindow() {

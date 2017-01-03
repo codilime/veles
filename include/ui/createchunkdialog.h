@@ -44,6 +44,7 @@ class CreateChunkDialog : public QDialog {
 
  public slots:
   virtual void accept();
+  virtual void updateBinDataSize();
 
  private:
   FileBlobModel *chunksModel_;

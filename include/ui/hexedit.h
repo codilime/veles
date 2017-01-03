@@ -46,6 +46,11 @@ class HexEdit : public QAbstractScrollArea {
   FileBlobModel *dataModel() { return dataModel_;};
   void setParserIds(QStringList ids);
 
+ public slots:
+  void newBinData();
+  void dataChanged();
+  void selectionChanged();
+
  protected:
   void paintEvent(QPaintEvent *event) override;
   void resizeEvent(QResizeEvent *event) override;

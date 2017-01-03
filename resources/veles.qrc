@@ -29,5 +29,7 @@
         <file>images/label_three.png</file>
         <file>images/label_pos.png</file>
         <file>images/label_N0.png</file>
+        <file>images/show_node_tree.png</file>
+        <file>images/show_hex_edit.png</file>
     </qresource>
 </RCC>

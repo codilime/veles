@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 CodiLime
+ * Copyright 2017 CodiLime
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,16 @@
  * limitations under the License.
  *
  */
-#ifndef HEXEDITTAB_H
-#define HEXEDITTAB_H
+#ifndef VELES_UI_NODETREEWIDGET_H
+#define VELES_UI_NODETREEWIDGET_H
 
 #include <QGroupBox>
 #include <QLabel>
 #include <QSplitter>
 #include <QTreeView>
 #include <QWidget>
-#include <QStringList>
 #include <QToolBar>
-#include <QToolButton>
+#include <QSharedPointer>
 
 #include "visualisation/base.h"
 
@@ -40,25 +39,30 @@ namespace ui {
 
 class VelesMainWindow;
 
-class HexEditTab : public QWidget {
+class NodeTreeWidget : public QMainWindow {
   Q_OBJECT
 
  public:
-  explicit HexEditTab(VelesMainWindow *mainWindow, FileBlobModel *dataModel);
+  explicit NodeTreeWidget(VelesMainWindow *main_window,
+      QSharedPointer<FileBlobModel>& data_model,
+      QSharedPointer<QItemSelectionModel>& selection_model);
   void reapplySettings();
   void setParserIds(QStringList ids);
 
  private slots:
-  void findNext();
-  void showSearchDialog();
   void uploadChanges();
   bool saveAs();
   void updateLineEditWithAddress(qint64 address);
   void showVisualisation();
   void parse(QAction *action);
+  void showHexEditor();
+  void removeChunk();
+  void currentSelectionChanged(const QModelIndex &currentIndex);
+  void newBinData();
 
  private:
-  bool saveFile(const QString &fileName);
+  void initParsersMenu();
+  bool saveFile(const QString &file_name);
 
   void addDummySlices(dbif::ObjectHandle);
   void addChunk(QString name, QString type, QString comment, uint64_t start,
@@ -69,51 +73,44 @@ class HexEditTab : public QWidget {
   void createActions();
   void createToolBars();
   void createSliceCreatorWidget();
-  void initParsersMenu();
 
-  void registerLineEdit(QLineEdit *lineEdit);
+  void registerLineEdit(QLineEdit *line_edit);
   bool getRangeValues(qint64 *begin, qint64 *end);
 
-  VelesMainWindow *mainWindow;
+  VelesMainWindow *main_window_;
 
-  QString curFile;
-  QString curFilePath;
-  QFile file;
-  bool isUntitled;
+  QString cur_file_;
+  QString cur_file_path_;
+  QFile file_;
+  bool is_untitled;
 
-  QVBoxLayout *layout;
+  QToolBar *file_tool_bar_;
+  QToolBar *edit_tool_bar_;
+  QToolBar *tools_tool_bar_;
 
-  QWidget *toolBarWrapper;
-  QHBoxLayout *toolBarLayout;
-  QToolBar *fileToolBar;
-  QToolBar *editToolBar;
-  QToolBar *visualisationToolBar;
-  QToolButton *parserToolButton;
+  QAction *upload_act_;
+  QAction *save_as_act_;
+  QAction *save_readable_act_;
+  QAction *undo_act_;
+  QAction *redo_act_;
+  QAction *visualisation_act_;
+  QAction *parser_act_;
+  QAction *show_hex_edit_act_;
+  QAction *remove_action_;
 
-  QAction *uploadAct;
-  QAction *saveAsAct;
-  QAction *saveReadable;
-  QAction *undoAct;
-  QAction *redoAct;
-  QAction *findAct;
-  QAction *findNextAct;
-  QAction *visualisationAct;
+  QTreeView *tree_view_;
 
-  SearchDialog *searchDialog;
+  QSharedPointer<FileBlobModel> data_model_;
+  QSharedPointer<QItemSelectionModel> selection_model_;
 
-  QSplitter *splitter;
-  QTreeView *treeView;
+  QLineEdit *registered_line_edit_;
 
-  HexEdit *hexEdit;
-
-  FileBlobModel *dataModel;
   QStringList parsers_ids_;
   QMenu parsers_menu_;
 
-  QLineEdit *registeredLineEdit;
 };
 
 }  // namespace ui
 }  // namespace veles
 
-#endif
+#endif // VELES_UI_NODETREEWIDGET_H
