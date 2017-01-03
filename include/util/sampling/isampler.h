@@ -17,11 +17,16 @@
 #ifndef ISAMPLER_H
 #define ISAMPLER_H
 
+#include <atomic>
+#include <functional>
+#include <mutex>
 #include <utility>
 #include <QByteArray>
 
 namespace veles {
 namespace util {
+
+typedef std::mutex SamplerMutex;
 
 /**
  * Abstract interface for Sampler classes.
@@ -144,21 +149,87 @@ class ISampler {
    */
   bool empty();
 
+  /**
+   * Get lock protecting sampler data.
+   * As long as the lock is held no resampling will happen, meaning all methods
+   * retrieving sampled data, sample size, etc will return consistent results.
+   * In particular pointer returned by data() will not be invalidated while
+   * the lock is kept.
+   */
+  std::unique_lock<SamplerMutex> lock();
+
+  /**
+   * Wait until sampler has finished resampling.
+   * This waits until all resample operations are done, including those
+   * scheduled after the wait has started!
+   */
+  void wait();
+
+  /**
+   * Aquire sampler lock after resampling is finished.
+   * All points mentioned in wait() and lock() docstrings apply.
+   */
+  std::unique_lock<SamplerMutex> waitAndLock();
+
+  /**
+   * Return true if there is no resampling currently going.
+   * Note that while the check is atomic there may be a resampling scheduled
+   * just after it is done. To be sure nothing is going on you should hold
+   * the sampler lock while calling this.
+   */
+  bool isFinished();
+
+  /**
+   * Register a callback that will be called when resampling is finished.
+   * There is no guarantee in which thread the callback will be called.
+   * If lock_required is true the callback will be called while keeping
+   * the sampler lock.
+   * If multiple callbacks are registered they will be called in reverse
+   * registration order (stack).
+   */
+  void registerResampleCallback(std::function<void()> cb, bool requires_lock);
+
+  /**
+   * Remove all registered resample callbacks.
+   */
+  void clearResampleCallbacks();
+
+  /**
+   * Create a copy of this sampler.
+   * This will block until all resampling is done and create a copy afterwards.
+   */
   virtual ISampler* clone() = 0;
 
  protected:
   /**
+   * Derive this struct if you want to pass any data between resample and
+   * update operations.
+   */
+  struct ResampleData {};
+
+  /**
+   * Contain information required by ISampler to provide data to sampler.
+   * This is required if working on sampler in different state then the current
+   * state (ex. when asynchronously resyncing after setRange).
+   */
+  typedef std::pair<size_t, size_t> SamplerConfig;
+
+  /**
    * Return the size of the data to sample.
    * This already takes into account limiting the size of input with setRange().
+   * If sc is provided it uses the range represented by sc instead of this
+   * stored by sampler.
    */
-  size_t getDataSize();
+  size_t getDataSize(SamplerConfig *sc = nullptr);
 
   /**
    * Get n-th byte of input data.
    * The data is 0 indexed and has size given by getDataSize(). If setRange()
    * was used data is re-indexed internally to still be 0 indexed.
+   * If sc is provided it uses the range represented by sc instead of this
+   * stored by sampler.
    */
-  char getDataByte(size_t index);
+  char getDataByte(size_t index, SamplerConfig *sc = nullptr);
 
   /**
    * Called by Sampler implementation to trigger re-initialisation of Sampler.
@@ -184,8 +255,10 @@ class ISampler {
 
   /**
    * Return the input data as simple array. Size of array is getDataSize().
+   * If sc is provided it uses the range represented by sc instead of this
+   * stored by sampler.
    */
-  const char* getRawData();
+  const char* getRawData(SamplerConfig *sc = nullptr);
 
   ISampler(const ISampler& other);
 
@@ -221,9 +294,29 @@ class ISampler {
   virtual size_t getSampleOffsetImpl(size_t index) = 0;
 
   /**
-   * Implementation of resample method.
+   * Prepare resampled data.
+   * This may be called asynchronously in a different thread and should neither
+   * modify nor rely on any mutable state of sampler (multiple prepareResample
+   * calls may be processed at the same time). Returned ResampleData* will
+   * later be passed to applyResample method.
+   * Any call to method accepting SamplerConfig (getDataSize(),
+   * getRawData(), etc) should pass the provided SamplerConfig.
    */
-  virtual void resampleImpl() = 0;
+  virtual ResampleData* prepareResample(SamplerConfig *sc) = 0;
+
+  /**
+   * Apply ResampleData prepared by prepareResample method.
+   * This will be executed while holding sampler lock and should modify
+   * sampler state by applying whatever was produced by prepareResample.
+   * Ideally this should be a cheap operation (as it will be executed
+   * synchronously).
+   */
+  virtual void applyResample(ResampleData *rd) = 0;
+
+  /**
+   * Implementation of clone method.
+   */
+  virtual ISampler* cloneImpl() = 0;
 
   void init();
   size_t samplingRequired();
@@ -231,6 +324,9 @@ class ISampler {
   const QByteArray &data_;
   size_t start_, end_, sample_size_, resample_trigger_;
   bool initialised_;
+
+  SamplerMutex sampler_mutex_;
+  std::atomic<int> current_version_, requested_version_;
 };
 
 }  // namespace util
