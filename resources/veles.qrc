@@ -23,5 +23,11 @@
         <file>images/manipulator_spin.png</file>
         <file>images/manipulator_trackball.png</file>
         <file>images/manipulator_free.png</file>
+        <file>images/label_zero.png</file>
+        <file>images/label_one.png</file>
+        <file>images/label_two.png</file>
+        <file>images/label_three.png</file>
+        <file>images/label_pos.png</file>
+        <file>images/label_N0.png</file>
     </qresource>
 </RCC>
