@@ -54,8 +54,8 @@ QPalette pallete() {
     pallete.setColor(QPalette::WindowText, Qt::white);
     pallete.setColor(QPalette::Base, QColor(25, 25, 25));
     pallete.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
-    pallete.setColor(QPalette::ToolTipBase, Qt::white);
-    pallete.setColor(QPalette::ToolTipText, Qt::white);
+    pallete.setColor(QPalette::ToolTipBase, QColor(255, 255, 225));
+    pallete.setColor(QPalette::ToolTipText, Qt::black);
     pallete.setColor(QPalette::Text, Qt::white);
     pallete.setColor(QPalette::Button, QColor(53, 53, 53));
     pallete.setColor(QPalette::Light, QColor(25, 25, 25));

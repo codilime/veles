@@ -19,9 +19,11 @@
 namespace veles {
 namespace visualisation {
 
-DigramWidget::DigramWidget(QWidget *parent) : VisualisationWidget(parent) {}
+DigramWidget::DigramWidget(QWidget *parent) : VisualisationWidget(parent),
+  texture_(nullptr) {}
 
 DigramWidget::~DigramWidget() {
+  if (texture_ == nullptr) return;
   makeCurrent();
   delete texture_;
   square_vertex_.destroy();
@@ -36,14 +38,15 @@ void DigramWidget::refresh() {
   update();
 }
 
-void DigramWidget::initializeVisualisationGL() {
-  initializeOpenGLFunctions();
+bool DigramWidget::initializeVisualisationGL() {
+  if (!initializeOpenGLFunctions()) return false;
 
   glClearColor(0, 0, 0, 1);
 
   initShaders();
   initTextures();
   initGeometry();
+  return true;
 }
 
 void DigramWidget::initShaders() {
@@ -111,9 +114,9 @@ void DigramWidget::initGeometry() {
   vao_.create();
 }
 
-void DigramWidget::resizeGL(int w, int h) {}
+void DigramWidget::resizeGLImpl(int w, int h) {}
 
-void DigramWidget::paintGL() {
+void DigramWidget::paintGLImpl() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   texture_->bind();

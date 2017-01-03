@@ -106,6 +106,9 @@ class ISampler {
    * the semantic of what is actually returned is not very clearly defined.
    * However it should be the location in file that somehow corresponds to
    * the given byte.
+   * There are two specific indexes with guaranteed values:
+   * - getFileOffset(0) is always first address in underlying data,
+   * - getFileOffset(getSampleSize() - 1) the last address.
    */
   size_t getFileOffset(size_t index);
 
@@ -115,6 +118,9 @@ class ISampler {
    * the semantic of what is actually returned is not very clearly defined.
    * However it should be the location in file that somehow corresponds to
    * the given byte.
+   * There are two specific indexes with guaranteed values:
+   * - getSampleOffset(getRange().first) is always 0
+   * - getSampleOffset(getRange().second - 1) is equal to getSampleSize() - 1
    */
   size_t getSampleOffset(size_t index);
 

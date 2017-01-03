@@ -39,5 +39,8 @@ class MockSampler : public ISampler {
 
 };
 
+// Prepare sample data for sampler
+QByteArray prepare_data(size_t size);
+
 }  // namespace util
 }  // namespace veles
