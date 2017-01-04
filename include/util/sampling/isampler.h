@@ -33,7 +33,6 @@ typedef std::recursive_mutex SamplerMutex;
 typedef std::condition_variable_any SamplerConditionVariable;
 typedef std::function<void()> ResampleCallback;
 
-// TODO(Maciek): fix this docstring to describe asynchronous version
 /**
  * Abstract interface for Sampler classes.
  * The idea is that any Sampler wraps a byte stream and performs sampling
@@ -42,8 +41,17 @@ typedef std::function<void()> ResampleCallback;
  * as a suggestion and the implementation may return a sample of different
  * size.
  *
- * The actual sampling happens upon first attempt to access sampled data
- * (call to getSampleSize(), operator[] or data() methods).
+ * By default the sampler works synchronously - any call that creates
+ * the need to re-create sample ("resample") will perform the resampling
+ * operation immediately. As this can be rather expensive time-wise
+ * the sampler can be changed to asynchronous mode. In that case the resampling
+ * is performed in a separate thread and a set of registered callbacks is
+ * called once it's done.
+ *
+ * When working in asynchronous mode it is recommended to perform any
+ * operations on the data while keeping the mutex returned by sampler.lock().
+ * Otherwise the sample we're looking at can suddenly change leading to
+ * inconsistencies.
  *
  * Example usage:
  * MySampler sampler(some_data);
@@ -81,7 +89,7 @@ class ISampler {
    * new sample. It may just reduce sample size by removing bytes outside
    * selected range.
    *
-   * This method must be called before using Sampler.
+   * This method must be called before first using Sampler!
    * May cause re-sampling, invalidates all pointers previously returned by
    * data() method.
    */
@@ -268,7 +276,7 @@ class ISampler {
 
  private:
   /**
-   * Get n-th byte of sample. This will only be called after initialiseSample().
+   * Get n-th byte of sample.
    */
   virtual char getSampleByte(size_t index) = 0;
 
@@ -307,9 +315,18 @@ class ISampler {
    * sampler state by applying whatever was produced by prepareResample.
    * Ideally this should be a cheap operation (as it will be executed
    * synchronously).
-   * This method takes ownership of passed ResampleData.
+   * This method takes ownership of passed ResampleData and is responsible
+   * for ultimately freeing up the memory.
    */
   virtual void applyResample(ResampleData *rd) = 0;
+
+  /**
+   * Delete ResampleData prepared by prepareResample method.
+   * This will be called instead of applyResample if the prepared ResampleData
+   * is outdated, etc. The method should delete the ResampleData provided
+   * doing any necessary cleanup.
+   */
+  virtual void cleanupResample(ResampleData *rd) = 0;
 
   /**
    * Implementation of clone method.

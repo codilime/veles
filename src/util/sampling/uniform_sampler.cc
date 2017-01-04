@@ -141,12 +141,20 @@ ISampler::ResampleData* UniformSampler::prepareResample(SamplerConfig *sc) {
 }
 
 void UniformSampler::applyResample(ResampleData *rd) {
+  delete[] buffer_;
   UniformSamplerResampleData *usrd =
     static_cast<UniformSamplerResampleData*>(rd);
   window_size_ = usrd->window_size;
   windows_count_ = usrd->windows_count;
   windows_ = std::move(usrd->windows);
   buffer_ = usrd->data;
+  delete usrd;
+}
+
+void UniformSampler::cleanupResample(ResampleData *rd) {
+  UniformSamplerResampleData *usrd =
+    static_cast<UniformSamplerResampleData*>(rd);
+  delete[] usrd->data;
   delete usrd;
 }
 

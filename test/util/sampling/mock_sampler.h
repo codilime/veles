@@ -33,6 +33,7 @@ class MockSampler : public ISampler {
   MOCK_METHOD1(getSampleOffsetImpl, size_t(size_t index));
   MOCK_METHOD1(prepareResample, ResampleData*(SamplerConfig*));
   MOCK_METHOD1(applyResample, void(ResampleData*));
+  MOCK_METHOD1(cleanupResample, void(ResampleData*));
 
   size_t proxy_getDataSize() { return getDataSize(); }
   char proxy_getDataByte(size_t index) { return getDataByte(index); }

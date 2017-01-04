@@ -44,6 +44,7 @@ class UniformSampler : public ISampler {
   size_t getSampleOffsetImpl(size_t address) override;
   ResampleData* prepareResample(SamplerConfig *sc) override;
   void applyResample(ResampleData *rd) override;
+  void cleanupResample(ResampleData *rd) override;
   UniformSampler* cloneImpl() override;
 
   size_t window_size_, windows_count_;

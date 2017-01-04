@@ -34,6 +34,7 @@ class FakeSampler : public ISampler {
   size_t getSampleOffsetImpl(size_t address) override;
   ResampleData* prepareResample(SamplerConfig *sc) override;
   void applyResample(ResampleData *rd) override;
+  void cleanupResample(ResampleData *rd) override;
   FakeSampler* cloneImpl() override;
 };
 

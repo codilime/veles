@@ -223,6 +223,10 @@ void ISampler::runResample(SamplerConfig *sc) {
       auto lc = lock();
       current_version_ = ++requested_version_;
       applySamplerConfig(sc);
+      for (auto i = callbacks_.rbegin(); i != callbacks_.rend(); ++i) {
+        (*i)();
+      }
+      lc.unlock();
       delete sc;
       return;
     }
@@ -230,8 +234,9 @@ void ISampler::runResample(SamplerConfig *sc) {
     // about return value and the returned future and we _really_ don't want
     // any lazy evaluation, so we should probably move to some thread pool at
     // some point
-    std::async(std::launch::async, &ISampler::resampleAsync, this,
-               ++requested_version_, sc);
+    std::thread t(&ISampler::resampleAsync, this,
+                  ++requested_version_, sc);
+    t.detach();
   } else {
     if (samplingRequired(sc)) {
       ResampleData *prepared = prepareResample(sc);
@@ -250,13 +255,17 @@ void ISampler::resampleAsync(int target_version, SamplerConfig *sc) {
     applyResample(prepared);
     applySamplerConfig(sc);
     current_version_ = target_version;
+    for (auto i = callbacks_.rbegin(); i != callbacks_.rend(); ++i) {
+      (*i)();
+    }
+    lc.unlock();
+    delete sc;
+    sampler_condition_.notify_all();
+  } else {
+    lc.unlock();
+    cleanupResample(prepared);
+    delete sc;
   }
-  for (auto i = callbacks_.rbegin(); i != callbacks_.rend(); ++i) {
-    (*i)();
-  }
-  lc.unlock();
-  delete sc;
-  sampler_condition_.notify_all();
 }
 
 }  // namespace util

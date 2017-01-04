@@ -49,5 +49,7 @@ ISampler::ResampleData* FakeSampler::prepareResample(SamplerConfig *sc) {
 
 void FakeSampler::applyResample(ISampler::ResampleData *rd) {}
 
+void FakeSampler::cleanupResample(ResampleData *rd) {};
+
 }  // namespace util
 }  // namespace veles

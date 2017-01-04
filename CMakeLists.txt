@@ -32,6 +32,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED 11) # Use c++11
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall --std=c++11") # All warnings
+  set(ADDITIONAL_LINK_LIBRARIES "pthread")
 endif()
 if(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc ") # set exception handling mode and linking mode
@@ -71,6 +72,7 @@ add_library(veles_base
     ${SRC_DIR}/util/version.cc)
 
 qt5_use_modules(veles_base Core Gui Widgets)
+target_link_libraries(veles_base ${ADDITIONAL_LINK_LIBRARIES})
 
 # LIB: veles_visualisation
 
