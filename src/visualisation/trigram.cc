@@ -390,6 +390,7 @@ QAction* TrigramWidget::createAction(const QIcon& icon,
       Manipulator* manipulator, const QList<QKeySequence>& sequences) {
   QAction* action = new QAction(icon, manipulator->manipulatorName(), this);
   action->setShortcuts(sequences);
+  action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
   connect(action, &QAction::triggered, std::bind(
       &TrigramWidget::setManipulator, this, manipulator));
   action->setProperty("manipulator", QVariant(qintptr(manipulator)));
