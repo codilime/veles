@@ -141,7 +141,7 @@ class TrigramWidget : public VisualisationWidget {
 
   QAction* createAction(const QIcon& icon, Manipulator* manipulator,
       const QList<QKeySequence>& sequences);
-  QPushButton* createActionButton(QAction* action);
+  QAbstractButton* createActionButton(QAction* action);
   virtual void prepareManipulatorToolbar(QBoxLayout *layout);
 
  signals:

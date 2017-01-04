@@ -15,7 +15,10 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="manipulator_sipn.svg">
+   sodipodi:docname="manipulator_spin.svg"
+   inkscape:export-filename=""
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -27,7 +30,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="5.6568542"
      inkscape:cx="36.311125"
-     inkscape:cy="31.83256"
+     inkscape:cy="30.102491"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -54,6 +57,22 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-988.36216)">
+    <path
+       sodipodi:type="star"
+       style="fill:#c8c8c8;fill-opacity:1;stroke:none;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path3360"
+       sodipodi:sides="6"
+       sodipodi:cx="29.521709"
+       sodipodi:cy="1022.1334"
+       sodipodi:r1="24.234531"
+       sodipodi:r2="20.98772"
+       sodipodi:arg1="1.5343162"
+       sodipodi:arg2="2.0579149"
+       inkscape:flatsided="true"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="m 30.405592,1046.3518 -21.4156974,-11.3437 -0.8838827,-24.2184 20.5318151,-12.87468 21.415697,11.34378 0.883883,24.2184 z"
+       transform="matrix(1.3308843,0.05194051,-0.05239208,1.3194134,46.261716,-329.78775)" />
     <g
        id="g4167"
        transform="translate(-74.422989,-27.400388)">

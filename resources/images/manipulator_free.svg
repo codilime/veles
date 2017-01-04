@@ -17,7 +17,8 @@
    inkscape:version="0.91 r13725"
    sodipodi:docname="manipulator_free.svg"
    inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-ydpi="90"
+   inkscape:export-filename="">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -56,6 +57,22 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-988.36216)">
+    <path
+       sodipodi:type="star"
+       style="fill:#c8c8c8;fill-opacity:1;stroke:none;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path3360"
+       sodipodi:sides="6"
+       sodipodi:cx="29.521709"
+       sodipodi:cy="1022.1334"
+       sodipodi:r1="24.234531"
+       sodipodi:r2="20.98772"
+       sodipodi:arg1="1.5343162"
+       sodipodi:arg2="2.0579149"
+       inkscape:flatsided="true"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="m 30.405592,1046.3518 -21.4156974,-11.3437 -0.8838827,-24.2184 20.5318151,-12.87468 21.415697,11.34378 0.883883,24.2184 z"
+       transform="matrix(1.3308843,0.05194051,-0.05239208,1.3194134,46.261716,-329.78775)" />
     <path
        inkscape:connector-curvature="0"
        id="path4169"
@@ -174,10 +191,9 @@
       </g>
     </g>
     <g
-       id="g4360"
-       transform="translate(-0.124985,0)">
+       id="g3391">
       <g
-         transform="matrix(0,-1,1,0,-989.10673,1052.3622)"
+         transform="matrix(0,-1,0.83747775,0,-825.25884,1052.3622)"
          id="g4289-4">
         <path
            sodipodi:nodetypes="cccc"
@@ -186,13 +202,13 @@
            d="m 36.234895,996.72135 -4.23489,-5.87009 -4.2349,5.87009 z"
            style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
         <path
-           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.18546224;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
            d="m 32,996.36216 0,8.50004"
            id="path4287-4"
            inkscape:connector-curvature="0" />
       </g>
       <g
-         transform="matrix(0,-1,-1,0,1053.3567,1052.6122)"
+         transform="matrix(0,-1,-0.83747775,0,889.25884,1052.6122)"
          id="g4289-4-1">
         <path
            sodipodi:nodetypes="cccc"
@@ -201,7 +217,7 @@
            d="m 36.234895,996.72135 -4.23489,-5.87009 -4.2349,5.87009 z"
            style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
         <path
-           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.18546224;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
            d="m 32,996.36216 0,8.50004"
            id="path4287-4-2"
            inkscape:connector-curvature="0" />
@@ -209,7 +225,7 @@
     </g>
     <g
        id="g4360-2"
-       transform="matrix(0.70203412,-0.71214331,0.71214331,0.70203412,-717.28597,326.82292)">
+       transform="matrix(0.87103803,-0.49121558,0.49121558,0.87103803,-497.2613,147.25929)">
       <g
          transform="matrix(0,-1,1,0,-989.10673,1052.3622)"
          id="g4289-4-6">

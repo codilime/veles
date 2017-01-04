@@ -32,7 +32,7 @@
 #include <QBitmap>
 #include <QHBoxLayout>
 #include <QGroupBox>
-
+#include <QToolButton>
 
 namespace veles {
 namespace visualisation {
@@ -396,8 +396,9 @@ QAction* TrigramWidget::createAction(const QIcon& icon,
   return action;
 }
 
-QPushButton* TrigramWidget::createActionButton(QAction* action) {
-  QPushButton* button = new QPushButton;
+QAbstractButton* TrigramWidget::createActionButton(QAction* action) {
+  QToolButton* button = new QToolButton;
+  button->setAutoRaise(true);
   button->setIcon(action->icon());
   button->setToolTip(action->text());
   button->setCheckable(true);
@@ -439,7 +440,7 @@ void TrigramWidget::prepareManipulatorToolbar(QBoxLayout *layout) {
         QIcon(":/images/manipulator_spin.png"), spin_manipulator_,
         {QKeySequence(Qt::CTRL + Qt::Key_1), QKeySequence(Qt::Key_Escape)});
     addAction(action);
-    QPushButton* button = createActionButton(action);
+    QAbstractButton* button = createActionButton(action);
     group_layout->addWidget(button);
     button->setChecked(true);
   }
@@ -449,7 +450,7 @@ void TrigramWidget::prepareManipulatorToolbar(QBoxLayout *layout) {
         QIcon(":/images/manipulator_trackball.png"), trackball_manipulator_,
         {QKeySequence(Qt::CTRL + Qt::Key_2)});
     addAction(action);
-    QPushButton* button = createActionButton(action);
+    QAbstractButton* button = createActionButton(action);
     group_layout->addWidget(button);
   }
 
@@ -458,7 +459,7 @@ void TrigramWidget::prepareManipulatorToolbar(QBoxLayout *layout) {
         QIcon(":/images/manipulator_free.png"), free_manipulator_,
         {QKeySequence(Qt::CTRL + Qt::Key_3)});
     addAction(action);
-    QPushButton* button = createActionButton(action);
+    QAbstractButton* button = createActionButton(action);
     group_layout->addWidget(button);
   }
 
