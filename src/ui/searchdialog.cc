@@ -36,6 +36,9 @@ SearchDialog::~SearchDialog() { delete ui; }
 qint64 SearchDialog::indexOf(const data::BinData &pattern, qint64 startPos) {
   // TODO: implement this as BinData method or as separate util
   const data::BinData &data = _hexEdit->dataModel()->binData();
+  if (startPos == -1) {
+    startPos = 0;
+  }
   qint64 index = startPos;
   while (index + pattern.size() <= data.size()) {
     size_t numberOfMatches = 0;
@@ -43,6 +46,7 @@ qint64 SearchDialog::indexOf(const data::BinData &pattern, qint64 startPos) {
            numberOfMatches + index < data.size() &&
            pattern.element64(numberOfMatches) ==
                data.element64(index + numberOfMatches)) {
+
       ++numberOfMatches;
     }
 
@@ -90,6 +94,11 @@ void SearchDialog::replace(qint64 pos, qint64 len, const data::BinData &data) {
 qint64 SearchDialog::findNext() {
   _findBa =
       getContent(ui->cbFindFormat->currentIndex(), ui->cbFind->currentText());
+
+  if (_findBa.size() == 0) {
+    return -1;
+  }
+
   bool backwards = ui->cbBackwards->isChecked();
 
   qint64 startSearchPos = _lastFoundPos;
@@ -99,11 +108,10 @@ qint64 SearchDialog::findNext() {
   }
 
   qint64 idx = -1;
-  if (_findBa.size() > 0) {
-    if (backwards)
-      idx = lastIndexOf(_findBa, startSearchPos);
-    else
-      idx = indexOf(_findBa, startSearchPos);
+  if (backwards) {
+    idx = lastIndexOf(_findBa, startSearchPos);
+  } else {
+    idx = indexOf(_findBa, startSearchPos);
   }
 
   if (idx >= 0) {
@@ -113,6 +121,8 @@ qint64 SearchDialog::findNext() {
   } else {
     _lastFoundPos = -1;
     _lastFoundSize = 0;
+    _hexEdit->setSelection(0, 0, false);
+    QMessageBox::information(this, tr("HexEdit"), tr("Not found, wrapping to the beginning."));
   }
 
   return idx;
