@@ -459,5 +459,13 @@ TEST(BinData, ToString) {
   EXPECT_EQ(BinData::fromRawData(72, {1, 2, 3, 4, 5, 6, 7, 8, 9}).toString(2),
             "0x090807060504030201");
 }
+
+TEST(BinData, Equal) {
+  EXPECT_TRUE(BinData::fromRawData(8, {1}) == BinData::fromRawData(8, {1}));
+  EXPECT_TRUE(BinData::fromRawData(9, {1, 2, 3, 4}) == BinData::fromRawData(9, {1, 2, 3, 4}));
+  EXPECT_FALSE(BinData::fromRawData(8, {1}) == BinData::fromRawData(8, {1, 2}));
+  EXPECT_FALSE(BinData::fromRawData(8, {1}) == BinData::fromRawData(7, {1}));
+}
+
 }
 }

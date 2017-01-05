@@ -113,6 +113,17 @@ class BinData {
     return *this;
   }
 
+  /** Checks if all attributes of BinData's are equal. */
+  bool operator==(const BinData &other) {
+    if (width_ != other.width_ || size_ != other.size_) {
+      return false;
+    }
+    if (isInline()) {
+      return memcmp(idata_, other.idata_, octets()) == 0;
+    }
+    return memcmp(data_, other.data_, octets()) == 0;
+  }
+
   /** Creates a dummy BinData instance.  */
   BinData() : BinData(8, 0) {}
 
