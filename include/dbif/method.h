@@ -123,7 +123,8 @@ struct SetChunkParseRequest : MethodRequest {
 
 struct BlobParseRequest : MethodRequest {
   QString parser_id;
-  BlobParseRequest(QString parser_id = "") : parser_id(parser_id) {};
+  uint64_t start;
+  BlobParseRequest(QString parser_id = "", uint64_t start = 0) : parser_id(parser_id), start(start) {};
   typedef NullReply ReplyType;
 };
 

@@ -85,7 +85,7 @@ HexEditTab::HexEditTab(VelesMainWindow *mainWindow, FileBlobModel *dataModel)
   setWindowTitle(dataModel->path().join(" : ") + " - Hex");
 
   initParsersMenu();
-  connect(&_parsers_menu, &QMenu::triggered, this, &HexEditTab::parse);
+  connect(&parsers_menu_, &QMenu::triggered, this, &HexEditTab::parse);
 }
 
 void HexEditTab::reapplySettings() {
@@ -93,8 +93,9 @@ void HexEditTab::reapplySettings() {
 }
 
 void HexEditTab::setParserIds(QStringList ids) {
-  _parser_ids = ids;
+  parsers_ids_ = ids;
   initParsersMenu();
+  hexEdit->setParserIds(ids);
 }
 
 /*****************************************************************************/
@@ -144,11 +145,6 @@ void HexEditTab::createActions() {
   visualisationAct->setEnabled(dataModel->binData().size() > 0);
   connect(visualisationAct, SIGNAL(triggered()), this,
           SLOT(showVisualisation()));
-
-  parserAct = new QAction(QIcon(":/images/parse.png"), tr("&Parse"), this);
-  parserAct->setToolTip(tr("Parser"));
-  parserAct->setEnabled(true);
-  connect(parserAct, SIGNAL(triggered()), this, SLOT(parseMenu()));
 }
 
 void HexEditTab::createToolBars() {
@@ -172,9 +168,15 @@ void HexEditTab::createToolBars() {
   visualisationToolBar->addAction(visualisationAct);
   toolBarLayout->addWidget(visualisationToolBar);
 
-  parserToolBar = new QToolBar(tr("parser"));
-  parserToolBar->addAction(parserAct);
-  toolBarLayout->addWidget(parserToolBar);
+  parserToolButton = new QToolButton();
+  parserToolButton->setMenu(&parsers_menu_);
+  parserToolButton->setPopupMode(QToolButton::InstantPopup);
+  parserToolButton->setIcon(QIcon(":/images/parse.png"));
+  parserToolButton->setText(tr("&Parse"));
+  parserToolButton->setToolTip(tr("Parser"));
+  parserToolButton->setIconSize(visualisationToolBar->iconSize());
+  parserToolButton->setAutoRaise(true);
+  toolBarLayout->addWidget(parserToolButton);
 
   toolBarLayout->addStretch();
   toolBarWrapper->setLayout(toolBarLayout);
@@ -182,11 +184,11 @@ void HexEditTab::createToolBars() {
 }
 
 void HexEditTab::initParsersMenu() {
-  _parsers_menu.clear();
-  _parsers_menu.addAction("auto");
-  _parsers_menu.addSeparator();
-  for (auto id : _parser_ids) {
-    _parsers_menu.addAction(id);
+  parsers_menu_.clear();
+  parsers_menu_.addAction("auto");
+  parsers_menu_.addSeparator();
+  for (auto id : parsers_ids_) {
+    parsers_menu_.addAction(id);
   }
 }
 
@@ -306,8 +308,6 @@ void HexEditTab::parse(QAction *action) {
     fileBlob->asyncRunMethod<dbif::BlobParseRequest>(this, action->text());
   }
 }
-
-void HexEditTab::parseMenu() { _parsers_menu.exec(QCursor::pos()); }
 
 void HexEditTab::registerLineEdit(QLineEdit *lineEdit) {
   registeredLineEdit = lineEdit;

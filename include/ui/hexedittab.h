@@ -24,6 +24,7 @@
 #include <QWidget>
 #include <QStringList>
 #include <QToolBar>
+#include <QToolButton>
 
 #include "visualisation/base.h"
 
@@ -55,7 +56,6 @@ class HexEditTab : public QWidget {
   void updateLineEditWithAddress(qint64 address);
   void showVisualisation();
   void parse(QAction *action);
-  void parseMenu();
 
  private:
   bool saveFile(const QString &fileName);
@@ -88,7 +88,7 @@ class HexEditTab : public QWidget {
   QToolBar *fileToolBar;
   QToolBar *editToolBar;
   QToolBar *visualisationToolBar;
-  QToolBar *parserToolBar;
+  QToolButton *parserToolButton;
 
   QAction *uploadAct;
   QAction *saveAsAct;
@@ -98,7 +98,6 @@ class HexEditTab : public QWidget {
   QAction *findAct;
   QAction *findNextAct;
   QAction *visualisationAct;
-  QAction *parserAct;
 
   SearchDialog *searchDialog;
 
@@ -108,8 +107,8 @@ class HexEditTab : public QWidget {
   HexEdit *hexEdit;
 
   FileBlobModel *dataModel;
-  QStringList _parser_ids;
-  QMenu _parsers_menu;
+  QStringList parsers_ids_;
+  QMenu parsers_menu_;
 
   QLineEdit *registeredLineEdit;
 };

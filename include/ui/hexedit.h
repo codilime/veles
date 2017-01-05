@@ -21,6 +21,7 @@
 #include <QItemSelectionModel>
 #include <QMenu>
 #include <QMouseEvent>
+#include <QStringList>
 
 #include "ui/createchunkdialog.h"
 #include "ui/fileblobmodel.h"
@@ -43,6 +44,7 @@ class HexEdit : public QAbstractScrollArea {
   /** Scroll screen to make byte visible */
   void scrollToByte(qint64 bytePos, bool doNothingIfVisable = false);
   FileBlobModel *dataModel() { return dataModel_;};
+  void setParserIds(QStringList ids);
 
  protected:
   void paintEvent(QPaintEvent *event) override;
@@ -109,10 +111,13 @@ class HexEdit : public QAbstractScrollArea {
   QAction *removeChunkAction_;
   QAction *goToAddressAction_;
   QAction *saveSelectionAction_;
+  QStringList parsers_ids_;
   QMenu menu_;
+  QMenu parsers_menu_;
   QScopedPointer<util::encoders::HexEncoder> hexEncoder_;
 
   void recalculateValues();
+  void initParseMenu();
   void adjustBytesPerRowToWindowSize();
   QRect bytePosToRect(qint64 pos, bool ascii = false);
   qint64 pointToBytePos(QPoint pos);
@@ -141,6 +146,7 @@ class HexEdit : public QAbstractScrollArea {
   void setSelectionEnd(qint64 bytePos);
   void saveSelectionToFile(QString path);
   void scrollToCurrentChunk();
+  void parse(QAction *action);
 };
 
 }  // namespace ui

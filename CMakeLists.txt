@@ -135,6 +135,7 @@ add_library(parser
     ${INCLUDE_DIR}/parser/unpyc.h
     ${INCLUDE_DIR}/parser/unpng.h
     ${INCLUDE_DIR}/parser/utils.h
+    ${SRC_DIR}/parser/parser.cc
     ${SRC_DIR}/parser/unpyc.cc
     ${SRC_DIR}/parser/unpng.cc
     ${SRC_DIR}/parser/utils.cc

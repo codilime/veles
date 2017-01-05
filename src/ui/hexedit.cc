@@ -24,6 +24,7 @@
 #include "ui/hexedit.h"
 #include "util/encoders/factory.h"
 #include "util/settings/theme.h"
+#include "dbif/universe.h"
 
 namespace veles {
 namespace ui {
@@ -74,6 +75,17 @@ void HexEdit::resizeEvent(QResizeEvent *event) {
     adjustBytesPerRowToWindowSize();
   }
   recalculateValues();
+}
+
+void HexEdit::initParseMenu() {
+  parsers_menu_.setTitle("Parse selection");
+  parsers_menu_.clear();
+  parsers_menu_.addAction("auto");
+  parsers_menu_.addSeparator();
+  for (auto id : parsers_ids_) {
+    parsers_menu_.addAction(id);
+  }
+
 }
 
 HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
@@ -178,6 +190,11 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
   }
 
   hexEncoder_.reset(new util::encoders::HexEncoder());
+  initParseMenu();
+  parsers_menu_.setEnabled(false);
+  menu_.addMenu(&parsers_menu_);
+
+  connect(&parsers_menu_, &QMenu::triggered, this, &HexEdit::parse);
 }
 
 QModelIndex HexEdit::selectedChunk() {
@@ -520,12 +537,13 @@ void HexEdit::contextMenuEvent(QContextMenuEvent *event) {
   bool selectionActive = selectionSize() > 0;
   bool isEditable = selectedChunk().isValid() &&
                     (selectedChunk().flags() & Qt::ItemNeverHasChildren) == 0;
+  bool selectionOrChunkActive = selectionActive || selectedChunk().isValid();
   createChunkAction_->setEnabled(selectionActive);
   createChildChunkAction_->setEnabled(isEditable);
   removeChunkAction_->setEnabled(dataModel_->isRemovable(selectedChunk()));
 
-  saveSelectionAction_->setEnabled(selectionActive ||
-                                   selectedChunk().isValid());
+  saveSelectionAction_->setEnabled(selectionOrChunkActive);
+  parsers_menu_.setEnabled(selectionOrChunkActive);
 
   menu_.exec(event->globalPos());
 }
@@ -669,6 +687,33 @@ void HexEdit::saveSelectionToFile(QString path) {
   QDataStream stream(&file);
   stream.writeRawData((const char *)dataToSave.rawData(),
                       static_cast<int>(dataToSave.octets()));
+}
+
+void HexEdit::setParserIds(QStringList ids) {
+  parsers_ids_ = ids;
+  initParseMenu();
+}
+
+void HexEdit::parse(QAction *action) {
+  auto fileBlob = dataModel_->blob();
+  QString parser_id = action->text();
+  if (parser_id == "auto") {
+    parser_id = "";
+  }
+
+  qint64 byteOffset = selectionStart();
+  qint64 size = selectionSize();
+
+  // try to use selected chunk
+  if (size == 0 && selectedChunk().isValid()) {
+    getRangeFromIndex(selectedChunk(), &byteOffset, &size);
+  }
+
+  if (size == 0) {
+    return;
+  }
+
+  fileBlob->asyncRunMethod<dbif::BlobParseRequest>(this, parser_id, byteOffset);
 }
 
 }  // namespace ui

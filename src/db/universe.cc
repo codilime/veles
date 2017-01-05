@@ -100,24 +100,20 @@ QStringList ParserWorker::parserIdsList() {
   for (auto parser : _parsers) {
     res.append(parser->id());
   }
+  res.sort();
   return res;
 }
 
 void ParserWorker::parse(dbif::ObjectHandle blob, MethodRunner *runner,
-                         QString parser_id) {
+                         QString parser_id, quint64 start) {
   for (auto parser : _parsers) {
-    if (parser_id == "") {
-      for (auto magic : parser->magic()) {
-        auto data =
-            blob->syncGetInfo<dbif::BlobDataRequest>(0, magic.size())->data;
-        if (data == magic) {
-          parser->parse(blob);
-        }
+    if (parser_id == "" && parser->magic().size() > 0) {
+      if (parser->verifyAndParse(blob, start)) {
+        break;
       }
-    } else {
-      if (parser->id() == parser_id) {
-        parser->parse(blob);
-      }
+    } else if (parser->id() == parser_id) {
+      parser->verifyAndParse(blob, start);
+      break;
     }
   }
 

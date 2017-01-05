@@ -31,7 +31,7 @@ class ParserWorker : public QObject {
   Q_OBJECT
 
  public slots:
-  void parse(veles::dbif::ObjectHandle blob, MethodRunner *runner, QString parser_id);
+  void parse(veles::dbif::ObjectHandle blob, MethodRunner *runner, QString parser_id, quint64 start = 0);
 
  public:
   void registerParser(parser::Parser *parser);
@@ -66,7 +66,7 @@ class Universe : public QObject {
   ParserWorker* parser() {return parser_;}
 
  signals:
-  void parse(veles::dbif::ObjectHandle blob, MethodRunner *runner, QString parser_id);
+  void parse(veles::dbif::ObjectHandle blob, MethodRunner *runner, QString parser_id, quint64 start = 0);
 };
 };
 };
