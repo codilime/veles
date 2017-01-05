@@ -17,6 +17,7 @@
 #include "assert.h"
 
 #include "util/sampling/isampler.h"
+#include "util/concurrency/threadpool.h"
 
 
 namespace veles {
@@ -230,13 +231,8 @@ void ISampler::runResample(SamplerConfig *sc) {
       delete sc;
       return;
     }
-    // XXX: we really just want to run this in some thread pool, we don't care
-    // about return value and the returned future and we _really_ don't want
-    // any lazy evaluation, so we should probably move to some thread pool at
-    // some point
-    std::thread t(&ISampler::resampleAsync, this,
-                  ++requested_version_, sc);
-    t.detach();
+    threadpool::runTask("visualisation",
+      std::bind(&ISampler::resampleAsync, this, ++requested_version_, sc));
   } else {
     if (samplingRequired(sc)) {
       ResampleData *prepared = prepareResample(sc);

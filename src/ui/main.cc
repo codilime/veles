@@ -22,6 +22,7 @@
 #include "visualisation/digram.h"
 #include "visualisation/trigram.h"
 #include "util/settings/theme.h"
+#include "util/concurrency/threadpool.h"
 
 int main(int argc, char *argv[]) {
   Q_INIT_RESOURCE(veles);
@@ -46,6 +47,8 @@ int main(int argc, char *argv[]) {
   QTranslator translator;
   translator.load(QString("hexedit_") + locale);
   app.installTranslator(&translator);
+
+  veles::util::threadpool::createTopic("visualisation", 3);
 
   veles::ui::VelesMainWindow *mainWin = new veles::ui::VelesMainWindow;
   mainWin->showMaximized();

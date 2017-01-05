@@ -51,6 +51,7 @@ include_directories(${INCLUDE_DIR})
 # VELES build rules
 # LIB: veles_base
 add_library(veles_base
+    ${INCLUDE_DIR}/util/concurrency/threadpool.h
     ${INCLUDE_DIR}/util/sampling/isampler.h
     ${INCLUDE_DIR}/util/sampling/uniform_sampler.h
     ${INCLUDE_DIR}/util/sampling/fake_sampler.h
@@ -60,6 +61,7 @@ add_library(veles_base
     ${INCLUDE_DIR}/util/encoders/factory.h
     ${INCLUDE_DIR}/util/encoders/base64_encoder.h
     ${INCLUDE_DIR}/util/encoders/hex_encoder.h
+    ${SRC_DIR}/util/concurrency/threadpool.cc
     ${SRC_DIR}/util/sampling/isampler.cc
     ${SRC_DIR}/util/sampling/uniform_sampler.cc
     ${SRC_DIR}/util/sampling/fake_sampler.cc
