@@ -122,6 +122,8 @@ struct SetChunkParseRequest : MethodRequest {
 };
 
 struct BlobParseRequest : MethodRequest {
+  QString parser_id;
+  BlobParseRequest(QString parser_id = "") : parser_id(parser_id) {};
   typedef NullReply ReplyType;
 };
 

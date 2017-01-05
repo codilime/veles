@@ -64,11 +64,16 @@ class LocalObject : public QEnableSharedFromThis<LocalObject> {
 
 class RootLocalObject : public LocalObject {
   friend class QSharedPointer<RootLocalObject>;
+  QSet<InfoGetter *> parsers_list_watchers_;
   RootLocalObject(Universe *db) : LocalObject(db, "root") {}
+  void parsers_list_reply(InfoGetter *getter);
+  void remove_parsers_list_watcher(InfoGetter *getter);
 
  public:
   void runMethod(MethodRunner *runner, PMethodRequest req) override;
+  void getInfo(InfoGetter *getter, PInfoRequest req, bool once) override;
   dbif::ObjectType type() const override { return dbif::ROOT; };
+  void parsers_list_updated();
 
   static PLocalObject create(Universe *db) {
     return QSharedPointer<RootLocalObject>::create(db);

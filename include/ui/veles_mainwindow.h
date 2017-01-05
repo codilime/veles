@@ -23,6 +23,7 @@
 #include <QDockWidget>
 #include <QMainWindow>
 #include <QMenu>
+#include <QStringList>
 
 #include "dbif/promise.h"
 #include "dbif/types.h"
@@ -123,6 +124,7 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   void newFile();
   void open();
   void about();
+  void updateParsers(dbif::PInfoReply replay);
 
  private:
   void init();
@@ -147,6 +149,8 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
 
   dbif::ObjectHandle database;
   OptionsDialog *optionsDialog;
+
+  QStringList _parsers_list;
 };
 
 }  // namespace ui

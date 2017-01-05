@@ -22,6 +22,7 @@
 #include <QSplitter>
 #include <QTreeView>
 #include <QWidget>
+#include <QStringList>
 #include <QToolBar>
 
 #include "visualisation/base.h"
@@ -44,6 +45,7 @@ class HexEditTab : public QWidget {
  public:
   explicit HexEditTab(VelesMainWindow *mainWindow, FileBlobModel *dataModel);
   void reapplySettings();
+  void setParserIds(QStringList ids);
 
  private slots:
   void findNext();
@@ -52,7 +54,8 @@ class HexEditTab : public QWidget {
   bool saveAs();
   void updateLineEditWithAddress(qint64 address);
   void showVisualisation();
-  void parse();
+  void parse(QAction *action);
+  void parseMenu();
 
  private:
   bool saveFile(const QString &fileName);
@@ -66,6 +69,7 @@ class HexEditTab : public QWidget {
   void createActions();
   void createToolBars();
   void createSliceCreatorWidget();
+  void initParsersMenu();
 
   void registerLineEdit(QLineEdit *lineEdit);
   bool getRangeValues(qint64 *begin, qint64 *end);
@@ -104,6 +108,8 @@ class HexEditTab : public QWidget {
   HexEdit *hexEdit;
 
   FileBlobModel *dataModel;
+  QStringList _parser_ids;
+  QMenu _parsers_menu;
 
   QLineEdit *registeredLineEdit;
 };

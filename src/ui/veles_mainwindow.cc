@@ -562,6 +562,16 @@ void VelesMainWindow::createMenus() {
   helpMenu->addAction(aboutQtAct);
 }
 
+void VelesMainWindow::updateParsers(dbif::PInfoReply reply) {
+  _parsers_list = reply.dynamicCast<dbif::ParsersListRequest::ReplyType>()->parserIds;
+  QList<QDockWidget*> dock_widgets = findChildren<QDockWidget*>();
+  for(auto dock : dock_widgets) {
+    if(auto hexTab = dynamic_cast<HexEditTab *>(dock->widget())) {
+      hexTab->setParserIds(_parsers_list);
+    }
+  }
+}
+
 void VelesMainWindow::createDb() {
   database = db::create_db();
   auto database_info = new DatabaseInfo(database);
@@ -585,6 +595,9 @@ void VelesMainWindow::createDb() {
           });
 
   connect(database_info, &DatabaseInfo::newFile, [this]() { open(); });
+
+  auto promise = database->asyncSubInfo<dbif::ParsersListRequest>(this);
+  connect(promise, &dbif::InfoPromise::gotInfo, this, &VelesMainWindow::updateParsers);
 }
 
 void VelesMainWindow::createFileBlob(QString fileName) {
@@ -623,6 +636,7 @@ void VelesMainWindow::createHexEditTab(QString fileName,
   auto dataModel =
       new FileBlobModel(fileBlob, {QFileInfo(fileName).fileName()});
   HexEditTab *hex = new HexEditTab(this, dataModel);
+  hex->setParserIds(_parsers_list);
   addTab(hex, dataModel->path().join(" : ") + " - Hex");
 }
 

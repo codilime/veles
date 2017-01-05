@@ -24,8 +24,7 @@
 #include "db/getter.h"
 #include "db/db.h"
 
-#include "parser/unpyc.h"
-#include "parser/unpng.h"
+#include "parser/utils.h"
 
 namespace veles {
 namespace db {
@@ -38,18 +37,24 @@ class DbThread : public QThread {
 };
 
 dbif::ObjectHandle create_db() {
-  ParserWorker *parser = new ParserWorker;
-  Universe *db = new Universe(parser);
+  ParserWorker *parser_worker = new ParserWorker;
+  for (auto parser : parser::createAllParsers()) {
+    parser_worker->registerParser(parser);
+  }
+  Universe *db = new Universe(parser_worker);
   PLocalObject root = RootLocalObject::create(db);
   db->setRoot(root);
   DbThread *thr = new DbThread;
   DbThread *parser_thr = new DbThread;
   db->moveToThread(thr);
-  parser->moveToThread(parser_thr);
+  parser_worker->moveToThread(parser_thr);
   QObject::connect(db, &QObject::destroyed, thr, &QThread::quit);
-  QObject::connect(parser, &QObject::destroyed, parser_thr, &QThread::quit);
-  QObject::connect(db, &QObject::destroyed, parser, &QObject::deleteLater);
-  QObject::connect(db, &Universe::parse, parser, &ParserWorker::parse);
+  QObject::connect(parser_worker, &QObject::destroyed, parser_thr, &QThread::quit);
+  QObject::connect(db, &QObject::destroyed, parser_worker, &QObject::deleteLater);
+  QObject::connect(db, &Universe::parse, parser_worker, &ParserWorker::parse);
+  QObject::connect(parser_worker, &ParserWorker::newParser, [root] {
+    root.dynamicCast<RootLocalObject>()->parsers_list_updated();
+  });
   thr->start();
   parser_thr->start();
   return db->handle(root);
@@ -83,21 +88,41 @@ void Universe::runMethod(PLocalObject obj, MethodRunner *runner, dbif::PMethodRe
   }
 }
 
-void ParserWorker::parse(dbif::ObjectHandle blob, MethodRunner *runner) {
-  auto data = blob->syncGetInfo<dbif::BlobDataRequest>(0, 4)->data;
-  if (data.size() != 4)
-    return;
-  if (data.element64(0) == 0x89 && data.element64(1) == 'P' &&
-      data.element64(2) == 'N' && data.element64(3) == 'G')
-    veles::parser::unpngFileBlob(blob);
-  else if (data.element64(2) == '\r' && data.element64(3) == '\n' &&
-           ((data.element64(0) == 0x9e && data.element64(1) == 0x0c) ||
-            (data.element64(0) == 0xee && data.element64(1) == 0x0c) ||
-            (data.element64(0) == 0x16 && data.element64(1) == 0x0d)))
-    veles::parser::unpycFileBlob(blob);
+ParserWorker::~ParserWorker() { qDeleteAll(_parsers); }
+
+void ParserWorker::registerParser(parser::Parser *parser) {
+  _parsers.append(parser);
+  emit newParser(parser->id());
+}
+
+QStringList ParserWorker::parserIdsList() {
+  QStringList res;
+  for (auto parser : _parsers) {
+    res.append(parser->id());
+  }
+  return res;
+}
+
+void ParserWorker::parse(dbif::ObjectHandle blob, MethodRunner *runner,
+                         QString parser_id) {
+  for (auto parser : _parsers) {
+    if (parser_id == "") {
+      for (auto magic : parser->magic()) {
+        auto data =
+            blob->syncGetInfo<dbif::BlobDataRequest>(0, magic.size())->data;
+        if (data == magic) {
+          parser->parse(blob);
+        }
+      }
+    } else {
+      if (parser->id() == parser_id) {
+        parser->parse(blob);
+      }
+    }
+  }
+
   runner->sendResult<dbif::NullReply>();
   delete runner;
 }
-
 };
 };

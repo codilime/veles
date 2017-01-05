@@ -16,6 +16,7 @@
  */
 #include <QAction>
 #include <QColorDialog>
+#include <QCursor>
 #include <QFileDialog>
 #include <QGroupBox>
 #include <QHeaderView>
@@ -82,10 +83,18 @@ HexEditTab::HexEditTab(VelesMainWindow *mainWindow, FileBlobModel *dataModel)
 
   reapplySettings();
   setWindowTitle(dataModel->path().join(" : ") + " - Hex");
+
+  initParsersMenu();
+  connect(&_parsers_menu, &QMenu::triggered, this, &HexEditTab::parse);
 }
 
 void HexEditTab::reapplySettings() {
   hexEdit->setBytesPerRow(util::settings::hexedit::columnsNumber(), util::settings::hexedit::resizeColumnsToWindowWidth());
+}
+
+void HexEditTab::setParserIds(QStringList ids) {
+  _parser_ids = ids;
+  initParsersMenu();
 }
 
 /*****************************************************************************/
@@ -139,7 +148,7 @@ void HexEditTab::createActions() {
   parserAct = new QAction(QIcon(":/images/parse.png"), tr("&Parse"), this);
   parserAct->setToolTip(tr("Parser"));
   parserAct->setEnabled(true);
-  connect(parserAct, SIGNAL(triggered()), this, SLOT(parse()));
+  connect(parserAct, SIGNAL(triggered()), this, SLOT(parseMenu()));
 }
 
 void HexEditTab::createToolBars() {
@@ -170,6 +179,15 @@ void HexEditTab::createToolBars() {
   toolBarLayout->addStretch();
   toolBarWrapper->setLayout(toolBarLayout);
   layout->addWidget(toolBarWrapper, 0);
+}
+
+void HexEditTab::initParsersMenu() {
+  _parsers_menu.clear();
+  _parsers_menu.addAction("auto");
+  _parsers_menu.addSeparator();
+  for (auto id : _parser_ids) {
+    _parsers_menu.addAction(id);
+  }
 }
 
 void HexEditTab::addChunk(QString name, QString type, QString comment,
@@ -280,10 +298,16 @@ void HexEditTab::showVisualisation() {
   mainWindow->addTab(panel, dataModel->path().join(" : ") + " - Visualisation");
 }
 
-void HexEditTab::parse() {
+void HexEditTab::parse(QAction *action) {
   auto fileBlob = dataModel->blob();
-  fileBlob->asyncRunMethod<dbif::BlobParseRequest>(this);
+  if (action->text() == "auto") {
+    fileBlob->asyncRunMethod<dbif::BlobParseRequest>(this);
+  } else {
+    fileBlob->asyncRunMethod<dbif::BlobParseRequest>(this, action->text());
+  }
 }
+
+void HexEditTab::parseMenu() { _parsers_menu.exec(QCursor::pos()); }
 
 void HexEditTab::registerLineEdit(QLineEdit *lineEdit) {
   registeredLineEdit = lineEdit;

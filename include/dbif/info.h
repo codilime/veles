@@ -38,6 +38,7 @@ struct InfoRequest {
 
 struct DescriptionReply;
 struct ChildrenReply;
+struct ParsersListReply;
 struct BlobDataReply;
 struct ChunkDataReply;
 
@@ -47,6 +48,10 @@ struct DescriptionRequest : InfoRequest {
 
 struct ChildrenRequest : InfoRequest {
   typedef ChildrenReply ReplyType;
+};
+
+struct ParsersListRequest : InfoRequest {
+  typedef ParsersListReply ReplyType;
 };
 
 struct BlobDataRequest : InfoRequest {
@@ -122,6 +127,12 @@ struct ChildrenReply : InfoReply {
   const std::vector<ObjectHandle> objects;
   explicit ChildrenReply(const std::vector<ObjectHandle> &objects) :
     objects(objects) {}
+};
+
+struct ParsersListReply : InfoReply  {
+  const QStringList parserIds;
+  explicit ParsersListReply(const QStringList &ids) :
+    parserIds(ids) {}
 };
 
 struct BlobDataReply : InfoReply {

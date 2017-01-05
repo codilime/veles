@@ -17,15 +17,27 @@
 #ifndef VELES_PARSER_UNPYC_H
 #define VELES_PARSER_UNPYC_H
 
+#include "data/bindata.h"
 #include "dbif/types.h"
+#include "parser/parser.h"
 
 namespace veles {
 namespace parser {
 
-void unpycFileBlob(veles::dbif::ObjectHandle blob);
+void unpycFileBlob(veles::dbif::ObjectHandle blob, uint64_t start = 0);
 
+class PycParser : public Parser {
+ public:
+  PycParser()
+      : Parser("pyc3", {data::BinData(8, {0x9e, 0x0c, '\r', '\n'}),
+                        data::BinData(8, {0xee, 0x0c, '\r', '\n'}),
+                        data::BinData(8, {0x16, 0x0c, '\r', '\n'})}) {}
+  void parse(dbif::ObjectHandle blob, uint64_t start = 0) override {
+    unpycFileBlob(blob, start);
+  }
+};
 
-};
-};
+}  // namespace parser
+}  // namespace veles
 
 #endif

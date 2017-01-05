@@ -17,6 +17,9 @@
 #include "dbif/universe.h"
 #include "parser/utils.h"
 
+#include "parser/unpng.h"
+#include "parser/unpyc.h"
+
 namespace veles {
 namespace parser {
 
@@ -45,5 +48,11 @@ dbif::ObjectHandle makeSubBlob(dbif::ObjectHandle parent, const QString &name, c
   return parent->syncRunMethod<dbif::ChunkCreateSubBlobRequest>(data, name)->object;
 }
 
+QList<Parser *> createAllParsers() {
+  QList<Parser *> res;
+  res.append(new PycParser());
+  res.append(new PngParser());
+  return res;
 }
-}
+} // namespace parser
+} // namespace veles

@@ -18,8 +18,11 @@
 #define VELES_DB_UNIVERSE_H
 
 #include <QObject>
+#include <QStringList>
+#include "data/bindata.h"
 #include "db/types.h"
 #include "dbif/types.h"
+#include "parser/parser.h"
 
 namespace veles {
 namespace db {
@@ -27,8 +30,19 @@ namespace db {
 class ParserWorker : public QObject {
   Q_OBJECT
 
-public slots:
-  void parse(veles::dbif::ObjectHandle blob, MethodRunner *runner);
+ public slots:
+  void parse(veles::dbif::ObjectHandle blob, MethodRunner *runner, QString parser_id);
+
+ public:
+  void registerParser(parser::Parser *parser);
+  QStringList parserIdsList();
+  ~ParserWorker();
+
+ private:
+  QList<parser::Parser *> _parsers;
+
+signals:
+  void newParser(QString id);
 };
 
 class Universe : public QObject {
@@ -49,11 +63,11 @@ class Universe : public QObject {
   QThread *parserThread() {
     return parser_->thread();
   }
+  ParserWorker* parser() {return parser_;}
 
  signals:
-  void parse(veles::dbif::ObjectHandle blob, MethodRunner *runner);
+  void parse(veles::dbif::ObjectHandle blob, MethodRunner *runner, QString parser_id);
 };
-
 };
 };
 

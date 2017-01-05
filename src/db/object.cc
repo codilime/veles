@@ -139,6 +139,21 @@ void RootLocalObject::runMethod(MethodRunner *runner, PMethodRequest req) {
   }
 }
 
+void RootLocalObject::getInfo(InfoGetter *getter, PInfoRequest req, bool once) {
+    if (auto parsersreq = req.dynamicCast<dbif::ParsersListRequest>()) {
+        parsers_list_reply(getter);
+        if (!once) {
+          parsers_list_watchers_.insert(getter);
+          auto shared_this = sharedFromThis();
+          QObject::connect(getter, &QObject::destroyed, [shared_this, getter] () {
+            shared_this.dynamicCast<RootLocalObject>()->remove_parsers_list_watcher(getter);
+          });
+        }
+    } else {
+      LocalObject::getInfo(getter, req, once);
+    }
+}
+
 void DataBlobObject::description_reply(InfoGetter *getter) {
   getter->sendInfo<dbif::BlobDescriptionReply>(
     name(), comment(), 0, data().size(), 8
@@ -217,8 +232,8 @@ void DataBlobObject::runMethod(MethodRunner *runner, PMethodRequest req) {
     PLocalObject obj = ChunkObject::create(sharedFromThis(), parent_chunk,
       chreq->start, chreq->end, chreq->chunk_type, chreq->name);
     runner->sendResult<dbif::CreatedReply>(db()->handle(obj));
-  } else if (req.dynamicCast<dbif::BlobParseRequest>()) {
-    emit db()->parse(db()->handle(sharedFromThis()), runner->forwarder(db()->parserThread()));
+  } else if (auto parse_req = req.dynamicCast<dbif::BlobParseRequest>()) {
+    emit db()->parse(db()->handle(sharedFromThis()), runner->forwarder(db()->parserThread()), parse_req->parser_id);
   } else {
     LocalObject::runMethod(runner, req);
   }
@@ -287,6 +302,20 @@ void ChunkObject::calcParseReplyItems() {
 
 void ChunkObject::parse_reply(InfoGetter *getter) {
   getter->sendInfo<dbif::ChunkDataReply>(parseReplyItems_);
+}
+
+void RootLocalObject::parsers_list_reply(InfoGetter *getter) {
+  getter->sendInfo<dbif::ParsersListReply>(db()->parser()->parserIdsList());
+}
+
+void RootLocalObject::remove_parsers_list_watcher(InfoGetter *getter) {
+  parsers_list_watchers_.remove(getter);
+}
+
+void RootLocalObject::parsers_list_updated() {
+  for (InfoGetter *getter : parsers_list_watchers_) {
+    parsers_list_reply(getter);
+  }
 }
 
 void ChunkObject::description_reply(InfoGetter *getter) {

@@ -130,9 +130,11 @@ target_link_libraries(veles_dbif veles_data)
 
 # LIB: parser
 add_library(parser
+    ${INCLUDE_DIR}/parser/parser.h
     ${INCLUDE_DIR}/parser/stream.h
     ${INCLUDE_DIR}/parser/unpyc.h
     ${INCLUDE_DIR}/parser/unpng.h
+    ${INCLUDE_DIR}/parser/utils.h
     ${SRC_DIR}/parser/unpyc.cc
     ${SRC_DIR}/parser/unpng.cc
     ${SRC_DIR}/parser/utils.cc
