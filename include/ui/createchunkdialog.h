@@ -18,6 +18,7 @@
 #define CREATECHUNKDIALOG_H
 
 #include <QDialog>
+#include <QItemSelectionModel>
 #include <QtCore>
 
 #include "ui/fileblobmodel.h"
@@ -33,10 +34,12 @@ class CreateChunkDialog : public QDialog {
   Q_OBJECT
 
  public:
-  explicit CreateChunkDialog(FileBlobModel *chunksModel_, QWidget *parent_ = 0);
+  explicit CreateChunkDialog(FileBlobModel *chunksModel_,
+                             QItemSelectionModel *selectionModel = nullptr,
+                             QWidget *parent_ = 0);
   ~CreateChunkDialog();
   Ui::CreateChunkDialog *ui;
-  void setParent(const QModelIndex &parent_ = QModelIndex());
+  void updateParent(bool childOfSelected = false);
   void setRange(uint64_t begin, uint64_t end);
 
  public slots:
@@ -44,9 +47,11 @@ class CreateChunkDialog : public QDialog {
 
  private:
   FileBlobModel *chunksModel_;
-  QModelIndex parent_;
+  bool useChildOfSelected_;
+  QItemSelectionModel *chunkSelectionModel_;
   void init();
   void displayPath();
+  QModelIndex parentChunk();
 };
 
 }  // namespace ui

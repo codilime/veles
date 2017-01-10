@@ -114,17 +114,17 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
   connect(horizontalScrollBar(), &QAbstractSlider::valueChanged, this,
           &HexEdit::recalculateValues);
 
-  createChunkDialog_ = new CreateChunkDialog(dataModel_, this);
+  createChunkDialog_ = new CreateChunkDialog(dataModel_, chunkSelectionModel_, this);
 
   createChunkAction_ = new QAction(tr("&Create chunk"), this);
   connect(createChunkAction_, &QAction::triggered, [this]() {
-    createChunkDialog_->setParent(selectedChunk().parent());
+    createChunkDialog_->updateParent();
     createChunkDialog_->show();
   });
 
   createChildChunkAction_ = new QAction(tr("&Create child chunk"), this);
   connect(createChildChunkAction_, &QAction::triggered, [this]() {
-    createChunkDialog_->setParent(selectedChunk());
+    createChunkDialog_->updateParent(true);
     createChunkDialog_->show();
   });
 

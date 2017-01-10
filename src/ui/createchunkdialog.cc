@@ -21,10 +21,13 @@ namespace veles {
 namespace ui {
 
 CreateChunkDialog::CreateChunkDialog(FileBlobModel *chunksModel,
+                                     QItemSelectionModel *selectionModel,
                                      QWidget *parent)
     : QDialog(parent),
       ui(new Ui::CreateChunkDialog),
-      chunksModel_(chunksModel) {
+      chunksModel_(chunksModel),
+      chunkSelectionModel_(selectionModel),
+      useChildOfSelected_(false) {
   ui->setupUi(this);
   init();
 }
@@ -41,13 +44,28 @@ void CreateChunkDialog::init() {
   displayPath();
 
   connect(chunksModel_, &FileBlobModel::newBinData, [this]() {
-    ui->beginSpinBox->setMaximum(static_cast<int>(chunksModel_->binData().size()));
-    ui->endSpinBox->setMaximum(static_cast<int>(chunksModel_->binData().size()));
+    ui->beginSpinBox->setMaximum(
+        static_cast<int>(chunksModel_->binData().size()));
+    ui->endSpinBox->setMaximum(
+        static_cast<int>(chunksModel_->binData().size()));
   });
 }
 
+QModelIndex CreateChunkDialog::parentChunk() {
+  if (chunkSelectionModel_ == nullptr) {
+    return QModelIndex();
+  }
+
+  auto currentIndex = chunkSelectionModel_->currentIndex();
+  if (useChildOfSelected_) {
+    return currentIndex;
+  }
+
+  return currentIndex.parent();
+}
+
 void CreateChunkDialog::displayPath() {
-  QModelIndex index = parent_;
+  QModelIndex index = parentChunk();
   QString path;
   while (index.isValid()) {
     path = index.data().toString() + "/" + path;
@@ -58,15 +76,15 @@ void CreateChunkDialog::displayPath() {
   ui->pathValueLabel->setText(path);
 }
 
-void CreateChunkDialog::setParent(const QModelIndex &parent) {
-  parent_ = parent;
+void CreateChunkDialog::updateParent(bool childOfSelected) {
+  useChildOfSelected_ = childOfSelected;
   displayPath();
 }
 
 void CreateChunkDialog::accept() {
   chunksModel_->addChunk(ui->nameEdit->text(), ui->typeBox->currentText(),
                          ui->commentEdit->text(), ui->beginSpinBox->value(),
-                         ui->endSpinBox->value(), parent_);
+                         ui->endSpinBox->value(), parentChunk());
   emit accepted();
   QDialog::hide();
 }
