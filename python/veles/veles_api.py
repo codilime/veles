@@ -1,15 +1,27 @@
+# Copyright 2017 CodiLime
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import socket
 import struct
 
-import network_pb2
-
 from veles import exceptions as exc
+from veles import network_pb2
 from veles import objects
 
 
 class VelesApi(object):
 
-    def __init__(self, ip_addr, port):
+    def __init__(self, ip_addr='127.0.0.1', port=3135):
         self.ip_addr = ip_addr
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -26,11 +38,11 @@ class VelesApi(object):
                 recv = self.sock.recv(min(4096, length - total_recv))
             except socket.error as e:
                 raise exc.ConnectionException(str(e))
-            if recv == '':
+            if recv == b'':
                 raise exc.ConnectionException('socket connection broken')
             chunks.append(recv)
             total_recv += len(recv)
-        return ''.join(chunks)
+        return b''.join(chunks)
 
     def _send_req(self, req):
         msg = struct.pack('<I', req.ByteSize()) + req.SerializeToString()
@@ -79,6 +91,7 @@ class VelesApi(object):
         req.id.extend(obj.id_path)
         results = self._send_req(req)
 
+        obj.children = []
         for res in results:
             res.parent = obj
             obj.children.append(res)
@@ -94,10 +107,11 @@ class VelesApi(object):
         req.chunk_type = new_obj.chunk_type
         results = self._send_req(req)
 
+        new_obj._from_another(results[0])
         new_obj.parent = obj
         obj.children.append(new_obj)
 
-        return results
+        return new_obj
 
     def delete_object(self, obj):
         if obj.type not in [2, 3]:
@@ -106,5 +120,6 @@ class VelesApi(object):
         req = network_pb2.Request()
         req.type = 4
         req.id.extend(obj.id_path)
-        results = self._send_req(req)
-        return results
+        self._send_req(req)
+        if obj.parent:
+            obj.parent.children.remove(obj)
