@@ -55,8 +55,8 @@ int main(int argc, char **argv) {
   qDebug() << "Name: " << drep->name;
   qDebug() << "Comment: " << drep->comment;
   auto data = blob->syncGetInfo<veles::dbif::BlobDataRequest>(2, 5)->data;
-  qDebug() << "Data: " << QByteArray(reinterpret_cast<const char*>(data.rawData()), data.size());
+  qDebug() << "Data: " << QByteArray(reinterpret_cast<const char*>(data.rawData()), static_cast<int>(data.size()));
   data = blob->syncGetInfo<veles::dbif::BlobDataRequest>(7, 11)->data;
-  qDebug() << "Data: " << QByteArray(reinterpret_cast<const char*>(data.rawData()), data.size());
+  qDebug() << "Data: " << QByteArray(reinterpret_cast<const char*>(data.rawData()), static_cast<int>(data.size()));
   return 0;
 }

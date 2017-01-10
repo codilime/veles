@@ -27,7 +27,7 @@
 namespace veles {
 namespace visualisation {
 
-const float k_minimum_auto_selection_size = 0.1;
+const float k_minimum_auto_selection_size = 0.1f;
 
 typedef VisualisationMinimap::MinimapMode MinimapMode;
 

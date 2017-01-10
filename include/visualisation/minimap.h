@@ -124,12 +124,12 @@ class VisualisationMinimap : public QOpenGLWidget,
   const int k_wheel_units_per_pixel = 6;
   const MinimapColor k_default_color = MinimapColor::GREEN;
   const MinimapMode k_default_mode = MinimapMode::VALUE;
-  const float k_line_selection_epsilon = 0.003;
-  const float k_minimum_line_distance = 0.02;
+  const float k_line_selection_epsilon = 0.003f;
+  const float k_minimum_line_distance = 0.02f;
   static const int k_minimum_entropy_window = 256;
   const int k_bar_height = 7;
   const int k_bar_texture_width = 100;
-  const float k_line_comparison_epsilon = 0.1;
+  const float k_line_comparison_epsilon = 0.1f;
 
   enum class DragState {NO_DRAG, TOP_LINE, BOTTOM_LINE, BOX};
 

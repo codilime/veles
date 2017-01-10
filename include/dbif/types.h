@@ -23,11 +23,11 @@
 namespace veles {
 namespace dbif {
 
-class InfoRequest;
-class InfoReply;
-class MethodRequest;
-class MethodReply;
-class Error;
+struct InfoRequest;
+struct InfoReply;
+struct MethodRequest;
+struct MethodReply;
+struct Error;
 class InfoPromise;
 class MethodResultPromise;
 typedef QSharedPointer<InfoRequest> PInfoRequest;

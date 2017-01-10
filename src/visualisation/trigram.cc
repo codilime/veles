@@ -191,13 +191,13 @@ bool TrigramWidget::prepareOptionsPanel(QBoxLayout *layout) {
 }
 
 int TrigramWidget::suggestBrightness() {
-  int size = getDataSize();
+  size_t size = getDataSize();
   auto data = reinterpret_cast<const uint8_t*>(getData());
   if (size < 100) {
     return (k_minimum_brightness + k_maximum_brightness) / 2;
   }
   std::vector<uint64_t> counts(256, 0);
-  for (int i = 0; i < size; ++i) {
+  for (size_t i = 0; i < size; ++i) {
     counts[data[i]] += 1;
   }
   std::sort(counts.begin(), counts.end());
@@ -304,14 +304,14 @@ void TrigramWidget::timerEvent(QTimerEvent *e) {
   }
 
   if (shape_ == EVisualisationShape::CYLINDER) {
-    c_cyl += 0.01;
+    c_cyl += 0.01f;
   } else {
-    c_cyl -= 0.01;
+    c_cyl -= 0.01f;
   }
   if (shape_ == EVisualisationShape::SPHERE) {
-    c_sph += 0.01;
+    c_sph += 0.01f;
   } else {
-    c_sph -= 0.01;
+    c_sph -= 0.01f;
   }
   if (c_cyl > 1) c_cyl = 1;
   if (c_cyl < 0) c_cyl = 0;
@@ -319,11 +319,11 @@ void TrigramWidget::timerEvent(QTimerEvent *e) {
   if (c_sph < 0) c_sph = 0;
 
   if (mode_ == EVisualisationMode::LAYERED_DIGRAM && c_pos < 1) {
-    c_pos += 0.01;
+    c_pos += 0.01f;
     if (c_pos > 1) c_pos = 1;
   }
   if (mode_ != EVisualisationMode::LAYERED_DIGRAM && c_pos) {
-    c_pos -= 0.01;
+    c_pos -= 0.01f;
     if (c_pos < 0) c_pos = 0;
   }
   update();
@@ -365,7 +365,7 @@ void TrigramWidget::initShaders() {
 }
 
 void TrigramWidget::initTextures() {
-  int size = getDataSize();
+  int size = static_cast<int>(getDataSize());
   const uint8_t *data = reinterpret_cast<const uint8_t*>(getData());
 
   databuf = new QOpenGLBuffer(QOpenGLBuffer::Type(GL_TEXTURE_BUFFER));
@@ -477,7 +477,7 @@ void TrigramWidget::paintGLImpl() {
   glEnable(GL_BLEND);
   glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
   glDepthFunc(GL_ALWAYS);
-  unsigned size = getDataSize();
+  unsigned size = static_cast<unsigned>(getDataSize());
 
   program.bind();
   texture->bind();

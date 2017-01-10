@@ -324,7 +324,7 @@ void VisualisationMinimap::initTextures() {
   }
 
   texture_ = new QOpenGLTexture(QOpenGLTexture::Target2D);
-  texture_->setSize(texture_cols_, texture_rows_);
+  texture_->setSize(static_cast<int>(texture_cols_), static_cast<int>(texture_rows_));
   // TODO(Maciek): WTF HAX
   // I really want to use GL_R8UI here, but for some reasone it doesn't work
   // so using float32 as workaround

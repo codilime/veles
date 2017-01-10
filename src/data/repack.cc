@@ -31,7 +31,7 @@ static size_t gcd(size_t a, size_t b) {
 
 unsigned repackUnit(unsigned src_width,
                     const RepackFormat &format) {
-  unsigned res = format.paddedWidth() / gcd(format.paddedWidth(), src_width) * src_width;
+  unsigned res = format.paddedWidth() / static_cast<unsigned>(gcd(format.paddedWidth(), src_width)) * src_width;
   // Ensure no overflow.
   assert(res % format.paddedWidth() == 0 && res % src_width == 0);
   return res;

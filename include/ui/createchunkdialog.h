@@ -47,8 +47,8 @@ class CreateChunkDialog : public QDialog {
 
  private:
   FileBlobModel *chunksModel_;
-  bool useChildOfSelected_;
   QItemSelectionModel *chunkSelectionModel_;
+  bool useChildOfSelected_;
   void init();
   void displayPath();
   QModelIndex parentChunk();
