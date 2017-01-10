@@ -12,6 +12,8 @@ add_library(veles_network
 
 add_dependencies(veles_network protobuf)
 qt5_use_modules(veles_network Core Network Widgets)
+
+target_link_libraries(veles_network veles_base)
 # Windows is too dumb to select correct version on its own
 if(WIN32)
   target_link_libraries(veles_network $<$<CONFIG:Debug>:${PROTOBUF_LIBRARY_DEBUG}> $<$<NOT:$<CONFIG:Debug>>:${PROTOBUF_LIBRARY}>)

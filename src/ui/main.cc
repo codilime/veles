@@ -14,16 +14,21 @@
  * limitations under the License.
  *
  */
+#include <iostream>
+
 #include <QApplication>
 #include <QSurfaceFormat>
 #include <QTranslator>
+#include <QHostAddress>
 
 #include "ui/veles_mainwindow.h"
 #include "visualisation/base.h"
 #include "visualisation/digram.h"
 #include "visualisation/trigram.h"
+#include "util/settings/network.h"
 #include "util/settings/theme.h"
 #include "util/concurrency/threadpool.h"
+#include "util/version.h"
 
 int main(int argc, char *argv[]) {
   Q_INIT_RESOURCE(veles);
@@ -39,6 +44,7 @@ int main(int argc, char *argv[]) {
   QApplication app(argc, argv);
   app.setApplicationName("Veles");
   app.setOrganizationName("Codisec");
+  app.setApplicationVersion(veles::util::version::string);
 
   app.setStyle(veles::util::settings::theme::createStyle());
   app.setPalette(veles::util::settings::theme::pallete());
@@ -53,12 +59,42 @@ int main(int argc, char *argv[]) {
 
   qRegisterMetaType<veles::visualisation::VisualisationWidget::AdditionalResampleDataPtr>("AdditionalResampleDataPtr");
 
+  QCommandLineParser parser;
+  parser.addHelpOption();
+  parser.addVersionOption();
+  parser.addOptions({
+      {"ip", "IP address the application will listen on.\n"
+       "Value specified will be persistent.", "ip"},
+      {{"p", "port"}, "Port the application will listen on.\n"
+       "Value specified will be persistent.", "port"}
+  });
+  parser.process(app);
+
+  if (parser.isSet("port")) {
+    QString port = parser.value("port");
+    bool ok;
+    uint32_t port_val = port.toUInt(&ok);
+    if (ok && 1 <= port_val && port_val <= 65535) {
+      veles::util::settings::network::setPort(port_val);
+    } else {
+      std::cerr << "Bad port value provided - ignoring." << std::endl;
+    }
+  }
+  if (parser.isSet("ip")) {
+    QHostAddress addr;
+    if (addr.setAddress(parser.value("ip"))) {
+      veles::util::settings::network::setIpAddress(parser.value("ip"));
+    } else {
+      std::cerr << "Bad ip value provided - ignoring." << std::endl;
+    }
+  }
+
   veles::ui::VelesMainWindow *mainWin = new veles::ui::VelesMainWindow;
   mainWin->showMaximized();
 
-  auto files = app.arguments();
-  for (auto file = files.begin() + 1; file != files.end(); ++file) {
-    mainWin->addFile(*file);
+  auto files = parser.positionalArguments();
+  for (auto file : files) {
+    mainWin->addFile(file);
   }
 
   return app.exec();

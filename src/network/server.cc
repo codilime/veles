@@ -18,18 +18,21 @@
 #include "db/object.h"
 #include "dbif/types.h"
 #include "network/server.h"
+#include "util/settings/network.h"
 
 #include <QtNetwork/QTcpSocket>
-#include <QDataStream>
 #include <QtEndian>
+#include <QDataStream>
+#include <QSettings>
 
 namespace veles {
 namespace db {
 
 NetworkServer::NetworkServer(PLocalObject root) :
   root_(root), tcp_server_(new QTcpServer(this)) {
-  // TODO allow configuration
-  if (!tcp_server_->listen(QHostAddress::Any, 1337)) {
+  int32_t port = util::settings::network::port();
+  QHostAddress ip_addr(util::settings::network::ipAddress());
+  if (!tcp_server_->listen(ip_addr, port)) {
     // TODO some error logging here
     return;
   }
@@ -47,13 +50,14 @@ void NetworkServer::handle() {
 
 void NetworkServer::readMessage(QTcpSocket *client_connection) {
   int32_t msg_len;
-  if (client_connection->bytesAvailable() < (int32_t)sizeof(msg_len)) {
+  if (client_connection->bytesAvailable() < static_cast<int32_t>(sizeof(msg_len))) {
     return;
   }
 
   client_connection->peek(reinterpret_cast<char*>(&msg_len), sizeof(msg_len));
   msg_len = qFromLittleEndian(msg_len);
-  if (client_connection->bytesAvailable() >= (int32_t)sizeof(msg_len) + msg_len) {
+  if (client_connection->bytesAvailable() >=
+      static_cast<int32_t>(sizeof(msg_len)) + msg_len) {
     QScopedArrayPointer<char> message(new char[msg_len]);
     // We don't need it anymore, but we need to get rid of it either way.
     client_connection->read(reinterpret_cast<char*>(&msg_len), sizeof(msg_len));
@@ -172,7 +176,7 @@ void NetworkServer::sendResponse(QTcpSocket *client_connection,
   QScopedArrayPointer<char> response_content(new char[resp_len]);
   resp.SerializeToArray(&response_content[0], resp_len);
   int written = 0, total_written = 0;
-  while (total_written < (int32_t)sizeof(resp_len_send)) {
+  while (total_written < static_cast<int32_t>(sizeof(resp_len_send))) {
     written = client_connection->write(
           ((const char*)&resp_len_send)+total_written,
           sizeof(resp_len_send) - total_written);

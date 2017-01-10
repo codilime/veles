@@ -18,6 +18,7 @@
 #include <QMessageBox>
 #include "ui_optionsdialog.h"
 #include "util/settings/hexedit.h"
+#include "util/settings/network.h"
 #include "util/settings/theme.h"
 
 namespace veles {
@@ -45,21 +46,35 @@ void OptionsDialog::show() {
   ui->hexColumnsAutoCheckBox->setCheckState(checkState);
   ui->hexColumnsSpinBox->setValue(util::settings::hexedit::columnsNumber());
   ui->hexColumnsSpinBox->setEnabled(checkState != Qt::Checked);
+
+  ui->portBox->setValue(util::settings::network::port());
+
   QWidget::show();
 }
 
 void OptionsDialog::accept() {
+  bool restart_needed = false;
   QString newTheme = ui->colorsBox->currentText();
   if (newTheme != util::settings::theme::currentId()) {
     veles::util::settings::theme::setCurrentId(newTheme);
-    QMessageBox::about(
-        this, tr("Theme change"),
-        tr("To apply theme change setting please restart application"));
+    restart_needed = true;
   }
 
   util::settings::hexedit::setResizeColumnsToWindowWidth(
       ui->hexColumnsAutoCheckBox->checkState() == Qt::Checked);
   util::settings::hexedit::setColumnsNumber(ui->hexColumnsSpinBox->value());
+
+  uint32_t new_port = ui->portBox->value();
+  if (new_port != util::settings::network::port()) {
+    util::settings::network::setPort(new_port);
+    restart_needed = true;
+  }
+
+  if (restart_needed) {
+    QMessageBox::about(
+        this, tr("Options change"),
+        tr("Some changes will only take effect after application restart"));
+  }
 
   emit accepted();
   QDialog::hide();
