@@ -1,9 +1,22 @@
-# for now it's just a single class for all types of object
-# when we have more final database schema we need to do it in better way
-import network_pb2
+# Copyright 2017 CodiLime
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+from veles import network_pb2
 
 
 class LocalObject(object):
+    # for now it's just a single class for all types of object
+    # when we have more final database schema we need to do it in better way
     def __init__(self, proto_obj=None, id_path=None, parent=None):
         if proto_obj is None:
             self._proto_obj = network_pb2.LocalObject()
@@ -15,6 +28,12 @@ class LocalObject(object):
         else:
             self.id_path = id_path[:]
         self.children = []
+
+    def _from_another(self, other):
+        self._proto_obj = other._proto_obj
+        self.parent = other.parent
+        self.id_path = other.id_path
+        self.children = other.children
 
     # maybe in future we should autogenerate it based on proto file
     @property
