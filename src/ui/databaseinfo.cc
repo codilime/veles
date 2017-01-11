@@ -41,6 +41,8 @@ DatabaseInfo::DatabaseInfo(dbif::ObjectHandle database, QWidget *parent)
     ui_->goButton->setEnabled(true);
   });
 
+  connect(ui_->resourcesListView, &QAbstractItemView::doubleClicked, this , &DatabaseInfo::goClicked);
+
   ui_->goButton->setEnabled(false);
 
   historyModel_ = new QStandardItemModel(0, 3);
