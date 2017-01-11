@@ -276,11 +276,10 @@ void NodeTreeWidget::showVisualisation() {
 }
 
 void NodeTreeWidget::parse(QAction *action) {
-  auto fileBlob = data_model_->blob();
   if (action->text() == "auto") {
-    fileBlob->asyncRunMethod<dbif::BlobParseRequest>(this);
+    data_model_->parse();
   } else {
-    fileBlob->asyncRunMethod<dbif::BlobParseRequest>(this, action->text());
+    data_model_->parse(action->text());
   }
 }
 

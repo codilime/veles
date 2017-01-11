@@ -24,7 +24,6 @@
 #include "ui/hexedit.h"
 #include "util/encoders/factory.h"
 #include "util/settings/theme.h"
-#include "dbif/universe.h"
 
 namespace veles {
 namespace ui {
@@ -704,25 +703,24 @@ void HexEdit::setParserIds(QStringList ids) {
 }
 
 void HexEdit::parse(QAction *action) {
-  auto fileBlob = dataModel_->blob();
   QString parser_id = action->text();
   if (parser_id == "auto") {
     parser_id = "";
   }
-
+  QModelIndex parent;
   qint64 byteOffset = selectionStart();
   qint64 size = selectionSize();
 
   // try to use selected chunk
   if (size == 0 && selectedChunk().isValid()) {
     getRangeFromIndex(selectedChunk(), &byteOffset, &size);
+    parent = selectedChunk();
   }
 
   if (size == 0) {
     return;
   }
-
-  fileBlob->asyncRunMethod<dbif::BlobParseRequest>(this, parser_id, byteOffset);
+  dataModel_->parse(parser_id, byteOffset, parent);
 }
 
 }  // namespace ui

@@ -206,8 +206,9 @@ void parseCode(dbif::ObjectHandle code) {
   parseLnotab(code, bytecodeBlob);
 }
 
-void unpycFileBlob(dbif::ObjectHandle blob, uint64_t start) {
-  StreamParser parser(blob, start);
+void unpycFileBlob(dbif::ObjectHandle blob, uint64_t start,
+                   dbif::ObjectHandle parent_chunk) {
+  StreamParser parser(blob, start, parent_chunk);
   parser.startChunk("pycheader", "header");
   parser.getLe32("sig");
   parser.getLe32("time");

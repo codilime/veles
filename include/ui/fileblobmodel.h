@@ -60,6 +60,8 @@ class FileBlobModel : public QAbstractItemModel {
   const data::BinData& binData() {return binData_;}
   bool isRemovable(const QModelIndex &index = QModelIndex());
   void uploadNewData(const QByteArray &buf);
+  void parse(QString parser = "", qint64 offset = 0,
+             const QModelIndex &parent = QModelIndex());
 
   dbif::ObjectHandle blob(const QModelIndex &index = QModelIndex());
   QStringList path() {return path_;};

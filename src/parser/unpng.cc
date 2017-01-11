@@ -66,8 +66,9 @@ std::vector<uint8_t> do_inflate(const std::vector<uint8_t> &d) {
   }
 }
 
-void unpngFileBlob(dbif::ObjectHandle blob, uint64_t start) {
-  StreamParser parser(blob, start);
+void unpngFileBlob(dbif::ObjectHandle blob, uint64_t start,
+                   dbif::ObjectHandle parent_chunk) {
+  StreamParser parser(blob, start, parent_chunk);
   parser.startChunk("png_file", "file");
   parser.startChunk("png_header", "header");
   parser.getBytes("sig", 8);

@@ -233,7 +233,9 @@ void DataBlobObject::runMethod(MethodRunner *runner, PMethodRequest req) {
       chreq->start, chreq->end, chreq->chunk_type, chreq->name);
     runner->sendResult<dbif::CreatedReply>(db()->handle(obj));
   } else if (auto parse_req = req.dynamicCast<dbif::BlobParseRequest>()) {
-    emit db()->parse(db()->handle(sharedFromThis()), runner->forwarder(db()->parserThread()), parse_req->parser_id, parse_req->start);
+    emit db()->parse(
+        db()->handle(sharedFromThis()), runner->forwarder(db()->parserThread()),
+        parse_req->parser_id, parse_req->start, parse_req->parent_chunk);
   } else {
     LocalObject::runMethod(runner, req);
   }

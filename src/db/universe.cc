@@ -105,14 +105,15 @@ QStringList ParserWorker::parserIdsList() {
 }
 
 void ParserWorker::parse(dbif::ObjectHandle blob, MethodRunner *runner,
-                         QString parser_id, quint64 start) {
+                         QString parser_id, quint64 start,
+                         veles::dbif::ObjectHandle parent_chunk) {
   for (auto parser : _parsers) {
     if (parser_id == "" && parser->magic().size() > 0) {
-      if (parser->verifyAndParse(blob, start)) {
+      if (parser->verifyAndParse(blob, start, parent_chunk)) {
         break;
       }
     } else if (parser->id() == parser_id) {
-      parser->verifyAndParse(blob, start);
+      parser->verifyAndParse(blob, start, parent_chunk);
       break;
     }
   }

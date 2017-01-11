@@ -27,6 +27,7 @@ namespace parser {
 
 class StreamParser {
   dbif::ObjectHandle blob_;
+  dbif::ObjectHandle parent_chunk_;
   uint64_t pos_;
 
   struct WorkChunk {
@@ -42,15 +43,16 @@ class StreamParser {
   size_t blob_size_;
 
  public:
-  StreamParser(dbif::ObjectHandle blob, uint64_t start) :
-    blob_(blob), pos_(start) {
+  StreamParser(dbif::ObjectHandle blob, uint64_t start,
+               dbif::ObjectHandle parent_chunk = dbif::ObjectHandle())
+      : blob_(blob), parent_chunk_(parent_chunk), pos_(start) {
     auto desc = blob_->syncGetInfo<dbif::DescriptionRequest>();
     width_ = desc.dynamicCast<dbif::BlobDescriptionReply>()->width;
     blob_size_ = desc.dynamicCast<dbif::BlobDescriptionReply>()->size;
   }
 
   dbif::ObjectHandle startChunk(const QString &type, const QString &name) {
-    dbif::ObjectHandle parent;
+    dbif::ObjectHandle parent = parent_chunk_;
     if (stack_.size())
       parent = stack_.back().chunk;
     dbif::ObjectHandle chunk = blob_->syncRunMethod<dbif::ChunkCreateRequest>(

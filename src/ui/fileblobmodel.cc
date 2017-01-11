@@ -362,6 +362,16 @@ void FileBlobModel::uploadNewData(const QByteArray& buf) {
       data::BinData(8, data.size(), reinterpret_cast<uint8_t*>(data.data())));
 }
 
+void FileBlobModel::parse(QString parser, qint64 offset,
+                          const QModelIndex& parent) {
+  dbif::ObjectHandle parent_chunk;
+  if (parent.isValid()) {
+    parent_chunk = itemFromIndex(parent)->objectHandle();
+  }
+  fileBlob_->asyncRunMethod<dbif::BlobParseRequest>(this, parser, offset,
+                                                    parent_chunk);
+}
+
 bool FileBlobModel::isRemovable(const QModelIndex &index) {
   auto item = itemFromIndex(index);
   return index.isValid() && item != nullptr && item->isRemovable();

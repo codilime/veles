@@ -32,8 +32,11 @@ class Parser {
   Parser(QString id) : _id(id) {}
   QString id() { return _id; }
   QList<data::BinData> magic() { return _magic; }
-  bool verifyAndParse(dbif::ObjectHandle blob, uint64_t start = 0);
-  virtual void parse(dbif::ObjectHandle blob, uint64_t start = 0) = 0;
+  bool verifyAndParse(dbif::ObjectHandle blob, uint64_t start = 0,
+                      dbif::ObjectHandle parent_chunk = dbif::ObjectHandle());
+  virtual void parse(
+      dbif::ObjectHandle blob, uint64_t start = 0,
+      dbif::ObjectHandle parent_chunk = dbif::ObjectHandle()) = 0;
 
  private:
   QString _id;
