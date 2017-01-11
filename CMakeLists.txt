@@ -214,6 +214,17 @@ qt5_wrap_ui(FORMS
     ${SRC_DIR}/ui/logwidget.ui
     )
 
+if(WIN32)
+  set(ICONS ${CMAKE_SOURCE_DIR}/resources/icons/veles.rc)
+endif(WIN32)
+
+if(APPLE)
+  set(ICONS ${CMAKE_SOURCE_DIR}/resources/icons/veles.icns)
+  set(MACOSX_BUNDLE_ICON_FILE veles.icns)
+  set_source_files_properties(${ICONS} PROPERTIES
+    MACOSX_PACKAGE_LOCATION Resources)
+endif(APPLE)
+
 # EXE: Main executable
 add_executable(main_ui
     ${INCLUDE_DIR}/ui/logwidget.h
@@ -255,7 +266,8 @@ add_executable(main_ui
     ${SRC_DIR}/ui/spinboxvalidator.cc
     ${RESOURCES}
     ${VISUALISATION_SHADERS}
-    ${FORMS})
+    ${FORMS}
+    ${ICONS})
 
   set (GENERATED_MOC_FILES
     ${CMAKE_SOURCE_DIR}/moc_base.cpp
@@ -312,7 +324,6 @@ if(WIN32 AND NOT MSVC)
   set_target_properties(main_ui PROPERTIES RUNTIME_OUTPUT_DIRECTORY "bin")
 endif(WIN32 AND NOT MSVC)
 
-
 # Post-build packaging
 
 #Unix paths
@@ -325,6 +336,7 @@ endif(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
 
 # Windows
 if(WIN32)
+  set_target_properties(main_ui PROPERTIES WIN32 TRUE)
   # Run winddeployqt if it can be found
   find_program(WINDEPLOYQT_EXECUTABLE NAMES windeployqt HINTS ${QTDIR} ENV QT PATH_SUFFIXES bin)
   add_custom_command(TARGET main_ui POST_BUILD
