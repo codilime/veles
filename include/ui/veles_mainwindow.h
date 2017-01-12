@@ -45,17 +45,23 @@ class DockWidget : public QDockWidget {
  public:
   DockWidget();
   virtual ~DockWidget();
+  const QAction* maximizeHereAction();
+  static DockWidget* getParentDockWidget(QObject* obj);
 
  public slots:
   void displayContextMenu(const QPoint& pos);
   void moveToDesktop();
   void moveToWindow();
+  void detachToNewTopLevelWindow();
+  void detachToNewTopLevelWindowAndMaximize();
 
  protected:
   void moveEvent(QMoveEvent *event) Q_DECL_OVERRIDE;
   void timerEvent(QTimerEvent* event) Q_DECL_OVERRIDE;
   QMenu* createMoveToDesktopMenu();
   QMenu* createMoveToWindowMenu();
+  QAction* createMoveToNewWindowAction();
+  QAction* createMoveToNewWindowAndMaximizeAction();
 
  protected:
   static constexpr int max_ticks_ = 4;
@@ -64,6 +70,8 @@ class DockWidget : public QDockWidget {
   int timer_id_;
   int ticks_;
   QMenu* context_menu_;
+  QAction* detach_action_;
+  QAction* maximize_here_action_;
 };
 
 /*****************************************************************************/

@@ -31,5 +31,6 @@
         <file>images/label_N0.png</file>
         <file>images/show_node_tree.png</file>
         <file>images/show_hex_edit.png</file>
+        <file>images/maximize.png</file>
     </qresource>
 </RCC>
