@@ -26,8 +26,8 @@ CreateChunkDialog::CreateChunkDialog(FileBlobModel *chunksModel,
     : QDialog(parent),
       ui(new Ui::CreateChunkDialog),
       chunksModel_(chunksModel),
-      useChildOfSelected_(false),
-      chunkSelectionModel_(selectionModel) {
+      chunkSelectionModel_(selectionModel),
+      useChildOfSelected_(false) {
   ui->setupUi(this);
   init();
 }

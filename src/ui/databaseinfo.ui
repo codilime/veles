@@ -67,7 +67,6 @@
      <zorder>goButton</zorder>
      <zorder>newButton</zorder>
      <zorder>resourcesListView</zorder>
-     <zorder>horizontalSpacer</zorder>
     </widget>
    </item>
   </layout>
