@@ -57,12 +57,33 @@ DockWidget::DockWidget() : QDockWidget(), timer_id_(0), ticks_(0),
   }
   connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
       this, SLOT(displayContextMenu(const QPoint&)));
+
+  maximize_here_action_ = createMoveToNewWindowAndMaximizeAction();
+  addAction(maximize_here_action_);
+  detach_action_ = createMoveToNewWindowAction();
 }
 
 DockWidget::~DockWidget() {
   if (timer_id_) {
     killTimer(timer_id_);
   }
+}
+
+const QAction* DockWidget::maximizeHereAction() {
+  return maximize_here_action_;
+}
+
+DockWidget* DockWidget::getParentDockWidget(QObject* obj) {
+  while (obj) {
+    DockWidget* dock = dynamic_cast<DockWidget*>(obj);
+    if (dock == nullptr) {
+      obj = obj->parent();
+    } else {
+      return dock;
+    }
+  }
+
+  return nullptr;
 }
 
 void DockWidget::displayContextMenu(const QPoint& pos) {
@@ -74,6 +95,9 @@ void DockWidget::displayContextMenu(const QPoint& pos) {
 
   context_menu_->addMenu(createMoveToDesktopMenu());
   context_menu_->addMenu(createMoveToWindowMenu());
+  context_menu_->addAction(detach_action_);
+  context_menu_->addAction(maximize_here_action_);
+
   context_menu_->popup(mapToGlobal(pos));
 }
 
@@ -97,6 +121,39 @@ void DockWidget::moveToWindow() {
         qvariant_cast<quintptr>(action->data()));
 
     window->moveDockWidgetToWindow(this);
+  }
+}
+
+void DockWidget::detachToNewTopLevelWindow() {
+  auto current_main_window =
+      MainWindowWithDetachableDockWidgets::getOwnerOfDockWidget(this);
+  auto docks = current_main_window->findChildren<DockWidget*>();
+  if (docks.size() == 1) {
+    return;
+  }
+
+  setFloating(true);
+  MainWindowWithDetachableDockWidgets* main_window =
+      new MainWindowWithDetachableDockWidgets;
+  main_window->setGeometry(QDockWidget::geometry());
+  main_window->addDockWidget(Qt::DockWidgetArea::LeftDockWidgetArea, this);
+  main_window->show();
+}
+
+void DockWidget::detachToNewTopLevelWindowAndMaximize() {
+  auto current_main_window =
+      MainWindowWithDetachableDockWidgets::getOwnerOfDockWidget(this);
+  auto docks = current_main_window->findChildren<DockWidget*>();
+  if(docks.size() == 1) {
+    current_main_window->showMaximized();
+  } else {
+    int screen = QApplication::desktop()->screenNumber(this);
+    auto new_window = new MainWindowWithDetachableDockWidgets;
+    QRect target_geometry = QApplication::desktop()->availableGeometry(screen);
+    new_window->move(target_geometry.topLeft());
+    new_window->resize(1000, 700);
+    new_window->showMaximized();
+    new_window->moveDockWidgetToWindow(this);
   }
 }
 
@@ -182,6 +239,25 @@ QMenu* DockWidget::createMoveToWindowMenu() {
   }
 
   return menu_move_to_window;
+}
+
+QAction* DockWidget::createMoveToNewWindowAction() {
+  auto action = new QAction(tr("Move to new top level window"), this);
+  connect(action, SIGNAL(triggered()),
+      this, SLOT(detachToNewTopLevelWindow()));
+
+  return action;
+}
+
+QAction* DockWidget::createMoveToNewWindowAndMaximizeAction() {
+  auto action = new QAction(tr("Move to new top level window and maximize"), this);
+  action->setShortcut(QKeySequence(Qt::Key_F12));
+  action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+  action->setIcon(QIcon(":/images/maximize.png"));
+  connect(action, SIGNAL(triggered()),
+      this, SLOT(detachToNewTopLevelWindowAndMaximize()));
+
+  return action;
 }
 
 /*****************************************************************************/
