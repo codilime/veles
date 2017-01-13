@@ -198,6 +198,17 @@ class BinData {
     return res;
   }
 
+
+  /** Create new bindata by contacting two other BinDatas, width of both BinDatas
+      must be the same. */
+  BinData operator+(const BinData &other) const {
+    assert(width_ == other.width_);
+    BinData res = BinData(width_, size_ + other.size_);
+    res.setData(0, size_, *this);
+    res.setData(size_, size_ + other.size_, other);
+    return res;
+  }
+
   /** Returns a subrange of bits of a single element of data.  Bits are
       counted from LSB, 0-based.  num_bits must be at most 64.  */
   uint64_t bits64(size_t el, unsigned start_bit, unsigned num_bits) const {

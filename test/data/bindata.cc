@@ -451,6 +451,17 @@ TEST(BinData, SetBits) {
   EXPECT_EQ(b.bits64(0, 64, 56), 0xffeeda9a8a7a6aull);
 }
 
+TEST(BinData, OperatorPlus) {
+  BinData a = BinData::fromRawData(8, {1});
+  BinData b = BinData::fromRawData(8, {2, 3});
+  BinData res = a + b;
+  EXPECT_EQ(res.width(), 8);
+  EXPECT_EQ(res.size(), 3);
+  EXPECT_EQ(res.element64(), 0x01);
+  EXPECT_EQ(res.element64(1), 0x02);
+  EXPECT_EQ(res.element64(2), 0x03);
+}
+
 TEST(BinData, ToString) {
   EXPECT_EQ(BinData::fromRawData(8, {1}).toString(), "0x01");
   EXPECT_EQ(BinData::fromRawData(9, {1, 0}).toString(), "0x001");
