@@ -15,8 +15,8 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.92.0 r15299"
-   sodipodi:docname="label_pos.svg"
-   inkscape:export-filename="C:\EAX\veles-wip\resources\images\label_pos.png"
+   sodipodi:docname="label_one_digram.svg"
+   inkscape:export-filename=""
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96">
   <defs
@@ -66,6 +66,51 @@
        y="1004.3622"
        rx="7.0000005"
        ry="7.0000005" />
+    <g
+       id="g22"
+       transform="translate(-4,11.325943)">
+      <text
+         transform="scale(1.0003024,0.99969767)"
+         id="text12"
+         y="1016.5768"
+         x="16.31321"
+         style="font-style:normal;font-weight:normal;font-size:17.99994659px;line-height:11.24996567px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.00000012px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           dx="0.36994901 1.171505"
+           style="stroke-width:1.00000012px"
+           y="1016.5768"
+           x="16.31321"
+           id="tspan10"
+           sodipodi:role="line">FF</tspan></text>
+      <text
+         transform="scale(1.0003024,0.99969767)"
+         id="text12-5"
+         y="1030.978"
+         x="16.539421"
+         style="font-style:normal;font-weight:normal;font-size:17.99994659px;line-height:11.24996567px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.00000012px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           style="stroke-width:1.00000012px"
+           y="1030.978"
+           x="16.539421"
+           id="tspan10-5"
+           sodipodi:role="line">00</tspan></text>
+    </g>
+    <g
+       id="g26"
+       transform="translate(1.5355344,0.3761)">
+      <path
+         sodipodi:nodetypes="cccc"
+         inkscape:connector-curvature="0"
+         id="path54"
+         d="m 34.28701,1011.5128 h 5.623983 v 32.9466 h -5.875805"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         sodipodi:nodetypes="cccc"
+         inkscape:connector-curvature="0"
+         id="path54-4"
+         d="M 10.641921,1011.5128 H 5.0179381 v 32.9466 h 5.8758049"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    </g>
     <rect
        style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect4622"
@@ -80,41 +125,5 @@
        height="5.6568542"
        x="-36.592777"
        y="1042.2471" />
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:17.99994659px;line-height:11.24996567px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.00000012px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="-42.999962"
-       y="1015.7048"
-       id="text12"
-       transform="scale(1.0003024,0.99969769)"><tspan
-         sodipodi:role="line"
-         id="tspan10"
-         x="-42.999962"
-         y="1015.7048"
-         style="stroke-width:1.00000012px"
-         dx="0.36994901 1.171505">FF</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:17.99994659px;line-height:11.24996567px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.00000012px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="-39.062561"
-       y="1056.613"
-       id="text12-5-2"
-       transform="scale(1.0003024,0.99969769)"><tspan
-         sodipodi:role="line"
-         id="tspan10-5-9"
-         x="-39.062561"
-         y="1056.613"
-         style="stroke-width:1.00000012px">00</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:21.7695179px;line-height:13.60594845px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="1.4917219"
-       y="1036.2866"
-       id="text108"><tspan
-         sodipodi:role="line"
-         id="tspan106"
-         x="1.4917219"
-         y="1036.2866"
-         style="stroke-width:1px">POS</tspan></text>
   </g>
 </svg>

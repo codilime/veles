@@ -125,7 +125,7 @@ class TrigramWidget : public VisualisationWidget {
 
   void paintLabels(QMatrix4x4& scene_mp, QMatrix4x4& scene_m);
   void paintLabel(LabelPositionMixer& mixer, QMatrix4x4& scene_to_screen,
-      QMatrix4x4& screen_mp);
+      QMatrix4x4& screen_mp, QOpenGLTexture* texture);
   void initLabels();
   void releaseLabels();
   QVector3D calcScreenPosForLabel(QVector3D world_pos,
@@ -177,7 +177,7 @@ class TrigramWidget : public VisualisationWidget {
   QCheckBox *use_heuristic_checkbox_;
   bool is_playing_, use_brightness_heuristic_;
   QCheckBox* show_labels_and_rf_checkbox_;
-  bool show_labels_and_rf_;
+  bool show_labels_;
 
   QList<Manipulator*> manipulators_;
   Manipulator* current_manipulator_;
@@ -198,8 +198,13 @@ class TrigramWidget : public VisualisationWidget {
   QOpenGLTexture* texture_3_;
   QOpenGLTexture* texture_pos_;
   QOpenGLTexture* texture_N0_;
+  QOpenGLTexture* texture_0_digram_;
+  QOpenGLTexture* texture_1_digram_;
+  QOpenGLTexture* texture_2_digram_;
+  QOpenGLTexture* texture_N0_digram_;
 
-  LabelPositionMixer lpm_0_, lpm_1_, lpm_2_, lpm_3_, lpm_pos_, lpm_N0_;
+  LabelPositionMixer lpm_0_, lpm_1_, lpm_2_, lpm_3_, lpm_pos_, lpm_N0_,
+      lpm_0_digram_, lpm_1_digram_, lpm_2_digram_, lpm_N0_digram_;
 };
 
 }  // namespace visualisation
