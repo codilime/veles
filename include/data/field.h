@@ -79,6 +79,23 @@ struct FieldHighType {
     res.shift = shift;
     return res;
   }
+
+  static FieldHighType floating(FieldFloatMode float_mode, bool float_complex = false) {
+    FieldHighType res;
+    res.mode = FLOAT;
+    res.float_mode = float_mode;
+    res.float_complex = float_complex;
+    return res;
+  }
+
+  static FieldHighType string(FieldStringMode string_mode, FieldStringEncoding string_encoding = ENC_RAW) {
+    FieldHighType res;
+    res.mode = STRING;
+    res.string_mode = string_mode;
+    res.string_encoding = string_encoding;
+    return res;
+  }
+
 };
 
 struct ChunkDataItem {
