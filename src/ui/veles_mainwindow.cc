@@ -736,7 +736,12 @@ void VelesMainWindow::createFileBlob(QString fileName) {
   if (!fileName.isEmpty()) {
     QFile file(fileName);
     file.setFileName(fileName);
-    file.open(QIODevice::ReadOnly);
+    if(!file.open(QIODevice::ReadOnly)){
+      QMessageBox::warning(
+          this, tr("Failed to open"),
+          QString(tr("Failed to open \"%1\".")).arg(fileName));
+      return;
+    }
     QByteArray bytes = file.readAll();
     data = data::BinData(8, bytes.size(),
                          reinterpret_cast<uint8_t *>(bytes.data()));
