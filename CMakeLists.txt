@@ -197,6 +197,7 @@ qt5_wrap_ui(FORMS
 add_executable(main_ui
     ${INCLUDE_DIR}/ui/logwidget.h
     ${INCLUDE_DIR}/ui/veles_mainwindow.h
+    ${INCLUDE_DIR}/ui/mainwindow_native.h
     ${INCLUDE_DIR}/ui/hexeditwidget.h
     ${INCLUDE_DIR}/ui/nodetreewidget.h
     ${INCLUDE_DIR}/ui/optionsdialog.h
@@ -216,6 +217,7 @@ add_executable(main_ui
     ${SRC_DIR}/ui/main.cc
     ${SRC_DIR}/ui/logwidget.cc
     ${SRC_DIR}/ui/veles_mainwindow.cc
+    ${SRC_DIR}/ui/mainwindow_native.cc
     ${SRC_DIR}/ui/hexeditwidget.cc
     ${SRC_DIR}/ui/nodetreewidget.cc
     ${SRC_DIR}/ui/optionsdialog.cc

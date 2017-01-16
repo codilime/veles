@@ -54,6 +54,9 @@ class DockWidget : public QDockWidget {
   void moveToWindow();
   void detachToNewTopLevelWindow();
   void detachToNewTopLevelWindowAndMaximize();
+  void topLevelChangedNotify(bool top_level);
+  void switchTitleBar(bool is_default);
+  void centerTitleBarOnPosition(QPoint pos);
 
  protected:
   void moveEvent(QMoveEvent *event) Q_DECL_OVERRIDE;
@@ -72,6 +75,29 @@ class DockWidget : public QDockWidget {
   QMenu* context_menu_;
   QAction* detach_action_;
   QAction* maximize_here_action_;
+  QWidget* empty_title_bar_;
+};
+
+/*****************************************************************************/
+/* TabBarEventFilter */
+/*****************************************************************************/
+
+class TabBarEventFilter : public QObject {
+  Q_OBJECT
+
+ public:
+  TabBarEventFilter(QObject* parent = nullptr);
+
+ protected:
+  bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;
+  virtual bool mouseMove(QTabBar* tab_bar, QMouseEvent* event);
+  virtual bool mouseButtonPress(QTabBar* tab_bar, QMouseEvent* event);
+  virtual bool mouseButtonRelease(QTabBar* tab_bar, QMouseEvent* event);
+  virtual bool mouseButtonDblClick(QTabBar* tab_bar, QMouseEvent* event);
+
+  QTabBar* dragged_tab_bar_;
+  int dragged_tab_index_;
+  QPoint drag_init_pos_;
 };
 
 /*****************************************************************************/
@@ -91,6 +117,12 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
   void findTwoNonTabifiedDocks(DockWidget*& sibling1, DockWidget*& sibling2);
   DockWidget* findDockNotTabifiedWith(DockWidget* dock_widget);
   DockWidget* findDockNotTabifiedWith(QWidget* widget);
+  void setDockWidgetsWithNoTitleBars(bool no_title_bars);
+  bool dockWidgetsWithNoTitleBars();
+  QDockWidget* tabToDockWidget(QTabBar* tab_bar, int index);
+  QTabBar* dockWidgetToTab(QDockWidget* dock_widget);
+  static MainWindowWithDetachableDockWidgets* getParentMainWindow(
+      QObject* obj);
 
   static bool intersectsWithAnyMainWindow(DockWidget* dock_widget);
   static MainWindowWithDetachableDockWidgets* getParentCandidateForDockWidget(
@@ -105,16 +137,26 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
  public slots:
   void dockLocationChanged(Qt::DockWidgetArea area);
   void tabCloseRequested(int index);
+  void childAddedNotify(QObject* child);
+  void updateDockWidgetTitleBars();
+  void updateCloseButtonsOnTabBars();
+  void updateDocksAndTabs();
+
+ signals:
+  void childAdded(QObject* child);
+  void childRemoved();
 
  protected:
   bool event(QEvent* event) Q_DECL_OVERRIDE;
-  QDockWidget* tabToDockWidget(QTabBar* tab_bar, int index);
-  void updateCloseButtonsOnTabBars();
 
  private:
   static std::set<MainWindowWithDetachableDockWidgets*> main_windows_;
   static MainWindowWithDetachableDockWidgets* first_main_window_;
   static int last_created_window_id_;
+
+  TabBarEventFilter* tab_bar_event_filter_;
+
+  bool dock_widgets_with_no_title_bars_;
 };
 
 /*****************************************************************************/

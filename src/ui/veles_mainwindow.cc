@@ -37,6 +37,7 @@
 #include "ui/nodetreewidget.h"
 #include "ui/optionsdialog.h"
 #include "ui/logwidget.h"
+#include "ui/mainwindow_native.h"
 
 namespace veles {
 namespace ui {
@@ -46,7 +47,7 @@ namespace ui {
 /*****************************************************************************/
 
 DockWidget::DockWidget() : QDockWidget(), timer_id_(0), ticks_(0),
-    context_menu_(nullptr) {
+    context_menu_(nullptr), empty_title_bar_(new QWidget(this)) {
   setAttribute(Qt::WidgetAttribute::WA_DeleteOnClose);
   setContextMenuPolicy(Qt::CustomContextMenu);
   auto first_main_window =
@@ -55,12 +56,15 @@ DockWidget::DockWidget() : QDockWidget(), timer_id_(0), ticks_(0),
     connect(this, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)),
         first_main_window, SLOT(dockLocationChanged(Qt::DockWidgetArea)));
   }
-  connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
-      this, SLOT(displayContextMenu(const QPoint&)));
 
   maximize_here_action_ = createMoveToNewWindowAndMaximizeAction();
   addAction(maximize_here_action_);
   detach_action_ = createMoveToNewWindowAction();
+
+  connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
+        this, SLOT(displayContextMenu(const QPoint&)));
+  connect(this, SIGNAL(topLevelChanged(bool)),
+      this, SLOT(topLevelChangedNotify(bool)), Qt::QueuedConnection);
 }
 
 DockWidget::~DockWidget() {
@@ -155,6 +159,32 @@ void DockWidget::detachToNewTopLevelWindowAndMaximize() {
     new_window->showMaximized();
     new_window->moveDockWidgetToWindow(this);
   }
+}
+
+void DockWidget::topLevelChangedNotify(bool top_level) {
+  auto parent = MainWindowWithDetachableDockWidgets
+      ::getOwnerOfDockWidget(this);
+
+  if (parent) {
+    parent->updateDocksAndTabs();
+  }
+}
+
+void DockWidget::switchTitleBar(bool is_default) {
+  if (is_default) {
+    if (titleBarWidget() != nullptr) {
+      setTitleBarWidget(nullptr);
+    }
+  } else if (titleBarWidget() != empty_title_bar_) {
+    setTitleBarWidget (empty_title_bar_);
+  }
+}
+
+void DockWidget::centerTitleBarOnPosition(QPoint pos) {
+  int local_pos_x = frameGeometry().width() / 2;
+  int local_pos_y = (frameGeometry().height() - geometry().height()) / 2;
+  QPoint startPos(local_pos_x, local_pos_y);
+  move(pos - startPos);
 }
 
 void DockWidget::moveEvent(QMoveEvent *event) {
@@ -261,6 +291,142 @@ QAction* DockWidget::createMoveToNewWindowAndMaximizeAction() {
 }
 
 /*****************************************************************************/
+/* TabBarEventFilter */
+/*****************************************************************************/
+
+TabBarEventFilter::TabBarEventFilter(QObject* parent) :
+    QObject(parent), dragged_tab_bar_(nullptr), dragged_tab_index_(-1),
+    drag_init_pos_(0, 0) {
+}
+
+bool TabBarEventFilter::eventFilter(QObject *watched, QEvent *event) {
+  auto main_window = MainWindowWithDetachableDockWidgets
+      ::getParentMainWindow(watched);
+  if (main_window != nullptr && !main_window->dockWidgetsWithNoTitleBars()) {
+    return false;
+  }
+
+  if(event->type() != QEvent::MouseMove
+      && event->type() != QEvent::MouseButtonPress
+      && event->type() != QEvent::MouseButtonRelease
+      && event->type() != QEvent::MouseButtonDblClick) {
+    return false;
+  }
+
+  QTabBar* tab_bar = dynamic_cast<QTabBar*>(watched);
+  if(!tab_bar) {
+    return false;
+  }
+
+  QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
+
+  if (mouse_event->type() == QEvent::MouseMove) {
+    return mouseMove(tab_bar, mouse_event);
+  } else if (mouse_event->type() == QEvent::MouseButtonPress) {
+    return mouseButtonPress(tab_bar, mouse_event);
+  } else if (mouse_event->type() == QEvent::MouseButtonRelease) {
+    return mouseButtonRelease(tab_bar, mouse_event);
+  } else if(mouse_event->type() == QEvent::MouseButtonDblClick) {
+    return mouseButtonDblClick(tab_bar, mouse_event);
+  } else {
+    return false;
+  }
+}
+
+bool TabBarEventFilter::mouseMove(QTabBar* tab_bar, QMouseEvent* event) {
+  if(dragged_tab_bar_) {
+    if ((event->pos() - drag_init_pos_).manhattanLength()
+        > QApplication::startDragDistance()) {
+      auto window = dynamic_cast<MainWindowWithDetachableDockWidgets*>(
+          tab_bar->window());
+      if (window) {
+        DockWidget* dock_widget =
+            dynamic_cast<DockWidget*>(window->tabToDockWidget(tab_bar,
+            dragged_tab_index_));
+        if (dock_widget) {
+          stopTabBarDragging(dragged_tab_bar_);
+
+          dragged_tab_bar_ = nullptr;
+          dragged_tab_index_ = -1;
+
+          dock_widget->switchTitleBar(true);
+          dock_widget->setFloating(true);
+          dock_widget->centerTitleBarOnPosition(event->globalPos());
+          QCursor::setPos(event->globalPos());
+          startDockDragging(dock_widget);
+
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+bool TabBarEventFilter::mouseButtonPress(
+    QTabBar* tab_bar, QMouseEvent* event) {
+  if (event->button() == Qt::LeftButton) {
+    dragged_tab_index_ = tab_bar->tabAt(event->pos());
+    if (dragged_tab_index_ > -1) {
+      dragged_tab_bar_ = tab_bar;
+      drag_init_pos_ = event->pos();
+    } else {
+      dragged_tab_bar_ = nullptr;
+    }
+  }
+
+  return false;
+}
+
+bool TabBarEventFilter::mouseButtonRelease(
+    QTabBar* tab_bar, QMouseEvent* event) {
+  if (event->button() == Qt::LeftButton) {
+    dragged_tab_bar_ = nullptr;
+    dragged_tab_index_ = -1;
+    return true;
+  } else if (event->button() == Qt::RightButton) {
+    int tab_index = tab_bar->tabAt(event->pos());
+    if (tab_index > -1) {
+      auto window = dynamic_cast<MainWindowWithDetachableDockWidgets*>(
+          tab_bar->window());
+      if (window) {
+        DockWidget* dock_widget =
+            dynamic_cast<DockWidget*>(window->tabToDockWidget(
+            tab_bar, tab_index));
+        if (dock_widget) {
+          dock_widget->displayContextMenu(
+              dock_widget->mapFromGlobal(event->globalPos()));
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+bool TabBarEventFilter::mouseButtonDblClick(
+    QTabBar* tab_bar, QMouseEvent* event) {
+  if(event->button() == Qt::LeftButton) {
+    int tab_index = tab_bar->tabAt(event->pos());
+    if(tab_index > -1) {
+      auto window = dynamic_cast<MainWindowWithDetachableDockWidgets*>(
+          tab_bar->window());
+      if(window) {
+        DockWidget* dock_widget = dynamic_cast<DockWidget*>(
+            window->tabToDockWidget(tab_bar, tab_index));
+        if(dock_widget) {
+          dock_widget->setFloating(true);
+          dock_widget->centerTitleBarOnPosition(event->globalPos());
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+/*****************************************************************************/
 /* MainWindowWithDetachableDockWidgets */
 /*****************************************************************************/
 
@@ -271,7 +437,8 @@ MainWindowWithDetachableDockWidgets* MainWindowWithDetachableDockWidgets
 int MainWindowWithDetachableDockWidgets::last_created_window_id_ = 0;
 
 MainWindowWithDetachableDockWidgets::MainWindowWithDetachableDockWidgets(
-    QWidget* parent) : QMainWindow(parent) {
+    QWidget* parent) : QMainWindow(parent),
+    dock_widgets_with_no_title_bars_(false) {
   setAttribute(Qt::WA_DeleteOnClose, true);
   setCentralWidget(nullptr);
   setDockNestingEnabled(true);
@@ -286,6 +453,16 @@ MainWindowWithDetachableDockWidgets::MainWindowWithDetachableDockWidgets(
     setAttribute(Qt::WA_QuitOnClose, false);
     setWindowTitle(QString("Veles - window #%1").arg(last_created_window_id_));
   }
+
+#ifdef Q_OS_WIN
+  setDockWidgetsWithNoTitleBars(true);
+#endif
+
+  tab_bar_event_filter_ = new TabBarEventFilter(this);
+  connect(this, SIGNAL(childAdded(QObject*)),
+      this, SLOT(childAddedNotify(QObject*)), Qt::QueuedConnection);
+  connect(this, SIGNAL(childRemoved()),
+      this, SLOT(updateDocksAndTabs()), Qt::QueuedConnection);
 }
 
 MainWindowWithDetachableDockWidgets::~MainWindowWithDetachableDockWidgets() {
@@ -317,7 +494,7 @@ DockWidget* MainWindowWithDetachableDockWidgets::addTab(QWidget *widget,
   }
 
   QApplication::processEvents();
-  updateCloseButtonsOnTabBars();
+  updateDocksAndTabs();
   bringDockWidgetToFront(dock_widget);
 
   return dock_widget;
@@ -346,7 +523,6 @@ void MainWindowWithDetachableDockWidgets::moveDockWidgetToWindow(
       dock_widget->setFloating(false);
       return;
     }
-
     dock_widget->setParent(nullptr);
 
     for (auto candidate : findChildren<DockWidget*>()) {
@@ -365,6 +541,7 @@ void MainWindowWithDetachableDockWidgets::moveDockWidgetToWindow(
   }
 
   QApplication::processEvents();
+  updateDocksAndTabs();
   bringDockWidgetToFront(dock_widget);
 }
 
@@ -408,6 +585,62 @@ DockWidget* MainWindowWithDetachableDockWidgets::findDockNotTabifiedWith(
 
   if(dock_widget) {
     return findDockNotTabifiedWith(dock_widget);
+  }
+
+  return nullptr;
+}
+
+void MainWindowWithDetachableDockWidgets::setDockWidgetsWithNoTitleBars(
+    bool no_title_bars) {
+  dock_widgets_with_no_title_bars_ = no_title_bars;
+  updateDockWidgetTitleBars();
+}
+
+bool MainWindowWithDetachableDockWidgets::dockWidgetsWithNoTitleBars() {
+  return dock_widgets_with_no_title_bars_;
+}
+
+QDockWidget* MainWindowWithDetachableDockWidgets::tabToDockWidget(
+    QTabBar* tab_bar, int index) {
+  if(tab_bar) {
+    // Based on undocumented feature (tested with Qt 5.5/5.7).
+    // QTabBars that control visibility of QDockWidgets grouped in
+    // QDockWidgetGroupWindows hold ids of respective QDockAreaLayoutInfos
+    // in tabData. Conveniently those ids are just pointers to
+    // QDockWidgets (stored as quintptr) and can be retrieved through public
+    // interface.
+    QDockWidget* dock =
+        reinterpret_cast<QDockWidget*>(
+        qvariant_cast<quintptr>(tab_bar->tabData(index)));
+
+    return dock;
+  }
+
+  return nullptr;
+}
+
+QTabBar* MainWindowWithDetachableDockWidgets::dockWidgetToTab(
+    QDockWidget* dock_widget) {
+  for (auto tab_bar : findChildren<QTabBar*>()) {
+    for (int i = 0; i < tab_bar->count(); ++i) {
+      if (tabToDockWidget(tab_bar, i) == dock_widget) {
+        return tab_bar;
+      }
+    }
+  }
+
+  return nullptr;
+}
+
+MainWindowWithDetachableDockWidgets* MainWindowWithDetachableDockWidgets
+    ::getParentMainWindow(QObject* obj) {
+  while (obj != nullptr) {
+    auto main_window = dynamic_cast<MainWindowWithDetachableDockWidgets*>(obj);
+    if(main_window) {
+      return main_window;
+    }
+
+    obj = obj->parent();
   }
 
   return nullptr;
@@ -498,7 +731,7 @@ void MainWindowWithDetachableDockWidgets::dockLocationChanged(
     auto main_window = dynamic_cast<MainWindowWithDetachableDockWidgets*>(
         dock_widget->window());
     if(main_window) {
-      main_window->updateCloseButtonsOnTabBars();
+      main_window->updateDocksAndTabs();
     }
   }
 }
@@ -513,40 +746,41 @@ void MainWindowWithDetachableDockWidgets::tabCloseRequested(int index) {
   }
 }
 
-bool MainWindowWithDetachableDockWidgets::event(QEvent* event) {
-  bool has_children = findChildren<QDockWidget*>().size() != 0;
+void MainWindowWithDetachableDockWidgets::childAddedNotify(QObject* child) {
+  updateDocksAndTabs();
 
-  if (has_children) {
-    if (event->type() == QEvent::ChildAdded
-        || event->type() == QEvent::ChildRemoved) {
-      updateCloseButtonsOnTabBars();
-    }
-  } else {
-    if (event->type() == QEvent::ChildRemoved && this != first_main_window_) {
-      this->deleteLater();
-    }
+  auto tab_bar = dynamic_cast<QTabBar*>(child);
+  if (tab_bar) {
+    tab_bar->installEventFilter(tab_bar_event_filter_);
   }
-
-  return QMainWindow::event(event);
 }
 
-QDockWidget* MainWindowWithDetachableDockWidgets::tabToDockWidget(
-    QTabBar* tab_bar, int index) {
-  if(tab_bar) {
-    // Based on undocumented feature (tested with Qt 5.5/5.7).
-    // QTabBars that control visibility of QDockWidgets grouped in
-    // QDockWidgetGroupWindows hold ids of respective QDockAreaLayoutInfos
-    // in tabData. Conveniently those ids are just pointers to
-    // QDockWidgets (stored as quintptr) and can be retrieved through public
-    // interface.
-    QDockWidget* dock =
-        reinterpret_cast<QDockWidget*>(
-        qvariant_cast<quintptr>(tab_bar->tabData(index)));
-
-    return dock;
+void MainWindowWithDetachableDockWidgets::updateDockWidgetTitleBars() {
+  auto children = findChildren<DockWidget*>();
+  std::set<DockWidget*> dock_widgets;
+  for(auto child : children) {
+    dock_widgets.insert(child);
   }
 
-  return 0;
+  if (dock_widgets_with_no_title_bars_) {
+    for (auto tab_bar : findChildren<QTabBar*>()) {
+      tab_bar->setMovable(false);
+      tab_bar->setContextMenuPolicy(Qt::NoContextMenu);
+      for (int i = 0; i < tab_bar->count(); ++i) {
+        DockWidget* dock_widget =
+            dynamic_cast<DockWidget*>(tabToDockWidget(tab_bar, i));
+        if (dock_widget && !dock_widget->isFloating()
+            && tabifiedDockWidgets(dock_widget).size() > 0) {
+          dock_widget->switchTitleBar(false);
+          dock_widgets.erase(dock_widget);
+        }
+      }
+    }
+  }
+
+  for (auto dock_widget : dock_widgets) {
+      dock_widget->switchTitleBar(true);
+  }
 }
 
 void MainWindowWithDetachableDockWidgets::updateCloseButtonsOnTabBars() {
@@ -554,7 +788,7 @@ void MainWindowWithDetachableDockWidgets::updateCloseButtonsOnTabBars() {
   for (auto tab_bar : tab_bars) {
     tab_bar->setTabsClosable(true);
     connect(tab_bar, SIGNAL(tabCloseRequested(int)), this,
-        SLOT(tabCloseRequested(int)));
+        SLOT(tabCloseRequested(int)), Qt::UniqueConnection);
 
     for (int i = 0; i < tab_bar->count(); ++i) {
       QDockWidget* dock_widget = tabToDockWidget(tab_bar, i);
@@ -566,6 +800,29 @@ void MainWindowWithDetachableDockWidgets::updateCloseButtonsOnTabBars() {
       }
     }
   }
+}
+
+void MainWindowWithDetachableDockWidgets::updateDocksAndTabs() {
+  updateCloseButtonsOnTabBars();
+  updateDockWidgetTitleBars();
+}
+
+bool MainWindowWithDetachableDockWidgets::event(QEvent* event) {
+  bool has_children = findChildren<QDockWidget*>().size() != 0;
+
+  if (has_children) {
+    if (event->type() == QEvent::ChildAdded) {
+      emit childAdded(static_cast<QChildEvent*>(event)->child());
+    } else if (event->type() == QEvent::ChildRemoved) {
+      emit childRemoved();
+    }
+  } else {
+    if (event->type() == QEvent::ChildRemoved && this != first_main_window_) {
+      this->deleteLater();
+    }
+  }
+
+  return QMainWindow::event(event);
 }
 
 /*****************************************************************************/
