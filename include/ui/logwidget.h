@@ -59,7 +59,7 @@ public:
 /*****************************************************************************/
 
 // Thread-safe usage:
-// QTextStream out(eax::ui::LogWidget::output());
+// QTextStream out(veles::ui::LogWidget::output());
 // out << "Log message." << endl;
 //
 // LogWidget::output() always returns non-null pointer and it's value is not
