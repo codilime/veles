@@ -1,11 +1,3 @@
 *~
 *.swp
-CMakeCache.txt
-CMakeFiles/*
-CPackConfig.cmake
-CPackSourceConfig.cmake
-Makefile
-cmake_install.cmake
-dbif_test.moc
-moc_promise.cpp
-*.depends
+CMakeLists.txt.user
