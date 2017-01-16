@@ -17,11 +17,21 @@
 #ifndef ISAMPLER_H
 #define ISAMPLER_H
 
+#include <atomic>
+#include <functional>
+#include <mutex>
+#include <condition_variable>
+#include <future>
 #include <utility>
+#include <vector>
 #include <QByteArray>
 
 namespace veles {
 namespace util {
+
+typedef std::recursive_mutex SamplerMutex;
+typedef std::condition_variable_any SamplerConditionVariable;
+typedef std::function<void()> ResampleCallback;
 
 /**
  * Abstract interface for Sampler classes.
@@ -31,8 +41,17 @@ namespace util {
  * as a suggestion and the implementation may return a sample of different
  * size.
  *
- * The actual sampling happens upon first attempt to access sampled data
- * (call to getSampleSize(), operator[] or data() methods).
+ * By default the sampler works synchronously - any call that creates
+ * the need to re-create sample ("resample") will perform the resampling
+ * operation immediately. As this can be rather expensive time-wise
+ * the sampler can be changed to asynchronous mode. In that case the resampling
+ * is performed in a separate thread and a set of registered callbacks is
+ * called once it's done.
+ *
+ * When working in asynchronous mode it is recommended to perform any
+ * operations on the data while keeping the mutex returned by sampler.lock().
+ * Otherwise the sample we're looking at can suddenly change leading to
+ * inconsistencies.
  *
  * Example usage:
  * MySampler sampler(some_data);
@@ -70,21 +89,11 @@ class ISampler {
    * new sample. It may just reduce sample size by removing bytes outside
    * selected range.
    *
-   * This method must be called before using Sampler.
+   * This method must be called before first using Sampler!
    * May cause re-sampling, invalidates all pointers previously returned by
    * data() method.
    */
   void setSampleSize(size_t size);
-
-  /**
-   * Request sampler to automatically re-sample once the effective sample
-   * size gets smaller than sample_size (perhaps due to shrinking sample
-   * range with setRange).
-   *
-   * This does not guarantee that the sample size will never be smaller than
-   * sample_size!
-   */
-  void setResampleTrigger(size_t sample_size);
 
   /**
    * Take new sample from underlying file.
@@ -144,36 +153,110 @@ class ISampler {
    */
   bool empty();
 
-  virtual ISampler* clone() = 0;
+  /**
+   * Get lock protecting sampler data.
+   * As long as the lock is held no resampling will happen, meaning all methods
+   * retrieving sampled data, sample size, etc will return consistent results.
+   * In particular pointer returned by data() will not be invalidated while
+   * the lock is kept.
+   */
+  std::unique_lock<SamplerMutex> lock();
+
+  /**
+   * Wait until sampler has finished resampling.
+   * This waits until all resample operations are done, including those
+   * scheduled after the wait has started!
+   */
+  void wait();
+
+  /**
+   * Aquire sampler lock after resampling is finished.
+   * All points mentioned in wait() and lock() docstrings apply.
+   */
+  std::unique_lock<SamplerMutex> waitAndLock();
+
+  /**
+   * Return true if there is no resampling currently going.
+   * This does not use any synchronisation and may give false positives
+   * or false negatives unless you're holding sampler lock when calling this.
+   */
+  bool isFinished();
+
+  /**
+   * Register a callback that will be called when resampling is finished.
+   * There is no guarantee in which thread the callback will be called.
+   * Thread calling callbacks will keep sampler lock() while doing so,
+   * so it's prefered if they're reasonably cheap.
+   * If multiple callbacks are registered they will be called in reverse
+   * registration order (stack).
+   * This method needs to acquire sampler lock, so it may block.
+   */
+  void registerResampleCallback(ResampleCallback cb);
+
+  /**
+   * Remove all registered resample callbacks.
+   * This method needs to acquire sampler lock, so it may block.
+   */
+  void clearResampleCallbacks();
+
+  /**
+   * Create a copy of this sampler.
+   * This will block until all resampling is done and create a copy afterwards.
+   */
+  ISampler* clone();
+
+  /**
+   * Set if you want to allow asynchronous resampling.
+   * If true any resampling operation will be run asynchronously, you need to
+   * use locks and register callbacks.
+   * Otherwise all calls are synchronous and blocking. No locks are being used
+   * in this case and calling any methods from multiple threads will have
+   * undefined behaviour. No callbacks will be executed.
+   * Calling this method while any other method is being run (synchronously
+   * or asynchronously) will result in undefined behaviour.
+   * Default value is false.
+   */
+  void allowAsynchronousResampling(bool allow);
 
  protected:
   /**
+   * Derive this struct if you want to pass any data between resample and
+   * update operations.
+   */
+  struct ResampleData {};
+
+  /**
+   * Contain information required by ISampler to provide data to sampler.
+   * This is required if working on sampler in different state then the current
+   * state (ex. when asynchronously resyncing after setRange).
+   */
+  struct SamplerConfig {
+    size_t start, end, sample_size;
+  };
+
+  /**
    * Return the size of the data to sample.
    * This already takes into account limiting the size of input with setRange().
+   * If sc is provided it uses the range represented by sc instead of this
+   * stored by sampler.
+   * This does not do any locking, which doesn't matter if sc != nullptr and
+   * may be pretty bad otherwise.
    */
-  size_t getDataSize();
+  size_t getDataSize(SamplerConfig *sc = nullptr);
 
   /**
    * Get n-th byte of input data.
    * The data is 0 indexed and has size given by getDataSize(). If setRange()
    * was used data is re-indexed internally to still be 0 indexed.
+   * If sc is provided it uses the range represented by sc instead of this
+   * stored by sampler.
    */
-  char getDataByte(size_t index);
-
-  /**
-   * Called by Sampler implementation to trigger re-initialisation of Sampler.
-   * This will cause isInitialised() to return false. Upon next data access
-   * the class will be re-initialised (causing call to initialiseSample()), as
-   * well as re-initialisation of some variables in ISampler.
-   */
-  void reinitialisationRequired();
-
-  bool isInitialised();
+  char getDataByte(size_t index, SamplerConfig *sc = nullptr);
 
   /**
    * Return the size of sample requested by user (with setSampleSize).
    */
-  size_t getRequestedSampleSize();
+  size_t getRequestedSampleSize(SamplerConfig *sc = nullptr);
 
   /**
    * Return real size of the sample. This method must be overriden by any
@@ -184,21 +267,16 @@ class ISampler {
 
   /**
    * Return the input data as simple array. Size of array is getDataSize().
+   * If sc is provided it uses the range represented by sc instead of this
+   * stored by sampler.
    */
-  const char* getRawData();
+  const char* getRawData(SamplerConfig *sc = nullptr);
 
   ISampler(const ISampler& other);
 
  private:
   /**
-   * Do any work that is require to initialise internal Sampler state here.
-   * May be called multiple times in object lifecycle (meaning that Sampler
-   * should be re-initialised).
-   */
-  virtual void initialiseSample(size_t size) = 0;
-
-  /**
-   * Get n-th byte of sample. This will only be called after initialiseSample().
+   * Get n-th byte of sample.
    */
   virtual char getSampleByte(size_t index) = 0;
 
@@ -221,16 +299,55 @@ class ISampler {
   virtual size_t getSampleOffsetImpl(size_t index) = 0;
 
   /**
-   * Implementation of resample method.
+   * Prepare resampled data.
+   * This may be called asynchronously in a different thread and should neither
+   * modify nor rely on any mutable state of sampler (multiple prepareResample
+   * calls may be processed at the same time). Returned ResampleData* will
+   * later be passed to applyResample method.
+   * Any call to method accepting SamplerConfig (getDataSize(),
+   * getRawData(), etc) should pass the provided SamplerConfig.
    */
-  virtual void resampleImpl() = 0;
+  virtual ResampleData* prepareResample(SamplerConfig *sc) = 0;
 
-  void init();
-  size_t samplingRequired();
+  /**
+   * Apply ResampleData prepared by prepareResample method.
+   * This will be executed while holding sampler lock and should modify
+   * sampler state by applying whatever was produced by prepareResample.
+   * Ideally this should be a cheap operation (as it will be executed
+   * synchronously).
+   * This method takes ownership of passed ResampleData and is responsible
+   * for ultimately freeing up the memory.
+   */
+  virtual void applyResample(ResampleData *rd) = 0;
+
+  /**
+   * Delete ResampleData prepared by prepareResample method.
+   * This will be called instead of applyResample if the prepared ResampleData
+   * is outdated, etc. The method should delete the ResampleData provided
+   * doing any necessary cleanup.
+   */
+  virtual void cleanupResample(ResampleData *rd) = 0;
+
+  /**
+   * Implementation of clone method.
+   */
+  virtual ISampler* cloneImpl() = 0;
+
+
+  size_t samplingRequired(SamplerConfig *sc = nullptr);
+  void applySamplerConfig(SamplerConfig *sc);
+  void runResample(SamplerConfig *sc);
+  void resampleAsync(int target_version, SamplerConfig *sc);
 
   const QByteArray &data_;
-  size_t start_, end_, sample_size_, resample_trigger_;
-  bool initialised_;
+  size_t start_, end_, sample_size_;
+  bool allow_async_;
+
+  SamplerMutex sampler_mutex_;
+  SamplerConditionVariable sampler_condition_;
+  SamplerConfig last_config_;
+  std::atomic<int> current_version_, requested_version_;
+  std::vector<ResampleCallback> callbacks_;
 };
 
 }  // namespace util

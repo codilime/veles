@@ -16,12 +16,19 @@
  */
 
 #include "mock_sampler.h"
+#include "util/concurrency/threadpool.h"
 
 namespace veles {
 namespace util {
 
+using testing::Mock;
 using testing::Return;
 using testing::Expectation;
+using testing::_;
+
+/*****************************************************************************/
+/* Helpers */
+/*****************************************************************************/
 
 QByteArray prepare_data(size_t size) {
   QByteArray result;
@@ -30,6 +37,23 @@ QByteArray prepare_data(size_t size) {
   }
   return result;
 }
+
+int MockCallback::getCallCount() {
+  return calls_;
+}
+
+void MockCallback::resetCallCount() {
+  calls_ = 0;
+}
+
+void MockCallback::operator()() {
+  ++calls_;
+}
+
+/*****************************************************************************/
+/* Small data (no sampling required) */
+/*****************************************************************************/
+
 
 TEST(ISamplerSmallData, basic) {
   auto data = prepare_data(100);
@@ -79,13 +103,20 @@ TEST(ISamplerSmallData, offsetsAfterSetRange) {
   ASSERT_EQ(9, sampler.getSampleOffset(49));
 }
 
+/*****************************************************************************/
+/* Synchronous sampling */
+/*****************************************************************************/
+
+
 TEST(ISamplerWithSampling, basic) {
   auto data = prepare_data(100);
   testing::NiceMock<MockSampler> sampler(data);
+  Expectation init1 = EXPECT_CALL(sampler, prepareResample(_));
+  Expectation init2 = EXPECT_CALL(sampler, applyResample(_))
+    .After(init1);
   sampler.setSampleSize(10);
-  Expectation init = EXPECT_CALL(sampler, initialiseSample(10));
   EXPECT_CALL(sampler, getRealSampleSize())
-    .After(init)
+    .After(init2)
     .WillRepeatedly(Return(10));
   ASSERT_EQ(10, sampler.getSampleSize());
   EXPECT_CALL(sampler, getSampleByte(0))
@@ -145,16 +176,59 @@ TEST(ISamplerWithSampling, offsetsAfterSetRange) {
 TEST(ISamplerWithSampling, getDataFromIsampler) {
   auto data = prepare_data(100);
   testing::StrictMock<MockSampler> sampler(data);
+  Expectation init1 = EXPECT_CALL(sampler, prepareResample(_));
+  Expectation init2 = EXPECT_CALL(sampler, applyResample(_))
+    .After(init1);
   sampler.setSampleSize(10);
   ASSERT_EQ(100, sampler.proxy_getDataSize());
   ASSERT_EQ(0, sampler.proxy_getDataByte(0));
   ASSERT_EQ(5, sampler.proxy_getDataByte(5));
   ASSERT_EQ(99, sampler.proxy_getDataByte(99));
+  Mock::VerifyAndClear(&sampler);
+  Expectation update1 = EXPECT_CALL(sampler, prepareResample(_));
+  Expectation update2 = EXPECT_CALL(sampler, applyResample(_))
+    .After(update1);
   sampler.setRange(40, 60);
   ASSERT_EQ(20, sampler.proxy_getDataSize());
   ASSERT_EQ(40, sampler.proxy_getDataByte(0));
   ASSERT_EQ(45, sampler.proxy_getDataByte(5));
   ASSERT_EQ(59, sampler.proxy_getDataByte(19));
+}
+
+/*****************************************************************************/
+/* Asynchronous interface */
+/*****************************************************************************/
+
+TEST(ISamplerAsynchronous, addAndClearCallbacks) {
+  threadpool::mockTopic("visualisation");
+  auto data = prepare_data(100);
+  MockCallback mc;
+  mc.resetCallCount();
+  testing::NiceMock<MockSampler> sampler(data);
+
+  sampler.setSampleSize(10);
+  sampler.allowAsynchronousResampling(true);
+  sampler.registerResampleCallback(std::ref(mc));
+  sampler.resample();
+  ASSERT_EQ(1, mc.getCallCount());
+  mc.resetCallCount();
+  sampler.clearResampleCallbacks();
+  sampler.resample();
+  ASSERT_EQ(0, mc.getCallCount());
+}
+
+TEST(ISamplerAsynchronous, prepareAndApplySample) {
+  threadpool::mockTopic("visualisation");
+  auto data = prepare_data(100);
+  MockCallback mc;
+  mc.resetCallCount();
+  testing::StrictMock<MockSampler> sampler(data);
+  EXPECT_CALL(sampler, prepareResample(_))
+    .WillOnce(Return(nullptr));
+  EXPECT_CALL(sampler, applyResample(nullptr));
+  sampler.setSampleSize(10);
+  sampler.wait();
+  ASSERT_TRUE(sampler.isFinished());
 }
 
 

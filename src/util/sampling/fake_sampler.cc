@@ -19,11 +19,9 @@
 namespace veles {
 namespace util {
 
-FakeSampler* FakeSampler::clone() {
+FakeSampler* FakeSampler::cloneImpl() {
   return new FakeSampler(*this);
 }
-
-void FakeSampler::initialiseSample(size_t size) {}
 
 size_t FakeSampler::getRealSampleSize() {
   return getDataSize();
@@ -45,7 +43,13 @@ size_t FakeSampler::getSampleOffsetImpl(size_t address) {
   return address;
 }
 
-void FakeSampler::resampleImpl() {}
+ISampler::ResampleData* FakeSampler::prepareResample(SamplerConfig *sc) {
+  return nullptr;
+}
+
+void FakeSampler::applyResample(ISampler::ResampleData *rd) {}
+
+void FakeSampler::cleanupResample(ResampleData *rd) {};
 
 }  // namespace util
 }  // namespace veles

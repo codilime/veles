@@ -43,6 +43,7 @@ VisualisationPanel::VisualisationPanel(QWidget *parent) :
   sampler_type_(k_default_sampler),
   visualisation_type_(k_default_visualisation), sample_size_(1024) {
     sampler_ = getSampler(sampler_type_, data_, sample_size_);
+    sampler_->allowAsynchronousResampling(true);
     minimap_sampler_ = getSampler(ESampler::UNIFORM_SAMPLER,
                                   data_, k_minimap_sample_size);
     minimap_ = new MinimapPanel(this);
@@ -73,6 +74,7 @@ void VisualisationPanel::setData(const QByteArray &data) {
   }
   data_ = data;
   sampler_ = getSampler(sampler_type_, data_, sample_size_);
+  sampler_->allowAsynchronousResampling(true);
   minimap_sampler_ = getSampler(ESampler::UNIFORM_SAMPLER,
                                 data_, k_minimap_sample_size);
   minimap_->setSampler(minimap_sampler_);
@@ -139,6 +141,7 @@ void VisualisationPanel::setSamplingMethod(const QString &name) {
 
   auto old_sampler = sampler_;
   sampler_ = getSampler(new_sampler_type, data_, sample_size_);
+  sampler_->allowAsynchronousResampling(true);
   auto selection = minimap_->getSelection();
   sampler_->setRange(selection.first, selection.second);
   visualisation_->setSampler(sampler_);

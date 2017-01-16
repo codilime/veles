@@ -32,6 +32,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED 11) # Use c++11
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall --std=c++11") # All warnings
+  set(ADDITIONAL_LINK_LIBRARIES "pthread")
 endif()
 if(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc ") # set exception handling mode and linking mode
@@ -50,6 +51,7 @@ include_directories(${INCLUDE_DIR})
 # VELES build rules
 # LIB: veles_base
 add_library(veles_base
+    ${INCLUDE_DIR}/util/concurrency/threadpool.h
     ${INCLUDE_DIR}/util/sampling/isampler.h
     ${INCLUDE_DIR}/util/sampling/uniform_sampler.h
     ${INCLUDE_DIR}/util/sampling/fake_sampler.h
@@ -59,6 +61,7 @@ add_library(veles_base
     ${INCLUDE_DIR}/util/encoders/factory.h
     ${INCLUDE_DIR}/util/encoders/base64_encoder.h
     ${INCLUDE_DIR}/util/encoders/hex_encoder.h
+    ${SRC_DIR}/util/concurrency/threadpool.cc
     ${SRC_DIR}/util/sampling/isampler.cc
     ${SRC_DIR}/util/sampling/uniform_sampler.cc
     ${SRC_DIR}/util/sampling/fake_sampler.cc
@@ -71,6 +74,7 @@ add_library(veles_base
     ${SRC_DIR}/util/version.cc)
 
 qt5_use_modules(veles_base Core Gui Widgets)
+target_link_libraries(veles_base ${ADDITIONAL_LINK_LIBRARIES})
 
 # LIB: veles_visualisation
 

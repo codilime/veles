@@ -25,22 +25,33 @@ namespace util {
 class MockSampler : public ISampler {
  public:
   explicit MockSampler(const QByteArray &data) : ISampler(data) {}
-  MOCK_METHOD0(clone, ISampler*());
+  MOCK_METHOD0(cloneImpl, ISampler*());
   MOCK_METHOD0(getRealSampleSize, size_t());
-  MOCK_METHOD1(initialiseSample, void(size_t size));
   MOCK_METHOD1(getSampleByte, char(size_t index));
   MOCK_METHOD0(getData, const char*());
   MOCK_METHOD1(getFileOffsetImpl, size_t(size_t index));
   MOCK_METHOD1(getSampleOffsetImpl, size_t(size_t index));
-  MOCK_METHOD0(resampleImpl, void());
+  MOCK_METHOD1(prepareResample, ResampleData*(SamplerConfig*));
+  MOCK_METHOD1(applyResample, void(ResampleData*));
+  MOCK_METHOD1(cleanupResample, void(ResampleData*));
 
   size_t proxy_getDataSize() { return getDataSize(); }
   char proxy_getDataByte(size_t index) { return getDataByte(index); }
 
 };
 
+class MockCallback {
+  public:
+    int getCallCount();
+    void resetCallCount();
+    void operator()();
+  private:
+    int calls_;
+};
+
 // Prepare sample data for sampler
 QByteArray prepare_data(size_t size);
+
 
 }  // namespace util
 }  // namespace veles

@@ -14,9 +14,11 @@
  * limitations under the License.
  *
  */
+
 #include "visualisation/base.h"
 #include "util/sampling/fake_sampler.h"
 #include "util/sampling/uniform_sampler.h"
+#include <functional>
 #include <QComboBox>
 #include <QLabel>
 
@@ -26,16 +28,23 @@ namespace visualisation {
 
 VisualisationWidget::VisualisationWidget(QWidget *parent) :
   QOpenGLWidget(parent), initialised_(false), gl_initialised_(false),
-  gl_broken_(false), error_message_set_(false), sampler_(nullptr) {}
+  gl_broken_(false), error_message_set_(false), sampler_(nullptr) {
+  connect(this, &VisualisationWidget::resampled,
+          this, &VisualisationWidget::refreshVisualisation);
+}
 
 void VisualisationWidget::setSampler(util::ISampler *sampler) {
   sampler_ = sampler;
+  sampler_->registerResampleCallback(
+    std::function<void()>(
+      std::bind(&VisualisationWidget::resampleCallback, this)));
   initialised_ = true;
   refreshVisualisation();
 }
 
 void VisualisationWidget::refreshVisualisation() {
   if (gl_initialised_ && !error_message_set_) {
+    auto lc = sampler_->lock();
     refresh();
   }
 }
@@ -92,6 +101,10 @@ char VisualisationWidget::getByte(size_t index) {
 
 bool VisualisationWidget::prepareOptionsPanel(QBoxLayout *layout) {
   return false;
+}
+
+void VisualisationWidget::resampleCallback() {
+  emit resampled();
 }
 
 }  // namespace visualisation

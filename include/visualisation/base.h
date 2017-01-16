@@ -45,6 +45,9 @@ class VisualisationWidget : public QOpenGLWidget,
   virtual bool prepareOptionsPanel(QBoxLayout *layout);
   void refreshVisualisation();
 
+ signals:
+  void resampled();
+
  protected:
   void initializeGL() override;
   void resizeGL(int w, int h) override;
@@ -54,6 +57,7 @@ class VisualisationWidget : public QOpenGLWidget,
   virtual void refresh() = 0;
   virtual void paintGLImpl() = 0;
   virtual void resizeGLImpl(int w, int h) = 0;
+  void resampleCallback();
 
   size_t getDataSize();
   const char* getData();
