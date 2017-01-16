@@ -32,6 +32,7 @@ struct TopicInfo {
   std::condition_variable cv;
   std::vector<std::thread> workers;
   std::deque<Task> tasks;
+  bool mock;
 };
 
 std::map<std::string, TopicInfo*> topics_;
@@ -54,11 +55,20 @@ void createTopic(std::string topic, size_t workers) {
   std::unique_lock<std::mutex> lc(map_mutex_);
   if (topics_.find(topic) != topics_.end()) return;
   TopicInfo *ti = new TopicInfo();
+  ti->mock = false;
   topics_[topic] = ti;
   std::unique_lock<std::mutex> topic_lc(ti->mutex);
   for (size_t i = 0; i < workers; ++i) {
     ti->workers.push_back(std::thread(threadFunction, ti));
   }
+}
+
+void mockTopic(std::string topic) {
+  std::unique_lock<std::mutex> lc(map_mutex_);
+  if (topics_.find(topic) != topics_.end()) return;
+  TopicInfo *ti = new TopicInfo();
+  ti->mock = true;
+  topics_[topic] = ti;
 }
 
 SchedulingResult runTask(std::string topic, Task t) {
@@ -69,6 +79,10 @@ SchedulingResult runTask(std::string topic, Task t) {
   TopicInfo *ti = topics_[topic];
   std::unique_lock<std::mutex> topic_lc(ti->mutex);
   lc.unlock();
+  if (ti->mock) {
+    t();
+    return SchedulingResult::SCHEDULED;
+  }
   if (ti->workers.size() == 0) {
     return SchedulingResult::ERR_NO_WORKERS;
   }

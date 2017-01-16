@@ -44,6 +44,12 @@ enum class SchedulingResult {
 void createTopic(std::string topic, size_t workers);
 
 /**
+ * Create a topic without any workers and run tasks in thread calling runTask().
+ * This is meant for testing, when we may not want to actually spawn threads.
+ */
+void mockTopic(std::string topic);
+
+/**
  * Schedule a job to be run on one of worker threads assigned to a given topic.
  * The job is run asynchronously, use callbacks or similar to communicate its
  * result.

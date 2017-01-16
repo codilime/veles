@@ -40,8 +40,18 @@ class MockSampler : public ISampler {
 
 };
 
+class MockCallback {
+  public:
+    int getCallCount();
+    void resetCallCount();
+    void operator()();
+  private:
+    int calls_;
+};
+
 // Prepare sample data for sampler
 QByteArray prepare_data(size_t size);
+
 
 }  // namespace util
 }  // namespace veles
