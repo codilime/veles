@@ -31,14 +31,6 @@ def getBranch = {
     env.BRANCH_NAME.tokenize("/").last()
 }
 
-
-
-def getVersion() {
-    def revision = readFile("REVISION").trim()
-    def shortsha = isUnix() ? sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim() : bat(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-    return "${revision}-${shortsha}"
-}
-
 @NonCPS
 def post_stage_failure(job, stage, error, url){
   slackSend channel:"eax-builds", color: "danger", message: "Build ${job} failed in stage ${stage} with ${error}, see: <${url}|results>"
@@ -161,7 +153,6 @@ builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
         checkout scm
         sh 'rm -Rf *'
         checkout scm
-        def version = getVersion()
         def branch = getBranch()
         sh "cmake -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\" -DCMAKE_BUILD_TYPE=${buildConfiguration} CMakeLists.txt"
         sh "cmake --build . --config ${buildConfiguration} 2>&1 | tee error_and_warnings.txt"
@@ -185,7 +176,6 @@ builders['macosx'] = { node ('macosx'){
         checkout scm
         sh 'rm -Rf *'
         checkout scm
-        def version = getVersion()
         def branch = getBranch()
         sh "cmake CMakeLists.txt -G \"Xcode\" -DCMAKE_PREFIX_PATH=$QT/5.7/clang_64 -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\""
         sh "cmake --build . --config ${buildConfiguration} 2>&1 | tee error_and_warnings.txt"
