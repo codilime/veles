@@ -1,0 +1,11 @@
+# QT
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+set(CMAKE_AUTOMOC ON)
+set(WINDEPLOYQT_ARGS "--no-translations" "--compiler-runtime" "--angle")
+set(MACDEPLOYQT_ARGS "-no-strip")
+if(DEBUG)
+  set(WINDEPLOYQT_ARGS ${WINDEPLOYQT_ARGS} "--debug")
+  set(MACDEPLOYQT_ARGS ${MACDEPLOYQT_ARGS} "-use-debug-libs")
+endif(DEBUG)

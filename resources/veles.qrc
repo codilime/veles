@@ -1,0 +1,23 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/open.png</file>
+        <file>images/save.png</file>
+        <file>images/undo.png</file>
+        <file>images/redo.png</file>
+        <file>images/find.png</file>
+        <file>images/nginx2d_32.png</file>
+        <file>images/nginx3d_32.png</file>
+        <file>images/upload-32.ico</file>
+        <file>images/bar.png</file>
+        <file>images/plus.png</file>
+        <file>images/minus.png</file>
+        <file>images/play.png</file>
+        <file>images/pause.png</file>
+        <file>images/cylinder.png</file>
+        <file>images/sphere.png</file>
+        <file>images/cube.png</file>
+        <file>images/error.ico</file>
+        <file>images/newTab.png</file>
+        <file>images/parse.png</file>
+    </qresource>
+</RCC>
