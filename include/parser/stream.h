@@ -100,17 +100,21 @@ class StreamParser {
                              const data::FieldHighType &high_type,
                              bool include_termination = true) {
     assert(termination.size() == 1);
-    data::BinData res;
-    size_t src_sz = 1;
+    data::BinData res(repack.width, 0);
+    size_t num_elements = 1;
+    size_t src_size = data::repackSize(width_, repack, num_elements);
+    size_t bytes_read = 0;
     bool found = false;
-    while (!found && pos_ + res.size() < blob_size_) {
-      if (pos_ + src_sz > blob_size_) {
-        src_sz = blob_size_ - pos_;
+    while (!found && pos_ + bytes_read < blob_size_) {
+      if (pos_ + src_size > blob_size_) {
+        src_size = blob_size_ - pos_;
       }
       auto data = blob_
                       ->syncGetInfo<veles::dbif::BlobDataRequest>(
-                          pos_ + res.size(), pos_ + res.size() + src_sz)
+                          pos_ + bytes_read, pos_ + bytes_read + src_size)
                       ->data;
+
+      data = data::repack(data, repack, 0, num_elements);
 
       for (size_t dataIndex = 0; dataIndex < data.size(); ++dataIndex) {
         if (data[dataIndex] == termination) {
@@ -124,12 +128,14 @@ class StreamParser {
       }
 
       res = res + data;
-      src_sz *= 2;
+      num_elements *= 2;
+      bytes_read += data::repackSize(width_, repack, data.size());
+      src_size = data::repackSize(width_, repack, num_elements);
     }
 
-    pos_ += res.size();
+    pos_ += bytes_read;
     stack_.back().items.push_back(data::ChunkDataItem::field(
-        pos_ - res.size(), pos_, name, repack, res.size(), high_type, res));
+        pos_ - bytes_read, pos_, name, repack, res.size(), high_type, res));
     return res;
   }
 
