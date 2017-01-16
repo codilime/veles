@@ -138,8 +138,12 @@ class StreamParser {
         name, data::RepackFormat{endian, 32}, 1,
         data::FieldHighType::floating(data::FieldHighType::IEEE754_SINGLE));
     if (!data.size()) return 0.0;
+
+    assert(sizeof(uint32_t) == sizeof(float));
     uint32_t res = data.element64();
-    return reinterpret_cast<float&>(res);
+    float ret;
+    memcpy(&ret, &res, sizeof(float));
+    return ret;
   }
 
   float getFloat32Le(const QString &name) {
@@ -156,8 +160,11 @@ class StreamParser {
         data::FieldHighType::floating(data::FieldHighType::IEEE754_DOUBLE));
 
     if (!data.size()) return 0.0;
+    assert(sizeof(uint64_t) == sizeof(double));
     uint64_t res = data.element64();
-    return reinterpret_cast<double&>(res);
+    double ret;
+    memcpy(&ret, &res, sizeof(double));
+    return ret;
   }
 
   double getFloat64Le(const QString &name) {
