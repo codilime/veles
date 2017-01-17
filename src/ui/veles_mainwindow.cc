@@ -736,12 +736,23 @@ void VelesMainWindow::createFileBlob(QString fileName) {
   if (!fileName.isEmpty()) {
     QFile file(fileName);
     file.setFileName(fileName);
-    file.open(QIODevice::ReadOnly);
+    if(!file.open(QIODevice::ReadOnly)){
+      QMessageBox::warning(
+          this, tr("Failed to open"),
+          QString(tr("Failed to open \"%1\".")).arg(fileName));
+      return;
+    }
     QByteArray bytes = file.readAll();
+    if(bytes.size() == 0 && file.size() != bytes.size()) {
+      QMessageBox::warning(
+          this, tr("File too large"),
+          QString(tr("Failed to open \"%1\" due to current size limitation.")
+                  ).arg(fileName));
+      return;
+    }
     data = data::BinData(8, bytes.size(),
                          reinterpret_cast<uint8_t *>(bytes.data()));
   }
-
   auto promise =
       database->asyncRunMethod<dbif::RootCreateFileBlobFromDataRequest>(
           this, data, fileName);
