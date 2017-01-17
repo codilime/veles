@@ -30,7 +30,7 @@ DigramWidget::~DigramWidget() {
   doneCurrent();
 }
 
-void DigramWidget::refresh() {
+void DigramWidget::refresh(AdditionalResampleDataPtr ad) {
   makeCurrent();
   delete texture_;
   initTextures();

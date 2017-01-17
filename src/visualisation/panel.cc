@@ -86,7 +86,6 @@ void VisualisationPanel::setData(const QByteArray &data) {
 
 void VisualisationPanel::setRange(const size_t start, const size_t end) {
   sampler_->setRange(start, end);
-  refreshVisualisation();
 }
 
 /*****************************************************************************/
@@ -156,7 +155,6 @@ void VisualisationPanel::setSampleSize(int kilobytes) {
   sample_size_ = kilobytes;
   if (sampler_type_ == ESampler::UNIFORM_SAMPLER) {
     sampler_->setSampleSize(1024 * kilobytes);
-    refreshVisualisation();
   }
 }
 
@@ -187,7 +185,6 @@ void VisualisationPanel::showLayeredDigramVisualisation() {
 void VisualisationPanel::minimapSelectionChanged(size_t start, size_t end) {
   selection_label_->setText(prepareAddressString(start, end));
   sampler_->setRange(start, end);
-  refreshVisualisation();
 }
 
 /*****************************************************************************/

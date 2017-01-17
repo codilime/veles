@@ -19,6 +19,7 @@
 #include <QTranslator>
 
 #include "ui/veles_mainwindow.h"
+#include "visualisation/base.h"
 #include "visualisation/digram.h"
 #include "visualisation/trigram.h"
 #include "util/settings/theme.h"
@@ -49,6 +50,8 @@ int main(int argc, char *argv[]) {
   app.installTranslator(&translator);
 
   veles::util::threadpool::createTopic("visualisation", 3);
+
+  qRegisterMetaType<veles::visualisation::VisualisationWidget::AdditionalResampleDataPtr>("AdditionalResampleDataPtr");
 
   veles::ui::VelesMainWindow *mainWin = new veles::ui::VelesMainWindow;
   mainWin->showMaximized();

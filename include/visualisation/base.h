@@ -24,6 +24,7 @@
 #include <QOpenGLFunctions_3_2_Core>
 
 #include <map>
+#include <memory>
 
 #include "util/sampling/isampler.h"
 
@@ -43,10 +44,20 @@ class VisualisationWidget : public QOpenGLWidget,
   // options of this visualisation. Return true if anything was added to
   // QLayout.
   virtual bool prepareOptionsPanel(QBoxLayout *layout);
-  void refreshVisualisation();
+
+  /**
+   * Derive this if you want to produce some additional data in
+   * onAsyncResample method.
+   */
+  struct AdditionalResampleData {
+    virtual ~AdditionalResampleData() {}
+  };
+  typedef std::shared_ptr<AdditionalResampleData> AdditionalResampleDataPtr;
+
+  void refreshVisualisation(AdditionalResampleDataPtr ad = AdditionalResampleDataPtr());
 
  signals:
-  void resampled();
+  void resampled(AdditionalResampleDataPtr ad);
 
  protected:
   void initializeGL() override;
@@ -54,10 +65,20 @@ class VisualisationWidget : public QOpenGLWidget,
   void paintGL() override;
 
   virtual bool initializeVisualisationGL() = 0;
-  virtual void refresh() = 0;
+  virtual void refresh(AdditionalResampleDataPtr ad) = 0;
   virtual void paintGLImpl() = 0;
   virtual void resizeGLImpl(int w, int h) = 0;
   void resampleCallback();
+
+  /**
+   * This will be called in worker thread when new sample is ready.
+   * Derive this method to do some additional processing in worker thread.
+   * Keep in mind that this method will be executed while holding sampler
+   * lock, so doing very expensive stuff here might hurt your performance.
+   * Return value of this method will be passed along with resampled() signal
+   * and in particular will be passed to refresh().
+   */
+  virtual AdditionalResampleData* onAsyncResample() {return nullptr;}
 
   size_t getDataSize();
   const char* getData();

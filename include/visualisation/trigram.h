@@ -110,11 +110,15 @@ class TrigramWidget : public VisualisationWidget {
 
   static float vfovDeg(float min_fov_deg, float aspect_ratio);
 
+  struct BrightnessData : public AdditionalResampleData {
+    int brightness;
+  };
+
  public slots:
   void brightnessSliderMoved(int value);
 
  protected:
-  void refresh() override;
+  void refresh(AdditionalResampleDataPtr ad) override;
   bool initializeVisualisationGL() override;
 
   bool event(QEvent *event) override;
@@ -122,6 +126,8 @@ class TrigramWidget : public VisualisationWidget {
 
   void resizeGLImpl(int w, int h) override;
   void paintGLImpl() override;
+
+  AdditionalResampleData* onAsyncResample() override;
 
   void paintLabels(QMatrix4x4& scene_mp, QMatrix4x4& scene_m);
   void paintLabel(LabelPositionMixer& mixer, QMatrix4x4& scene_to_screen,

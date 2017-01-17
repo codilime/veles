@@ -42,10 +42,10 @@ void VisualisationWidget::setSampler(util::ISampler *sampler) {
   refreshVisualisation();
 }
 
-void VisualisationWidget::refreshVisualisation() {
+void VisualisationWidget::refreshVisualisation(AdditionalResampleDataPtr ad) {
   if (gl_initialised_ && !error_message_set_) {
     auto lc = sampler_->lock();
-    refresh();
+    refresh(ad);
   }
 }
 
@@ -104,7 +104,8 @@ bool VisualisationWidget::prepareOptionsPanel(QBoxLayout *layout) {
 }
 
 void VisualisationWidget::resampleCallback() {
-  emit resampled();
+  AdditionalResampleDataPtr additionalData(onAsyncResample());
+  emit resampled(additionalData);
 }
 
 }  // namespace visualisation
