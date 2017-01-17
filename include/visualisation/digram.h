@@ -45,7 +45,7 @@ class DigramWidget : public VisualisationWidget {
 
 
  protected:
-  void refresh() override;
+  void refresh(AdditionalResampleDataPtr ad) override;
   bool initializeVisualisationGL() override;
 
   void resizeGLImpl(int w, int h) override;

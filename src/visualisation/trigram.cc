@@ -34,6 +34,7 @@
 #include <QGroupBox>
 #include <QToolButton>
 
+
 namespace veles {
 namespace visualisation {
 
@@ -98,9 +99,16 @@ float TrigramWidget::vfovDeg(float min_fov_deg, float aspect_ratio) {
 }
 
 
-void TrigramWidget::refresh() {
+void TrigramWidget::refresh(AdditionalResampleDataPtr ad) {
   if (use_brightness_heuristic_) {
-    autoSetBrightness();
+    if (ad) {
+      brightness_ = std::static_pointer_cast<BrightnessData>(ad)->brightness;
+      if (brightness_slider_ != nullptr) {
+        brightness_slider_->setValue(brightness_);
+      }
+    } else {
+      autoSetBrightness();
+    }
   }
   setBrightness(brightness_);
   makeCurrent();
@@ -210,6 +218,15 @@ int TrigramWidget::suggestBrightness() {
                             / k_brightness_heuristic_scaling);
   return std::max(k_brightness_heuristic_min,
                   k_brightness_heuristic_max - offset);
+}
+
+VisualisationWidget::AdditionalResampleData* TrigramWidget::onAsyncResample() {
+  if (use_brightness_heuristic_) {
+    BrightnessData* res = new BrightnessData();
+    res->brightness = suggestBrightness();
+    return res;
+  }
+  return nullptr;
 }
 
 void TrigramWidget::playPause() {
