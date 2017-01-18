@@ -24,6 +24,7 @@
 #include "db/getter.h"
 #include "db/db.h"
 #include "network/server.h"
+#include "util/settings/network.h"
 
 #include "parser/utils.h"
 
@@ -44,25 +45,27 @@ dbif::ObjectHandle create_db() {
   }
   Universe *db = new Universe(parser_worker);
   PLocalObject root = RootLocalObject::create(db);
-  NetworkServer *network = new NetworkServer(root);
   db->setRoot(root);
   DbThread *thr = new DbThread;
   DbThread *parser_thr = new DbThread;
-  DbThread *network_thr = new DbThread;
   db->moveToThread(thr);
   parser_worker->moveToThread(parser_thr);
-  network->moveToThread(network_thr);
   QObject::connect(db, &QObject::destroyed, thr, &QThread::quit);
   QObject::connect(parser_worker, &QObject::destroyed, parser_thr, &QThread::quit);
-  QObject::connect(network, &QObject::destroyed, network_thr, &QThread::quit);
   QObject::connect(db, &QObject::destroyed, parser_worker, &QObject::deleteLater);
   QObject::connect(db, &Universe::parse, parser_worker, &ParserWorker::parse);
   QObject::connect(parser_worker, &ParserWorker::newParser, [root] {
     root.dynamicCast<RootLocalObject>()->parsers_list_updated();
   });
+  if (util::settings::network::enabled()) {
+    NetworkServer *network = new NetworkServer(root);
+    DbThread *network_thr = new DbThread;
+    network->moveToThread(network_thr);
+    QObject::connect(network, &QObject::destroyed, network_thr, &QThread::quit);
+    network_thr->start();
+  }
   thr->start();
   parser_thr->start();
-  network_thr->start();
 
   return db->handle(root);
 }

@@ -23,6 +23,8 @@ namespace util {
 namespace settings {
 namespace network {
 
+bool enabled();
+void setEnabled(bool enabled);
 uint32_t port ();
 void setPort (uint32_t port);
 QString ipAddress ();
