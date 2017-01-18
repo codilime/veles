@@ -305,8 +305,6 @@ endif(WIN32 AND NOT MSVC)
 
 # Post-build packaging
 
-install(FILES ${PROTO_PY} DESTINATION python)
-
 #Unix paths
 if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
   # Load shared objects located in the same location as executable
