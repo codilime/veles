@@ -57,6 +57,8 @@ class DockWidget : public QDockWidget {
   void topLevelChangedNotify(bool top_level);
   void switchTitleBar(bool is_default);
   void centerTitleBarOnPosition(QPoint pos);
+  void splitHorizontally();
+  void splitVertically();
 
  protected:
   void moveEvent(QMoveEvent *event) Q_DECL_OVERRIDE;
@@ -65,6 +67,7 @@ class DockWidget : public QDockWidget {
   QMenu* createMoveToWindowMenu();
   QAction* createMoveToNewWindowAction();
   QAction* createMoveToNewWindowAndMaximizeAction();
+  void createSplitActions();
 
  protected:
   static constexpr int max_ticks_ = 4;
@@ -75,6 +78,8 @@ class DockWidget : public QDockWidget {
   QMenu* context_menu_;
   QAction* detach_action_;
   QAction* maximize_here_action_;
+  QAction* split_horizontally_action_;
+  QAction* split_vertically_action_;
   QWidget* empty_title_bar_;
 };
 
@@ -121,13 +126,15 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
   void findTwoNonTabifiedDocks(DockWidget*& sibling1, DockWidget*& sibling2);
   DockWidget* findDockNotTabifiedWith(DockWidget* dock_widget);
   DockWidget* findDockNotTabifiedWith(QWidget* widget);
+  QDockWidget* findSibling(QDockWidget* dock_widget);
   void setDockWidgetsWithNoTitleBars(bool no_title_bars);
   bool dockWidgetsWithNoTitleBars();
   QDockWidget* tabToDockWidget(QTabBar* tab_bar, int index);
   QTabBar* dockWidgetToTab(QDockWidget* dock_widget);
+  void splitDockWidget2(QDockWidget* first, QDockWidget* second, Qt::Orientation orientation);
+
   static MainWindowWithDetachableDockWidgets* getParentMainWindow(
       QObject* obj);
-
   static bool intersectsWithAnyMainWindow(DockWidget* dock_widget);
   static MainWindowWithDetachableDockWidgets* getParentCandidateForDockWidget(
       DockWidget* dock_widget);
@@ -152,6 +159,7 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
 
  protected:
   bool event(QEvent* event) Q_DECL_OVERRIDE;
+  bool splitDockWidgetImpl(QDockWidget* first, QDockWidget* second, Qt::Orientation orientation);
 
  private:
   static std::set<MainWindowWithDetachableDockWidgets*> main_windows_;
