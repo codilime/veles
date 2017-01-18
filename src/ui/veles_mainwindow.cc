@@ -60,6 +60,9 @@ DockWidget::DockWidget() : QDockWidget(), timer_id_(0), ticks_(0),
   maximize_here_action_ = createMoveToNewWindowAndMaximizeAction();
   addAction(maximize_here_action_);
   detach_action_ = createMoveToNewWindowAction();
+  createSplitActions();
+  addAction(split_horizontally_action_);
+  addAction(split_vertically_action_);
 
   connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
         this, SLOT(displayContextMenu(const QPoint&)));
@@ -101,6 +104,8 @@ void DockWidget::displayContextMenu(const QPoint& pos) {
   context_menu_->addMenu(createMoveToWindowMenu());
   context_menu_->addAction(detach_action_);
   context_menu_->addAction(maximize_here_action_);
+  context_menu_->addAction(split_horizontally_action_);
+  context_menu_->addAction(split_vertically_action_);
 
   context_menu_->popup(mapToGlobal(pos));
 }
@@ -177,6 +182,28 @@ void DockWidget::switchTitleBar(bool is_default) {
     }
   } else if (titleBarWidget() != empty_title_bar_) {
     setTitleBarWidget (empty_title_bar_);
+  }
+}
+
+void DockWidget::splitHorizontally() {
+  auto parent = MainWindowWithDetachableDockWidgets::getParentMainWindow(this);
+
+  if (parent != nullptr) {
+    auto sibling = parent->findSibling(this);
+    if(sibling) {
+      parent->splitDockWidget2(sibling, this, Qt::Horizontal);
+    }
+  }
+}
+
+void DockWidget::splitVertically() {
+  auto parent = MainWindowWithDetachableDockWidgets::getParentMainWindow(this);
+
+  if (parent != nullptr) {
+    auto sibling = parent->findSibling(this);
+    if (sibling) {
+      parent->splitDockWidget2(sibling, this, Qt::Vertical);
+    }
   }
 }
 
@@ -288,6 +315,24 @@ QAction* DockWidget::createMoveToNewWindowAndMaximizeAction() {
       this, SLOT(detachToNewTopLevelWindowAndMaximize()));
 
   return action;
+}
+
+void DockWidget::createSplitActions() {
+  split_horizontally_action_ = new QAction(tr("Split horizontally"), this);
+  split_horizontally_action_->setShortcutContext(
+      Qt::WidgetWithChildrenShortcut);
+  split_horizontally_action_->setIcon(
+      QIcon(":/images/split_horizontally.png"));
+  connect(split_horizontally_action_, SIGNAL(triggered()), this,
+      SLOT(splitHorizontally()));
+
+  split_vertically_action_ = new QAction(tr("Split vertically"), this);
+  split_vertically_action_->setShortcutContext(
+      Qt::WidgetWithChildrenShortcut);
+  split_vertically_action_->setIcon(
+      QIcon(":/images/split_vertically.png"));
+  connect(split_vertically_action_, SIGNAL(triggered()), this,
+      SLOT(splitVertically()));
 }
 
 /*****************************************************************************/
@@ -605,6 +650,16 @@ DockWidget* MainWindowWithDetachableDockWidgets::findDockNotTabifiedWith(
   return nullptr;
 }
 
+QDockWidget* MainWindowWithDetachableDockWidgets::findSibling(
+    QDockWidget* dock_widget) {
+  auto siblings = tabifiedDockWidgets(dock_widget);
+  if (siblings.size() > 0) {
+    return siblings.first();
+  } else {
+    return nullptr;
+  }
+}
+
 void MainWindowWithDetachableDockWidgets::setDockWidgetsWithNoTitleBars(
     bool no_title_bars) {
   dock_widgets_with_no_title_bars_ = no_title_bars;
@@ -645,6 +700,20 @@ QTabBar* MainWindowWithDetachableDockWidgets::dockWidgetToTab(
   }
 
   return nullptr;
+}
+
+void MainWindowWithDetachableDockWidgets::splitDockWidget2(
+    QDockWidget* first, QDockWidget* second, Qt::Orientation orientation) {
+  // Unfortunately we can not just call QMainWindow::splitDockWidget due to
+  // it's limitations (both documented and not).
+
+  if (!splitDockWidgetImpl(first, second, orientation)) {
+    splitDockWidgetImpl(first, second,
+        orientation == Qt::Horizontal ? Qt::Vertical : Qt::Horizontal);
+    splitDockWidgetImpl(first, second, orientation);
+  }
+
+  updateDocksAndTabs();
 }
 
 MainWindowWithDetachableDockWidgets* MainWindowWithDetachableDockWidgets
@@ -837,6 +906,31 @@ bool MainWindowWithDetachableDockWidgets::event(QEvent* event) {
   }
 
   return QMainWindow::event(event);
+}
+
+bool MainWindowWithDetachableDockWidgets::splitDockWidgetImpl(
+    QDockWidget* first, QDockWidget* second, Qt::Orientation orientation) {
+  auto tabified_docks = tabifiedDockWidgets(first);
+  for (auto dock_widget : tabified_docks) {
+    removeDockWidget(dock_widget);
+  }
+  tabified_docks.removeOne(second);
+
+  second->show();
+  splitDockWidget(first, second, orientation);
+
+  for (auto dock_widget : tabified_docks) {
+    dock_widget->show();
+    if (dock_widget != second) {
+      tabifyDockWidget(first, dock_widget);
+    }
+  }
+
+  if (tabifiedDockWidgets(first).contains(second)) {
+    return false;
+  }
+
+  return true;
 }
 
 /*****************************************************************************/
