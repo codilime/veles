@@ -88,6 +88,9 @@ class TabBarEventFilter : public QObject {
  public:
   TabBarEventFilter(QObject* parent = nullptr);
 
+ public slots:
+  void tabMoved(int from, int to);
+
  protected:
   bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;
   virtual bool mouseMove(QTabBar* tab_bar, QMouseEvent* event);
@@ -98,6 +101,7 @@ class TabBarEventFilter : public QObject {
   QTabBar* dragged_tab_bar_;
   int dragged_tab_index_;
   QPoint drag_init_pos_;
+  static const int k_drag_treshold_ = 5;
 };
 
 /*****************************************************************************/
