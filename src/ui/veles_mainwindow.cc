@@ -299,6 +299,12 @@ TabBarEventFilter::TabBarEventFilter(QObject* parent) :
     drag_init_pos_(0, 0) {
 }
 
+void TabBarEventFilter::tabMoved(int from, int to) {
+  if (dragged_tab_bar_) {
+    dragged_tab_index_ = dragged_tab_bar_->currentIndex();
+  }
+}
+
 bool TabBarEventFilter::eventFilter(QObject *watched, QEvent *event) {
   auto main_window = MainWindowWithDetachableDockWidgets
       ::getParentMainWindow(watched);
@@ -306,15 +312,18 @@ bool TabBarEventFilter::eventFilter(QObject *watched, QEvent *event) {
     return false;
   }
 
+  QTabBar* tab_bar = dynamic_cast<QTabBar*>(watched);
+  if (!tab_bar) {
+    return false;
+  } else {
+    connect(tab_bar, &QTabBar::tabMoved, this,
+        &TabBarEventFilter::tabMoved, Qt::UniqueConnection);
+  }
+
   if(event->type() != QEvent::MouseMove
       && event->type() != QEvent::MouseButtonPress
       && event->type() != QEvent::MouseButtonRelease
       && event->type() != QEvent::MouseButtonDblClick) {
-    return false;
-  }
-
-  QTabBar* tab_bar = dynamic_cast<QTabBar*>(watched);
-  if(!tab_bar) {
     return false;
   }
 
@@ -335,8 +344,15 @@ bool TabBarEventFilter::eventFilter(QObject *watched, QEvent *event) {
 
 bool TabBarEventFilter::mouseMove(QTabBar* tab_bar, QMouseEvent* event) {
   if(dragged_tab_bar_) {
-    if ((event->pos() - drag_init_pos_).manhattanLength()
-        > QApplication::startDragDistance()) {
+    bool horizontal_tabs =
+        dragged_tab_bar_->shape() == QTabBar::RoundedNorth
+        || dragged_tab_bar_->shape() == QTabBar::RoundedSouth
+        || dragged_tab_bar_->shape() == QTabBar::TriangularNorth
+        || dragged_tab_bar_->shape() == QTabBar::TriangularSouth;
+
+    if ((horizontal_tabs ? (event->pos() - drag_init_pos_).y()
+        : (event->pos() - drag_init_pos_).x())
+        > k_drag_treshold_ * QApplication::startDragDistance()) {
       auto window = dynamic_cast<MainWindowWithDetachableDockWidgets*>(
           tab_bar->window());
       if (window) {
@@ -384,7 +400,6 @@ bool TabBarEventFilter::mouseButtonRelease(
   if (event->button() == Qt::LeftButton) {
     dragged_tab_bar_ = nullptr;
     dragged_tab_index_ = -1;
-    return true;
   } else if (event->button() == Qt::RightButton) {
     int tab_index = tab_bar->tabAt(event->pos());
     if (tab_index > -1) {
@@ -764,7 +779,6 @@ void MainWindowWithDetachableDockWidgets::updateDockWidgetTitleBars() {
 
   if (dock_widgets_with_no_title_bars_) {
     for (auto tab_bar : findChildren<QTabBar*>()) {
-      tab_bar->setMovable(false);
       tab_bar->setContextMenuPolicy(Qt::NoContextMenu);
       for (int i = 0; i < tab_bar->count(); ++i) {
         DockWidget* dock_widget =
