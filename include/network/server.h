@@ -29,8 +29,9 @@ namespace db {
 class NetworkServer : public QObject {
   Q_OBJECT
 
-  void handleRequest(network::Request &req, network::Response &resp);
+  void handleRequest(network::Request &req, QTcpSocket *client_connection);
   void sendResponse(QTcpSocket *client_connection, network::Response &resp);
+  void sendData(QTcpSocket *client_connection, const char *data, int64_t length);
   void packObject(PLocalObject object, network::LocalObject* result,
                   bool pack_children = false);
 
@@ -45,12 +46,15 @@ private:
   PLocalObject root_;
   QTcpServer *tcp_server_;
 
+  static const uint32_t k_max_msg_len_ = 1024*1024*16;
+
   void listChildren(PLocalObject target_object, network::Response &resp,
                     bool list_children = false);
   void createChunk(PLocalObject target_object, PLocalObject blob,
                    network::Request &req, network::Response &resp);
-  void deleteObject(PLocalObject target_object, PLocalObject root_object,
-                    network::Response &resp);
+  void deleteObject(PLocalObject target_object, network::Response &resp);
+  void getBlobData(PLocalObject target_object, QTcpSocket *client_connection,
+                   network::Response &resp);
 };
 
 }  // namespace db

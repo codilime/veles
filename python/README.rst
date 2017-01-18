@@ -1,16 +1,20 @@
 Veles Python library
 ====================
 
-This library enables you to operate on veles objects tree from python.
-It connects to running veles instance via network.
+This library enables you to operate on Veles objects tree from python.
+It connects to running Veles instance via network.
 
 Installing
 ----------
 
-First you need to copy ``network_pb2.py`` to ``veles`` directory (this file is
-generated during Veles compilation).
+To use this library you need to have ``network_pb2.py`` file in ``veles`` directory.
+(it is generated and copied there when you compile Veles)
 
-Then you need to run ``python setup.py install`` (or ``develop`` based on your preferences)
+Then you need to run
+::
+
+  pip install -r requirements.txt
+  python setup.py install (or develop based on your preferences)
 
 Usage
 -----

@@ -86,6 +86,10 @@ void LocalObject::delChild(PLocalObject obj) {
   children_updated();
 }
 
+void LocalObject::setComment(QString comment) {
+  comment_ = comment;
+}
+
 void LocalObject::children_reply(InfoGetter *getter) {
   std::vector<dbif::ObjectHandle> res;
   for (PLocalObject obj : children_) {

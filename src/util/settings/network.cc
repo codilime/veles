@@ -25,6 +25,16 @@ namespace util {
 namespace settings {
 namespace network {
 
+bool enabled() {
+  QSettings settings;
+  return settings.value("network.enabled", false).toBool();
+}
+
+void setEnabled(bool enabled) {
+  QSettings settings;
+  settings.setValue("network.enabled", enabled);
+}
+
 uint32_t port() {
   QSettings settings;
   return settings.value("network.port", 3135).toUInt();

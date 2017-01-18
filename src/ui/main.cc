@@ -63,12 +63,23 @@ int main(int argc, char *argv[]) {
   parser.addHelpOption();
   parser.addVersionOption();
   parser.addOptions({
-      {"ip", "IP address the application will listen on.\n"
+      {"network", "Enable network server\n"
+       "Exclusive with no-network\n"
+       "Value specified will be persistent"},
+      {"no-network", "Disable  network server\n"
+       "Exclusive with network\n"
+       "Value specified will be persistent"},
+      {"ip", "IP address the server will listen on.\n"
        "Value specified will be persistent.", "ip"},
-      {{"p", "port"}, "Port the application will listen on.\n"
+      {{"p", "port"}, "Port the server will listen on.\n"
        "Value specified will be persistent.", "port"}
   });
   parser.process(app);
+
+  if (parser.isSet("network") || parser.isSet("no-network")) {
+    bool networkEnabled = parser.isSet("network") && !parser.isSet("no-network");
+    veles::util::settings::network::setEnabled(networkEnabled);
+  }
 
   if (parser.isSet("port")) {
     QString port = parser.value("port");

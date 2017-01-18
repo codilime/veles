@@ -28,12 +28,14 @@ class LocalObject(object):
         else:
             self.id_path = id_path[:]
         self.children = []
+        self.data = None
 
     def _from_another(self, other):
         self._proto_obj = other._proto_obj
         self.parent = other.parent
         self.id_path = other.id_path
         self.children = other.children
+        self.data = other.data
 
     # maybe in future we should autogenerate it based on proto file
     @property
@@ -95,6 +97,6 @@ class LocalObject(object):
     # TODO setting items
 
     def __repr__(self):
-        return 'id: %s name: %s' % (self.id, self.name)
+        return 'id: {} name: {}'.format(self.id, self.name)
 
     __str__ = __repr__

@@ -64,7 +64,8 @@ class LocalObject : public QEnableSharedFromThis<LocalObject> {
   QString name() const { return name_; }
   QString comment() const { return comment_; }
   uint64_t id() const { return id_; }
-  const QSet<PLocalObject> &children() { return children_; }
+  const QSet<PLocalObject>& children() { return children_; }
+  void setComment(QString comment);
 };
 
 class RootLocalObject : public LocalObject {
