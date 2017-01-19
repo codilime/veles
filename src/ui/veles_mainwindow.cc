@@ -935,7 +935,10 @@ void VelesMainWindow::createActions() {
 
 void VelesMainWindow::createMenus() {
   fileMenu = menuBar()->addMenu(tr("&File"));
-  fileMenu->addAction(newFileAct);
+
+  //Not implemented yet.
+  //fileMenu->addAction(newFileAct);
+
   fileMenu->addAction(openAct);
   fileMenu->addSeparator();
   fileMenu->addAction(optionsAct);
