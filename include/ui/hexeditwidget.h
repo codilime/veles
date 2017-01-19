@@ -58,6 +58,7 @@ class HexEditWidget : public QMainWindow {
   bool saveAs();
   void showVisualisation();
   void showNodeTree();
+  void showHexEditor();
   void newBinData();
 
  private:
@@ -95,6 +96,7 @@ class HexEditWidget : public QMainWindow {
   QAction *find_next_act_;
   QAction *visualisation_act_;
   QAction *show_node_tree_act_;
+  QAction *show_hex_edit_act_;
 
   SearchDialog *search_dialog_;
   HexEdit *hex_edit_;

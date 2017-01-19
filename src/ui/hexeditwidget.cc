@@ -130,8 +130,15 @@ void HexEditWidget::createActions() {
       tr("&Node tree"), this);
   show_node_tree_act_->setToolTip(tr("Node tree"));
   show_node_tree_act_->setEnabled(true);
-  connect(show_node_tree_act_, SIGNAL(triggered()), this,
-      SLOT(showNodeTree()));
+  connect(show_node_tree_act_, SIGNAL(triggered()),
+      this, SLOT(showNodeTree()));
+
+  show_hex_edit_act_ = new QAction(QIcon(":/images/show_hex_edit.png"),
+      tr("Show &hex editor"), this);
+  show_hex_edit_act_->setToolTip(tr("Hex editor"));
+  show_hex_edit_act_->setEnabled(true);
+  connect(show_hex_edit_act_, SIGNAL(triggered()),
+      this, SLOT(showHexEditor()));
 }
 
 void HexEditWidget::createToolBars() {
@@ -150,6 +157,7 @@ void HexEditWidget::createToolBars() {
   tools_tool_bar_ = new QToolBar(tr("Tools"));
   tools_tool_bar_->addAction(visualisation_act_);
   tools_tool_bar_->addAction(show_node_tree_act_);
+  tools_tool_bar_->addAction(show_hex_edit_act_);
   addToolBar(tools_tool_bar_);
 }
 
@@ -228,6 +236,17 @@ void HexEditWidget::showNodeTree() {
       data_model_->path().join(" : ") + " - Node tree", sibling);
   if(!sibling) {
       main_window_->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
+  }
+}
+
+void HexEditWidget::showHexEditor() {
+  HexEditWidget *hex_edit = new HexEditWidget(main_window_, data_model_,
+      selection_model_);
+  auto sibling = DockWidget::getParentDockWidget(this);
+  auto dock_widget = main_window_->addTab(hex_edit,
+      data_model_->path().join(" : ") + " - Hex", sibling);
+  if (sibling == nullptr) {
+    main_window_->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
   }
 }
 
