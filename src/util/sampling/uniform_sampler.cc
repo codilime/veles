@@ -94,7 +94,8 @@ ISampler::ResampleData* UniformSampler::prepareResample(SamplerConfig *sc) {
   if (use_default_window_size_ || window_size_ == 0) {
     window_size = (size_t)floor(sqrt(size));
   }
-  size_t windows_count = (size_t)floor(size / window_size);
+  size_t windows_count = size / window_size;
+  size = window_size * windows_count;
   std::vector<size_t> windows(windows_count);
 
   // Algorithm:
