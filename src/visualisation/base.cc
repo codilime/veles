@@ -33,9 +33,18 @@ VisualisationWidget::VisualisationWidget(QWidget *parent) :
           this, &VisualisationWidget::refreshVisualisation);
 }
 
+VisualisationWidget::~VisualisationWidget() {
+  if (sampler_) {
+    sampler_->removeResampleCallback(resample_cb_id_);
+  }
+}
+
 void VisualisationWidget::setSampler(util::ISampler *sampler) {
+  if (sampler_) {
+    sampler_->removeResampleCallback(resample_cb_id_);
+  }
   sampler_ = sampler;
-  sampler_->registerResampleCallback(
+  resample_cb_id_ = sampler_->registerResampleCallback(
     std::function<void()>(
       std::bind(&VisualisationWidget::resampleCallback, this)));
   initialised_ = true;
