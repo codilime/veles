@@ -142,14 +142,18 @@ void HexEditWidget::createActions() {
 }
 
 void HexEditWidget::createToolBars() {
-  file_tool_bar_ = new QToolBar(tr("File"));
-  file_tool_bar_->addAction(upload_act_);
-  file_tool_bar_->addAction(save_as_act_);
-  addToolBar(file_tool_bar_);
+  //Not implemented yet.
+  //file_tool_bar_ = new QToolBar(tr("File"));
+  //file_tool_bar_->addAction(upload_act_);
+  //file_tool_bar_->addAction(save_as_act_);
+  //addToolBar(file_tool_bar_);
 
   edit_tool_bar_ = new QToolBar(tr("Edit"));
-  edit_tool_bar_->addAction(undo_act_);
-  edit_tool_bar_->addAction(redo_act_);
+
+  //Not implemented yet.
+  //edit_tool_bar_->addAction(undo_act_);
+  //edit_tool_bar_->addAction(redo_act_);
+
   edit_tool_bar_->addAction(find_act_);
   edit_tool_bar_->addAction(find_next_act_);
   addToolBar(edit_tool_bar_);
