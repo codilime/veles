@@ -23,7 +23,7 @@
 #include <condition_variable>
 #include <future>
 #include <utility>
-#include <vector>
+#include <map>
 #include <QByteArray>
 
 namespace veles {
@@ -32,6 +32,7 @@ namespace util {
 typedef std::recursive_mutex SamplerMutex;
 typedef std::condition_variable_any SamplerConditionVariable;
 typedef std::function<void()> ResampleCallback;
+typedef int ResampleCallbackId;
 
 /**
  * Abstract interface for Sampler classes.
@@ -190,8 +191,15 @@ class ISampler {
    * If multiple callbacks are registered they will be called in reverse
    * registration order (stack).
    * This method needs to acquire sampler lock, so it may block.
+   * Returned value is callback id, that can be later used to remove this
+   * callback.
    */
-  void registerResampleCallback(ResampleCallback cb);
+  ResampleCallbackId registerResampleCallback(ResampleCallback cb);
+
+  /**
+   * Remove resample callback with a given id.
+   */
+  void removeResampleCallback(ResampleCallbackId cb_id);
 
   /**
    * Remove all registered resample callbacks.
@@ -347,7 +355,8 @@ class ISampler {
   SamplerConditionVariable sampler_condition_;
   SamplerConfig last_config_;
   std::atomic<int> current_version_, requested_version_;
-  std::vector<ResampleCallback> callbacks_;
+  ResampleCallbackId next_cb_id_;
+  std::map<ResampleCallbackId, ResampleCallback> callbacks_;
 };
 
 }  // namespace util
