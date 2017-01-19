@@ -37,7 +37,7 @@ class VisualisationWidget : public QOpenGLWidget,
 
  public:
   explicit VisualisationWidget(QWidget *parent = 0);
-  ~VisualisationWidget() {}
+  ~VisualisationWidget();
 
   void setSampler(util::ISampler *sampler);
   // This method takes a QLayout* and add any widgets necessary to manipulate
@@ -89,6 +89,7 @@ class VisualisationWidget : public QOpenGLWidget,
   bool initialised_;
   bool gl_initialised_, gl_broken_, error_message_set_;
   util::ISampler *sampler_;
+  util::ResampleCallbackId resample_cb_id_;
 };
 
 }  // namespace visualisation

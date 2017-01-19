@@ -26,6 +26,7 @@
 #include "visualisation/digram.h"
 #include "visualisation/trigram.h"
 
+
 namespace veles {
 namespace visualisation {
 
@@ -56,6 +57,7 @@ VisualisationPanel::VisualisationPanel(QWidget *parent) :
 }
 
 VisualisationPanel::~VisualisationPanel() {
+  delete visualisation_;
   delete minimap_;
   if (sampler_ != nullptr) {
     delete sampler_;

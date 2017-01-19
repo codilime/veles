@@ -202,19 +202,40 @@ TEST(ISamplerWithSampling, getDataFromIsampler) {
 TEST(ISamplerAsynchronous, addAndClearCallbacks) {
   threadpool::mockTopic("visualisation");
   auto data = prepare_data(100);
-  MockCallback mc;
-  mc.resetCallCount();
+  MockCallback mc1, mc2, mc3;
+  mc1.resetCallCount();
+  mc2.resetCallCount();
+  mc3.resetCallCount();
   testing::NiceMock<MockSampler> sampler(data);
 
   sampler.setSampleSize(10);
   sampler.allowAsynchronousResampling(true);
-  sampler.registerResampleCallback(std::ref(mc));
+  sampler.registerResampleCallback(std::ref(mc1));
+  auto cb2_id = sampler.registerResampleCallback(std::ref(mc2));
+  sampler.registerResampleCallback(std::ref(mc3));
+
   sampler.resample();
-  ASSERT_EQ(1, mc.getCallCount());
-  mc.resetCallCount();
+  ASSERT_EQ(1, mc1.getCallCount());
+  ASSERT_EQ(1, mc2.getCallCount());
+  ASSERT_EQ(1, mc3.getCallCount());
+
+  mc1.resetCallCount();
+  mc2.resetCallCount();
+  mc3.resetCallCount();
+  sampler.removeResampleCallback(cb2_id);
+  sampler.resample();
+  ASSERT_EQ(1, mc1.getCallCount());
+  ASSERT_EQ(0, mc2.getCallCount());
+  ASSERT_EQ(1, mc3.getCallCount());
+
+  mc1.resetCallCount();
+  mc2.resetCallCount();
+  mc3.resetCallCount();
   sampler.clearResampleCallbacks();
   sampler.resample();
-  ASSERT_EQ(0, mc.getCallCount());
+  ASSERT_EQ(0, mc1.getCallCount());
+  ASSERT_EQ(0, mc2.getCallCount());
+  ASSERT_EQ(0, mc3.getCallCount());
 }
 
 TEST(ISamplerAsynchronous, prepareAndApplySample) {

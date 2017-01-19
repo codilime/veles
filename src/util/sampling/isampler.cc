@@ -30,7 +30,7 @@ namespace util {
 ISampler::ISampler(const QByteArray &data) :
     data_(data), start_(0), sample_size_(0),
     allow_async_(false), current_version_(0),
-    requested_version_(0) {
+    requested_version_(0), next_cb_id_(0) {
   end_ = data_.size();
   last_config_.start = start_;
   last_config_.end = end_;
@@ -142,9 +142,16 @@ bool ISampler::isFinished() {
   return (current_version_.load() == requested_version_.load());
 }
 
-void ISampler::registerResampleCallback(ResampleCallback cb) {
+ResampleCallbackId ISampler::registerResampleCallback(ResampleCallback cb) {
   auto lc = lock();
-  callbacks_.push_back(cb);
+  ResampleCallbackId id = next_cb_id_++;
+  callbacks_[id] = cb;
+  return id;
+}
+
+void ISampler::removeResampleCallback(ResampleCallbackId cb_id) {
+  auto lc = lock();
+  callbacks_.erase(cb_id);
 }
 
 void ISampler::clearResampleCallbacks() {
@@ -225,7 +232,7 @@ void ISampler::runResample(SamplerConfig *sc) {
       current_version_ = ++requested_version_;
       applySamplerConfig(sc);
       for (auto i = callbacks_.rbegin(); i != callbacks_.rend(); ++i) {
-        (*i)();
+        (i->second)();
       }
       lc.unlock();
       delete sc;
@@ -252,7 +259,7 @@ void ISampler::resampleAsync(int target_version, SamplerConfig *sc) {
     applySamplerConfig(sc);
     current_version_ = target_version;
     for (auto i = callbacks_.rbegin(); i != callbacks_.rend(); ++i) {
-      (*i)();
+      (i->second)();
     }
     lc.unlock();
     delete sc;
