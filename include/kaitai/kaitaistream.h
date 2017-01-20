@@ -90,6 +90,7 @@ class kstream {
   /** addiational methods required by Veles */
   void pushName(const char *);
   void popName();
+  const char* currentName() {return current_name_;}
   veles::dbif::ObjectHandle startChunk(const char *);
   veles::dbif::ObjectHandle endChunk();
   veles::parser::StreamParser *parser() { return parser_; }
