@@ -68,6 +68,9 @@ class FileBlobItem : public QObject {
   dbif::ObjectHandle dataObj_;
   QList<FileBlobItem *> children_;
 
+ private:
+  bool sortChildren();
+
  protected slots:
   virtual void insertingChildrenHandle(FileBlobItem *item, bool before,
                                        int count);

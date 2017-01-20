@@ -23,8 +23,14 @@ namespace ui {
 
 bool FileBlobItem::operator<(const FileBlobItem &other) {
   uint64_t start, end;
-  other.range(&start, &end);
-  return start_ < start;
+  if (!range(&start, &end)) {
+    return false;
+  }
+  uint64_t start_other, end_other;
+  if (!other.range(&start_other, &end_other)) {
+    return true;
+  }
+  return start < start_other;
 }
 
 int FileBlobItem::childrenCount() { return children_.size(); }
@@ -47,8 +53,28 @@ void FileBlobItem::removingChildrenHandle(FileBlobItem *item, bool before) {
   emit removingChildren(item, before);
 }
 
+bool compareItems(FileBlobItem *a, FileBlobItem *b) { return *a < *b; }
+
+bool FileBlobItem::sortChildren() {
+  if (std::is_sorted(children_.begin(), children_.end(), compareItems)) {
+    return false;
+  }
+  qSort(children_.begin(), children_.end(), compareItems);
+  return true;
+}
+
 void FileBlobItem::dataUpdatedHandle(FileBlobItem *item) {
   emit dataUpdated(item);
+  if (sortChildren()) {
+    emit removingChildren(this, true);
+    auto childrenCopy = children_;
+    children_.clear();
+    emit removingChildren(this, false);
+
+    emit insertingChildren(this, true, children_.size());
+    children_ = childrenCopy;
+    emit insertingChildren(this, false, children_.size());
+  }
 }
 
 void FileBlobItem::addChildren(const QList<FileBlobItem *> &children) {

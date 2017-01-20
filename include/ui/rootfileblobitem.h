@@ -34,14 +34,8 @@ class RootFileBlobItem : public FileBlobItem {
  public:
   explicit RootFileBlobItem(dbif::ObjectHandle obj, QObject *parent = 0);
 
- private:
-  bool sortChildren();
-
  private slots:
   void gotChildrenResponse(veles::dbif::PInfoReply reply);
-
- protected slots:
-  void dataUpdatedHandle(FileBlobItem *item) override;
 };
 
 }  // namespace ui
