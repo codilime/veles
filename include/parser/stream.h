@@ -285,6 +285,9 @@ class StreamParser {
     }
     return blob_size_ - pos_;
   }
+
+  void skip(uint64_t bytes) {pos_ += bytes;}
+
 };
 };
 };
