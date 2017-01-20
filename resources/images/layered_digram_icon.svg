@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   viewBox="0 0 23 23"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   width="100%"
+   height="100%"
+   sodipodi:docname="layered_digram_icon.svg">
+  <metadata
+     id="metadata20">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="1"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1855"
+     inkscape:window-height="1056"
+     id="namedview18"
+     showgrid="false"
+     inkscape:zoom="10.26087"
+     inkscape:cx="11.5"
+     inkscape:cy="7.6016949"
+     inkscape:window-x="65"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <defs
+     id="defs4">
+    <style
+       id="style6">.cls-1{fill:#fff;}</style>
+  </defs>
+  <title
+     id="title8">Asset 36</title>
+  <g
+     id="Layer_2"
+     data-name="Layer 2"
+     style="fill:#000000;fill-opacity:1">
+    <g
+       id="app"
+       style="fill:#000000;fill-opacity:1">
+      <polygon
+         class="cls-1"
+         points="18.73 15.19 20.62 16.29 11.5 21.61 2.38 16.29 4.27 15.19 3.08 14.5 0 16.29 11.5 23 23 16.29 19.92 14.5 18.73 15.19"
+         id="polygon12"
+         style="fill:#000000;fill-opacity:1" />
+      <polygon
+         class="cls-1"
+         points="18.73 10.4 20.62 11.5 11.5 16.82 2.38 11.5 4.27 10.4 3.08 9.7 0 11.5 11.5 18.21 23 11.5 19.92 9.7 18.73 10.4"
+         id="polygon14"
+         style="fill:#000000;fill-opacity:1" />
+      <path
+         class="cls-1"
+         d="M11.5,1.39l9.12,5.32L11.5,12,2.38,6.71,11.5,1.39M11.5,0,0,6.71l11.5,6.71L23,6.71,11.5,0Z"
+         id="path16"
+         style="fill:#000000;fill-opacity:1" />
+    </g>
+  </g>
+</svg>

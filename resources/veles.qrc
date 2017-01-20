@@ -36,5 +36,8 @@
         <file>images/show_node_tree.png</file>
         <file>images/show_hex_edit.png</file>
         <file>images/maximize.png</file>
+        <file>images/digram_icon.svg</file>
+        <file>images/trigram_icon.svg</file>
+        <file>images/layered_digram_icon.svg</file>
     </qresource>
 </RCC>

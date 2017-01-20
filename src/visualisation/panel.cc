@@ -21,6 +21,7 @@
 #include <QLabel>
 
 #include "visualisation/panel.h"
+#include "util/icons.h"
 #include "util/sampling/fake_sampler.h"
 #include "util/sampling/uniform_sampler.h"
 #include "visualisation/digram.h"
@@ -249,20 +250,26 @@ QBoxLayout* VisualisationPanel::prepareVisualisationOptions() {
 void VisualisationPanel::initOptionsPanel() {
   options_layout_ = new QVBoxLayout;
 
+  QColor icon_color = palette().color(QPalette::WindowText);
   digram_action_ =
-      new QAction(QIcon(":/images/nginx2d_32.png"), tr("&Digram"), this);
+      new QAction(util::getColoredIcon(":/images/digram_icon.svg", icon_color),
+                  tr("&Digram"), this);
   digram_action_->setToolTip("Digram Visualisation");
   connect(digram_action_, SIGNAL(triggered()), this,
           SLOT(showDigramVisualisation()));
 
   trigram_action_ =
-      new QAction(QIcon(":/images/nginx3d_32.png"), tr("&Trigram"), this);
+      new QAction(util::getColoredIcon(":/images/trigram_icon.svg",
+                                       icon_color),
+                  tr("&Trigram"), this);
   trigram_action_->setToolTip("Trigram Visualisation");
   connect(trigram_action_, SIGNAL(triggered()), this,
           SLOT(showTrigramVisualisation()));
 
   layered_digram_action_ =
-      new QAction(QIcon(":/images/nginx3d_32.png"), tr("&Layered Digram"), this);
+      new QAction(util::getColoredIcon(":/images/layered_digram_icon.svg",
+                                       icon_color),
+                  tr("&Layered Digram"), this);
   layered_digram_action_->setToolTip("Layered Digram Visualisation");
   connect(layered_digram_action_, SIGNAL(triggered()), this,
           SLOT(showLayeredDigramVisualisation()));

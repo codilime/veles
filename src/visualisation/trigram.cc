@@ -15,6 +15,7 @@
  *
  */
 #include "visualisation/trigram.h"
+#include "util/icons.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -118,19 +119,6 @@ void TrigramWidget::refresh(AdditionalResampleDataPtr ad) {
   doneCurrent();
 }
 
-QIcon TrigramWidget::getColoredIcon(QString path, bool black_only) {
-  QPixmap pixmap(path);
-  QPixmap mask;
-  if (black_only) {
-    mask = pixmap.createMaskFromColor(QColor("black"), Qt::MaskOutColor);
-  } else {
-    mask = pixmap.createMaskFromColor(QColor("white"), Qt::MaskInColor);
-  }
-  pixmap.fill(palette().color(QPalette::WindowText));
-  pixmap.setMask(mask);
-  return QIcon(pixmap);
-}
-
 bool TrigramWidget::prepareOptionsPanel(QBoxLayout *layout) {
   VisualisationWidget::prepareOptionsPanel(layout);
 
@@ -154,15 +142,19 @@ bool TrigramWidget::prepareOptionsPanel(QBoxLayout *layout) {
           this, SLOT(setUseBrightnessHeuristic(int)));
   layout->addWidget(use_heuristic_checkbox_);
 
+  QColor icon_color = palette().color(QPalette::WindowText);
+
   pause_button_ = new QPushButton();
-  pause_button_->setIcon(getColoredIcon(":/images/pause.png"));
+  pause_button_->setIcon(util::getColoredIcon(":/images/pause.png",
+                                              icon_color));
   layout->addWidget(pause_button_);
   connect(pause_button_, SIGNAL(released()),
           this, SLOT(playPause()));
 
   QHBoxLayout *shape_box = new QHBoxLayout();
   cube_button_ = new QPushButton();
-  cube_button_->setIcon(getColoredIcon(":/images/cube.png", false));
+  cube_button_->setIcon(util::getColoredIcon(":/images/cube.png",
+                                             icon_color, false));
   cube_button_->setIconSize(QSize(32, 32));
   connect(cube_button_, &QPushButton::released,
           std::bind(&TrigramWidget::setShape, this,
@@ -170,7 +162,8 @@ bool TrigramWidget::prepareOptionsPanel(QBoxLayout *layout) {
   shape_box->addWidget(cube_button_);
 
   cylinder_button_ = new QPushButton();
-  cylinder_button_->setIcon(getColoredIcon(":/images/cylinder.png", false));
+  cylinder_button_->setIcon(util::getColoredIcon(":/images/cylinder.png",
+                                                 icon_color, false));
   cylinder_button_->setIconSize(QSize(32, 32));
   connect(cylinder_button_, &QPushButton::released,
           std::bind(&TrigramWidget::setShape, this,
@@ -178,7 +171,8 @@ bool TrigramWidget::prepareOptionsPanel(QBoxLayout *layout) {
   shape_box->addWidget(cylinder_button_);
 
   sphere_button_ = new QPushButton();
-  sphere_button_->setIcon(getColoredIcon(":/images/sphere.png"));
+  sphere_button_->setIcon(util::getColoredIcon(":/images/sphere.png",
+                                               icon_color));
   sphere_button_->setIconSize(QSize(32, 32));
 
   connect(sphere_button_, &QPushButton::released,
@@ -231,10 +225,13 @@ VisualisationWidget::AdditionalResampleData* TrigramWidget::onAsyncResample() {
 
 void TrigramWidget::playPause() {
   QPixmap pixmap;
+  QColor icon_color = palette().color(QPalette::WindowText);
   if (is_playing_) {
-    pause_button_->setIcon(getColoredIcon(":/images/play.png"));
+    pause_button_->setIcon(util::getColoredIcon(":/images/play.png",
+                                                icon_color));
   } else {
-    pause_button_->setIcon(getColoredIcon(":/images/pause.png"));
+    pause_button_->setIcon(util::getColoredIcon(":/images/pause.png",
+                                                icon_color));
   }
   is_playing_ = !is_playing_;
 }
