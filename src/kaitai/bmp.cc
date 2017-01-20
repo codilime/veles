@@ -207,7 +207,6 @@ std::vector<uint8_t> bmp_t::image() {
     if (f_image)
         return m_image;
     m__io->pushName("image");
-    uint64_t _pos = m__io->pos();
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;
     m__io = new kaitai::kstream(saved_io->blob(), file_header()->bitmap_ofs(), veles_obj);
