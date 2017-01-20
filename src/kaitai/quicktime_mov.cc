@@ -331,11 +331,12 @@ quicktime_mov_t::atom_t::~atom_t() {
 int32_t quicktime_mov_t::atom_t::len() {
     if (f_len)
         return m_len;
-    const char * current_name_ = "len"; 
+    m__io->pushName("len");
     m__io->pushName("len");
     m_len = (len32() == 0) ? ((_io()->size() - 8)) : ((len32() == 1) ? ((len64() - 16)) : ((len32() - 8)));
     m__io->popName();
     f_len = true;
+    m__io->popName();
     return m_len;
 }
 

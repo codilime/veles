@@ -206,12 +206,12 @@ bmp_t::bitmap_info_header_t::~bitmap_info_header_t() {
 std::vector<uint8_t> bmp_t::image() {
     if (f_image)
         return m_image;
-    const char * current_name_ = "image"; 
-    std::streampos _pos = m__io->pos();
+    m__io->pushName("image");
+    uint64_t _pos = m__io->pos();
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;
     m__io = new kaitai::kstream(saved_io->blob(), file_header()->bitmap_ofs(), veles_obj);
-    veles_obj = m__io->startChunk(current_name_);
+    veles_obj = m__io->startChunk(saved_io->currentName());
     m__io->pushName("image");
     m_image = m__io->read_bytes_full();
     m__io->popName();
@@ -220,6 +220,7 @@ std::vector<uint8_t> bmp_t::image() {
     veles_obj = saved_veles_obj;
     m__io = saved_io;
     f_image = true;
+    m__io->popName();
     return m_image;
 }
 } // namespace bmp

@@ -357,12 +357,12 @@ microsoft_pe_t::section_t::~section_t() {
 std::vector<uint8_t> microsoft_pe_t::section_t::body() {
     if (f_body)
         return m_body;
-    const char * current_name_ = "body"; 
-    std::streampos _pos = m__io->pos();
+    m__io->pushName("body");
+    uint64_t _pos = m__io->pos();
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;
     m__io = new kaitai::kstream(saved_io->blob(), pointer_to_raw_data(), veles_obj);
-    veles_obj = m__io->startChunk(current_name_);
+    veles_obj = m__io->startChunk(saved_io->currentName());
     m__io->pushName("body");
     m_body = m__io->read_bytes(size_of_raw_data());
     m__io->popName();
@@ -371,6 +371,7 @@ std::vector<uint8_t> microsoft_pe_t::section_t::body() {
     veles_obj = saved_veles_obj;
     m__io = saved_io;
     f_body = true;
+    m__io->popName();
     return m_body;
 }
 
