@@ -358,7 +358,6 @@ std::vector<uint8_t> microsoft_pe_t::section_t::body() {
     if (f_body)
         return m_body;
     m__io->pushName("body");
-    uint64_t _pos = m__io->pos();
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;
     m__io = new kaitai::kstream(saved_io->blob(), pointer_to_raw_data(), veles_obj);
