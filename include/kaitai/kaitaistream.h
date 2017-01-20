@@ -29,10 +29,9 @@ namespace kaitai {
 
 /**
  * Kaitai Stream class (veles::kaitai::kstream) is an implementation of
- * <a
- * href="https://github.com/kaitai-io/kaitai_struct/wiki/Kaitai-Struct-stream-API">Kaitai
- * Struct stream API</a>
- * for Veles. It's implemented as a wrapper over veles StreamParser.
+ * Kaitai Struct stream API for Veles.
+ * (https://github.com/kaitai-io/kaitai_struct/wiki/Kaitai-Struct-stream-API)
+ * It's implemented as a wrapper over veles StreamParser.
  *
  * Seeking is not implemented.
  * It has also addiational methods which allows Veles to known field names and
