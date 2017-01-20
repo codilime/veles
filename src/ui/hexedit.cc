@@ -622,9 +622,15 @@ void HexEdit::mouseDoubleClickEvent(QMouseEvent *event) {
   setSelectedChunk(newSelectedChunk);
 }
 
+bool HexEdit::isRangeVisible(qint64 start, qint64 size) {
+  qint64 visible_start = startRow_ * bytesPerRow_;
+  qint64 visible_end = (startRow_ + rowsOnScreen_) * bytesPerRow_;
+
+  return !(start >= visible_end || (start + size) <= visible_start);
+}
+
 bool HexEdit::isByteVisible(qint64 bytePos) {
-  return (bytePos >= startRow_ * bytesPerRow_) &&
-         (bytePos < (startRow_ + rowsOnScreen_) * bytesPerRow_);
+  return isRangeVisible(bytePos, 1);
 }
 
 void HexEdit::scrollToByte(qint64 bytePos, bool doNothingIfVisable) {
@@ -656,7 +662,7 @@ void HexEdit::selectionChanged() {
 void HexEdit::scrollToCurrentChunk() {
   qint64 start, size;
   getRangeFromIndex(selectedChunk(), &start, &size);
-  if (size) {
+  if (size && !isRangeVisible(start, size)) {
     scrollToByte(start, true);
   }
 }

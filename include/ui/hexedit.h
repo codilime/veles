@@ -147,6 +147,7 @@ class HexEdit : public QAbstractScrollArea {
 
   void setSelectedChunk(QModelIndex newSelectedChunk);
   void copyToClipboard(util::encoders::Encoder *enc = nullptr);
+  bool isRangeVisible(qint64 start, qint64 size);
   bool isByteVisible(qint64 bytePos);
   void setSelectionEnd(qint64 bytePos);
   void saveSelectionToFile(QString path);
