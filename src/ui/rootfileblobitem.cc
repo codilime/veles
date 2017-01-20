@@ -31,30 +31,6 @@ RootFileBlobItem::RootFileBlobItem(dbif::ObjectHandle obj, QObject *parent)
           SLOT(gotChildrenResponse(veles::dbif::PInfoReply)));
 }
 
-bool compareItems(FileBlobItem *a, FileBlobItem *b) { return *a < *b; }
-
-bool RootFileBlobItem::sortChildren() {
-  if (std::is_sorted(children_.begin(), children_.end(), compareItems)) {
-    return false;
-  }
-  qSort(children_.begin(), children_.end(), compareItems);
-  return true;
-}
-
-void RootFileBlobItem::dataUpdatedHandle(FileBlobItem *item) {
-  emit dataUpdated(item);
-  if (sortChildren()) {
-    emit removingChildren(this, true);
-    auto childrenCopy = children_;
-    children_.clear();
-    emit removingChildren(this, false);
-
-    emit insertingChildren(this, true, children_.size());
-    children_ = childrenCopy;
-    emit insertingChildren(this, false, children_.size());
-  }
-}
-
 void RootFileBlobItem::gotChildrenResponse(veles::dbif::PInfoReply reply) {
   FileBlobItem::removeOldChildren();
   auto objects =
