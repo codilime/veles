@@ -6,3 +6,5 @@ dist/
 AUTHORS
 ChangeLog
 .eggs
+.testrepository
+.tox
