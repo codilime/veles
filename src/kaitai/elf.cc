@@ -350,7 +350,6 @@ std::vector<uint8_t> elf_t::section_header_t::body() {
         return m_body;
     m__io->pushName("body");
     kaitai::kstream *io = _root()->_io();
-    uint64_t _pos = io->pos();
     auto saved_io = io;
     auto saved_veles_obj = veles_obj;
     io = new kaitai::kstream(saved_io->blob(), offset(), veles_obj);
@@ -372,7 +371,6 @@ std::string elf_t::section_header_t::name() {
         return m_name;
     m__io->pushName("name");
     kaitai::kstream *io = _root()->strings()->_io();
-    uint64_t _pos = io->pos();
     auto saved_io = io;
     auto saved_veles_obj = veles_obj;
     io = new kaitai::kstream(saved_io->blob(), name_offset(), veles_obj);
@@ -414,7 +412,6 @@ std::vector<elf_t::program_header_t*>* elf_t::program_headers() {
     if (f_program_headers)
         return m_program_headers;
     m__io->pushName("program_headers");
-    uint64_t _pos = m__io->pos();
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;
     m__io = new kaitai::kstream(saved_io->blob(), file_header()->program_header_offset(), veles_obj);
@@ -448,7 +445,6 @@ std::vector<elf_t::section_header_t*>* elf_t::section_headers() {
     if (f_section_headers)
         return m_section_headers;
     m__io->pushName("section_headers");
-    uint64_t _pos = m__io->pos();
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;
     m__io = new kaitai::kstream(saved_io->blob(), file_header()->section_header_offset(), veles_obj);
@@ -482,7 +478,6 @@ elf_t::strings_t* elf_t::strings() {
     if (f_strings)
         return m_strings;
     m__io->pushName("strings");
-    uint64_t _pos = m__io->pos();
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;
     m__io = new kaitai::kstream(saved_io->blob(), section_headers()->at(file_header()->section_names_idx())->offset(), veles_obj);
