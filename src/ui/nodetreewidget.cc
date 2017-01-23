@@ -38,6 +38,7 @@
 #include "ui/nodetreewidget.h"
 
 #include "util/settings/hexedit.h"
+#include "util/icons.h"
 
 namespace veles {
 namespace ui {
@@ -116,8 +117,9 @@ void NodeTreeWidget::createActions() {
   redo_act_->setShortcuts(QKeySequence::Redo);
   redo_act_->setEnabled(false);
 
-  visualisation_act_ =
-      new QAction(QIcon(":/images/nginx3d_32.png"),
+  QColor icon_color = palette().color(QPalette::WindowText);
+  visualisation_act_ = new QAction(
+          util::getColoredIcon(":/images/trigram_icon.svg", icon_color),
           tr("&Visualisation"), this);
   visualisation_act_->setToolTip(tr("Visualisation"));
   visualisation_act_->setEnabled(data_model_->binData().size() > 0);
