@@ -24,6 +24,7 @@
 #include <QMainWindow>
 #include <QMenu>
 #include <QStringList>
+#include <QRubberBand>
 
 #include "dbif/promise.h"
 #include "dbif/types.h"
@@ -132,6 +133,7 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
   QDockWidget* tabToDockWidget(QTabBar* tab_bar, int index);
   QTabBar* dockWidgetToTab(QDockWidget* dock_widget);
   void splitDockWidget2(QDockWidget* first, QDockWidget* second, Qt::Orientation orientation);
+  void showRubberBand(bool show);
 
   static MainWindowWithDetachableDockWidgets* getParentMainWindow(
       QObject* obj);
@@ -144,6 +146,7 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
       int screen);
   static MainWindowWithDetachableDockWidgets* getOwnerOfDockWidget(
         DockWidget* dock_widget);
+  static void hideAllRubberBands();
 
  public slots:
   void dockLocationChanged(Qt::DockWidgetArea area);
@@ -167,6 +170,7 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
   static int last_created_window_id_;
 
   TabBarEventFilter* tab_bar_event_filter_;
+  QRubberBand* rubber_band_;
 
   bool dock_widgets_with_no_title_bars_;
 };
