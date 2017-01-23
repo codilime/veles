@@ -930,6 +930,7 @@ void MainWindowWithDetachableDockWidgets::updateCloseButtonsOnTabBars() {
 void MainWindowWithDetachableDockWidgets::updateDocksAndTabs() {
   updateCloseButtonsOnTabBars();
   updateDockWidgetTitleBars();
+  layout()->invalidate();
 }
 
 bool MainWindowWithDetachableDockWidgets::event(QEvent* event) {
