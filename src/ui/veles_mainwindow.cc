@@ -61,8 +61,6 @@ DockWidget::DockWidget() : QDockWidget(), timer_id_(0), ticks_(0),
   addAction(maximize_here_action_);
   detach_action_ = createMoveToNewWindowAction();
   createSplitActions();
-  addAction(split_horizontally_action_);
-  addAction(split_vertically_action_);
 
   connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
         this, SLOT(displayContextMenu(const QPoint&)));
@@ -104,8 +102,12 @@ void DockWidget::displayContextMenu(const QPoint& pos) {
   context_menu_->addMenu(createMoveToWindowMenu());
   context_menu_->addAction(detach_action_);
   context_menu_->addAction(maximize_here_action_);
-  context_menu_->addAction(split_horizontally_action_);
-  context_menu_->addAction(split_vertically_action_);
+
+  auto parent = MainWindowWithDetachableDockWidgets::getParentMainWindow(this);
+  if (parent && parent->tabifiedDockWidgets(this).size() > 0) {
+    context_menu_->addAction(split_horizontally_action_);
+    context_menu_->addAction(split_vertically_action_);
+  }
 
   context_menu_->popup(mapToGlobal(pos));
 }
@@ -708,6 +710,10 @@ void MainWindowWithDetachableDockWidgets::splitDockWidget2(
   // it's limitations (both documented and not).
 
   if (!splitDockWidgetImpl(first, second, orientation)) {
+    // As Qt may sometimes refuse to subdivide dock area according
+    // to given orientation, it may be necessary to use the other
+    // orientation first and then subdivide resulting area again
+    // to obtain desired result.
     splitDockWidgetImpl(first, second,
         orientation == Qt::Horizontal ? Qt::Vertical : Qt::Horizontal);
     splitDockWidgetImpl(first, second, orientation);
@@ -910,6 +916,9 @@ bool MainWindowWithDetachableDockWidgets::event(QEvent* event) {
 
 bool MainWindowWithDetachableDockWidgets::splitDockWidgetImpl(
     QDockWidget* first, QDockWidget* second, Qt::Orientation orientation) {
+  // As QMainWindow::splitDockWidget doesn't handle multiple dock widgets
+  // tabified together, it's necessary to detach all excessive docks,
+  // split dock area and then reattach the docks.
   auto tabified_docks = tabifiedDockWidgets(first);
   for (auto dock_widget : tabified_docks) {
     removeDockWidget(dock_widget);
@@ -921,9 +930,7 @@ bool MainWindowWithDetachableDockWidgets::splitDockWidgetImpl(
 
   for (auto dock_widget : tabified_docks) {
     dock_widget->show();
-    if (dock_widget != second) {
-      tabifyDockWidget(first, dock_widget);
-    }
+    tabifyDockWidget(first, dock_widget);
   }
 
   if (tabifiedDockWidgets(first).contains(second)) {
