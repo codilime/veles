@@ -222,6 +222,14 @@ void DockWidget::moveEvent(QMoveEvent *event) {
   if(timer_id_ == 0) {
     timer_id_ = startTimer(step_msec_);
   }
+
+  auto candidate = MainWindowWithDetachableDockWidgets
+      ::getParentCandidateForDockWidget(this);
+  MainWindowWithDetachableDockWidgets::hideAllRubberBands();
+
+  if(candidate) {
+    candidate->showRubberBand(true);
+  }
 }
 
 void DockWidget::timerEvent(QTimerEvent* event) {
@@ -525,6 +533,8 @@ MainWindowWithDetachableDockWidgets::MainWindowWithDetachableDockWidgets(
       this, SLOT(childAddedNotify(QObject*)), Qt::QueuedConnection);
   connect(this, SIGNAL(childRemoved()),
       this, SLOT(updateDocksAndTabs()), Qt::QueuedConnection);
+
+  rubber_band_ = new QRubberBand(QRubberBand::Rectangle, this);
 }
 
 MainWindowWithDetachableDockWidgets::~MainWindowWithDetachableDockWidgets() {
@@ -577,8 +587,12 @@ void MainWindowWithDetachableDockWidgets::bringDockWidgetToFront(
 
 void MainWindowWithDetachableDockWidgets::moveDockWidgetToWindow(
     DockWidget* dock_widget) {
+  hideAllRubberBands();
   DockWidget* dock_widget_to_tabify = 0;
   auto children = findChildren<DockWidget*>();
+  if(children.size() > 0) {
+    dock_widget_to_tabify = children.first();
+  }
 
   if (dock_widget->isFloating()) {
     if(children.contains(dock_widget)) {
@@ -722,6 +736,15 @@ void MainWindowWithDetachableDockWidgets::splitDockWidget2(
   updateDocksAndTabs();
 }
 
+void MainWindowWithDetachableDockWidgets::showRubberBand(bool show) {
+  if(show) {
+    rubber_band_->move(0, 0);
+    rubber_band_->resize(size());
+  }
+
+  rubber_band_->setVisible(show);
+}
+
 MainWindowWithDetachableDockWidgets* MainWindowWithDetachableDockWidgets
     ::getParentMainWindow(QObject* obj) {
   while (obj != nullptr) {
@@ -754,6 +777,13 @@ bool MainWindowWithDetachableDockWidgets::intersectsWithAnyMainWindow(
 MainWindowWithDetachableDockWidgets* MainWindowWithDetachableDockWidgets
     ::getParentCandidateForDockWidget(DockWidget* dock_widget) {
   if (!dock_widget || !dock_widget->isFloating()) {
+    return nullptr;
+  }
+
+  auto current_parent = MainWindowWithDetachableDockWidgets
+      ::getParentMainWindow(dock_widget);
+  if (current_parent
+      && current_parent->geometry().intersects(dock_widget->geometry())) {
     return nullptr;
   }
 
@@ -812,6 +842,12 @@ MainWindowWithDetachableDockWidgets* MainWindowWithDetachableDockWidgets
   }
 
   return nullptr;
+}
+
+void MainWindowWithDetachableDockWidgets::hideAllRubberBands() {
+  for (auto main_window : main_windows_) {
+    main_window->showRubberBand(false);
+  }
 }
 
 void MainWindowWithDetachableDockWidgets::dockLocationChanged(
