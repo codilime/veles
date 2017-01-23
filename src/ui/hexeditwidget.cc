@@ -37,6 +37,7 @@
 #include "ui/nodetreewidget.h"
 
 #include "util/settings/hexedit.h"
+#include "util/icons.h"
 
 namespace veles {
 namespace ui {
@@ -119,8 +120,10 @@ void HexEditWidget::createActions() {
       tr("Find next occurrence of the searched pattern"));
   connect(find_next_act_, SIGNAL(triggered()), this, SLOT(findNext()));
 
+  QColor icon_color = palette().color(QPalette::WindowText);
   visualisation_act_ = new QAction(
-      QIcon(":/images/nginx3d_32.png"), tr("&Visualisation"), this);
+      util::getColoredIcon(":/images/trigram_icon.svg", icon_color),
+      tr("&Visualisation"), this);
   visualisation_act_->setToolTip(tr("Visualisation"));
   visualisation_act_->setEnabled(data_model_->binData().size() > 0);
   connect(visualisation_act_, SIGNAL(triggered()), this,
