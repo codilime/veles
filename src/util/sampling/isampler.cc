@@ -31,7 +31,7 @@ ISampler::ISampler(const QByteArray &data) :
     data_(data), start_(0), sample_size_(0),
     allow_async_(false), current_version_(0),
     requested_version_(0), next_cb_id_(0) {
-  end_ = data_.size();
+  end_ = static_cast<size_t>(data_.size());
   last_config_.start = start_;
   last_config_.end = end_;
   last_config_.sample_size = sample_size_;
@@ -39,7 +39,7 @@ ISampler::ISampler(const QByteArray &data) :
 
 void ISampler::setRange(size_t start, size_t end) {
   assert(!empty());
-  assert(end < static_cast<size_t>(data_.size()));
+  assert(end <= static_cast<size_t>(data_.size()));
   auto lc = lock();
   last_config_.start = start;
   last_config_.end = end;
