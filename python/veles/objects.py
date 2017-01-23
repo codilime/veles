@@ -24,16 +24,16 @@ class LocalObject(object):
             self._proto_obj = proto_obj
         self.parent = parent
         if id_path is None:
-            self.id_path = []
+            self._id_path = []
         else:
-            self.id_path = id_path[:]
+            self._id_path = id_path[:]
         self.children = []
         self.data = None
 
     def _from_another(self, other):
         self._proto_obj = other._proto_obj
         self.parent = other.parent
-        self.id_path = other.id_path
+        self._id_path = other._id_path
         self.children = other.children
         self.data = other.data
 
