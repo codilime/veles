@@ -13,6 +13,9 @@ Dependencies:
 - ``zlib``
 - ``qt`` >= 5.5
 
+Caveats:
+``qt`` >= 5.6 is required if you want to rearrange tabs using drag&drop.
+
 Optional dependencies needed for running tests:
 
 - ``gtest``
@@ -20,9 +23,9 @@ Optional dependencies needed for running tests:
 If your distribution has -dev or -devel packages, you'll also need ones
 corresponding to the dependencies above.
 
-On ubuntu it can be done like this::
+On Ubuntu it can be done like this::
 
-    apt-get install cmake zlib zlib-dev qtbase5 qtbase5-dev
+    apt-get install cmake zlib1g-dev qtbase5-dev
 
 To build ::
 
