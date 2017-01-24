@@ -252,14 +252,14 @@ void VisualisationPanel::initOptionsPanel() {
 
   QColor icon_color = palette().color(QPalette::WindowText);
   digram_action_ =
-      new QAction(util::getColoredIcon(":/images/digram_icon.svg", icon_color),
+      new QAction(util::getColoredIcon(":/images/digram_icon.png", icon_color),
                   tr("&Digram"), this);
   digram_action_->setToolTip("Digram Visualisation");
   connect(digram_action_, SIGNAL(triggered()), this,
           SLOT(showDigramVisualisation()));
 
   trigram_action_ =
-      new QAction(util::getColoredIcon(":/images/trigram_icon.svg",
+      new QAction(util::getColoredIcon(":/images/trigram_icon.png",
                                        icon_color),
                   tr("&Trigram"), this);
   trigram_action_->setToolTip("Trigram Visualisation");
@@ -267,8 +267,8 @@ void VisualisationPanel::initOptionsPanel() {
           SLOT(showTrigramVisualisation()));
 
   layered_digram_action_ =
-      new QAction(util::getColoredIcon(":/images/layered_digram_icon.svg",
-                                       icon_color),
+      new QAction(util::getColoredIcon(":/images/layered_digram_icon.png",
+                                       icon_color, false),
                   tr("&Layered Digram"), this);
   layered_digram_action_->setToolTip("Layered Digram Visualisation");
   connect(layered_digram_action_, SIGNAL(triggered()), this,
