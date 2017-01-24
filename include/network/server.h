@@ -31,7 +31,7 @@ class NetworkServer : public QObject {
 
   void handleRequest(network::Request &req, QTcpSocket *client_connection);
   void sendResponse(QTcpSocket *client_connection, network::Response &resp);
-  void sendData(QTcpSocket *client_connection, const char *data, int64_t length);
+  void sendData(QTcpSocket *client_connection, const char *data, uint64_t length);
   void packObject(PLocalObject object, network::LocalObject* result,
                   bool pack_children = false);
 
