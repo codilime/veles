@@ -1027,7 +1027,7 @@ void VelesMainWindow::about() {
          "Report bugs to veles@codisec.com\n"
          "https://codisec.com/veles/\n"
          "\n"
-         "Copyright 2016 CodiLime\n"
+         "Copyright 2017 CodiLime\n"
          "Licensed under the Apache License, Version 2.0\n"
       ).arg(util::version::string));
 }
