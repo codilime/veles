@@ -34,9 +34,9 @@
         <file>images/show_node_tree.png</file>
         <file>images/show_hex_edit.png</file>
         <file>images/maximize.png</file>
-        <file>images/digram_icon.svg</file>
-        <file>images/trigram_icon.svg</file>
-        <file>images/layered_digram_icon.svg</file>
+        <file>images/digram_icon.png</file>
+        <file>images/trigram_icon.png</file>
+        <file>images/layered_digram_icon.png</file>
         <file>images/split_horizontally.png</file>
         <file>images/split_vertically.png</file>
     </qresource>

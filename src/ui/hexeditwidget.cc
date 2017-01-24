@@ -122,7 +122,7 @@ void HexEditWidget::createActions() {
 
   QColor icon_color = palette().color(QPalette::WindowText);
   visualisation_act_ = new QAction(
-      util::getColoredIcon(":/images/trigram_icon.svg", icon_color),
+      util::getColoredIcon(":/images/trigram_icon.png", icon_color),
       tr("&Visualisation"), this);
   visualisation_act_->setToolTip(tr("Visualisation"));
   visualisation_act_->setEnabled(data_model_->binData().size() > 0);
