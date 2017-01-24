@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import struct
 
+import six
+
 import veles.veles_api as vapi
 
 
@@ -19,7 +21,7 @@ class BmpParser(object):
 
     def parse_bmp(self, file):
         self.client.get_blob_data(file)
-        if file.data[:2] != 'BM':
+        if file.data[:2] != b'BM':
             # unsupported file type
             return
         file_size = struct.unpack('<I', file.data[2:6])[0]
@@ -134,7 +136,7 @@ class BmpParser(object):
             color_table = self.client.create_chunk(
                 bitmap, 'Color table',
                 size=color_size*colors, update_cursor=False)
-            for i in xrange(colors):
+            for i in six.moves.range(colors):
                 color = self.client.create_chunk(
                     color_table, 'Color {}'.format(i),
                     size=color_size, update_cursor=False)
@@ -147,14 +149,14 @@ class BmpParser(object):
             self.client.create_chunk(
                 bitmap, 'Gap1', end=pix_start)
 
-        line_size = (bits_per_pix*width+31)/32*4
+        line_size = (bits_per_pix*width+31)//32*4
         pix_size = line_size * height if image_size == 0 else image_size
 
         pixel_array = self.client.create_chunk(
             bitmap, 'Pixel array', start=pix_start,
             size=pix_size, update_cursor=False)
         if bits_per_pix:
-            for i in xrange(height):
+            for i in six.moves.range(height):
                 self.client.create_chunk(
                     pixel_array, 'Row {}'.format(i), size=line_size)
 
