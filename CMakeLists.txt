@@ -140,6 +140,14 @@ add_library(veles_dbif
 qt5_use_modules(veles_dbif Core)
 target_link_libraries(veles_dbif veles_data)
 
+file(GLOB kaitai_headers
+    "${INCLUDE_DIR}/kaitai/*.h"
+)
+
+file(GLOB kaitai_sources
+    "${SRC_DIR}/kaitai/*.cc"
+)
+
 # LIB: parser
 add_library(parser
     ${INCLUDE_DIR}/parser/parser.h
@@ -147,10 +155,12 @@ add_library(parser
     ${INCLUDE_DIR}/parser/unpyc.h
     ${INCLUDE_DIR}/parser/unpng.h
     ${INCLUDE_DIR}/parser/utils.h
+    ${kaitai_headers}
     ${SRC_DIR}/parser/parser.cc
     ${SRC_DIR}/parser/unpyc.cc
     ${SRC_DIR}/parser/unpng.cc
     ${SRC_DIR}/parser/utils.cc
+    ${kaitai_sources}
 )
 
 qt5_use_modules(parser Core)

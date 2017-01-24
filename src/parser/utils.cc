@@ -20,6 +20,15 @@
 #include "parser/unpng.h"
 #include "parser/unpyc.h"
 
+#include "kaitai/zip_parser.h"
+#include "kaitai/microsoft_pe_parser.h"
+#include "kaitai/gif_parser.h"
+#include "kaitai/png_parser.h"
+#include "kaitai/elf_parser.h"
+#include "kaitai/bmp_parser.h"
+#include "kaitai/avi_parser.h"
+#include "kaitai/quicktime_mov_parser.h"
+
 namespace veles {
 namespace parser {
 
@@ -52,6 +61,14 @@ QList<Parser *> createAllParsers() {
   QList<Parser *> res;
   res.append(new PycParser());
   res.append(new PngParser());
+  res.append(new kaitai::ZipParser());
+  res.append(new kaitai::PngParser());
+  res.append(new kaitai::Microsoft_peParser());
+  res.append(new kaitai::GifParser());
+  res.append(new kaitai::ElfParser());
+  res.append(new kaitai::BmpParser());
+  res.append(new kaitai::AviParser());
+  res.append(new kaitai::Quicktime_movParser());
   return res;
 }
 } // namespace parser
