@@ -201,9 +201,10 @@ void NetworkServer::sendResponse(QTcpSocket *client_connection,
   sendData(client_connection, &response_content[0], resp_len);
 }
 
-void NetworkServer::sendData(QTcpSocket *client_connection, const char* data, int64_t length) {
+void NetworkServer::sendData(QTcpSocket *client_connection, const char* data, uint64_t length) {
   uint32_t resp_len_send = qToLittleEndian(length);
-  int64_t written = 0, total_written = 0;
+  int64_t written = 0;
+  uint64_t total_written = 0;
   while (total_written < sizeof(resp_len_send)) {
     written = client_connection->write(
           ((const char*)&resp_len_send) + total_written,
@@ -236,10 +237,10 @@ void NetworkServer::packObject(PLocalObject object,
   result->set_type(object->type());
 
   if (object->type() == dbif::FILE_BLOB) {
-    auto file = object.dynamicCast<FileBlobObject>();
+    auto file = object.staticCast<FileBlobObject>();
     result->set_file_blob_path(file->path().toStdString());
   } else if (object->type() == dbif::CHUNK){
-    auto chunk = object.dynamicCast<ChunkObject>();
+    auto chunk = object.staticCast<ChunkObject>();
     result->set_chunk_start(chunk->start());
     result->set_chunk_end(chunk->end());
     result->set_chunk_type(chunk->chunkType().toStdString());
