@@ -322,17 +322,24 @@ if(WIN32)
     COMMAND ${WINDEPLOYQT_EXECUTABLE} ${WINDEPLOYQT_ARGS} $<TARGET_FILE:main_ui>
     DEPENDS $<TARGET_FILE:main_ui>)
   install(DIRECTORY $<TARGET_FILE_DIR:main_ui> DESTINATION "bin")
+  if(MSVC)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libprotobuf$<$<CONFIG:Debug>:d>.dll" DESTINATION "bin/$<CONFIG>/")
+    set(DLL_RUN_DIR ${CMAKE_CURRENT_BINARY_DIR})
+  else(MSVC)
+    install(FILES "${PROTOBUF_DLL_DIR}/libprotobuf$<$<CONFIG:Debug>:d>.dll" DESTINATION "bin/bin/")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/prefix/bin/libzlib.dll" DESTINATION "bin/bin/")
+    set(DLL_RUN_DIR "${CMAKE_CURRENT_BINARY_DIR}/bin")
+    add_custom_command(TARGET zlib POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "${CMAKE_CURRENT_BINARY_DIR}/prefix/bin/libzlib.dll"
+      ${DLL_RUN_DIR}
+      COMMENT "Copying zlib dll")
+  endif(MSVC)
   add_custom_command(TARGET protobuf POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${PROTOBUF_DLL_DIR}/libprotobuf$<$<CONFIG:Debug>:d>.dll"
-    ${CMAKE_CURRENT_BINARY_DIR}
+    ${DLL_RUN_DIR}
     COMMENT "Copying protobuf dll")
-  if(MSVC)
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libprotobuf$<$<CONFIG:Debug>:d>.dll" DESTINATION "bin/$<CONFIG>/")
-  else(MSVC)
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libprotobuf$<$<CONFIG:Debug>:d>.dll" DESTINATION "bin/bin/")
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/prefix/bin/libzlib.dll" DESTINATION "bin/bin/")
-  endif(MSVC)
   set(CPACK_PACKAGE_EXECUTABLES "veles.exe" "VELES")
 endif(WIN32)
 
