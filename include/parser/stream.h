@@ -229,7 +229,7 @@ class StreamParser {
       data::FieldHighType());
     std::vector<uint8_t> res;
     for (size_t i = 0; i < data.size(); i++) {
-      res.push_back(data.element64(i));
+      res.push_back(static_cast<uint8_t>(data.element64(i)));
     }
     return res;
   }
@@ -242,7 +242,7 @@ class StreamParser {
                      data::FieldHighType(), include_termination);
     std::vector<uint8_t> res;
     for (size_t i = 0; i < data.size(); i++) {
-      res.push_back(data.element64(i));
+      res.push_back(static_cast<uint8_t>(data.element64(i)));
     }
     return res;
   }
@@ -262,7 +262,7 @@ class StreamParser {
     auto data = getData(name, data::RepackFormat{endian, 16}, num,
                         data::FieldHighType());
     for (size_t i = 0; i < data.size(); i++) {
-      res.push_back(data.element64(i));
+      res.push_back(static_cast<uint16_t>(data.element64(i)));
     }
     return res;
   }
