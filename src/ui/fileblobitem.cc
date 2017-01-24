@@ -59,7 +59,7 @@ bool FileBlobItem::sortChildren() {
   if (std::is_sorted(children_.begin(), children_.end(), compareItems)) {
     return false;
   }
-  qSort(children_.begin(), children_.end(), compareItems);
+  std::sort(children_.begin(), children_.end(), compareItems);
   return true;
 }
 
