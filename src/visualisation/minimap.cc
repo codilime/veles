@@ -20,7 +20,6 @@
 #include <cmath>
 #include <assert.h>
 
-
 namespace veles {
 namespace visualisation {
 
@@ -123,17 +122,19 @@ float* VisualisationMinimap::calculateAverageValueTexture(
 
   size_t index = 0;
   for (size_t i = 0; i < sample_size; ++i) {
-    point_sum += sample[i];
-    point_count += 1;
-    if (static_cast<double>(i) / point_size >= index + 1) {
-      if (index == texture_size - 1 && i < sample_size - 1) continue;
+    if (index < texture_size - 1 &&
+        static_cast<double>(i) / point_size >= index + 1) {
       uint8_t result = (point_count == 0) ? 0 : point_sum / point_count;
       bigtab[index] = static_cast<float>(result); // HAX
       index += 1;
       point_sum = 0;
       point_count = 0;
     }
+    point_sum += sample[i];
+    point_count += 1;
   }
+  bigtab[texture_size - 1] = static_cast<float>(
+      (point_count == 0) ? 0 : point_sum / point_count);
   return bigtab;
 }
 
@@ -316,10 +317,12 @@ void VisualisationMinimap::initTextures() {
   if (sample_size_ < texture_size) {
     float scale_factor = std::sqrt(static_cast<float>(sample_size_) /
                                    static_cast<float>(texture_size));
-    texture_rows_ = std::max(static_cast<size_t>(1),
-                             static_cast<size_t>(rows_ * scale_factor));
-    texture_cols_ = std::max(static_cast<size_t>(1),
-                             static_cast<size_t>(cols_ * scale_factor));
+    texture_cols_ = static_cast<size_t>(
+        std::max(1.0f, cols_ * scale_factor));
+    texture_rows_ = static_cast<size_t>(
+        std::max(1.0f,
+            std::min(static_cast<float>(sample_size_) / texture_cols_,
+                     rows_ * scale_factor)));
     texture_size = texture_rows_ * texture_cols_;
   }
 
