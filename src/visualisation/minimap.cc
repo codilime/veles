@@ -165,24 +165,17 @@ float* VisualisationMinimap::calculateEntropyTexturePerPixel(
   size_t index = 0, point_count = 0;
 
   for (size_t i = 0; i < sample_size; ++i) {
-    counts[sample[i]] += 1;
-    point_count += 1;
-    if (static_cast<double>(i) / point_size >= index + 1) {
-      if (index == texture_size - 1 && i < sample_size - 1) continue;
-      float entropy = 0.0f;
-      for (int i = 0; i < 256; ++i) {
-        if (counts[i] > 0) {
-          float fcounts = static_cast<float>(counts[i]) / point_count;
-          entropy -= fcounts * log2(fcounts);
-        }
-      }
-      entropy *= 32; // 256 / 8 (entropy will be in range [0,8], scale it
-      bigtab[index] = entropy;
+    if (index < texture_size - 1 &&
+        static_cast<double>(i) / point_size >= index + 1) {
+      bigtab[index] = calculateEntropyValue(counts, point_count);
       index += 1;
       point_count = 0;
       memset(counts, 0, 256 * sizeof(*counts));
     }
+    counts[sample[i]] += 1;
+    point_count += 1;
   }
+  bigtab[texture_size - 1] = calculateEntropyValue(counts, point_count);
   delete[] counts;
   return bigtab;
 }
@@ -200,18 +193,10 @@ float* VisualisationMinimap::calculateEntropyTextureSlidingWindow(
   while (start < sample_size) {
     size_t mid = (start + end) / 2;
     if (mid > 0 && std::floor(mid / point_size) != std::floor((mid - 1) / point_size)) {
-      float entropy = 0.0f;
       size_t point_count = end - start;
-      for (int i = 0; i < 256; ++i) {
-        if (counts[i] > 0) {
-          float fcounts = static_cast<float>(counts[i]) / point_count;
-          entropy -= fcounts * log2(fcounts);
-        }
-      }
-      entropy *= 32; // 256 / 8 (entropy will be in range [0,8], scale it
-      bigtab[static_cast<size_t>(mid / point_size)] = entropy;
+      bigtab[static_cast<size_t>(mid / point_size)] = calculateEntropyValue(
+          counts, point_count);
     }
-
     if (end > k_minimum_entropy_window || end >= sample_size) {
       counts[sample[start++]] -= 1;
     }
@@ -238,22 +223,41 @@ float* VisualisationMinimap::calculateEntropyTextureSingleWindow(
 
   uint64_t point_count = 0;
   float point_sum = 0;
+  float result = 0;
 
   size_t index = 0;
   for (size_t i = 0; i < sample_size; ++i) {
-    point_sum -= log2(static_cast<float>(counts[sample[i]]) / sample_size);
-    point_count += 1;
-    if (static_cast<double>(i) / point_size >= index + 1) {
-      if (index == texture_size - 1 && i < sample_size - 1) continue;
-      float result = (point_count == 0) ? 0.0f : point_sum / point_count;
+    if (index < texture_size - 1 &&
+        static_cast<double>(i) / point_size >= index + 1) {
+      result = (point_count == 0) ? 0.0f : point_sum / point_count;
       bigtab[index] = static_cast<float>(result) * 32;  // Normalise to 0-256
       index += 1;
       point_sum = 0;
       point_count = 0;
     }
+    point_sum -= log2(static_cast<float>(counts[sample[i]]) / sample_size);
+    point_count += 1;
   }
+  result = (point_count == 0) ? 0.0f : point_sum / point_count;
+  bigtab[texture_size - 1] = static_cast<float>(result) * 32;  // Normalise to 0-256
   delete[] counts;
   return bigtab;
+}
+
+float VisualisationMinimap::calculateEntropyValue(uint64_t bytes_counts[],
+                                                  uint64_t total_count) {
+  if (total_count == 0) {
+    return 0.0f;
+  }
+  float entropy = 0.0f;
+  for (int i = 0; i < 256; ++i) {
+    if (bytes_counts[i] > 0) {
+      float fcounts = static_cast<float>(bytes_counts[i]) / total_count;
+      entropy -= fcounts * log2(fcounts);
+    }
+  }
+  entropy *= 32; // 256 / 8 (entropy will be in range [0,8], scale it
+  return entropy;
 }
 
 /*****************************************************************************/
