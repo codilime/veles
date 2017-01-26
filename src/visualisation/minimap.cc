@@ -57,7 +57,9 @@ QPair<size_t, size_t> VisualisationMinimap::getSelectedRange() {
 
 void VisualisationMinimap::setSelectedRange(size_t start_address, size_t end_address) {
   selection_start_ = sampler_->getSampleOffset(start_address);
-  selection_end_ = sampler_->getSampleOffset(end_address - 1);
+  selection_end_ = (end_address == sampler_->getRange().second) ?
+                    sampler_->getSampleSize() :
+                    sampler_->getSampleOffset(end_address - 1);
   if (gl_initialised_) {
     top_line_pos_ = normaliseLinePosition(offsetToLine(selection_start_));
     bottom_line_pos_ = normaliseLinePosition(offsetToLine(selection_end_));
