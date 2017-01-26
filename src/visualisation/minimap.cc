@@ -650,8 +650,8 @@ float VisualisationMinimap::normaliseLinePosition(float line) {
 size_t VisualisationMinimap::lineToOffset(float line_position) {
   assert(line_position >= -1.0);
   assert(line_position <= 1.0);
-  float row_size = 2.0 / texture_rows_;
-  float line_row = (line_position + 1) / row_size;
+  double row_size = 2.0 / texture_rows_;
+  double line_row = (line_position + 1) / row_size;
   if (line_row > texture_rows_) {
     return 0;
   }
@@ -659,14 +659,15 @@ size_t VisualisationMinimap::lineToOffset(float line_position) {
   if (row == texture_rows_) {
     return sample_size_;
   }
-  size_t row_bytes = point_size_ * texture_cols_;
-  return std::min(sample_size_, row_bytes * row);
+  double row_bytes = point_size_ * texture_cols_;
+  return std::min(sample_size_, static_cast<size_t>(row_bytes * row));
 }
 
 float VisualisationMinimap::offsetToLine(size_t offset) {
-  float row_size = 2.0 / texture_rows_;
-  size_t row_bytes = point_size_ * texture_cols_;
-  float position = -1.0 * (((offset / row_bytes) * row_size) - 1);
+  double row_size = 2.0 / texture_rows_;
+  double row_bytes = point_size_ * texture_cols_;
+  float position = static_cast<float>(
+      -1.0 * (((offset / row_bytes) * row_size) - 1));
   return std::min(1.0f, std::max(-1.0f, position));
 }
 
