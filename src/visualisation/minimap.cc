@@ -43,7 +43,7 @@ VisualisationMinimap::~VisualisationMinimap() {
 void VisualisationMinimap::setSampler(util::ISampler *sampler) {
   sampler_ = sampler;
   selection_start_ = 0;
-  selection_end_ = (empty()) ? 0 : sampler_->getSampleSize() - 1;
+  selection_end_ = (empty()) ? 0 : sampler_->getSampleSize();
   initialised_ = true;
   refresh();
 }
