@@ -193,7 +193,7 @@ void MinimapPanel::showSelectRangeDialog() {
   if (select_range_dialog_->isVisible()) return;
   if (sampler_->empty()) return;
   auto min_address = sampler_->getFileOffset(0);
-  auto max_address = sampler_->getFileOffset(sampler_->getSampleSize() - 1);
+  auto max_address = sampler_->getFileOffset(sampler_->getSampleSize());
   select_range_dialog_->resetNumberFormat();
   select_range_dialog_->setRange(min_address, max_address);
   select_range_dialog_->show();
@@ -205,7 +205,7 @@ void MinimapPanel::selectRange() {
   size_t center = start + ((end - start) / 2);
   size_t size = end - start;
   size_t curr_start = 0;
-  size_t curr_end = sampler_->getFileOffset(sampler_->getSampleSize() - 1);
+  size_t curr_end = sampler_->getFileOffset(sampler_->getSampleSize());
   int index = 0;
 
   while (true) {

@@ -83,7 +83,7 @@ void VisualisationPanel::setData(const QByteArray &data) {
   minimap_->setSampler(minimap_sampler_);
   visualisation_->setSampler(sampler_);
   selection_label_->setText(prepareAddressString(0,
-                            sampler_->getFileOffset(sampler_->getSampleSize() - 1)));
+                            sampler_->getFileOffset(sampler_->getSampleSize())));
 
 }
 
@@ -129,7 +129,8 @@ VisualisationWidget* VisualisationPanel::getVisualisation(EVisualisation type,
 
 QString VisualisationPanel::prepareAddressString(size_t start, size_t end) {
   auto label = QString("0x%1 : ").arg(start, 8, 16, QChar('0'));
-  label.append(QString("0x%1").arg(end, 8, 16, QChar('0')));
+  label.append(QString("0x%1\n").arg(end, 8, 16, QChar('0')));
+  label.append(QString("(%1 bytes)").arg(end - start));
   return label;
 }
 

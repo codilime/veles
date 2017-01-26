@@ -75,9 +75,10 @@ size_t ISampler::getFileOffset(size_t index) {
   assert(!empty());
   auto lc = lock();
   size_t sample_s = getRequestedSampleSize();
-  assert(index < sample_s);
+  assert(index <= sample_s);
   if (index == 0) return start_;
   if (index == sample_s - 1) return end_ - 1;
+  if (index == sample_s) return end_;
   if (!samplingRequired()) {
     return index + start_;
   }

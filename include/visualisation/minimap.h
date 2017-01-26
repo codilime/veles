@@ -116,6 +116,8 @@ class VisualisationMinimap : public QOpenGLWidget,
   static float* calculateEntropyTextureSingleWindow(
       const uint8_t *sample, size_t sample_size,
       size_t texture_size, double point_size);
+  static float calculateEntropyValue(uint64_t bytes_counts[],
+                                     uint64_t total_count);
 
   bool empty();
 
