@@ -24,6 +24,7 @@
 #include <QMenu>
 #include <QCursor>
 #include <QDesktopWidget>
+#include <QPainter>
 
 #include "db/db.h"
 #include "dbif/method.h"
@@ -43,11 +44,42 @@ namespace veles {
 namespace ui {
 
 /*****************************************************************************/
+/* QProxyStyleForDockWidgetWithIconOnTitleBar */
+/*****************************************************************************/
+
+QProxyStyleForDockWidgetWithIconOnTitleBar
+    ::QProxyStyleForDockWidgetWithIconOnTitleBar(QStyle* default_style)
+    : QProxyStyle(default_style) {
+}
+
+void QProxyStyleForDockWidgetWithIconOnTitleBar::drawControl(
+    QStyle::ControlElement element, const QStyleOption *option,
+    QPainter *painter, const QWidget *widget) const {
+  if (element == QStyle::CE_DockWidgetTitle
+      && !widget->windowIcon().isNull()) {
+    int title_margin = baseStyle()->pixelMetric(
+        QStyle::PM_DockWidgetTitleMargin);
+    int icon_size = pixelMetric(QStyle::PM_SmallIconSize);
+    QPoint origin(title_margin + option->rect.left(),
+        option->rect.center().y() - icon_size / 2);
+    painter->drawPixmap(origin,
+        widget->windowIcon().pixmap(icon_size, icon_size));
+    const_cast<QStyleOption*>(option)->rect
+        = option->rect.adjusted(icon_size + 2 * title_margin, 0, 0, 0);
+  }
+
+  baseStyle()->drawControl(element, option, painter, widget);
+}
+
+/*****************************************************************************/
 /* DockWidget */
 /*****************************************************************************/
 
 DockWidget::DockWidget() : QDockWidget(), timer_id_(0), ticks_(0),
     context_menu_(nullptr), empty_title_bar_(new QWidget(this)) {
+  QStyle* style = new QProxyStyleForDockWidgetWithIconOnTitleBar(this->style());
+  setStyle(style);
+
   setAttribute(Qt::WidgetAttribute::WA_DeleteOnClose);
   setContextMenuPolicy(Qt::CustomContextMenu);
   auto first_main_window =
@@ -183,7 +215,7 @@ void DockWidget::switchTitleBar(bool is_default) {
       setTitleBarWidget(nullptr);
     }
   } else if (titleBarWidget() != empty_title_bar_) {
-    setTitleBarWidget (empty_title_bar_);
+    setTitleBarWidget(empty_title_bar_);
   }
 }
 
@@ -587,6 +619,7 @@ DockWidget* MainWindowWithDetachableDockWidgets::addTab(QWidget *widget,
   dock_widget->setFeatures(QDockWidget::DockWidgetMovable |
       QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable);
   dock_widget->setWidget(widget);
+  dock_widget->setWindowIcon(widget ? widget->windowIcon() : QIcon());
 
   if (sibling != nullptr) {
     tabifyDockWidget(sibling, dock_widget);

@@ -29,6 +29,7 @@
 #include <QRubberBand>
 #include <QPointer>
 #include <QIcon>
+#include <QProxyStyle>
 
 #include "dbif/promise.h"
 #include "dbif/types.h"
@@ -39,6 +40,20 @@ namespace veles {
 namespace ui {
 
 class MainWindowWithDetachableDockWidgets;
+
+/*****************************************************************************/
+/* QProxyStyleForDockWidgetWithIconOnTitleBar */
+/*****************************************************************************/
+
+class QProxyStyleForDockWidgetWithIconOnTitleBar : public QProxyStyle {
+  Q_OBJECT
+
+public:
+  QProxyStyleForDockWidgetWithIconOnTitleBar(QStyle* default_style);
+
+  void drawControl(QStyle::ControlElement element, const QStyleOption *option,
+      QPainter *painter, const QWidget *widget = Q_NULLPTR) const override;
+};
 
 /*****************************************************************************/
 /* DockWidget */
