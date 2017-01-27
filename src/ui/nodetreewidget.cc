@@ -28,7 +28,6 @@
 #include <QVBoxLayout>
 #include <QWidgetAction>
 
-#include "ui/veles_mainwindow.h"
 #include "visualisation/panel.h"
 
 #include "dbif/info.h"
@@ -50,7 +49,8 @@ namespace ui {
 NodeTreeWidget::NodeTreeWidget(VelesMainWindow *main_window,
     QSharedPointer<FileBlobModel>& data_model,
     QSharedPointer<QItemSelectionModel>& selection_model)
-    : main_window_(main_window), data_model_(data_model),
+    : View("Node tree", ":/images/show_node_tree.png"),
+      main_window_(main_window), data_model_(data_model),
       selection_model_(selection_model) {
   tree_view_ = new QTreeView();
   tree_view_->setModel(data_model_.data());
