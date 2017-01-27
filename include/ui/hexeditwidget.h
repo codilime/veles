@@ -32,6 +32,7 @@
 #include "ui/fileblobmodel.h"
 #include "ui/hexedit.h"
 #include "ui/searchdialog.h"
+#include "ui/veles_mainwindow.h"
 
 #include "dbif/info.h"
 #include "dbif/types.h"
@@ -41,7 +42,7 @@ namespace ui {
 
 class VelesMainWindow;
 
-class HexEditWidget : public QMainWindow {
+class HexEditWidget : public View {
   Q_OBJECT
 
  public:

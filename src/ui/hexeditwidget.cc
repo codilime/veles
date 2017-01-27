@@ -49,7 +49,8 @@ namespace ui {
 HexEditWidget::HexEditWidget(VelesMainWindow *main_window,
     QSharedPointer<FileBlobModel>& data_model,
     QSharedPointer<QItemSelectionModel>& selection_model)
-    : main_window_(main_window), data_model_(data_model),
+    : View("Hex editor", ":/images/show_hex_edit.png"),
+      main_window_(main_window), data_model_(data_model),
       selection_model_(selection_model) {
   hex_edit_ = new HexEdit(data_model_.data(), selection_model_.data(), this);
   setCentralWidget(hex_edit_);
