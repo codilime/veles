@@ -18,14 +18,17 @@
 #define VELES_MAINWINDOW_H
 
 #include <set>
+#include <map>
 
 #include <QDropEvent>
 #include <QDockWidget>
 #include <QMainWindow>
 #include <QMenu>
+#include <QString>
 #include <QStringList>
 #include <QRubberBand>
 #include <QPointer>
+#include <QIcon>
 
 #include "dbif/promise.h"
 #include "dbif/types.h"
@@ -112,6 +115,26 @@ class TabBarEventFilter : public QObject {
 };
 
 /*****************************************************************************/
+/* View */
+/*****************************************************************************/
+
+class View : public QMainWindow {
+  Q_OBJECT
+
+ public:
+  View(QString category, QString path);
+  ~View();
+
+ signals:
+  void maximize();
+
+ protected:
+  void getOrCreateIcon(QString category, QString icon_path);
+  static void deleteIcons();
+  static std::map<QString, QIcon*> icons_;
+};
+
+/*****************************************************************************/
 /* MainWindowWithDetachableDockWidgets */
 /*****************************************************************************/
 
@@ -154,7 +177,7 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
   void tabCloseRequested(int index);
   void childAddedNotify(QObject* child);
   void updateDockWidgetTitleBars();
-  void updateCloseButtonsOnTabBars();
+  void updateCloseButtonsAndIconsOnTabBars();
   void updateDocksAndTabs();
 
  signals:
@@ -174,6 +197,7 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
   QRubberBand* rubber_band_;
 
   bool dock_widgets_with_no_title_bars_;
+  bool icons_on_tabs_;
 };
 
 /*****************************************************************************/

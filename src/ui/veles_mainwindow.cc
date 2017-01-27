@@ -497,6 +497,38 @@ bool TabBarEventFilter::mouseButtonDblClick(
 }
 
 /*****************************************************************************/
+/* View */
+/*****************************************************************************/
+
+std::map<QString, QIcon*> View::icons_;
+
+View::View(QString category, QString path) {
+  getOrCreateIcon(category, path);
+  connect(qApp, &QGuiApplication::lastWindowClosed, &View::deleteIcons);
+}
+
+View::~View() {
+}
+
+void View::getOrCreateIcon(QString category, QString icon_path) {
+  QIcon* icon = nullptr;
+  auto iter = icons_.find(category);
+  if (iter == icons_.end()) {
+    icons_[category] = icon = new QIcon(icon_path);
+  } else {
+    icon = iter->second;
+  }
+  setWindowIcon(*icon);
+}
+
+void View::deleteIcons() {
+  for(auto icon : icons_) {
+    delete icon.second;
+  }
+  icons_.clear();
+}
+
+/*****************************************************************************/
 /* MainWindowWithDetachableDockWidgets */
 /*****************************************************************************/
 
@@ -523,6 +555,8 @@ MainWindowWithDetachableDockWidgets::MainWindowWithDetachableDockWidgets(
     setAttribute(Qt::WA_QuitOnClose, false);
     setWindowTitle(QString("Veles - window #%1").arg(last_created_window_id_));
   }
+
+  icons_on_tabs_ = true;
 
 #ifdef Q_OS_WIN
   setDockWidgetsWithNoTitleBars(true);
@@ -908,7 +942,7 @@ void MainWindowWithDetachableDockWidgets::updateDockWidgetTitleBars() {
   }
 }
 
-void MainWindowWithDetachableDockWidgets::updateCloseButtonsOnTabBars() {
+void MainWindowWithDetachableDockWidgets::updateCloseButtonsAndIconsOnTabBars() {
   QList<QTabBar*> tab_bars = findChildren<QTabBar*>();
   for (auto tab_bar : tab_bars) {
     tab_bar->setTabsClosable(true);
@@ -917,18 +951,27 @@ void MainWindowWithDetachableDockWidgets::updateCloseButtonsOnTabBars() {
 
     for (int i = 0; i < tab_bar->count(); ++i) {
       QDockWidget* dock_widget = tabToDockWidget(tab_bar, i);
-      if (dock_widget
-          && !(dock_widget->features() & QDockWidget::DockWidgetClosable)) {
-        // Remove close button of a tab that controls non-closable QDockWidget.
-        tab_bar->setTabButton(i, QTabBar::LeftSide, 0);
-        tab_bar->setTabButton(i, QTabBar::RightSide, 0);
+      if (dock_widget) {
+        if (!(dock_widget->features() & QDockWidget::DockWidgetClosable)) {
+          // Remove close button of a tab that controls non-closable QDockWidget.
+          tab_bar->setTabButton(i, QTabBar::LeftSide, 0);
+          tab_bar->setTabButton(i, QTabBar::RightSide, 0);
+        }
+
+        if (icons_on_tabs_ && dock_widget->widget()) {
+          tab_bar->setTabIcon(i, dock_widget->widget()->windowIcon());
+        } else {
+          tab_bar->setTabIcon(i, QIcon());
+        }
       }
+
+      tab_bar->setIconSize(QSize(24, 24));
     }
   }
 }
 
 void MainWindowWithDetachableDockWidgets::updateDocksAndTabs() {
-  updateCloseButtonsOnTabBars();
+  updateCloseButtonsAndIconsOnTabBars();
   updateDockWidgetTitleBars();
   layout()->invalidate();
 }
