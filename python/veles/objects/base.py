@@ -17,7 +17,8 @@ from veles import network_pb2
 class LocalObject(object):
     # for now it's just a single class for all types of object
     # when we have more final database schema we need to do it in better way
-    def __init__(self, proto_obj=None, id_path=None, parent=None):
+    def __init__(self, client, proto_obj=None, id_path=None, parent=None):
+        self._client = client
         if proto_obj is None:
             self._proto_obj = network_pb2.LocalObject()
         else:
@@ -36,6 +37,9 @@ class LocalObject(object):
         self._id_path = other._id_path
         self.children = other.children
         self.data = other.data
+
+    def get_blob(self):
+        raise NotImplemented()
 
     # maybe in future we should autogenerate it based on proto file
     @property
@@ -100,3 +104,19 @@ class LocalObject(object):
         return 'id: {} name: {}'.format(self.id, self.name)
 
     __str__ = __repr__
+
+    def create_chunk(self, name, start=None, end=None, size=None,
+                     comment='', chunk_type='', update_cursor=True):
+        if start is None:
+            start = self._cursor
+
+        if end is None and size is None:
+            raise ValueError(
+                'You need to specify either size or end of chunk')
+        if end is None:
+            end = start + size
+        result = self._client.create_chunk(self, name, start,
+                                           end, comment, chunk_type)
+        if update_cursor:
+            self._cursor = end
+        return result
