@@ -25,6 +25,7 @@
 #include <QMenu>
 #include <QStringList>
 #include <QRubberBand>
+#include <QPointer>
 
 #include "dbif/promise.h"
 #include "dbif/types.h"
@@ -196,6 +197,8 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   void open();
   void about();
   void updateParsers(dbif::PInfoReply replay);
+  void showDatabase();
+  void showLog();
 
  private:
   void init();
@@ -207,6 +210,7 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   void createLogWindow();
 
   QMenu *file_menu_;
+  QMenu *view_menu_;
   QMenu *help_menu_;
 
   QAction *new_file_act_;
@@ -217,10 +221,16 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   QAction *about_act_;
   QAction *about_qt_act_;
 
+  QAction *show_database_act_;
+  QAction *show_log_act_;
+
   dbif::ObjectHandle database_;
   OptionsDialog *options_dialog_;
 
   QStringList parsers_list_;
+
+  QPointer<DockWidget> database_dock_widget_;
+  QPointer<DockWidget> log_dock_widget_;
 };
 
 }  // namespace ui

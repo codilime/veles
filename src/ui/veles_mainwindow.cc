@@ -981,7 +981,8 @@ bool MainWindowWithDetachableDockWidgets::splitDockWidgetImpl(
 /* VelesMainWindow - Public methods */
 /*****************************************************************************/
 
-VelesMainWindow::VelesMainWindow() : MainWindowWithDetachableDockWidgets() {
+VelesMainWindow::VelesMainWindow() : MainWindowWithDetachableDockWidgets(),
+    database_dock_widget_(0), log_dock_widget_(0) {
   setAcceptDrops(true);
   resize(1024, 768);
   init();
@@ -1070,6 +1071,14 @@ void VelesMainWindow::createActions() {
   exit_act_->setStatusTip(tr("Exit the application"));
   connect(exit_act_, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
 
+  show_database_act_ = new QAction(tr("Show database view"), this);
+  show_database_act_->setStatusTip(tr("Show database view"));
+  connect(show_database_act_, SIGNAL(triggered()), this, SLOT(showDatabase()));
+
+  show_log_act_ = new QAction(tr("Show log"), this);
+  show_log_act_->setStatusTip(tr("Show log"));
+  connect(show_log_act_, SIGNAL(triggered()), this, SLOT(showLog()));
+
   about_act_ = new QAction(tr("&About"), this);
   about_act_->setStatusTip(tr("Show the application's About box"));
   connect(about_act_, SIGNAL(triggered()), this, SLOT(about()));
@@ -1097,6 +1106,10 @@ void VelesMainWindow::createMenus() {
   file_menu_->addSeparator();
   file_menu_->addAction(exit_act_);
 
+  view_menu_ = menuBar()->addMenu(tr("&View"));
+  view_menu_->addAction(show_database_act_);
+  view_menu_->addAction(show_log_act_);
+
   help_menu_ = menuBar()->addMenu(tr("&Help"));
   help_menu_->addAction(about_act_);
   help_menu_->addAction(about_qt_act_);
@@ -1114,8 +1127,38 @@ void VelesMainWindow::updateParsers(dbif::PInfoReply reply) {
   }
 }
 
+void VelesMainWindow::showDatabase() {
+  if (database_dock_widget_ == nullptr) {
+    createDb();
+  }
+
+  database_dock_widget_->raise();
+
+  if (database_dock_widget_->window()->isMinimized()) {
+    database_dock_widget_->window()->showNormal();
+  }
+
+  database_dock_widget_->window()->raise();
+}
+
+void VelesMainWindow::showLog() {
+  if (log_dock_widget_ == nullptr) {
+    createLogWindow();
+  }
+
+  log_dock_widget_->raise();
+
+  if(log_dock_widget_->window()->isMinimized()) {
+    log_dock_widget_->window()->showNormal();
+  }
+
+  log_dock_widget_->window()->raise();
+}
+
 void VelesMainWindow::createDb() {
-  database_ = db::create_db();
+  if (database_ == nullptr) {
+    database_ = db::create_db();
+  }
   auto database_info = new DatabaseInfo(database_);
   DockWidget* dock_widget = new DockWidget;
   dock_widget->setAllowedAreas(Qt::AllDockWidgetAreas);
@@ -1140,6 +1183,9 @@ void VelesMainWindow::createDb() {
 
   auto promise = database_->asyncSubInfo<dbif::ParsersListRequest>(this);
   connect(promise, &dbif::InfoPromise::gotInfo, this, &VelesMainWindow::updateParsers);
+  database_dock_widget_ = dock_widget;
+  QApplication::processEvents();
+  updateDocksAndTabs();
 }
 
 void VelesMainWindow::createFileBlob(QString fileName) {
@@ -1224,6 +1270,10 @@ void VelesMainWindow::createLogWindow() {
   } else {
     addDockWidget(Qt::LeftDockWidgetArea, dock_widget);
   }
+
+  log_dock_widget_ = dock_widget;
+  QApplication::processEvents();
+  updateDocksAndTabs();
 }
 
 }  // namespace ui
