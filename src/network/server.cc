@@ -206,10 +206,9 @@ void NetworkServer::addChunkItem(PLocalObject blob, network::Response &resp,
   }
   data::BinData data = blob_cast->data().data(start, start+src_sz);
   data::BinData res = data::repack(data, repack, 0, num_elements);
-  chunk->addItem(data::ChunkDataItem::field(
-    start, start+src_sz, name,
-    repack, num_elements, high_type, res
-  ));
+  auto item = data::ChunkDataItem::field(start, start+src_sz, name, repack,
+                                         num_elements, high_type, res);
+  chunk->addItem(item);
   network::LocalObject* result = resp.add_results();
   packObject(object, result);
   resp.set_ok(true);
