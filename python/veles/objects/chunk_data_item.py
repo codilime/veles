@@ -1,5 +1,6 @@
 import struct
 
+
 class ChunkDataItemTypes(object):
     """enum corresponding to type attribute of chunk items"""
     NONE = 0
@@ -52,6 +53,7 @@ class FieldStringEncoding(object):
     ENC_UTF8 = 1
     ENC_UTF16 = 2
 
+
 class ChunkDataItem(object):
     def __init__(self, proto_obj):
         self._proto_obj = proto_obj
@@ -70,7 +72,8 @@ class ChunkDataItem(object):
             return list(struct.unpack('<'+format*raw.size, raw.data))
 
         if self._proto_obj.high_type.mode == FieldHighMode.FLOAT:
-            formats = {FieldFloatMode.IEEE754_SINGLE: 'f', FieldFloatMode.IEEE754_DOUBLE: 'd'}
+            formats = {FieldFloatMode.IEEE754_SINGLE: 'f',
+                       FieldFloatMode.IEEE754_DOUBLE: 'd'}
             format = formats[self._proto_obj.high_type.float_mode]
             return list(struct.unpack('<'+format*raw.size, raw.data))
 

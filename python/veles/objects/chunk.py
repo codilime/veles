@@ -1,6 +1,8 @@
 from veles import network_pb2
 from veles.objects.base import LocalObject
-from veles.objects.chunk_data_item import *
+from veles.objects.chunk_data_item import (
+    ChunkDataItemTypes, RepackEndian, FieldHighMode, FieldSignMode,
+    FieldFloatMode, FieldStringMode, FieldStringEncoding, ChunkDataItem)
 
 
 class Chunk(LocalObject):

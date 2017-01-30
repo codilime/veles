@@ -4,7 +4,7 @@ import struct
 import six
 
 import veles.veles_api as vapi
-from veles.objects.chunk_data_item import *
+from veles.objects import chunk_data_item
 
 
 class BmpParser(object):
@@ -38,28 +38,40 @@ class BmpParser(object):
         bitmap_header.create_chunk(
             'Reserved2', size=2,
             comment='value depends on the application that creates the image')
-        pix_start =  bitmap_header.create_chunk_item('BitmapOffset', bit_width=32).values[0]
+        pix_start = bitmap_header.create_chunk_item(
+            'BitmapOffset', bit_width=32).values[0]
 
         dib_header = bitmap.create_chunk('DIB header', size=dib_size)
         dib_header.create_chunk_item('Size', bit_width=32)
         image_size = 0
         if dib_size == 12:
-            width = dib_header.create_chunk_item('Width', bit_width=16).values[0]
-            height = dib_header.create_chunk_item('Height', bit_width=16).values[0]
+            width = dib_header.create_chunk_item(
+                'Width', bit_width=16).values[0]
+            height = dib_header.create_chunk_item(
+                'Height', bit_width=16).values[0]
             dib_header.create_chunk_item('NumPlanes', bit_width=16)
-            bits_per_pix = dib_header.create_chunk_item('BitsPerPixel', bit_width=16).values[0]
+            bits_per_pix = dib_header.create_chunk_item(
+                'BitsPerPixel', bit_width=16).values[0]
 
         else:
-            width = abs(dib_header.create_chunk_item('Width', bit_width=32, sign_mode=FieldSignMode.SIGNED).values[0])
-            height = abs(dib_header.create_chunk_item('Height', bit_width=32, sign_mode=FieldSignMode.SIGNED).values[0])
+            width = abs(dib_header.create_chunk_item(
+                'Width', bit_width=32,
+                sign_mode=chunk_data_item.FieldSignMode.SIGNED).values[0])
+            height = abs(dib_header.create_chunk_item(
+                'Height', bit_width=32,
+                sign_mode=chunk_data_item.FieldSignMode.SIGNED).values[0])
             dib_header.create_chunk_item('NumPlanes', bit_width=16)
-            bits_per_pix = dib_header.create_chunk_item('BitsPerPixel', bit_width=16).values[0]
+            bits_per_pix = dib_header.create_chunk_item(
+                'BitsPerPixel', bit_width=16).values[0]
             if dib_size > 16:
-                compression = dib_header.create_chunk_item('Compression', bit_width=32).values[0]
-                isize_chunk = dib_header.create_chunk_item('ImageDataSize', bit_width=32).values[0]
+                compression = dib_header.create_chunk_item(
+                    'Compression', bit_width=32).values[0]
+                image_size = dib_header.create_chunk_item(
+                    'ImageDataSize', bit_width=32).values[0]
                 dib_header.create_chunk_item('XResolution', bit_width=32)
                 dib_header.create_chunk_item('YResolution', bit_width=32)
-                colors_used = dib_header.create_chunk_item('ColorsUsed', bit_width=32).values[0]
+                colors_used = dib_header.create_chunk_item(
+                    'ColorsUsed', bit_width=32).values[0]
                 dib_header.create_chunk_item('ColorsImportant', bit_width=32)
             if dib_size == 64:
                 dib_header.create_chunk_item('Units', bit_width=16)
