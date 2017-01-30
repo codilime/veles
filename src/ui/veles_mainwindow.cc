@@ -1042,9 +1042,9 @@ void VelesMainWindow::init() {
   createLogWindow();
   createDb();
 
-  optionsDialog = new OptionsDialog(this);
+  options_dialog_ = new OptionsDialog(this);
 
-  connect(optionsDialog, &QDialog::accepted, [this]() {
+  connect(options_dialog_, &QDialog::accepted, [this]() {
     QList<QDockWidget*> dock_widgets = findChildren<QDockWidget*>();
     for(auto dock : dock_widgets) {
       if(auto hex_tab = dynamic_cast<HexEditWidget *>(dock->widget())) {
@@ -1055,51 +1055,51 @@ void VelesMainWindow::init() {
 }
 
 void VelesMainWindow::createActions() {
-  newFileAct = new QAction(tr("&New..."), this);
-  newFileAct->setShortcuts(QKeySequence::New);
-  newFileAct->setStatusTip(tr("Open a new file"));
-  connect(newFileAct, SIGNAL(triggered()), this, SLOT(newFile()));
+  new_file_act_ = new QAction(tr("&New..."), this);
+  new_file_act_->setShortcuts(QKeySequence::New);
+  new_file_act_->setStatusTip(tr("Open a new file"));
+  connect(new_file_act_, SIGNAL(triggered()), this, SLOT(newFile()));
 
-  openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
-  openAct->setShortcuts(QKeySequence::Open);
-  openAct->setStatusTip(tr("Open an existing file"));
-  connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+  open_act_ = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
+  open_act_->setShortcuts(QKeySequence::Open);
+  open_act_->setStatusTip(tr("Open an existing file"));
+  connect(open_act_, SIGNAL(triggered()), this, SLOT(open()));
 
-  exitAct = new QAction(tr("E&xit"), this);
-  exitAct->setShortcuts(QKeySequence::Quit);
-  exitAct->setStatusTip(tr("Exit the application"));
-  connect(exitAct, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
+  exit_act_ = new QAction(tr("E&xit"), this);
+  exit_act_->setShortcuts(QKeySequence::Quit);
+  exit_act_->setStatusTip(tr("Exit the application"));
+  connect(exit_act_, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
 
-  aboutAct = new QAction(tr("&About"), this);
-  aboutAct->setStatusTip(tr("Show the application's About box"));
-  connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+  about_act_ = new QAction(tr("&About"), this);
+  about_act_->setStatusTip(tr("Show the application's About box"));
+  connect(about_act_, SIGNAL(triggered()), this, SLOT(about()));
 
-  aboutQtAct = new QAction(tr("About &Qt"), this);
-  aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
-  connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+  about_qt_act_ = new QAction(tr("About &Qt"), this);
+  about_qt_act_->setStatusTip(tr("Show the Qt library's About box"));
+  connect(about_qt_act_, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
-  optionsAct = new QAction(tr("&Options"), this);
-  optionsAct->setStatusTip(
+  options_act_ = new QAction(tr("&Options"), this);
+  options_act_->setStatusTip(
       tr("Show the Dialog to select applications options"));
-  connect(optionsAct, &QAction::triggered, this,
-          [this]() { optionsDialog->show(); });
+  connect(options_act_, &QAction::triggered, this,
+          [this]() { options_dialog_->show(); });
 }
 
 void VelesMainWindow::createMenus() {
-  fileMenu = menuBar()->addMenu(tr("&File"));
+  file_menu_ = menuBar()->addMenu(tr("&File"));
 
   //Not implemented yet.
   //fileMenu->addAction(newFileAct);
 
-  fileMenu->addAction(openAct);
-  fileMenu->addSeparator();
-  fileMenu->addAction(optionsAct);
-  fileMenu->addSeparator();
-  fileMenu->addAction(exitAct);
+  file_menu_->addAction(open_act_);
+  file_menu_->addSeparator();
+  file_menu_->addAction(options_act_);
+  file_menu_->addSeparator();
+  file_menu_->addAction(exit_act_);
 
-  helpMenu = menuBar()->addMenu(tr("&Help"));
-  helpMenu->addAction(aboutAct);
-  helpMenu->addAction(aboutQtAct);
+  help_menu_ = menuBar()->addMenu(tr("&Help"));
+  help_menu_->addAction(about_act_);
+  help_menu_->addAction(about_qt_act_);
 }
 
 void VelesMainWindow::updateParsers(dbif::PInfoReply reply) {
@@ -1115,8 +1115,8 @@ void VelesMainWindow::updateParsers(dbif::PInfoReply reply) {
 }
 
 void VelesMainWindow::createDb() {
-  database = db::create_db();
-  auto database_info = new DatabaseInfo(database);
+  database_ = db::create_db();
+  auto database_info = new DatabaseInfo(database_);
   DockWidget* dock_widget = new DockWidget;
   dock_widget->setAllowedAreas(Qt::AllDockWidgetAreas);
   dock_widget->setWindowTitle("Database");
@@ -1138,7 +1138,7 @@ void VelesMainWindow::createDb() {
 
   connect(database_info, &DatabaseInfo::newFile, [this]() { open(); });
 
-  auto promise = database->asyncSubInfo<dbif::ParsersListRequest>(this);
+  auto promise = database_->asyncSubInfo<dbif::ParsersListRequest>(this);
   connect(promise, &dbif::InfoPromise::gotInfo, this, &VelesMainWindow::updateParsers);
 }
 
@@ -1166,7 +1166,7 @@ void VelesMainWindow::createFileBlob(QString fileName) {
                          reinterpret_cast<uint8_t *>(bytes.data()));
   }
   auto promise =
-      database->asyncRunMethod<dbif::RootCreateFileBlobFromDataRequest>(
+      database_->asyncRunMethod<dbif::RootCreateFileBlobFromDataRequest>(
           this, data, fileName);
   connect(promise, &dbif::MethodResultPromise::gotResult,
       [this, fileName](dbif::PMethodReply reply) {
