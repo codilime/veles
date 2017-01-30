@@ -63,7 +63,7 @@ HexEditWidget::HexEditWidget(VelesMainWindow *main_window,
   setupDataModelHandlers();
 
   reapplySettings();
-  setWindowTitle(data_model_->path().join(" : ") + " - Hex");
+  setWindowTitle(data_model_->path().join(" : "));
   setParserIds(main_window_->parsersList());
 }
 
@@ -233,7 +233,7 @@ void HexEditWidget::showVisualisation() {
   panel->setAttribute(Qt::WA_DeleteOnClose);
 
   main_window_->addTab(panel,
-      data_model_->path().join(" : ") + " - Visualisation");
+      data_model_->path().join(" : "));
 }
 
 void HexEditWidget::showNodeTree() {
@@ -241,7 +241,7 @@ void HexEditWidget::showNodeTree() {
       selection_model_);
   auto sibling = main_window_->findDockNotTabifiedWith(this);
   auto dock_widget = main_window_->addTab(node_tree,
-      data_model_->path().join(" : ") + " - Node tree", sibling);
+      data_model_->path().join(" : "), sibling);
   if(!sibling) {
       main_window_->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
   }
@@ -252,7 +252,7 @@ void HexEditWidget::showHexEditor() {
       selection_model_);
   auto sibling = DockWidget::getParentDockWidget(this);
   auto dock_widget = main_window_->addTab(hex_edit,
-      data_model_->path().join(" : ") + " - Hex", sibling);
+      data_model_->path().join(" : "), sibling);
   if (sibling == nullptr) {
     main_window_->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
   }

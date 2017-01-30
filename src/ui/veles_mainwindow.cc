@@ -1319,12 +1319,12 @@ void VelesMainWindow::createHexEditTab(QString fileName,
   NodeTreeWidget *node_tree = new NodeTreeWidget(this,
       data_model, selection_model);
    addTab(node_tree,
-       data_model->path().join(" : ") + " - Node tree", sibling1);
+       data_model->path().join(" : "), sibling1);
 
   HexEditWidget *hex_edit = new HexEditWidget(this,
       data_model, selection_model);
   DockWidget* hex_edit_tab = addTab(hex_edit,
-      data_model->path().join(" : ") + " - Hex", sibling2);
+      data_model->path().join(" : "), sibling2);
 
   if (sibling1 == sibling2) {
     addDockWidget(Qt::RightDockWidgetArea, hex_edit_tab);
