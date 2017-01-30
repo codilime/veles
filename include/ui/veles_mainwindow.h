@@ -206,20 +206,19 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   void createHexEditTab(QString, dbif::ObjectHandle);
   void createLogWindow();
 
-  QMenu *fileMenu;
-  QMenu *visualisationMenu;
-  QMenu *helpMenu;
+  QMenu *file_menu_;
+  QMenu *help_menu_;
 
-  QAction *newFileAct;
-  QAction *openAct;
-  QAction *exitAct;
-  QAction *optionsAct;
+  QAction *new_file_act_;
+  QAction *open_act_;
+  QAction *exit_act_;
+  QAction *options_act_;
 
-  QAction *aboutAct;
-  QAction *aboutQtAct;
+  QAction *about_act_;
+  QAction *about_qt_act_;
 
-  dbif::ObjectHandle database;
-  OptionsDialog *optionsDialog;
+  dbif::ObjectHandle database_;
+  OptionsDialog *options_dialog_;
 
   QStringList parsers_list_;
 };
