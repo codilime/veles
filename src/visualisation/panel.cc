@@ -42,6 +42,7 @@ const std::map<QString, VisualisationPanel::ESampler>
 /*****************************************************************************/
 
 VisualisationPanel::VisualisationPanel(QWidget *parent) :
+  veles::ui::View("Visualization", ":/images/trigram_icon.png"),
   sampler_type_(k_default_sampler),
   visualisation_type_(k_default_visualisation), sample_size_(1024) {
     sampler_ = getSampler(sampler_type_, data_, sample_size_);
@@ -229,6 +230,9 @@ void VisualisationPanel::refreshVisualisation() {
 void VisualisationPanel::initLayout() {
   initOptionsPanel();
 
+  QWidget* root_widget = new QWidget(this);
+  this->setCentralWidget(root_widget);
+
   splitter_ = new QSplitter(Qt::Horizontal);
   splitter_->addWidget(minimap_);
   splitter_->addWidget(visualisation_);
@@ -238,7 +242,7 @@ void VisualisationPanel::initLayout() {
   layout_->setContentsMargins(0, 0, 0, 0);
   layout_->addWidget(splitter_, 8);
   layout_->addLayout(options_layout_, 0);
-  this->setLayout(layout_);
+  root_widget->setLayout(layout_);
 }
 
 QBoxLayout* VisualisationPanel::prepareVisualisationOptions() {

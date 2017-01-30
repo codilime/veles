@@ -27,13 +27,14 @@
 
 #include <map>
 
+#include "ui/veles_mainwindow.h"
 #include "visualisation/base.h"
 #include "visualisation/minimap_panel.h"
 
 namespace veles {
 namespace visualisation {
 
-class VisualisationPanel : public QWidget {
+class VisualisationPanel : public veles::ui::View {
   Q_OBJECT
 
  public:
