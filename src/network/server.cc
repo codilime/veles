@@ -15,7 +15,6 @@
  *
  */
 #include "db/handle.h"
-#include "db/object.h"
 #include "dbif/types.h"
 #include "network/server.h"
 #include "util/settings/network.h"
@@ -103,11 +102,13 @@ void NetworkServer::createChunk(PLocalObject target_object, PLocalObject blob,
     return;
   }
 
-  PLocalObject created = ChunkObject::create(blob, parent,
-                                req.chunk_start(), req.chunk_end(),
-                                QString::fromStdString(req.chunk_type()),
-                                QString::fromStdString(req.name()));
-  created->setComment(QString::fromStdString(req.comment()));
+  auto created = ChunkObject::create(blob, parent,
+                                req.object().chunk_start(), req.object().chunk_end(),
+                                QString::fromStdString(req.object().chunk_type()),
+                                QString::fromStdString(req.object().name())).staticCast<ChunkObject>();
+
+  created->setComment(QString::fromStdString(req.object().comment()));
+
   network::LocalObject* result = resp.add_results();
   packObject(created, result);
   resp.set_ok(true);
@@ -140,6 +141,80 @@ void NetworkServer::getBlobData(PLocalObject target_object, QTcpSocket *client_c
   sendData(client_connection, reinterpret_cast<const char*>(blob->data().rawData()), blob->data().octets());
 }
 
+void NetworkServer::addChunkItem(PLocalObject blob, network::Response &resp,
+                                 PLocalObject object,
+                                 const network::ChunkDataItem &req_item) {
+  if (object->type() != dbif::CHUNK) {
+    resp.set_ok(false);
+    resp.set_error_msg("Items can only be added to chunk");
+  }
+  auto chunk = object.staticCast<ChunkObject>();
+  if (req_item.repack().endian() >= static_cast<int>(data::RepackEndian::GUARD)) {
+      resp.set_ok(false);
+      resp.set_error_msg("Unsupported endian value.");
+      return;
+  }
+  if (req_item.high_type().mode() >= static_cast<int>(data::FieldHighType::MODE_GUARD)) {
+      resp.set_ok(false);
+      resp.set_error_msg("Unsupported mode value.");
+      return;
+  }
+  if (req_item.high_type().sign_mode() >= static_cast<int>(data::FieldHighType::SIGN_GUARD)) {
+      resp.set_ok(false);
+      resp.set_error_msg("Unsupported sign_mode value.");
+      return;
+  }
+  if (req_item.high_type().float_mode() >= static_cast<int>(data::FieldHighType::FLOAT_GUARD)) {
+      resp.set_ok(false);
+      resp.set_error_msg("Unsupported float_mode value.");
+      return;
+  }
+  if (req_item.high_type().string_mode() >= static_cast<int>(data::FieldHighType::STRING_GUARD)) {
+      resp.set_ok(false);
+      resp.set_error_msg("Unsupported string_mode value.");
+      return;
+  }
+  if (req_item.high_type().string_encoding() >= static_cast<int>(data::FieldHighType::ENC_GUARD)) {
+      resp.set_ok(false);
+      resp.set_error_msg("Unsupported string_encoding value.");
+      return;
+  }
+
+  auto repack = data::RepackFormat{
+      static_cast<data::RepackEndian>(req_item.repack().endian()),
+      req_item.repack().width(), req_item.repack().high_pad(),
+      req_item.repack().low_pad()};
+  size_t num_elements = req_item.num_elements();
+  size_t start = req_item.start();
+  QString name = QString::fromStdString(req_item.name());
+  auto high_type = data::FieldHighType();
+  high_type.mode = static_cast<data::FieldHighType::FieldHighMode>(req_item.high_type().mode());
+  high_type.shift = req_item.high_type().shift();
+  high_type.sign_mode = static_cast<data::FieldHighType::FieldSignMode>(req_item.high_type().sign_mode());
+  high_type.float_mode = static_cast<data::FieldHighType::FieldFloatMode>(req_item.high_type().float_mode());
+  high_type.float_complex = req_item.high_type().float_complex();
+  high_type.string_mode = static_cast<data::FieldHighType::FieldStringMode>(req_item.high_type().shift());
+  high_type.string_encoding = static_cast<data::FieldHighType::FieldStringEncoding>(req_item.high_type().string_encoding());
+  high_type.type_name = QString::fromStdString(req_item.high_type().type_name());
+
+  auto blob_cast = blob.staticCast<DataBlobObject>();
+  size_t src_sz = data::repackSize(blob_cast->data().width(), repack, num_elements);
+  if (start+src_sz >= blob_cast->data().size()) {
+    resp.set_ok(false);
+    resp.set_error_msg("Requested item doesn't fit in blob.");
+    return;
+  }
+  data::BinData data = blob_cast->data().data(start, start+src_sz);
+  data::BinData res = data::repack(data, repack, 0, num_elements);
+  chunk->addItem(data::ChunkDataItem::field(
+    start, start+src_sz, name,
+    repack, num_elements, high_type, res
+  ));
+  network::LocalObject* result = resp.add_results();
+  packObject(object, result);
+  resp.set_ok(true);
+}
+
 void NetworkServer::handleRequest(network::Request &req, QTcpSocket *client_connection) {
   network::Response resp;
   PLocalObject target_object = root_;
@@ -150,7 +225,8 @@ void NetworkServer::handleRequest(network::Request &req, QTcpSocket *client_conn
     found = false;
     for (auto child : target_object->children()) {
       if (child->id() == req.id(j)) {
-        if (child->type() == dbif::FILE_BLOB) {
+        if (child->type() == dbif::FILE_BLOB ||
+            child->type() == dbif::SUB_BLOB) {
           blob = child;
         }
         found = true;
@@ -184,6 +260,9 @@ void NetworkServer::handleRequest(network::Request &req, QTcpSocket *client_conn
     getBlobData(target_object, client_connection, resp);
     // we already sent responses
     return;
+  case network::Request::ADD_CHUNK_ITEM:
+    addChunkItem(blob, resp, target_object, req.chunk_item());
+    break;
   default:
     resp.set_ok(false);
     resp.set_error_msg("Unknown request type.");
@@ -249,9 +328,26 @@ void NetworkServer::packObject(PLocalObject object,
         continue;
       }
       network::ChunkDataItem* packed_item = result->add_items();
+      packed_item->set_type(item.type);
       packed_item->set_start(item.start);
       packed_item->set_end(item.end);
       packed_item->set_name(item.name.toStdString());
+      packed_item->mutable_repack()->set_endian(static_cast<int>(item.repack.endian));
+      packed_item->mutable_repack()->set_width(item.repack.width);
+      packed_item->mutable_repack()->set_high_pad(item.repack.highPad);
+      packed_item->mutable_repack()->set_low_pad(item.repack.lowPad);
+      packed_item->set_num_elements(item.num_elements);
+      packed_item->mutable_high_type()->set_mode(item.high_type.mode);
+      packed_item->mutable_high_type()->set_shift(item.high_type.shift);
+      packed_item->mutable_high_type()->set_sign_mode(item.high_type.sign_mode);
+      packed_item->mutable_high_type()->set_float_mode(item.high_type.float_mode);
+      packed_item->mutable_high_type()->set_float_complex(item.high_type.float_complex);
+      packed_item->mutable_high_type()->set_string_mode(item.high_type.string_mode);
+      packed_item->mutable_high_type()->set_string_encoding(item.high_type.string_encoding);
+      packed_item->mutable_high_type()->set_type_name(item.high_type.type_name.toStdString());
+      packed_item->mutable_raw_value()->set_width(item.raw_value.width());
+      packed_item->mutable_raw_value()->set_size(item.raw_value.size());
+      packed_item->mutable_raw_value()->set_data(item.raw_value.rawData(), item.raw_value.octets());
     }
   }
 

@@ -192,6 +192,7 @@ class ChunkObject : public LocalObject {
   uint64_t end() const { return end_; }
   QString chunkType() const { return chunk_type_; }
   const std::vector<data::ChunkDataItem>& items() const { return items_; }
+  void addItem(data::ChunkDataItem &item);
 };
 
 };

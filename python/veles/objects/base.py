@@ -94,12 +94,6 @@ class LocalObject(object):
     def chunk_type(self, chunk_type):
         self._proto_obj.chunk_type = chunk_type
 
-    @property
-    def items(self):
-        return self._proto_obj.items
-
-    # TODO setting items
-
     def __repr__(self):
         return 'id: {} name: {}'.format(self.id, self.name)
 

@@ -386,6 +386,11 @@ void ChunkObject::killed() {
   }
 }
 
+void ChunkObject::addItem(data::ChunkDataItem &item){
+  items_.push_back(item);
+  parse_updated();
+}
+
 namespace {
 class Register {
  public:
