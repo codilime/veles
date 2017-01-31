@@ -84,9 +84,10 @@ message Request {
     // this is just a temporary hack to enable semi efficent state-less comunication
     // w/o random access to objects on server side
     repeated uint64 id = 2;
-
-    LocalObject object = 101;
-    ChunkDataItem chunk_item = 102;
+    oneof request_body {
+      LocalObject object = 101;
+      ChunkDataItem chunk_item = 102;
+    }
 }
 
 message Response {

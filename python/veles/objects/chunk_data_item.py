@@ -96,3 +96,9 @@ class ChunkDataItem(object):
     @property
     def raw_value(self):
         return self._proto_obj.raw_value
+
+    def __getitem__(self, arg):
+        return self.raw_value.data[arg]
+
+    def __repr__(self):
+        return 'name: {} values: {}'.format(self.name, self.values)

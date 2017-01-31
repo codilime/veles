@@ -25,7 +25,7 @@ class Chunk(LocalObject):
         super(Chunk, self)._from_another(other)
         self.items = other.items
 
-    def items_from_another(self, other):
+    def _items_from_another(self, other):
         self._proto_obj = other._proto_obj
         self.items = other.items
 
@@ -64,7 +64,47 @@ class Chunk(LocalObject):
                           string_mode=FieldStringMode.STRING_RAW,
                           string_encoding=FieldStringEncoding.ENC_RAW,
                           type_name=""):
-        # TODO big docstring
+        """Create ChunkDataItem for this chunk
+
+        ChunkDataItem can represent many different entities, currently Python
+        interface only supports FIELD type
+
+        FIELD - contains 1 or more elements of format given by other parameters
+        There are multiple parameters, some of them only make sense in context
+        of specific mode
+
+        Args:
+            name: name of ChunkDataItem
+            num_elements: number of elements that this item contains,
+                defaults to 1
+            start: start of ChunkDataItem, defaults to cursor value
+            update_cursor: determines whether cursor will be updated
+                after this operation, defaults to True
+            endianness: endianness of elements, defaults to RepackEndian.LITTLE
+            bit_width: width in bits of each elements, defaults to 8
+            high_pad: number of bits between MSB and actual element,
+                defaults to 0
+            low_pad: number of bits between LSB and actual element,
+                defaults to 0
+            mode: type of element, defaults to FieldHighMode.FIXED
+            shift: for FieldHighMode.FIXED and FieldHighMode.POINTER,
+                positive means the raw value is scaled up by a PoT,
+                negative is for FieldHighMode.FIXED only
+                and means a fractional value, defaults to 0
+            sign_mode: decides if value is signed or unsigned,
+                defaults to FieldSignMode.UNSIGNED
+            float_mode: decides if floating point is single or
+                double precision, defaults to FieldFloatMode.IEEE754_SINGLE
+            float_complex: if true this field should be made of an even number
+                of elements - even ones are real parts, odd ones are imaginary,
+                defaults to False
+            string_mode: mode of string, defaults to FieldStringMode.STRING_RAW
+            string_encoding: string encoding,
+                defaults to FieldStringEncoding.ENC_RAW
+            type_name: for FieldHighMode.ENUM names of enum type,
+                for POINTER: names the pointed-to type,
+                defaults to empty string
+        """
         req = network_pb2.Request()
         req.type = network_pb2.Request.ADD_CHUNK_ITEM
         req.id.extend(self._id_path)
@@ -89,7 +129,7 @@ class Chunk(LocalObject):
         req.chunk_item.high_type.type_name = type_name
         results = self._client._send_req(req)
 
-        self.items_from_another(results[0])
+        self._items_from_another(results[0])
         if update_cursor:
             self._cursor = self.items[-1].end
         return self.items[-1]

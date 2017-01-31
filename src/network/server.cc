@@ -149,32 +149,32 @@ void NetworkServer::addChunkItem(PLocalObject blob, network::Response &resp,
     resp.set_error_msg("Items can only be added to chunk");
   }
   auto chunk = object.staticCast<ChunkObject>();
-  if (req_item.repack().endian() >= static_cast<int>(data::RepackEndian::GUARD)) {
+  if (req_item.repack().endian() >= static_cast<uint32_t>(data::RepackEndian::GUARD)) {
       resp.set_ok(false);
       resp.set_error_msg("Unsupported endian value.");
       return;
   }
-  if (req_item.high_type().mode() >= static_cast<int>(data::FieldHighType::MODE_GUARD)) {
+  if (req_item.high_type().mode() >= static_cast<uint32_t>(data::FieldHighType::MODE_GUARD)) {
       resp.set_ok(false);
       resp.set_error_msg("Unsupported mode value.");
       return;
   }
-  if (req_item.high_type().sign_mode() >= static_cast<int>(data::FieldHighType::SIGN_GUARD)) {
+  if (req_item.high_type().sign_mode() >= static_cast<uint32_t>(data::FieldHighType::SIGN_GUARD)) {
       resp.set_ok(false);
       resp.set_error_msg("Unsupported sign_mode value.");
       return;
   }
-  if (req_item.high_type().float_mode() >= static_cast<int>(data::FieldHighType::FLOAT_GUARD)) {
+  if (req_item.high_type().float_mode() >= static_cast<uint32_t>(data::FieldHighType::FLOAT_GUARD)) {
       resp.set_ok(false);
       resp.set_error_msg("Unsupported float_mode value.");
       return;
   }
-  if (req_item.high_type().string_mode() >= static_cast<int>(data::FieldHighType::STRING_GUARD)) {
+  if (req_item.high_type().string_mode() >= static_cast<uint32_t>(data::FieldHighType::STRING_GUARD)) {
       resp.set_ok(false);
       resp.set_error_msg("Unsupported string_mode value.");
       return;
   }
-  if (req_item.high_type().string_encoding() >= static_cast<int>(data::FieldHighType::ENC_GUARD)) {
+  if (req_item.high_type().string_encoding() >= static_cast<uint32_t>(data::FieldHighType::ENC_GUARD)) {
       resp.set_ok(false);
       resp.set_error_msg("Unsupported string_encoding value.");
       return;
@@ -331,7 +331,7 @@ void NetworkServer::packObject(PLocalObject object,
       packed_item->set_start(item.start);
       packed_item->set_end(item.end);
       packed_item->set_name(item.name.toStdString());
-      packed_item->mutable_repack()->set_endian(static_cast<int>(item.repack.endian));
+      packed_item->mutable_repack()->set_endian(static_cast<uint32_t>(item.repack.endian));
       packed_item->mutable_repack()->set_width(item.repack.width);
       packed_item->mutable_repack()->set_high_pad(item.repack.highPad);
       packed_item->mutable_repack()->set_low_pad(item.repack.lowPad);
