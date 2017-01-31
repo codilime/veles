@@ -35,6 +35,7 @@
 #include "dbif/universe.h"
 #include "ui/hexeditwidget.h"
 #include "ui/nodetreewidget.h"
+#include "ui/veles_mainwindow.h"
 
 #include "util/settings/hexedit.h"
 #include "util/icons.h"
@@ -46,7 +47,8 @@ namespace ui {
 /* Public methods */
 /*****************************************************************************/
 
-NodeTreeWidget::NodeTreeWidget(VelesMainWindow *main_window,
+NodeTreeWidget::NodeTreeWidget(
+    MainWindowWithDetachableDockWidgets *main_window,
     QSharedPointer<FileBlobModel>& data_model,
     QSharedPointer<QItemSelectionModel>& selection_model)
     : View("Node tree", ":/images/show_node_tree.png"),
@@ -75,7 +77,9 @@ NodeTreeWidget::NodeTreeWidget(VelesMainWindow *main_window,
   setWindowTitle(data_model_->path().join(" : "));
 
   connect(&parsers_menu_, &QMenu::triggered, this, &NodeTreeWidget::parse);
-  setParserIds(main_window_->parsersList());
+  setParserIds(dynamic_cast<VelesMainWindow*>(
+        MainWindowWithDetachableDockWidgets::getFirstMainWindow())
+        ->parsersList());
 }
 
 void NodeTreeWidget::reapplySettings() {

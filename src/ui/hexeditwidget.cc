@@ -27,17 +27,18 @@
 #include <QTreeView>
 #include <QVBoxLayout>
 
-#include "ui/veles_mainwindow.h"
-#include "visualisation/panel.h"
-
 #include "dbif/info.h"
 #include "dbif/types.h"
 #include "dbif/universe.h"
+
 #include "ui/hexeditwidget.h"
 #include "ui/nodetreewidget.h"
+#include "ui/veles_mainwindow.h"
 
 #include "util/settings/hexedit.h"
 #include "util/icons.h"
+
+#include "visualisation/panel.h"
 
 namespace veles {
 namespace ui {
@@ -46,7 +47,7 @@ namespace ui {
 /* Public methods */
 /*****************************************************************************/
 
-HexEditWidget::HexEditWidget(VelesMainWindow *main_window,
+HexEditWidget::HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
     QSharedPointer<FileBlobModel>& data_model,
     QSharedPointer<QItemSelectionModel>& selection_model)
     : View("Hex editor", ":/images/show_hex_edit.png"),
@@ -64,7 +65,9 @@ HexEditWidget::HexEditWidget(VelesMainWindow *main_window,
 
   reapplySettings();
   setWindowTitle(data_model_->path().join(" : "));
-  setParserIds(main_window_->parsersList());
+  setParserIds(dynamic_cast<VelesMainWindow*>(
+      MainWindowWithDetachableDockWidgets::getFirstMainWindow())
+      ->parsersList());
 }
 
 void HexEditWidget::reapplySettings() {

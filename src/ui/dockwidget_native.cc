@@ -17,7 +17,7 @@
 #include <QDockWidget>
 #include <QTabBar>
 
-#include "ui/mainwindow_native.h"
+#include "ui/dockwidget_native.h"
 
 namespace veles {
 namespace ui {

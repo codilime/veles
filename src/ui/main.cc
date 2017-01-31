@@ -21,6 +21,7 @@
 #include <QTranslator>
 #include <QHostAddress>
 
+#include "ui/dockwidget.h"
 #include "ui/veles_mainwindow.h"
 #include "visualisation/base.h"
 #include "visualisation/digram.h"

@@ -32,7 +32,7 @@
 #include "ui/fileblobmodel.h"
 #include "ui/hexedit.h"
 #include "ui/searchdialog.h"
-#include "ui/veles_mainwindow.h"
+#include "ui/dockwidget.h"
 
 #include "dbif/info.h"
 #include "dbif/types.h"
@@ -40,13 +40,11 @@
 namespace veles {
 namespace ui {
 
-class VelesMainWindow;
-
 class HexEditWidget : public View {
   Q_OBJECT
 
  public:
-  explicit HexEditWidget(VelesMainWindow *main_window,
+  explicit HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
       QSharedPointer<FileBlobModel>& data_model,
       QSharedPointer<QItemSelectionModel>& selection_model);
   void reapplySettings();
@@ -77,7 +75,7 @@ class HexEditWidget : public View {
 
   bool getRangeValues(qint64 *begin, qint64 *end);
 
-  VelesMainWindow *main_window_;
+  MainWindowWithDetachableDockWidgets *main_window_;
 
   QString cur_file_;
   QString cur_file_path_;

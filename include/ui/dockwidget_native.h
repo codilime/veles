@@ -14,8 +14,11 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UI_MAINWINDOW_NATIVE_H
-#define VELES_UI_MAINWINDOW_NATIVE_H
+#ifndef VELES_UI_DOCKWIDGET_NATIVE_H
+#define VELES_UI_DOCKWIDGET_NATIVE_H
+
+#include <QTabBar>
+#include <QDockWidget>
 
 namespace veles {
 namespace ui {
@@ -26,4 +29,4 @@ void startDockDragging(QDockWidget* object);
 }  // namespace ui
 }  // namespace veles
 
-#endif // VELES_UI_MAINWINDOW_NATIVE_H
+#endif // VELES_UI_DOCKWIDGET_NATIVE_H
