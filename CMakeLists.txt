@@ -229,7 +229,8 @@ endif(APPLE)
 add_executable(main_ui
     ${INCLUDE_DIR}/ui/logwidget.h
     ${INCLUDE_DIR}/ui/veles_mainwindow.h
-    ${INCLUDE_DIR}/ui/mainwindow_native.h
+    ${INCLUDE_DIR}/ui/dockwidget.h
+    ${INCLUDE_DIR}/ui/dockwidget_native.h
     ${INCLUDE_DIR}/ui/hexeditwidget.h
     ${INCLUDE_DIR}/ui/nodetreewidget.h
     ${INCLUDE_DIR}/ui/optionsdialog.h
@@ -249,7 +250,8 @@ add_executable(main_ui
     ${SRC_DIR}/ui/main.cc
     ${SRC_DIR}/ui/logwidget.cc
     ${SRC_DIR}/ui/veles_mainwindow.cc
-    ${SRC_DIR}/ui/mainwindow_native.cc
+    ${SRC_DIR}/ui/dockwidget.cc
+    ${SRC_DIR}/ui/dockwidget_native.cc
     ${SRC_DIR}/ui/hexeditwidget.cc
     ${SRC_DIR}/ui/nodetreewidget.cc
     ${SRC_DIR}/ui/optionsdialog.cc
@@ -274,6 +276,7 @@ add_executable(main_ui
     ${CMAKE_SOURCE_DIR}/moc_commands.cpp
     ${CMAKE_SOURCE_DIR}/moc_digram.cpp
     ${CMAKE_SOURCE_DIR}/moc_veles_mainwindow.cpp
+    ${CMAKE_SOURCE_DIR}/moc_dockwidget.cpp
     ${CMAKE_SOURCE_DIR}/moc_hexeditwidget.cpp
     ${CMAKE_SOURCE_DIR}/moc_nodetreewidget.cpp
     ${CMAKE_SOURCE_DIR}/moc_logwidget.cpp

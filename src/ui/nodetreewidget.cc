@@ -28,7 +28,6 @@
 #include <QVBoxLayout>
 #include <QWidgetAction>
 
-#include "ui/veles_mainwindow.h"
 #include "visualisation/panel.h"
 
 #include "dbif/info.h"
@@ -36,6 +35,7 @@
 #include "dbif/universe.h"
 #include "ui/hexeditwidget.h"
 #include "ui/nodetreewidget.h"
+#include "ui/veles_mainwindow.h"
 
 #include "util/settings/hexedit.h"
 #include "util/icons.h"
@@ -47,10 +47,12 @@ namespace ui {
 /* Public methods */
 /*****************************************************************************/
 
-NodeTreeWidget::NodeTreeWidget(VelesMainWindow *main_window,
+NodeTreeWidget::NodeTreeWidget(
+    MainWindowWithDetachableDockWidgets *main_window,
     QSharedPointer<FileBlobModel>& data_model,
     QSharedPointer<QItemSelectionModel>& selection_model)
-    : main_window_(main_window), data_model_(data_model),
+    : View("Node tree", ":/images/show_node_tree.png"),
+      main_window_(main_window), data_model_(data_model),
       selection_model_(selection_model) {
   tree_view_ = new QTreeView();
   tree_view_->setModel(data_model_.data());
@@ -72,10 +74,12 @@ NodeTreeWidget::NodeTreeWidget(VelesMainWindow *main_window,
   registered_line_edit_ = nullptr;
 
   reapplySettings();
-  setWindowTitle(data_model_->path().join(" : ") + " - Node tree");
+  setWindowTitle(data_model_->path().join(" : "));
 
   connect(&parsers_menu_, &QMenu::triggered, this, &NodeTreeWidget::parse);
-  setParserIds(main_window_->parsersList());
+  setParserIds(dynamic_cast<VelesMainWindow*>(
+        MainWindowWithDetachableDockWidgets::getFirstMainWindow())
+        ->parsersList());
 }
 
 void NodeTreeWidget::reapplySettings() {
@@ -205,7 +209,7 @@ void NodeTreeWidget::setupTreeViewHandlers() {
       main_window_->findTwoNonTabifiedDocks(sibling1, sibling2);
       main_window_->addTab(node_tree, node_tree->windowTitle(), sibling1);
       DockWidget* hex_edit_tab = main_window_->addTab(hex_edit,
-          new_model->path().join(" : ") + " - Hex", sibling2);
+          new_model->path().join(" : "), sibling2);
 
       if (sibling1 == sibling2) {
         main_window_->addDockWidget(Qt::RightDockWidgetArea, hex_edit_tab);
@@ -276,7 +280,7 @@ void NodeTreeWidget::showVisualisation() {
   panel->setAttribute(Qt::WA_DeleteOnClose);
 
   main_window_->addTab(panel,
-      data_model_->path().join(" : ") + " - Visualisation");
+      data_model_->path().join(" : "));
 }
 
 void NodeTreeWidget::parse(QAction *action) {
@@ -292,7 +296,7 @@ void NodeTreeWidget::showHexEditor() {
       selection_model_);
   auto sibling = main_window_->findDockNotTabifiedWith(this);
   auto dock_widget = main_window_->addTab(hex_edit,
-      data_model_->path().join(" : ") + " - Hex", sibling);
+      data_model_->path().join(" : "), sibling);
   if (sibling == nullptr) {
     main_window_->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
   }

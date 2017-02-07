@@ -30,6 +30,7 @@
 #include "ui/fileblobmodel.h"
 #include "ui/hexedit.h"
 #include "ui/searchdialog.h"
+#include "ui/dockwidget.h"
 
 #include "dbif/info.h"
 #include "dbif/types.h"
@@ -37,13 +38,11 @@
 namespace veles {
 namespace ui {
 
-class VelesMainWindow;
-
-class NodeTreeWidget : public QMainWindow {
+class NodeTreeWidget : public View {
   Q_OBJECT
 
  public:
-  explicit NodeTreeWidget(VelesMainWindow *main_window,
+  explicit NodeTreeWidget(MainWindowWithDetachableDockWidgets *main_window,
       QSharedPointer<FileBlobModel>& data_model,
       QSharedPointer<QItemSelectionModel>& selection_model);
   void reapplySettings();
@@ -77,7 +76,7 @@ class NodeTreeWidget : public QMainWindow {
   void registerLineEdit(QLineEdit *line_edit);
   bool getRangeValues(qint64 *begin, qint64 *end);
 
-  VelesMainWindow *main_window_;
+  MainWindowWithDetachableDockWidgets *main_window_;
 
   QString cur_file_;
   QString cur_file_path_;
