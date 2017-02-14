@@ -1,0 +1,52 @@
+# Copyright 2017 CodiLime
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import sys
+import types
+
+
+if sys.version_info < (3, 6):
+    class NewType(type):
+        def __init__(self, name, bases, ns, **kwargs):
+            super().__init__(name, bases, ns)
+
+        def __new__(cls, *args, **kwargs):
+            if len(args) != 3:
+                return super().__new__(cls, *args)
+
+            name, bases, ns = args
+
+            init = ns.get('__init_subclass__')
+            if isinstance(init, types.FunctionType):
+                ns['__init_subclass__'] = classmethod(init)
+
+            self = super().__new__(cls, name, bases, ns)
+
+            for k, v in self.__dict__.items():
+                func = getattr(v, '__set_name__', None)
+                if func is not None:
+                    func(self, k)
+            if bases:
+                super(self, self).__init_subclass__(**kwargs)
+
+            return self
+
+    class NewObject(metaclass=NewType):
+        @classmethod
+        def __init_subclass__(cls, **kwargs):
+            pass
+
+else:
+    NewType = type
+    NewObject = object
