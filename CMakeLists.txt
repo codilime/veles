@@ -233,6 +233,7 @@ add_executable(main_ui
     ${INCLUDE_DIR}/ui/dockwidget_native.h
     ${INCLUDE_DIR}/ui/hexeditwidget.h
     ${INCLUDE_DIR}/ui/nodetreewidget.h
+    ${INCLUDE_DIR}/ui/nodewidget.h
     ${INCLUDE_DIR}/ui/optionsdialog.h
     ${INCLUDE_DIR}/ui/hexedit.h
     ${INCLUDE_DIR}/ui/searchdialog.h
@@ -254,6 +255,7 @@ add_executable(main_ui
     ${SRC_DIR}/ui/dockwidget_native.cc
     ${SRC_DIR}/ui/hexeditwidget.cc
     ${SRC_DIR}/ui/nodetreewidget.cc
+    ${SRC_DIR}/ui/nodewidget.cc
     ${SRC_DIR}/ui/optionsdialog.cc
     ${SRC_DIR}/ui/hexedit.cc
     ${SRC_DIR}/ui/searchdialog.cc
@@ -279,6 +281,7 @@ add_executable(main_ui
     ${CMAKE_SOURCE_DIR}/moc_dockwidget.cpp
     ${CMAKE_SOURCE_DIR}/moc_hexeditwidget.cpp
     ${CMAKE_SOURCE_DIR}/moc_nodetreewidget.cpp
+    ${CMAKE_SOURCE_DIR}/moc_nodewidget.cpp
     ${CMAKE_SOURCE_DIR}/moc_logwidget.cpp
     ${CMAKE_SOURCE_DIR}/moc_optionsdialog.cpp
     ${CMAKE_SOURCE_DIR}/moc_hexedit.cpp

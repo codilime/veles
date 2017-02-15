@@ -47,19 +47,29 @@ class HexEditWidget : public View {
   explicit HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
       QSharedPointer<FileBlobModel>& data_model,
       QSharedPointer<QItemSelectionModel>& selection_model);
-  void reapplySettings();
+  void reapplySettings() override;
   void setParserIds(QStringList ids);
+  QString addressAsText(qint64 addr);
+
+ signals:
+  void showNodeTree(bool show);
+  void showMinimap(bool show);
+
+ public slots:
+  void nodeTreeVisibilityChanged(bool visibility);
+  void minimapVisibilityChanged(bool visibility);
 
  private slots:
+  void parse(QAction *action);
   void findNext();
   void showSearchDialog();
   void uploadChanges();
   bool saveAs();
   void showVisualisation();
-  void showNodeTree();
   void showHexEditor();
   void newBinData();
   void enableFindNext(bool enable);
+  void selectionChanged(qint64 start_addr, qint64 selection_size);
 
  private:
   bool saveFile(const QString &file_name);
@@ -73,6 +83,7 @@ class HexEditWidget : public View {
   void createToolBars();
   void createSliceCreatorWidget();
   void initParsersMenu();
+  void createSelectionInfo();
 
   bool getRangeValues(qint64 *begin, qint64 *end);
 
@@ -96,6 +107,7 @@ class HexEditWidget : public View {
   QAction *find_next_act_;
   QAction *visualisation_act_;
   QAction *show_node_tree_act_;
+  QAction *show_minimap_act_;
   QAction *show_hex_edit_act_;
 
   SearchDialog *search_dialog_;
@@ -103,6 +115,10 @@ class HexEditWidget : public View {
 
   QSharedPointer<FileBlobModel> data_model_;
   QSharedPointer<QItemSelectionModel> selection_model_;
+
+  QStringList parsers_ids_;
+  QMenu parsers_menu_;
+  QLabel* selection_label_;
 };
 
 }  // namespace ui

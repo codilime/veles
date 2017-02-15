@@ -34,6 +34,7 @@
 #include "ui/nodetreewidget.h"
 #include "ui/optionsdialog.h"
 #include "ui/logwidget.h"
+#include "ui/nodewidget.h"
 
 namespace veles {
 namespace ui {
@@ -107,10 +108,11 @@ void VelesMainWindow::init() {
   options_dialog_ = new OptionsDialog(this);
 
   connect(options_dialog_, &QDialog::accepted, [this]() {
-    QList<QDockWidget*> dock_widgets = findChildren<QDockWidget*>();
-    for(auto dock : dock_widgets) {
-      if(auto hex_tab = dynamic_cast<HexEditWidget *>(dock->widget())) {
-        hex_tab->reapplySettings();
+    for(auto main_window : MainWindowWithDetachableDockWidgets
+        ::getMainWindows()) {
+      QList<View*> views = main_window->findChildren<View*>();
+      for(auto view : views) {
+        view->reapplySettings();
       }
     }
   });
@@ -297,23 +299,8 @@ void VelesMainWindow::createHexEditTab(QString fileName,
   QSharedPointer<QItemSelectionModel> selection_model(
       new QItemSelectionModel(data_model.data()));
 
-  DockWidget* sibling1 = nullptr;
-  DockWidget* sibling2 = nullptr;
-  findTwoNonTabifiedDocks(sibling1, sibling2);
-
-  NodeTreeWidget *node_tree = new NodeTreeWidget(this,
-      data_model, selection_model);
-   addTab(node_tree,
-       data_model->path().join(" : "), sibling1);
-
-  HexEditWidget *hex_edit = new HexEditWidget(this,
-      data_model, selection_model);
-  DockWidget* hex_edit_tab = addTab(hex_edit,
-      data_model->path().join(" : "), sibling2);
-
-  if (sibling1 == sibling2) {
-    addDockWidget(Qt::RightDockWidgetArea, hex_edit_tab);
-  }
+  NodeWidget* node_widget = new NodeWidget(this, data_model, selection_model);
+  addTab(node_widget, data_model->path().join(" : "), nullptr);
 }
 
 void VelesMainWindow::createLogWindow() {
