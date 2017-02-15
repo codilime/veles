@@ -52,6 +52,19 @@ public:
 };
 
 /*****************************************************************************/
+/* ActivateDockEventFilter */
+/*****************************************************************************/
+class ActivateDockEventFilter : public QObject {
+  Q_OBJECT
+
+ public:
+  ActivateDockEventFilter(QObject* parent = nullptr);
+
+ protected:
+   bool eventFilter(QObject *watched, QEvent *event) override;
+};
+
+/*****************************************************************************/
 /* DockWidget */
 /*****************************************************************************/
 
@@ -159,6 +172,7 @@ class TabBarEventFilter : public QObject {
 
  public slots:
   void tabMoved(int from, int to);
+  void currentChanged(int index);
 
  protected:
   bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;
@@ -234,6 +248,7 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
   static MainWindowWithDetachableDockWidgets* getOwnerOfDockWidget(
         DockWidget* dock_widget);
   static void hideAllRubberBands();
+  static void setActiveDockWidget(DockWidget* dock_widget);
 
  public slots:
   void dockLocationChanged(Qt::DockWidgetArea area);
@@ -241,7 +256,9 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
   void childAddedNotify(QObject* child);
   void updateDockWidgetTitleBars();
   void updateCloseButtonsAndIconsOnTabBars();
+  void updateActiveDockWidget();
   void updateDocksAndTabs();
+  void focusChanged(QWidget* old, QWidget* now);
 
  signals:
   void childAdded(QObject* child);
@@ -256,12 +273,14 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
   static std::set<MainWindowWithDetachableDockWidgets*> main_windows_;
   static MainWindowWithDetachableDockWidgets* first_main_window_;
   static int last_created_window_id_;
+  static QPointer<DockWidget> active_dock_widget_;
 
   TabBarEventFilter* tab_bar_event_filter_;
   QRubberBand* rubber_band_;
 
   bool dock_widgets_with_no_title_bars_;
   bool icons_on_tabs_;
+  bool mark_active_dock_widget_;
 };
 
 }  // namespace ui
