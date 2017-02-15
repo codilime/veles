@@ -26,16 +26,18 @@
 #include <QToolBar>
 #include <QTreeView>
 #include <QVBoxLayout>
+#include <QWidgetAction>
 
 #include "dbif/info.h"
 #include "dbif/types.h"
 #include "dbif/universe.h"
 
 #include "ui/hexeditwidget.h"
-#include "ui/nodetreewidget.h"
+#include "ui/nodewidget.h"
 #include "ui/veles_mainwindow.h"
 
 #include "util/settings/hexedit.h"
+#include "util/settings/theme.h"
 #include "util/icons.h"
 
 #include "visualisation/panel.h"
@@ -55,6 +57,8 @@ HexEditWidget::HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
       selection_model_(selection_model) {
   hex_edit_ = new HexEdit(data_model_.data(), selection_model_.data(), this);
   setCentralWidget(hex_edit_);
+  connect(hex_edit_, &HexEdit::selectionChanged,
+      this, &HexEditWidget::selectionChanged);
 
   search_dialog_ = new SearchDialog(hex_edit_, this);
 
@@ -65,9 +69,12 @@ HexEditWidget::HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
 
   reapplySettings();
   setWindowTitle(data_model_->path().join(" : "));
+
+  connect(&parsers_menu_, &QMenu::triggered, this, &HexEditWidget::parse);
   setParserIds(dynamic_cast<VelesMainWindow*>(
       MainWindowWithDetachableDockWidgets::getFirstMainWindow())
       ->parsersList());
+  selectionChanged(0, 0);
 }
 
 void HexEditWidget::reapplySettings() {
@@ -76,7 +83,14 @@ void HexEditWidget::reapplySettings() {
 }
 
 void HexEditWidget::setParserIds(QStringList ids) {
+  parsers_ids_ = ids;
+  initParsersMenu();
   hex_edit_->setParserIds(ids);
+}
+
+QString HexEditWidget::addressAsText(qint64 addr) {
+  return QString::number(addr, 16).rightJustified(
+      sizeof(qint64) * 2, '0');
 }
 
 /*****************************************************************************/
@@ -140,8 +154,19 @@ void HexEditWidget::createActions() {
       tr("&Node tree"), this);
   show_node_tree_act_->setToolTip(tr("Node tree"));
   show_node_tree_act_->setEnabled(true);
-  connect(show_node_tree_act_, SIGNAL(triggered()),
-      this, SLOT(showNodeTree()));
+  show_node_tree_act_->setCheckable(true);
+  show_node_tree_act_->setChecked(true);
+  connect(show_node_tree_act_, SIGNAL(toggled(bool)),
+      this, SIGNAL(showNodeTree(bool)));
+
+  show_minimap_act_ = new QAction(QIcon(":/images/show_minimap.png"),
+      tr("&Minimap"), this);
+  show_minimap_act_->setToolTip(tr("Minimap"));
+  show_minimap_act_->setEnabled(true);
+  show_minimap_act_->setCheckable(true);
+  show_minimap_act_->setChecked(false);
+  connect(show_minimap_act_, SIGNAL(toggled(bool)), this,
+      SIGNAL(showMinimap(bool)));
 
   show_hex_edit_act_ = new QAction(QIcon(":/images/show_hex_edit.png"),
       tr("Show &hex editor"), this);
@@ -152,6 +177,26 @@ void HexEditWidget::createActions() {
 }
 
 void HexEditWidget::createToolBars() {
+  tools_tool_bar_ = new QToolBar(tr("Tools"));
+  tools_tool_bar_->addAction(show_node_tree_act_);
+  tools_tool_bar_->addAction(show_minimap_act_);
+
+  auto parser_tool_button = new QToolButton();
+  parser_tool_button->setMenu(&parsers_menu_);
+  parser_tool_button->setPopupMode(QToolButton::InstantPopup);
+  parser_tool_button->setIcon(QIcon(":/images/parse.png"));
+  parser_tool_button->setText(tr("&Parse"));
+  parser_tool_button->setToolTip(tr("Parser"));
+  parser_tool_button->setAutoRaise(true);
+  auto widget_action = new QWidgetAction(tools_tool_bar_);
+  widget_action->setDefaultWidget(parser_tool_button);
+  tools_tool_bar_->addAction(widget_action);
+
+  tools_tool_bar_->addAction(visualisation_act_);
+  tools_tool_bar_->addAction(show_hex_edit_act_);
+  tools_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
+  addToolBar(tools_tool_bar_);
+
   //Not implemented yet.
   //file_tool_bar_ = new QToolBar(tr("File"));
   //file_tool_bar_->addAction(upload_act_);
@@ -166,13 +211,38 @@ void HexEditWidget::createToolBars() {
 
   edit_tool_bar_->addAction(find_act_);
   edit_tool_bar_->addAction(find_next_act_);
+  edit_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
   addToolBar(edit_tool_bar_);
 
-  tools_tool_bar_ = new QToolBar(tr("Tools"));
-  tools_tool_bar_->addAction(visualisation_act_);
-  tools_tool_bar_->addAction(show_node_tree_act_);
-  tools_tool_bar_->addAction(show_hex_edit_act_);
-  addToolBar(tools_tool_bar_);
+  createSelectionInfo();
+}
+
+void HexEditWidget::initParsersMenu() {
+  parsers_menu_.clear();
+  parsers_menu_.addAction("auto");
+  parsers_menu_.addSeparator();
+  for (auto id : parsers_ids_) {
+    parsers_menu_.addAction(id);
+  }
+}
+
+void HexEditWidget::createSelectionInfo() {
+  QWidgetAction* widget_action = new QWidgetAction(this);
+  QWidget* selection_panel = new QWidget;
+  QHBoxLayout* layout = new QHBoxLayout;
+  selection_panel->setLayout(layout);
+  layout->addStretch(1);
+  selection_label_ = new QLabel;
+  selection_label_->setFont(util::settings::theme::font());
+  selection_label_->setText("");
+  selection_label_->setTextInteractionFlags(
+      Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+  layout->addWidget(selection_label_);
+  widget_action->setDefaultWidget(selection_panel);
+  QToolBar* selection_toolbar = new QToolBar;
+  selection_toolbar->addAction(widget_action);
+  selection_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
+  addToolBar(selection_toolbar);
 }
 
 void HexEditWidget::addChunk(QString name, QString type, QString comment,
@@ -216,6 +286,14 @@ bool HexEditWidget::saveFile(const QString &file_name) {
 /* Private Slots */
 /*****************************************************************************/
 
+void HexEditWidget::parse(QAction *action) {
+  if (action->text() == "auto") {
+    data_model_->parse();
+  } else {
+    data_model_->parse(action->text());
+  }
+}
+
 void HexEditWidget::findNext() { search_dialog_->findNext(); }
 
 void HexEditWidget::showSearchDialog() { search_dialog_->show(); }
@@ -242,22 +320,13 @@ void HexEditWidget::showVisualisation() {
       data_model_->path().join(" : "));
 }
 
-void HexEditWidget::showNodeTree() {
-  NodeTreeWidget *node_tree = new NodeTreeWidget(main_window_, data_model_,
-      selection_model_);
-  auto sibling = main_window_->findDockNotTabifiedWith(this);
-  auto dock_widget = main_window_->addTab(node_tree,
-      data_model_->path().join(" : "), sibling);
-  if(!sibling) {
-      main_window_->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
-  }
-}
-
 void HexEditWidget::showHexEditor() {
-  HexEditWidget *hex_edit = new HexEditWidget(main_window_, data_model_,
-      selection_model_);
+  QSharedPointer<QItemSelectionModel> new_selection_model(
+        new QItemSelectionModel(data_model_.data()));
+  NodeWidget *node_edit = new NodeWidget(main_window_, data_model_,
+      new_selection_model);
   auto sibling = DockWidget::getParentDockWidget(this);
-  auto dock_widget = main_window_->addTab(hex_edit,
+  auto dock_widget = main_window_->addTab(node_edit,
       data_model_->path().join(" : "), sibling);
   if (sibling == nullptr) {
     main_window_->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
@@ -270,6 +339,23 @@ void HexEditWidget::newBinData() {
 
 void HexEditWidget::enableFindNext(bool enable) {
   find_next_act_->setEnabled(enable);
+}
+
+void HexEditWidget::selectionChanged(qint64 start_addr,
+    qint64 selection_size) {
+  selection_label_->setText(
+      QString("%1:%2 (%3 bytes)")
+      .arg(addressAsText(start_addr))
+      .arg(addressAsText(start_addr + selection_size))
+      .arg(QString::number(selection_size, 10).rightJustified(8, '0')));
+}
+
+void HexEditWidget::nodeTreeVisibilityChanged(bool visibility) {
+  show_node_tree_act_->setChecked(visibility);
+}
+
+void HexEditWidget::minimapVisibilityChanged(bool visibility) {
+  show_minimap_act_->setChecked(visibility);
 }
 
 }  // namespace ui

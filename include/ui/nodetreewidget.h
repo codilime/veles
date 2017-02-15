@@ -49,19 +49,14 @@ class NodeTreeWidget : public View {
   void setParserIds(QStringList ids);
 
  private slots:
-  void uploadChanges();
-  bool saveAs();
   void updateLineEditWithAddress(qint64 address);
-  void showVisualisation();
   void parse(QAction *action);
-  void showHexEditor();
   void removeChunk();
   void currentSelectionChanged(const QModelIndex &currentIndex);
   void newBinData();
 
  private:
   void initParsersMenu();
-  bool saveFile(const QString &file_name);
 
   void addDummySlices(dbif::ObjectHandle);
   void addChunk(QString name, QString type, QString comment, uint64_t start,
@@ -87,14 +82,9 @@ class NodeTreeWidget : public View {
   QToolBar *edit_tool_bar_;
   QToolBar *tools_tool_bar_;
 
-  QAction *upload_act_;
-  QAction *save_as_act_;
-  QAction *save_readable_act_;
   QAction *undo_act_;
   QAction *redo_act_;
-  QAction *visualisation_act_;
   QAction *parser_act_;
-  QAction *show_hex_edit_act_;
   QAction *remove_action_;
 
   QTreeView *tree_view_;
@@ -106,7 +96,6 @@ class NodeTreeWidget : public View {
 
   QStringList parsers_ids_;
   QMenu parsers_menu_;
-
 };
 
 }  // namespace ui

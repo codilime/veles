@@ -76,7 +76,8 @@ NodeTreeWidget::NodeTreeWidget(
   reapplySettings();
   setWindowTitle(data_model_->path().join(" : "));
 
-  connect(&parsers_menu_, &QMenu::triggered, this, &NodeTreeWidget::parse);
+  // We don't need this now, but it might be useful in the future.
+  //connect(&parsers_menu_, &QMenu::triggered, this, &NodeTreeWidget::parse);
   setParserIds(dynamic_cast<VelesMainWindow*>(
         MainWindowWithDetachableDockWidgets::getFirstMainWindow())
         ->parsersList());
@@ -87,7 +88,9 @@ void NodeTreeWidget::reapplySettings() {
 
 void NodeTreeWidget::setParserIds(QStringList ids) {
   parsers_ids_ = ids;
-  initParsersMenu();
+
+  // We don't need this now, but it might be useful in the future.
+  //initParsersMenu();
 }
 
 /*****************************************************************************/
@@ -95,24 +98,6 @@ void NodeTreeWidget::setParserIds(QStringList ids) {
 /*****************************************************************************/
 
 void NodeTreeWidget::createActions() {
-
-  upload_act_ = new QAction(QIcon(":/images/upload-32.ico"), tr("&Upload"), this);
-  upload_act_->setShortcuts(QKeySequence::Save);
-  upload_act_->setStatusTip(tr("Upload changed to database"));
-  connect(upload_act_, SIGNAL(triggered()), this, SLOT(uploadChanges()));
-  upload_act_->setEnabled(false);
-
-  save_as_act_ = new QAction(QIcon(":/images/save.png"), tr("Save &As..."), this);
-  save_as_act_->setShortcuts(QKeySequence::SaveAs);
-  save_as_act_->setStatusTip(tr("Save the document under a new name"));
-  connect(save_as_act_, SIGNAL(triggered()), this, SLOT(saveAs()));
-  save_as_act_->setEnabled(false);
-
-  save_readable_act_ = new QAction(tr("Save &Readable..."), this);
-  save_readable_act_->setStatusTip(tr("Save document in readable form"));
-  // connect(save_readable_act_, SIGNAL(triggered()), this,
-  // SLOT(saveToReadableFile()));
-
   undo_act_ = new QAction(QIcon(":/images/undo.png"), tr("&Undo"), this);
   undo_act_->setShortcuts(QKeySequence::Undo);
   undo_act_->setEnabled(false);
@@ -120,52 +105,17 @@ void NodeTreeWidget::createActions() {
   redo_act_ = new QAction(QIcon(":/images/redo.png"), tr("&Redo"), this);
   redo_act_->setShortcuts(QKeySequence::Redo);
   redo_act_->setEnabled(false);
-
-  QColor icon_color = palette().color(QPalette::WindowText);
-  visualisation_act_ = new QAction(
-          util::getColoredIcon(":/images/trigram_icon.png", icon_color),
-          tr("&Visualisation"), this);
-  visualisation_act_->setToolTip(tr("Visualisation"));
-  visualisation_act_->setEnabled(data_model_->binData().size() > 0);
-  connect(visualisation_act_, SIGNAL(triggered()), this,
-          SLOT(showVisualisation()));
-
-  show_hex_edit_act_ = new QAction(
-      QIcon(":/images/show_hex_edit.png"), tr("Show &hex editor"), this);
-  show_hex_edit_act_->setToolTip(tr("Hex editor"));
-  show_hex_edit_act_->setEnabled(true);
-  connect(show_hex_edit_act_, SIGNAL(triggered()), this, SLOT(showHexEditor()));
 }
 
 void NodeTreeWidget::createToolBars() {
-  //Not implemented yet.
-  //file_tool_bar_ = new QToolBar(tr("File"));
-  //file_tool_bar_->addAction(upload_act_);
-  //file_tool_bar_->addAction(save_as_act_);
-  //addToolBar(file_tool_bar_);
-
   //Not implemented yet.
   //edit_tool_bar_ = new QToolBar(tr("Edit"));
   //edit_tool_bar_->addAction(undo_act_);
   //edit_tool_bar_->addAction(redo_act_);
   //addToolBar(edit_tool_bar_);
 
-  tools_tool_bar_ = new QToolBar(tr("Tools"));
-  tools_tool_bar_->addAction(visualisation_act_);
-
-  auto parser_tool_button = new QToolButton();
-  parser_tool_button->setMenu(&parsers_menu_);
-  parser_tool_button->setPopupMode(QToolButton::InstantPopup);
-  parser_tool_button->setIcon(QIcon(":/images/parse.png"));
-  parser_tool_button->setText(tr("&Parse"));
-  parser_tool_button->setToolTip(tr("Parser"));
-  parser_tool_button->setAutoRaise(true);
-  auto widget_action = new QWidgetAction(tools_tool_bar_);
-  widget_action->setDefaultWidget(parser_tool_button);
-  tools_tool_bar_->addAction(widget_action);
-
-  tools_tool_bar_->addAction(show_hex_edit_act_);
-  addToolBar(tools_tool_bar_);
+  //tools_tool_bar_ = new QToolBar(tr("Tools"));
+  //addToolBar(tools_tool_bar_);
 }
 
 void NodeTreeWidget::addChunk(QString name, QString type, QString comment,
@@ -235,70 +185,15 @@ void NodeTreeWidget::initParsersMenu() {
   }
 }
 
-bool NodeTreeWidget::saveFile(const QString &fileName) {
-  QString tmpFileName = fileName + ".~tmp";
-
-  QFile file(tmpFileName);
-  file.open(QIODevice::WriteOnly);
-  bool ok = file.write(QByteArray((const char *)data_model_->binData().rawData(),
-                                  static_cast<int>(data_model_->binData().size()))) != -1;
-  if (QFile::exists(fileName)) ok = QFile::remove(fileName);
-  if (ok) {
-    ok = file.copy(fileName);
-    if (ok) ok = QFile::remove(tmpFileName);
-  }
-  file.close();
-
-  if (!ok) {
-    QMessageBox::warning(this, tr("HexEdit"),
-                         tr("Cannot write file %1.").arg(fileName));
-    return false;
-  }
-  return true;
-}
-
 /*****************************************************************************/
 /* Private Slots */
 /*****************************************************************************/
-
-void NodeTreeWidget::uploadChanges() {
-}
-
-bool NodeTreeWidget::saveAs() {
-  QString file_name = QFileDialog::getSaveFileName(
-      this, tr("Save As"), cur_file_);
-  if (file_name.isEmpty()) return false;
-
-  return saveFile(file_name);
-}
-
-void NodeTreeWidget::showVisualisation() {
-  auto *panel = new visualisation::VisualisationPanel;
-  panel->setData(QByteArray((const char *)data_model_->binData().rawData(),
-      static_cast<int>(data_model_->binData().size())));
-  panel->setWindowTitle(cur_file_path_);
-  panel->setAttribute(Qt::WA_DeleteOnClose);
-
-  main_window_->addTab(panel,
-      data_model_->path().join(" : "));
-}
 
 void NodeTreeWidget::parse(QAction *action) {
   if (action->text() == "auto") {
     data_model_->parse();
   } else {
     data_model_->parse(action->text());
-  }
-}
-
-void NodeTreeWidget::showHexEditor() {
-  HexEditWidget *hex_edit = new HexEditWidget(main_window_, data_model_,
-      selection_model_);
-  auto sibling = main_window_->findDockNotTabifiedWith(this);
-  auto dock_widget = main_window_->addTab(hex_edit,
-      data_model_->path().join(" : "), sibling);
-  if (sibling == nullptr) {
-    main_window_->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
   }
 }
 
@@ -320,7 +215,6 @@ void NodeTreeWidget::currentSelectionChanged(const QModelIndex &currentIndex) {
 }
 
 void NodeTreeWidget::newBinData() {
-  visualisation_act_->setEnabled(data_model_->binData().size() > 0);
 }
 
 void NodeTreeWidget::registerLineEdit(QLineEdit *line_edit) {

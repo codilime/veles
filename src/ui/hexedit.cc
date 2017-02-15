@@ -51,7 +51,7 @@ void HexEdit::recalculateValues() {
   rowsCount_ = (dataBytesCount_ + bytesPerRow_ - 1) / bytesPerRow_ + 1;
   // minus one for status bar
   rowsOnScreen_ =
-      (viewport()->height() - horizontalAreaSpaceWidth_ * 2) / charHeight_ - 1;
+      (viewport()->height() - horizontalAreaSpaceWidth_ * 2) / charHeight_;
 
   spaceAfterByte_ = charWidht_ / 2;
   hexAreaWidth_ = bytesPerRow_ * byteCharsCount_ * charWidht_ +
@@ -108,7 +108,7 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
 
   if (chunkSelectionModel_) {
     connect(chunkSelectionModel_, &QItemSelectionModel::currentChanged,
-        this, &HexEdit::selectionChanged);
+        this, &HexEdit::modelSelectionChanged);
   }
 
   recalculateValues();
@@ -326,13 +326,6 @@ QColor HexEdit::byteBackroundColorFromPos(qint64 pos) {
   return QColor();
 }
 
-QString HexEdit::statusBarText() {
-  return QString("current selection: %1:%2 (%3 bytes)")
-      .arg(addressAsText(selectionStart()))
-      .arg(addressAsText(selectionEnd()))
-      .arg(selectionSize());
-}
-
 void HexEdit::drawBorder(qint64 start, qint64 size, bool asciiArea,
                          bool doted) {
   QPainter painter(viewport());
@@ -418,28 +411,6 @@ void HexEdit::getRangeFromIndex(QModelIndex index, qint64 *start,
 
 void HexEdit::paintEvent(QPaintEvent *event) {
   QPainter painter(viewport());
-
-  auto separatorOffset =
-      startMargin_ + addressWidth_ - verticalAreaSpaceWidth_ / 2 - startPosX_;
-  auto separatorLength =
-      rowsOnScreen_ * charHeight_ + horizontalAreaSpaceWidth_;
-  auto addressBarAreaRect =
-      QRect(-startPosX_, 0, separatorOffset + startPosX_, separatorLength);
-  painter.fillRect(addressBarAreaRect,
-                   viewport()->palette().color(QPalette::AlternateBase));
-  painter.drawLine(separatorOffset, 0, separatorOffset, separatorLength);
-  separatorOffset = startMargin_ + addressWidth_ + hexAreaWidth_ -
-                    verticalAreaSpaceWidth_ / 2 - startPosX_;
-  painter.drawLine(separatorOffset, 0, separatorOffset, separatorLength);
-  separatorOffset = lineWidth_ - endMargin_ / 2 - startPosX_;
-  painter.drawLine(separatorOffset, 0, separatorOffset, viewport()->height());
-  painter.drawLine(-startPosX_, separatorLength,
-                   lineWidth_ - endMargin_ / 2 - startPosX_, separatorLength);
-  separatorLength += charHeight_ + horizontalAreaSpaceWidth_;
-
-  painter.drawText(startMargin_ - startPosX_,
-                   separatorLength - horizontalAreaSpaceWidth_,
-                   statusBarText());
 
   for (auto rowNum = startRow_;
        rowNum < qMin(startRow_ + rowsOnScreen_, rowsCount_); ++rowNum) {
@@ -530,6 +501,7 @@ void HexEdit::setSelection(qint64 start, qint64 size, bool setVisable) {
   }
 
   viewport()->update();
+  emit selectionChanged(selectionStart(), selectionSize());
 }
 
 void HexEdit::contextMenuEvent(QContextMenuEvent *event) {
@@ -660,9 +632,10 @@ void HexEdit::dataChanged() {
   viewport()->update();
 }
 
-void HexEdit::selectionChanged() {
+void HexEdit::modelSelectionChanged() {
   scrollToCurrentChunk();
   viewport()->update();
+  emit selectionChanged(startOffset_ + selectionStart_, selectionSize_);
 }
 
 void HexEdit::scrollToCurrentChunk() {

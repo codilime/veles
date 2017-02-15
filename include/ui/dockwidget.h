@@ -31,6 +31,7 @@
 #include <QPointer>
 #include <QIcon>
 #include <QProxyStyle>
+#include <QDateTime>
 
 namespace veles {
 namespace ui {
@@ -100,6 +101,54 @@ class DockWidget : public QDockWidget {
 };
 
 /*****************************************************************************/
+/* DockWidgetVisibilityGuard
+ *
+ * Sometimes it's useful to have a QDockWidget within a QMainWindow
+ * within a QDockWidget within a QMainWindow. It seems that Qt (5.5/5.7)
+ * doesn't handle that situation correctly: when an outer QDockWidget is
+ * docked/undocked or its parent is changed, all internal QDockWidgets
+ * are closed.
+ *
+ * Purpose of this class is to keep an internal QDockWidget visible (actually
+ * to reopen it) when such a situation happens.
+ */
+/*****************************************************************************/
+
+class DockWidgetVisibilityGuard : public QObject {
+  Q_OBJECT
+
+ public:
+  DockWidgetVisibilityGuard(QDockWidget* dock_widget);
+  void setEnabled(bool enabled);
+  bool isEnabled();
+  bool eventFilter(QObject* watched, QEvent* event) override;
+
+ public slots:
+  void innerDockWidgetVisibilityChanged(bool visible);
+
+ private:
+  QDockWidget* findOuterQDockWidget(QDockWidget* dock_widget);
+  bool enabled_;
+  QDockWidget* inner_dock_widget_;
+
+  /*
+   * Unfortunately it seems that we don't have a better method to detect that
+   * undesired visibility change has occurred than to detect that two events
+   * happened in a sequence:
+   * 1. Visibility of inner QDockWidget is set to false.
+   * 2. One of the following conditions is met:
+   *   - Parent of an outer QDockWidget is changed.
+   *   - Native window id of an outer QDockWidget is changed.
+   *
+   * We assume that both events happened in a sequence when they both
+   * happened closely in time.
+   */
+  bool inner_dock_widget_has_been_hidden_;
+  QTime time_stamp_;
+  static constexpr int treshold_msec_ = 100;
+};
+
+/*****************************************************************************/
 /* TabBarEventFilter */
 /*****************************************************************************/
 
@@ -135,6 +184,7 @@ class View : public QMainWindow {
  public:
   View(QString category, QString path);
   ~View();
+  virtual void reapplySettings() {};
 
  signals:
   void maximize();
@@ -167,9 +217,12 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
   bool dockWidgetsWithNoTitleBars();
   QDockWidget* tabToDockWidget(QTabBar* tab_bar, int index);
   QTabBar* dockWidgetToTab(QDockWidget* dock_widget);
-  void splitDockWidget2(QDockWidget* first, QDockWidget* second, Qt::Orientation orientation);
+  void splitDockWidget2(QDockWidget* first, QDockWidget* second,
+      Qt::Orientation orientation);
   void showRubberBand(bool show);
 
+  static void splitDockWidget2(QMainWindow* main_window, QDockWidget* first,
+      QDockWidget* second, Qt::Orientation orientation);
   static MainWindowWithDetachableDockWidgets* getParentMainWindow(
       QObject* obj);
   static bool intersectsWithAnyMainWindow(DockWidget* dock_widget);
@@ -197,7 +250,8 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
 
  protected:
   bool event(QEvent* event) Q_DECL_OVERRIDE;
-  bool splitDockWidgetImpl(QDockWidget* first, QDockWidget* second, Qt::Orientation orientation);
+  static bool splitDockWidgetImpl(QMainWindow* main_window,
+      QDockWidget* first, QDockWidget* second, Qt::Orientation orientation);
 
  private:
   static std::set<MainWindowWithDetachableDockWidgets*> main_windows_;
