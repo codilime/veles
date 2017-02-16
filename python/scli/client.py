@@ -116,14 +116,13 @@ class UnixClient(Client):
 
 class TcpClient(Client):
     def __init__(self, ip, port):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((ip, port))
+        sock = socket.create_connection((ip, port))
         super().__init__(sock)
 
 
 def create_client(addr):
-    parts = addr.split(':')
-    if parts[0] == 'UNIX':
-        return UnixClient(parts[1])
+    host, _, port = addr.rpartition(':')
+    if host == 'UNIX':
+        return UnixClient(port)
     else:
-        return TcpClient(parts[0], int(parts[1]))
+        return TcpClient(host, int(port))

@@ -15,13 +15,13 @@ for pname in sys.argv[3:]:
     print('{}...'.format(pname))
     mod = importlib.import_module('plugins.' + pname)
     srv.add_local_plugin(mod.Plugin)
-parts = sys.argv[2].split(':')
-if parts[0] == 'UNIX':
+host, _, port = sys.argv[2].rpartition(':')
+if host == 'UNIX':
     print('Starting UNIX server.')
-    loop.run_until_complete(asrv.proto.unix_server(srv, parts[1]))
+    loop.run_until_complete(asrv.proto.unix_server(srv, port))
 else:
     print('Starting TCP server.')
-    loop.run_until_complete(asrv.proto.tcp_server(srv, parts[0], int(parts[1])))
+    loop.run_until_complete(asrv.proto.tcp_server(srv, host, int(port)))
 print('Ready.')
 # loop.add_signal_handler(signal.SIGINT, loop.stop)
 loop.run_forever()
