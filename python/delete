@@ -2,10 +2,11 @@
 
 import sys
 from scli import client
+from binascii import a2b_hex
 
 client = client.create_client(sys.argv[1])
 
-objs = [int(x) for x in sys.argv[2:]]
+objs = [a2b_hex(x) for x in sys.argv[2:]]
 
 client.delete(objs)
 print('DELETED')

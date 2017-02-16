@@ -1,5 +1,6 @@
 import socket
 import msgpack
+import random
 
 def serialize(data):
     return msgpack.dumps(data, use_bin_type=True)
@@ -26,6 +27,7 @@ class Client:
     def create(self, parent, *, tags=[], attr={}, data={}, bindata={}, pos=(None, None)):
         msg = {
             'type': 'create',
+            'id': random.getrandbits(192).to_bytes(24, 'little'),
             'parent': parent,
             'pos_start': pos[0],
             'pos_end': pos[1],
@@ -33,18 +35,14 @@ class Client:
             'attr': attr,
             'data': data,
             'bindata': bindata,
-            'cid': 0,
+            'aid': 0,
         }
         self.sock.sendall(serialize(msg))
         pkt = self.getpkt()
-        if pkt['type'] != 'created' or pkt['cid'] != 0:
+        if pkt['type'] != 'ack' or pkt['aid'] != 0:
+            print(pkt)
             raise Exception('weird reply to create')
-        msg = {
-            'type': 'forget_cid',
-            'cid': 0,
-        }
-        self.sock.sendall(serialize(msg))
-        return pkt['id']
+        return msg['id']
 
     def delete(self, objs):
         msg = {

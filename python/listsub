@@ -2,11 +2,12 @@
 
 import sys
 from scli import client
+from binascii import a2b_hex
 
 client = client.create_client(sys.argv[1])
 
 if len(sys.argv) > 2:
-	obj = int(sys.argv[2])
+	obj = a2b_hex(sys.argv[2])
 else:
 	obj = None
 

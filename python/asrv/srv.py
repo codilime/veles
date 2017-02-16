@@ -7,7 +7,7 @@ import sqlite3
 import msgpack
 import weakref
 
-APP_ID = int.from_bytes(b'mlon', 'big')
+APP_ID = int.from_bytes(b'ml0n', 'big')
 
 def serialize(data):
     return msgpack.dumps(data, use_bin_type=True)
@@ -124,7 +124,7 @@ class Server:
         c.execute('pragma application_id = {}'.format(APP_ID))
         c.execute("""
             CREATE TABLE object(
-                id INTEGER PRIMARY KEY,
+                id BLOB PRIMARY KEY,
                 parent REFERENCES object(id),
                 pos_start INTEGER,
                 pos_end INTEGER
@@ -132,14 +132,14 @@ class Server:
         """)
         c.execute("""
             CREATE TABLE object_tag(
-                obj_id INTEGER REFERENCES object(id),
+                obj_id BLOB REFERENCES object(id),
                 name VARCHAR,
                 PRIMARY KEY (obj_id, name)
             )
         """)
         c.execute("""
             CREATE TABLE object_attr(
-                obj_id INTEGER REFERENCES object(id),
+                obj_id BLOB REFERENCES object(id),
                 name VARCHAR,
                 data BLOB,
                 PRIMARY KEY (obj_id, name)
@@ -147,7 +147,7 @@ class Server:
         """)
         c.execute("""
             CREATE TABLE object_data(
-                obj_id INTEGER REFERENCES object(id),
+                obj_id BLOB REFERENCES object(id),
                 name VARCHAR,
                 data BLOB,
                 PRIMARY KEY (obj_id, name)
@@ -155,7 +155,7 @@ class Server:
         """)
         c.execute("""
             CREATE TABLE object_bindata(
-                obj_id INTEGER REFERENCES object(id),
+                obj_id BLOB REFERENCES object(id),
                 name VARCHAR,
                 data BLOB,
                 PRIMARY KEY (obj_id, name)
@@ -174,12 +174,11 @@ class Server:
         print("Conn {} gone.".format(conn.cid))
         self.conns[conn.cid] = None
 
-    def create(self, parent, *, tags=[], attr={}, data={}, bindata={}, pos=(None, None)):
+    def create(self, obj_id, parent, *, tags=[], attr={}, data={}, bindata={}, pos=(None, None)):
         c = self.db.cursor()
         c.execute("""
-            INSERT INTO object (parent, pos_start, pos_end) VALUES (?, ?, ?)
-        """, (parent, pos[0], pos[1]))
-        obj_id = c.lastrowid
+            INSERT INTO object (id, parent, pos_start, pos_end) VALUES (?, ?, ?, ?)
+        """, (obj_id, parent, pos[0], pos[1]))
         for tag in tags:
             c.execute("""
                 INSERT INTO object_tag (obj_id, name) VALUES (?, ?)
@@ -206,7 +205,6 @@ class Server:
             if lister.matches(obj):
                 lister.list_changed([obj], [])
                 lister.objs.add(obj)
-        return obj_id
 
     def delete(self, obj_id):
         obj = self.get(obj_id)

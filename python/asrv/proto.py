@@ -67,7 +67,6 @@ class Proto(asyncio.Protocol):
     def __init__(self, srv):
         self.srv = srv
         self.subs = {}
-        self.cids = {}
 
     def connection_made(self, transport):
         self.transport = transport
@@ -93,7 +92,6 @@ class Proto(asyncio.Protocol):
             return
         handlers = {
             'create': self.msg_create,
-            'forget_cid': self.msg_forget_cid,
             'modify': self.msg_modify,
             'delete': self.msg_delete,
             'list': self.msg_list,
@@ -132,6 +130,16 @@ class Proto(asyncio.Protocol):
             raise ProtocolError('{} is not int or None'.format(field))
         return val
 
+    def getid(self, msg, field):
+        val = msg.get(field, None)
+        if val is None:
+            val = bytes(24)
+        if not isinstance(val, bytes) or len(val) != 24:
+            raise ProtocolError('{} is not a valid id'.format(field))
+        if val == bytes(24):
+            val = None
+        return val
+
     def getfbool(self, msg, field):
         val = msg.get(field, False)
         if not isinstance(val, bool):
@@ -139,7 +147,7 @@ class Proto(asyncio.Protocol):
         return val
 
     def msg_create(self, msg):
-        parent = self.getnint(msg, 'parent')
+        parent = self.getid(msg, 'parent')
         pos_start = self.getnint(msg, 'pos_start')
         pos_end = self.getnint(msg, 'pos_end')
         tags = msg.get('tags', [])
@@ -169,8 +177,12 @@ class Proto(asyncio.Protocol):
                 raise ProtocolError('bindata key is not string')
             if not isinstance(val, bytes):
                 raise ProtocolError('bindata val is not bytes')
-        cid = self.getnint(msg, 'cid')
-        obj_id = self.srv.create(
+        obj_id = msg.get('id')
+        if not isinstance(obj_id, bytes) or len(obj_id) != 24:
+            raise ProtocolError('obj_id is not bytes with len 24')
+        aid = self.getnint(msg, 'aid')
+        self.srv.create(
+            obj_id,
             parent,
             tags=tags,
             attr=attr,
@@ -178,19 +190,11 @@ class Proto(asyncio.Protocol):
             bindata=bindata,
             pos=(pos_start,pos_end),
         )
-        if cid is not None:
-            # XXX: actually use cids
-            self.cids[cid] = obj_id
+        if aid is not None:
             self.send_msg({
-                'type': 'created',
-                'cid': cid,
-                'id': obj_id,
+                'type': 'ack',
+                'aid': aid,
             })
-
-    def msg_forget_cid(self, msg):
-        cid = self.getnint(msg, 'cid')
-        if cid in self.cids:
-            del self.cids[cid]
 
     def msg_modify(self, msg):
         # XXX
@@ -201,8 +205,8 @@ class Proto(asyncio.Protocol):
         if not isinstance(objs, (list, tuple)):
             self.protoerr('ids is not list')
         for obj in objs:
-            if not isinstance(obj, int):
-                self.protoerr('obj is not int')
+            if not isinstance(obj, bytes) or len(obj) != 24:
+                self.protoerr('obj is not valid id')
         for obj in objs:
             self.srv.delete(obj)
         aid = self.getnint(msg, 'aid')
@@ -216,7 +220,7 @@ class Proto(asyncio.Protocol):
         qid = self.getnint(msg, 'qid')
         if qid in self.subs:
             raise ProtocoloError('qid already in use')
-        parent = self.getnint(msg, 'parent')
+        parent = self.getid(msg, 'parent')
         pos_start = self.getnint(msg, 'pos_start')
         pos_end = self.getnint(msg, 'pos_end')
         sub = self.getfbool(msg, 'sub')
@@ -237,7 +241,7 @@ class Proto(asyncio.Protocol):
             self.subs[qid] = lister
 
     def msg_get(self, msg):
-        obj = self.getnint(msg, 'id')
+        obj = self.getid(msg, 'id')
         sub = self.getfbool(msg, 'sub')
         qid = self.getnint(msg, 'qid')
         if qid in self.subs:
@@ -256,7 +260,7 @@ class Proto(asyncio.Protocol):
                 obj.add_sub(sub)
 
     def msg_get_data(self, msg):
-        obj = self.getint(msg, 'id')
+        obj = self.getid(msg, 'id')
         sub = self.getfbool(msg, 'sub')
         qid = self.getnint(msg, 'qid')
         key = self.getstr(msg, 'key')
