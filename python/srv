@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import asyncio
 import sys
 import signal
@@ -15,9 +15,14 @@ for pname in sys.argv[3:]:
     print('{}...'.format(pname))
     mod = importlib.import_module('plugins.' + pname)
     srv.add_local_plugin(mod.Plugin)
-print('Starting UNIX server.')
-usrv = loop.run_until_complete(asrv.proto.unix_server(srv, sys.argv[2]))
+parts = sys.argv[2].split(':')
+if parts[0] == 'UNIX':
+    print('Starting UNIX server.')
+    loop.run_until_complete(asrv.proto.unix_server(srv, parts[1]))
+else:
+    print('Starting TCP server.')
+    loop.run_until_complete(asrv.proto.tcp_server(srv, parts[0], int(parts[1])))
 print('Ready.')
-loop.add_signal_handler(signal.SIGINT, loop.stop)
+# loop.add_signal_handler(signal.SIGINT, loop.stop)
 loop.run_forever()
 print('Goodbye.')

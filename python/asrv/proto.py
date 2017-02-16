@@ -7,6 +7,7 @@ import asyncio
 import msgpack
 from asrv.srv import BaseLister
 
+
 class ProtocolError(Exception):
     pass
 
@@ -354,6 +355,10 @@ class Proto(asyncio.Protocol):
             'qid': qid,
         })
 
+@asyncio.coroutine
+def unix_server(srv, path):
+    return (yield from srv.loop.create_unix_server(lambda: Proto(srv), path))
 
-async def unix_server(srv, path):
-    return await srv.loop.create_unix_server(lambda: Proto(srv), path)
+@asyncio.coroutine
+def tcp_server(srv, ip, port):
+    return (yield from srv.loop.create_server(lambda: Proto(srv), ip, port))
