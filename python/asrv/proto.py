@@ -107,11 +107,10 @@ class Proto(asyncio.Protocol):
             self.protoerr(e.args[0], e.args[1])
 
     def protoerr(self, code, msg):
-        self.send_msg({
-            'type': 'protoerr',
+        self.send_msg(messages.MsgProtoError({
             'code': code,
             'error': msg,
-        })
+        }))
 
     def connection_lost(self, ex):
         for qid, sub in self.subs.items():
@@ -119,31 +118,7 @@ class Proto(asyncio.Protocol):
         self.srv.remove_conn(self)
 
     def send_msg(self, msg):
-        self.transport.write(self.packer.pack(msg))
-
-    def getnint(self, msg, field):
-        val = msg.get(field, None)
-        if not isinstance(val, int) and val is not None:
-            raise ProtocolError('type_error',
-                                '{} is not int or None'.format(field))
-        return val
-
-    def getid(self, msg, field):
-        val = msg.get(field, None)
-        if val is None:
-            val = bytes(24)
-        if not isinstance(val, bytes) or len(val) != 24:
-            raise ProtocolError('type_error',
-                                '{} is not a valid id'.format(field))
-        if val == bytes(24):
-            val = None
-        return val
-
-    def getfbool(self, msg, field):
-        val = msg.get(field, False)
-        if not isinstance(val, bool):
-            raise ProtocolError('type_error', '{} is not bool'.format(field))
-        return val
+        self.transport.write(msg.dumps(self.packer))
 
     def msg_create(self, msg):
         self.srv.create(
@@ -156,71 +131,48 @@ class Proto(asyncio.Protocol):
             pos=(msg.pos_start, msg.pos_end),
         )
         if msg.rid is not None:
-            self.send_msg({
-                'type': 'ack',
+            self.send_msg(messages.MsgAck({
                 'rid': msg.rid,
-            })
+            }))
 
     def msg_modify(self, msg):
         # XXX
         raise NotImplementedError
 
     def msg_delete(self, msg):
-        objs = msg.get('ids', [])
-        if not isinstance(objs, (list, tuple)):
-            raise ProtocolError('type_error', 'ids is not a list')
+        objs = msg.ids
         for obj in objs:
             if not isinstance(obj, bytes) or len(obj) != 24:
                 raise ProtocolError('invalid_id', 'obj is not a valid id')
         for obj in objs:
             self.srv.delete(obj)
-        aid = self.getnint(msg, 'aid')
-        if aid is not None:
-            self.send_msg({
-                'type': 'ack',
-                'aid': aid,
-            })
+        if msg.rid is not None:
+            self.send_msg(messages.MsgAck({
+                'rid': msg.rid,
+            }))
 
     def msg_list(self, msg):
-        qid = self.getnint(msg, 'qid')
+        qid = msg.qid
         if qid in self.subs:
             raise ProtocolError('qid_in_use', 'qid already in use')
-        parent = self.getid(msg, 'parent')
-        pos_start = self.getnint(msg, 'pos_start')
-        pos_end = self.getnint(msg, 'pos_end')
-        sub = self.getfbool(msg, 'sub')
-        tagsets = msg.get('tags', [{}])
-        if not isinstance(tagsets, list):
-            raise ProtocolError('type_error', 'tags is not list')
-        for tags in tagsets:
-            if not isinstance(tags, dict):
-                raise ProtocolError('type_error', 'tags is not dict')
-            for k, v in tags.items():
-                if not isinstance(k, str):
-                    raise ProtocolError('type_error', 'tag is not string')
-                if not isinstance(v, bool):
-                    raise ProtocolError('type_error', 'tag state is not bool')
-        lister = Lister(self, qid, self.srv, parent,
-                        (pos_start, pos_end), tagsets)
-        self.srv.run_lister(lister, sub)
-        if sub:
+        tagsets = msg.tags
+        lister = Lister(self, qid, self.srv, msg.parent, (msg.pos_start, msg.pos_end), tagsets)
+        self.srv.run_lister(lister, msg.sub)
+        if msg.sub:
             self.subs[qid] = lister
 
     def msg_get(self, msg):
-        obj = self.getid(msg, 'id')
-        sub = self.getfbool(msg, 'sub')
-        qid = self.getnint(msg, 'qid')
+        qid = msg.qid
         if qid in self.subs:
             raise ProtocolError('qid_in_use', 'qid already in use')
-        obj = self.srv.get(obj)
+        obj = self.srv.get(msg.id)
         if obj is None:
-            self.send_msg({
-                'type': 'obj_gone',
+            self.send_msg(messages.MsgObjGone({
                 'qid': qid,
-            })
+            }))
         else:
             self.send_obj_reply(qid, obj)
-            if sub:
+            if msg.sub:
                 sub = GetSub(self, qid, obj)
                 self.subs[qid] = sub
                 obj.add_sub(sub)
@@ -281,8 +233,7 @@ class Proto(asyncio.Protocol):
         raise NotImplementedError
 
     def send_obj_reply(self, qid, obj):
-        self.send_msg({
-            'type': 'get_reply',
+        self.send_msg(messages.MsgGetReply({
             'qid': qid,
             'id': obj.id,
             'parent': obj.parent.id if obj.parent is not None else None,
@@ -292,7 +243,7 @@ class Proto(asyncio.Protocol):
             'attr': obj.attr,
             'data': list(obj.data),
             'bindata': obj.bindata,
-        })
+        }))
 
     def send_list_reply(self, qid, new, gone):
         res = []
@@ -313,17 +264,15 @@ class Proto(asyncio.Protocol):
                 'id': id,
                 'gone': True,
             })
-        self.send_msg({
-            'type': 'list_reply',
+        self.send_msg(messages.MsgListReply({
             'objs': res,
             'qid': qid,
-        })
+        }))
 
     def send_obj_gone(self, qid):
-        self.send_msg({
-            'type': 'obj_gone',
+        self.send_msg(messages.MsgObjGone({
             'qid': qid,
-        })
+        }))
 
 
 @asyncio.coroutine

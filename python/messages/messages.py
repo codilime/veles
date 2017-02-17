@@ -1,7 +1,3 @@
-from enum import Enum
-
-import msgpack
-
 from messages import fields
 
 
@@ -71,6 +67,9 @@ class MsgConnError(MsgpackMsg):
 class MsgProtoError(MsgpackMsg):
     msg_type = 'proto_error'
 
+    code = fields.Integer(optional=True)
+    msg = fields.String(optional=True)
+
 
 class MsgRegisterMethod(MsgpackMsg):
     msg_type = 'register_mthd'
@@ -82,6 +81,14 @@ class MsgRegisterTrigger(MsgpackMsg):
 
 class MsgList(MsgpackMsg):
     msg_type = 'list'
+
+    parent = fields.Binary()
+    tags = fields.Array(elements_types=[fields.Map(
+        keys_types=[fields.String()], values_types=[fields.Boolean()])])
+    qid = fields.Integer()
+    sub = fields.Boolean()
+    pos_start = fields.Integer(optional=True)
+    pos_end = fields.Integer(optional=True)
 
 
 class MsgCancelSub(MsgpackMsg):
@@ -95,17 +102,36 @@ class MsgSubCancelled(MsgpackMsg):
 class MsgObjGone(MsgpackMsg):
     msg_type = 'obj_gone'
 
+    qid = fields.Integer()
+
 
 class MsgListReply(MsgpackMsg):
     msg_type = 'list_reply'
+
+    objs = fields.Array()
+    qid = fields.Integer()
 
 
 class MsgGet(MsgpackMsg):
     msg_type = 'get'
 
+    id = fields.Binary()
+    qid = fields.Integer(optional=True)
+    sub = fields.Boolean(optional=True)
+
 
 class MsgGetReply(MsgpackMsg):
     msg_type = 'get_reply'
+
+    qid = fields.Integer()
+    id = fields.Binary()
+    parent = fields.Binary(optional=True)
+    pos_start = fields.Integer(optional=True)
+    pos_end = fields.Integer(optional=True)
+    attr = fields.Map(optional=True, keys_types=[fields.String()])
+    tags = fields.Array(optional=True, elements_types=[fields.String()])
+    data = fields.Array(optional=True, elements_types=[fields.String()])
+    bindata = fields.Map(optional=True, keys_types=[fields.String()])
 
 
 class MsgGetData(MsgpackMsg):
@@ -116,7 +142,7 @@ class MsgGetDataReply(MsgpackMsg):
     msg_type = 'get_data_reply'
 
 
-class MsgGedBindata(MsgpackMsg):
+class MsgGetBindata(MsgpackMsg):
     msg_type = 'get_bindata'
 
 
@@ -162,9 +188,14 @@ class MsgModify(MsgpackMsg):
 class MsgDelete(MsgpackMsg):
     msg_type = 'delete'
 
+    rid = fields.Integer()
+    ids = fields.Array(elements_types=[fields.Binary()])
+
 
 class MsgAck(MsgpackMsg):
     msg_type = 'ack'
+
+    rid = fields.Integer()
 
 
 class MsgModifyError(MsgpackMsg):

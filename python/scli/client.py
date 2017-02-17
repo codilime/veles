@@ -14,7 +14,7 @@ class Client:
     def getpkt(self):
         while True:
             try:
-                return self.unpacker.unpack()
+                return messages.MsgpackMsg.loads(self.unpacker)
             except msgpack.OutOfData:
                 pass
             data = self.sock.recv(1024)
@@ -25,7 +25,6 @@ class Client:
     def create(self, parent, *, tags=[], attr={}, data={}, bindata={},
                pos=(None, None)):
         msg = {
-            'type': 'create',
             'id': random.getrandbits(192).to_bytes(24, 'little'),
             'parent': parent,
             'pos_start': pos[0],
@@ -39,68 +38,68 @@ class Client:
         msg = messages.MsgCreate(msg)
         self.sock.sendall(msg.dumps(self.packer))
         pkt = self.getpkt()
-        if pkt['type'] != 'ack' or pkt['rid'] != 0:
+        if not isinstance(pkt, messages.MsgAck) or pkt.rid != 0:
             print(pkt)
             raise Exception('weird reply to create')
         return msg.id
 
     def delete(self, objs):
         msg = {
-            'type': 'delete',
             'ids': objs,
-            'aid': 0,
+            'rid': 0,
         }
-        self.sock.sendall(serialize(msg))
+        msg = messages.MsgDelete(msg)
+        self.sock.sendall(msg.dumps(self.packer))
         pkt = self.getpkt()
-        if pkt['type'] != 'ack' or pkt['aid'] != 0:
+        if not isinstance(pkt, messages.MsgAck) or pkt.rid != 0:
             raise Exception('weird reply to delete')
 
     def get(self, obj):
         msg = {
-            'type': 'get',
             'id': obj,
             'qid': 0,
         }
-        self.sock.sendall(serialize(msg))
+        msg = messages.MsgGet(msg)
+        self.sock.sendall(msg.dumps(self.packer))
         pkt = self.getpkt()
-        if pkt['type'] == 'get_reply' and pkt['qid'] == 0:
+        if isinstance(pkt, messages.MsgGetReply) and pkt.qid == 0:
             return pkt
-        elif pkt['type'] == 'obj_gone' and pkt['qid'] == 0:
+        elif isinstance(pkt, messages.MsgObjGone) and pkt.qid == 0:
             return None
         else:
             raise Exception('weird reply to get')
 
     def get_sub(self, obj):
         msg = {
-            'type': 'get',
             'id': obj,
             'qid': 0,
             'sub': True,
         }
-        self.sock.sendall(serialize(msg))
+        msg = messages.MsgGet(msg)
+        self.sock.sendall(msg.dumps(self.packer))
         while True:
             pkt = self.getpkt()
-            if pkt['type'] == 'get_reply' and pkt['qid'] == 0:
+            if isinstance(pkt, messages.MsgGetReply) and pkt.qid == 0:
                 yield pkt
-            elif pkt['type'] == 'obj_gone' and pkt['qid'] == 0:
+            elif isinstance(pkt, messages.MsgObjGone) and pkt.qid == 0:
                 return
             else:
                 raise Exception('weird reply to get')
 
     def list_sub(self, obj):
         msg = {
-            'type': 'list',
             'parent': obj,
             'tags': [{}],
             'qid': 0,
             'sub': True,
         }
-        self.sock.sendall(serialize(msg))
+        msg = messages.MsgList(msg)
+        self.sock.sendall(msg.dumps(self.packer))
         while True:
             pkt = self.getpkt()
-            if pkt['type'] == 'list_reply' and pkt['qid'] == 0:
+            if isinstance(pkt, messages.MsgListReply) and pkt.qid == 0:
                 yield pkt
-            elif pkt['type'] == 'obj_gone' and pkt['qid'] == 0:
+            elif isinstance(pkt, messages.MsgObjGone) and pkt.qid == 0:
                 return
             else:
                 print(pkt)
