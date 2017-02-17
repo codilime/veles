@@ -2,19 +2,14 @@ import socket
 import msgpack
 import random
 
-
-def serialize(data):
-    return msgpack.dumps(data, use_bin_type=True)
-
-
-def unserialize(data):
-    return msgpack.loads(data, encoding='utf-8')
+from messages import messages
 
 
 class Client:
     def __init__(self, sock):
         self.sock = sock
         self.unpacker = msgpack.Unpacker(encoding='utf-8')
+        self.packer = msgpack.Packer(use_bin_type=True)
 
     def getpkt(self):
         while True:
@@ -39,14 +34,15 @@ class Client:
             'attr': attr,
             'data': data,
             'bindata': bindata,
-            'aid': 0,
+            'rid': 0,
         }
-        self.sock.sendall(serialize(msg))
+        msg = messages.MsgCreate(msg)
+        self.sock.sendall(msg.dumps(self.packer))
         pkt = self.getpkt()
-        if pkt['type'] != 'ack' or pkt['aid'] != 0:
+        if pkt['type'] != 'ack' or pkt['rid'] != 0:
             print(pkt)
             raise Exception('weird reply to create')
-        return msg['id']
+        return msg.id
 
     def delete(self, objs):
         msg = {
