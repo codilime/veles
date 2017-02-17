@@ -32,7 +32,8 @@ class PycParser : public Parser {
   PycParser()
       : Parser("pyc3", {data::BinData(8, {0x9e, 0x0c, '\r', '\n'}),
                         data::BinData(8, {0xee, 0x0c, '\r', '\n'}),
-                        data::BinData(8, {0x16, 0x0d, '\r', '\n'})}) {}
+                        data::BinData(8, {0x16, 0x0d, '\r', '\n'}),
+                        data::BinData(8, {0x33, 0x0d, '\r', '\n'})}) {}
   void parse(dbif::ObjectHandle blob, uint64_t start = 0,
              dbif::ObjectHandle parent_chunk = dbif::ObjectHandle()) override {
     unpycFileBlob(blob, start, parent_chunk);
