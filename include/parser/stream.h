@@ -288,6 +288,11 @@ class StreamParser {
 
   void skip(uint64_t bytes) {pos_ += bytes;}
 
+  void setComment(const QString &comment) {
+    auto &top = stack_.back();
+    top.chunk->syncRunMethod<dbif::SetCommentRequest>(comment);
+  }
+
 };
 };
 };
