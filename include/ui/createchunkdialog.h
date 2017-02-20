@@ -20,6 +20,7 @@
 #include <QDialog>
 #include <QItemSelectionModel>
 #include <QtCore>
+#include <QShowEvent>
 
 #include "ui/fileblobmodel.h"
 
@@ -41,6 +42,9 @@ class CreateChunkDialog : public QDialog {
   Ui::CreateChunkDialog *ui;
   void updateParent(bool childOfSelected = false);
   void setRange(uint64_t begin, uint64_t end);
+
+ protected:
+  void showEvent(QShowEvent* event) override;
 
  public slots:
   virtual void accept();

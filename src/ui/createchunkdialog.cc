@@ -95,5 +95,10 @@ void CreateChunkDialog::setRange(uint64_t begin, uint64_t end) {
   ui->endSpinBox->setValue(end);
 }
 
+void CreateChunkDialog::showEvent(QShowEvent* event) {
+  ui->nameEdit->setFocus(Qt::OtherFocusReason);
+  ui->commentEdit->clear();
+}
+
 }  // namespace ui
 }  // namespace veles
