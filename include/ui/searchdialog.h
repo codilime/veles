@@ -37,6 +37,9 @@ class SearchDialog : public QDialog {
   qint64 findNext();
   Ui::SearchDialog *ui;
 
+ protected:
+  void showEvent(QShowEvent* event) override;
+
  private slots:
   void on_pbFind_clicked();
   void on_pbReplace_clicked();

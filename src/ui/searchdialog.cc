@@ -128,6 +128,10 @@ qint64 SearchDialog::findNext() {
   return idx;
 }
 
+void SearchDialog::showEvent(QShowEvent* event) {
+  ui->cbFind->setFocus(Qt::OtherFocusReason);
+}
+
 void SearchDialog::on_pbFind_clicked() { findNext(); }
 
 void SearchDialog::on_pbReplace_clicked() {
