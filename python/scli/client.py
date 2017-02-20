@@ -2,14 +2,16 @@ import socket
 import msgpack
 import random
 
+from common import base
 from messages import messages
+from messages import msgpackwrap as packers
 
 
 class Client:
     def __init__(self, sock):
         self.sock = sock
-        self.unpacker = msgpack.Unpacker(encoding='utf-8')
-        self.packer = msgpack.Packer(use_bin_type=True)
+        self.unpacker = packers.unpacker
+        self.packer = packers.packer
 
     def getpkt(self):
         while True:
@@ -25,7 +27,7 @@ class Client:
     def create(self, parent, *, tags=[], attr={}, data={}, bindata={},
                pos=(None, None)):
         msg = {
-            'id': random.getrandbits(192).to_bytes(24, 'little'),
+            'id': base.ObjectID(random.getrandbits(192).to_bytes(24, 'little')),
             'parent': parent,
             'pos_start': pos[0],
             'pos_end': pos[1],

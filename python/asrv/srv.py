@@ -7,6 +7,8 @@ import sqlite3
 import msgpack
 import weakref
 
+from common import base
+
 
 APP_ID = int.from_bytes(b'ml0n', 'big')
 
@@ -181,28 +183,30 @@ class Server:
 
     def create(self, obj_id, parent, *, tags=[], attr={}, data={}, bindata={},
                pos=(None, None)):
+        raw_obj_id = obj_id.to_bytes()
+        raw_parent = parent.to_bytes() if parent else None
         c = self.db.cursor()
         c.execute("""
             INSERT INTO object (id, parent, pos_start, pos_end)
             VALUES (?, ?, ?, ?)
-        """, (obj_id, parent, pos[0], pos[1]))
+        """, (raw_obj_id, raw_parent, pos[0], pos[1]))
         for tag in tags:
             c.execute("""
                 INSERT INTO object_tag (obj_id, name) VALUES (?, ?)
-            """, (obj_id, tag))
+            """, (raw_obj_id, tag))
         for key, val in attr.items():
             c.execute("""
                 INSERT INTO object_attr (obj_id, name, data) VALUES (?, ?, ?)
-            """, (obj_id, key, serialize(val)))
+            """, (raw_obj_id, key, serialize(val)))
         for key, val in data.items():
             c.execute("""
                 INSERT INTO object_data (obj_id, name, data) VALUES (?, ?, ?)
-            """, (obj_id, key, serialize(val)))
+            """, (raw_obj_id, key, serialize(val)))
         for key, val in bindata.items():
             c.execute("""
                 INSERT INTO object_bindata (obj_id, name, data)
                 VALUES (?, ?, ?)
-            """, (obj_id, key, val))
+            """, (raw_obj_id, key, val))
         self.db.commit()
         obj = self.get(obj_id)
         if obj.parent is None:
@@ -216,29 +220,30 @@ class Server:
 
     def delete(self, obj_id):
         obj = self.get(obj_id)
+        raw_obj_id = obj_id.to_bytes()
         if obj is None:
             return
         c = self.db.cursor()
         c.execute("""
             SELECT id FROM object WHERE parent = ?
-        """, (obj_id,))
+        """, (raw_obj_id,))
         for id, in c.fetchall():
-            self.delete(id)
+            self.delete(base.ObjectID(id))
         c.execute("""
             DELETE FROM object_tag WHERE obj_id = ?
-        """, (obj_id,))
+        """, (raw_obj_id,))
         c.execute("""
             DELETE FROM object_attr WHERE obj_id = ?
-        """, (obj_id,))
+        """, (raw_obj_id,))
         c.execute("""
             DELETE FROM object_data WHERE obj_id = ?
-        """, (obj_id,))
+        """, (raw_obj_id,))
         c.execute("""
             DELETE FROM object_bindata WHERE obj_id = ?
-        """, (obj_id,))
+        """, (raw_obj_id,))
         c.execute("""
             DELETE FROM object WHERE id = ?
-        """, (obj_id,))
+        """, (raw_obj_id,))
         self.db.commit()
         obj.clear_subs()
         if obj.parent is None:
@@ -255,31 +260,32 @@ class Server:
         try:
             return self.objs[obj_id]
         except KeyError:
+            raw_obj_id = obj_id.to_bytes()
             c = self.db.cursor()
             c.execute("""
                 SELECT parent, pos_start, pos_end FROM object WHERE id = ?
-            """, (obj_id,))
+            """, (raw_obj_id,))
             rows = c.fetchall()
             if not rows:
                 return None
             (parent, pos_start, pos_end), = rows
             if parent is not None:
-                parent = self.get(parent)
+                parent = self.get(base.ObjectID(parent))
             c.execute("""
                 SELECT name FROM object_tag WHERE obj_id = ?
-            """, (obj_id,))
+            """, (raw_obj_id,))
             tags = {x for x, in c.fetchall()}
             c.execute("""
                 SELECT name, data FROM object_attr WHERE obj_id = ?
-            """, (obj_id,))
+            """, (raw_obj_id,))
             attr = {k: unserialize(v) for k, v in c.fetchall()}
             c.execute("""
                 SELECT name FROM object_data WHERE obj_id = ?
-            """, (obj_id,))
+            """, (raw_obj_id,))
             data = {x for x, in c.fetchall()}
             c.execute("""
                 SELECT name, length(data) FROM object_bindata WHERE obj_id = ?
-            """, (obj_id,))
+            """, (raw_obj_id,))
             bindata = {x: y for x, y in c.fetchall()}
             res = Object(self, obj_id, parent, (pos_start, pos_end),
                          tags, attr, data, bindata)
@@ -302,12 +308,12 @@ class Server:
         if lister.parent is not None:
             c.execute("""
                 SELECT id FROM object WHERE parent = ?
-            """, (lister.parent.id,))
+            """, (lister.parent.id.to_bytes(),))
         else:
             c.execute("""
                 SELECT id FROM object WHERE parent IS NULL
             """)
-        obj_ids = [x for x, in c.fetchall()]
+        obj_ids = [base.ObjectID(x) for x, in c.fetchall()]
         objs = [self.get(x) for x in obj_ids]
         objs = [x for x in objs if lister.matches(x)]
         lister.list_changed(objs, [])

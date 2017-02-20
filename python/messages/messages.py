@@ -1,3 +1,4 @@
+from common import base
 from messages import fields
 
 
@@ -91,7 +92,7 @@ class MsgRegisterTrigger(MsgpackMsg):
 class MsgList(MsgpackMsg):
     msg_type = 'list'
 
-    parent = fields.Binary(optional=True)
+    parent = fields.Extension(obj_type=base.ObjectID, optional=True)
     tags = fields.Array(elements_types=[fields.Map(
         keys_types=[fields.String()], values_types=[fields.Boolean()])])
     qid = fields.Integer()
@@ -117,14 +118,24 @@ class MsgObjGone(MsgpackMsg):
 class MsgListReply(MsgpackMsg):
     msg_type = 'list_reply'
 
-    objs = fields.Array()
+    objs = fields.Array(elements_types=[fields.Object(attributes_spec=[
+        ('id', fields.Extension(obj_type=base.ObjectID)),
+        ('gone', fields.Boolean()),
+        ('parent', fields.Extension(obj_type=base.ObjectID, optional=True)),
+        ('pos_start', fields.Integer(optional=True)),
+        ('pos_end', fields.Integer(optional=True)),
+        ('tags', fields.Array(elements_types=[fields.String()],
+                              local_type=set, optional=True)),
+        ('attr', fields.Map(optional=True)),
+        ('data', fields.Array(optional=True)),
+        ('bindata', fields.Map(optional=True))])])
     qid = fields.Integer()
 
 
 class MsgGet(MsgpackMsg):
     msg_type = 'get'
 
-    id = fields.Binary()
+    id = fields.Extension(obj_type=base.ObjectID)
     qid = fields.Integer(optional=True)
     sub = fields.Boolean(optional=True)
 
@@ -133,12 +144,13 @@ class MsgGetReply(MsgpackMsg):
     msg_type = 'get_reply'
 
     qid = fields.Integer()
-    id = fields.Binary()
-    parent = fields.Binary(optional=True)
+    id = fields.Extension(obj_type=base.ObjectID)
+    parent = fields.Extension(obj_type=base.ObjectID, optional=True)
     pos_start = fields.Integer(optional=True)
     pos_end = fields.Integer(optional=True)
     attr = fields.Map(optional=True, keys_types=[fields.String()])
-    tags = fields.Array(optional=True, elements_types=[fields.String()])
+    tags = fields.Array(optional=True, elements_types=[fields.String()],
+                        local_type=set)
     data = fields.Array(optional=True, elements_types=[fields.String()])
     bindata = fields.Map(optional=True, keys_types=[fields.String()])
 
@@ -178,14 +190,15 @@ class MsgRegistryReply(MsgpackMsg):
 class MsgCreate(MsgpackMsg):
     msg_type = 'create'
 
-    id = fields.Binary(optional=True)
+    id = fields.Extension(obj_type=base.ObjectID)
     rid = fields.Integer()
     qid = fields.Integer(optional=True)
-    parent = fields.Binary(optional=True)
+    parent = fields.Extension(obj_type=base.ObjectID, optional=True)
     pos_start = fields.Integer(optional=True)
     pos_end = fields.Integer(optional=True)
     attr = fields.Map(optional=True, keys_types=[fields.String()])
-    tags = fields.Array(optional=True, elements_types=[fields.String()])
+    tags = fields.Array(optional=True, elements_types=[fields.String()],
+                        local_type=set)
     data = fields.Map(optional=True, keys_types=[fields.String()])
     bindata = fields.Map(optional=True, keys_types=[fields.String()])
 
@@ -198,7 +211,8 @@ class MsgDelete(MsgpackMsg):
     msg_type = 'delete'
 
     rid = fields.Integer()
-    ids = fields.Array(elements_types=[fields.Binary()])
+    ids = fields.Array(
+        elements_types=[fields.Extension(obj_type=base.ObjectID)])
 
 
 class MsgAck(MsgpackMsg):

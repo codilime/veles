@@ -7,6 +7,7 @@ import asyncio
 import msgpack
 from asrv.srv import BaseLister
 from messages import messages
+from messages import msgpackwrap as packers
 
 
 class ProtocolError(Exception):
@@ -73,8 +74,8 @@ class Proto(asyncio.Protocol):
     def connection_made(self, transport):
         self.transport = transport
         self.cid = self.srv.new_conn(self)
-        self.packer = msgpack.Packer(use_bin_type=True)
-        self.unpacker = msgpack.Unpacker(encoding='utf-8')
+        self.unpacker = packers.unpacker
+        self.packer = packers.packer
 
     def data_received(self, data):
         self.unpacker.feed(data)
@@ -141,9 +142,6 @@ class Proto(asyncio.Protocol):
 
     def msg_delete(self, msg):
         objs = msg.ids
-        for obj in objs:
-            if not isinstance(obj, bytes) or len(obj) != 24:
-                raise ProtocolError('invalid_id', 'obj is not a valid id')
         for obj in objs:
             self.srv.delete(obj)
         if msg.rid is not None:

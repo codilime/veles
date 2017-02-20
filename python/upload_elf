@@ -18,9 +18,9 @@ id = client.create(None,
         'blob': data,
     }
 )
-print('CREATED BLOB', b2a_hex(id).decode('ascii'))
+print('CREATED BLOB', id)
 h_id = client.create(id,
     pos=(0, None),
     tags=['chunk', 'elf.ehdr'],
 )
-print('CREATED HEADER', b2a_hex(h_id).decode('ascii'))
+print('CREATED HEADER', h_id)

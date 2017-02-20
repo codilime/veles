@@ -10,9 +10,7 @@ class Field:
             return instance.__dict__[self.name]
 
     def __set__(self, instance, value):
-        self.validate(value)
-        # TODO we might want to do some extra processing here - i.e. allow
-        # tags to be in a set instead of list
+        value = self.validate(value)
         instance.__dict__[self.name] = value
 
     def __set_name__(self, owner, name):
@@ -26,6 +24,7 @@ class Field:
             raise ValueError(
                 'Attribute {} is not optional and can\'t be None.'.format(
                     self.name))
+        return value
 
 
 class Any(Field):
@@ -51,6 +50,7 @@ class Integer(Field):
         if value > self.maximum:
             raise ValueError('Attribute {} maximum value is {}.'.format(
                 self.name, self.maximum))
+        return value
 
 
 class Boolean(Field):
@@ -61,6 +61,7 @@ class Boolean(Field):
         if not isinstance(value, bool):
             raise ValueError('Attribute {} has to be bool type.'.format(
                 self.name))
+        return value
 
 
 class Float(Field):
@@ -71,6 +72,7 @@ class Float(Field):
         if not isinstance(value, float):
             raise ValueError('Attribute {} has to be float type.'.format(
                 self.name))
+        return value
 
 
 class String(Field):
@@ -81,6 +83,7 @@ class String(Field):
         if not isinstance(value, str):
             raise ValueError('Attribute {} has to be str type.'.format(
                 self.name))
+        return value
 
 
 class Binary(Field):
@@ -91,33 +94,40 @@ class Binary(Field):
         if not isinstance(value, bytes):
             raise ValueError('Attribute {} has to be str type.'.format(
                 self.name))
+        return value
 
 
 class Array(Field):
-    def __init__(self, optional=False, elements_types=None):
+    def __init__(self, optional=False, elements_types=None, local_type=list):
         super().__init__(optional)
         if elements_types:
             self.elements_types = elements_types
         else:
             self.elements_types = [Any()]
+        if local_type not in [list, tuple, set]:
+            raise ValueError('Illegal local_type value')
+        self.local_type = local_type
 
     def validate(self, value):
         super().validate(value)
         if value is None:
-            return
-        if not isinstance(value, (list, tuple)):
+            return []
+        if not isinstance(value, (list, tuple, set)):
             raise ValueError(
-                'Attribute {} has to be list or tuple type.'.format(self.name))
+                'Attribute {} has to be list, tuple or set type.'.format(
+                    self.name))
+        prep_value = []
         for val in value:
             for element_type in self.elements_types:
                 try:
-                    element_type.validate(val)
+                    prep_value.append(element_type.validate(val))
                     break
                 except ValueError:
                     pass
             else:
                 raise ValueError(
                     '{} doesn\'t fit in allowed element types'.format(val))
+        return self.local_type(prep_value)
 
 
 class Map(Field):
@@ -135,8 +145,8 @@ class Map(Field):
     def validate(self, value):
         super().validate(value)
         if value is None:
-            return
-        if not isinstance(value, (dict)):
+            return {}
+        if not isinstance(value, dict):
             raise ValueError(
                 'Attribute {} has to be dict type.'.format(self.name))
         for val in value.keys():
@@ -149,17 +159,55 @@ class Map(Field):
             else:
                 raise ValueError(
                     '{} doesn\'t fit in allowed key types'.format(val))
-        for val in value.values():
+        prep_value = {}
+        for name, val in value.items():
             for value_type in self.values_types:
                 try:
-                    value_type.validate(val)
+                    prep_value[name] = value_type.validate(val)
                     break
                 except ValueError:
                     pass
             else:
                 raise ValueError(
                     '{} doesn\'t fit in allowed value types'.format(val))
+        return prep_value
 
 
 class Extension(Field):
-    pass
+    def __init__(self, obj_type, optional=False):
+        super().__init__(optional)
+        self.obj_type = obj_type
+
+    def validate(self, value):
+        super().validate(value)
+        if value is None:
+            return
+        if not isinstance(value, self.obj_type):
+            raise ValueError('Attribute {} has to be {} type.'.format(
+                self.name, self.obj_type))
+        return value
+
+
+class Object(Field):
+    def __init__(self, optional=False, attributes_spec=[]):
+        super().__init__(optional)
+        self.attributes = attributes_spec
+        self.keys_types = [String()]
+
+    def validate(self, value):
+        super().validate(value)
+        if not isinstance(value, dict):
+            raise ValueError(
+                'Attribute {} has to be dict type.'.format(self.name))
+        for val in value.keys():
+            for key_type in self.keys_types:
+                try:
+                    key_type.validate(val)
+                    break
+                except ValueError:
+                    pass
+
+        prep_val = {}
+        for attr_name, attr_type in self.attributes:
+            prep_val[attr_name] = attr_type.validate(value.get(attr_name, None))
+        return prep_val

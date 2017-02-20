@@ -4,9 +4,11 @@ import sys
 from scli import client
 from binascii import a2b_hex
 
+from common import base
+
 client = client.create_client(sys.argv[1])
 
-obj = a2b_hex(sys.argv[2])
+obj = base.ObjectID(a2b_hex(sys.argv[2]))
 
 import pprint
 pprint.pprint(client.get(obj))
