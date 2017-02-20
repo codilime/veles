@@ -52,5 +52,9 @@ qint64 GoToAddressDialog::address() {
   return ui_->addrValue->value();
 }
 
+void GoToAddressDialog::showEvent(QShowEvent* event) {
+  ui_->addrValue->setFocus(Qt::OtherFocusReason);
+}
+
 }  // namespace ui
 }  // namespace veles
