@@ -35,7 +35,7 @@ class Client:
             'bindata': bindata,
             'rid': 0,
         }
-        msg = messages.MsgCreate(msg)
+        msg = messages.MsgCreate(**msg)
         self.sock.sendall(msg.dumps(self.packer))
         pkt = self.getpkt()
         if not isinstance(pkt, messages.MsgAck) or pkt.rid != 0:
@@ -48,7 +48,7 @@ class Client:
             'ids': objs,
             'rid': 0,
         }
-        msg = messages.MsgDelete(msg)
+        msg = messages.MsgDelete(**msg)
         self.sock.sendall(msg.dumps(self.packer))
         pkt = self.getpkt()
         if not isinstance(pkt, messages.MsgAck) or pkt.rid != 0:
@@ -59,7 +59,7 @@ class Client:
             'id': obj,
             'qid': 0,
         }
-        msg = messages.MsgGet(msg)
+        msg = messages.MsgGet(**msg)
         self.sock.sendall(msg.dumps(self.packer))
         pkt = self.getpkt()
         if isinstance(pkt, messages.MsgGetReply) and pkt.qid == 0:
@@ -75,7 +75,7 @@ class Client:
             'qid': 0,
             'sub': True,
         }
-        msg = messages.MsgGet(msg)
+        msg = messages.MsgGet(**msg)
         self.sock.sendall(msg.dumps(self.packer))
         while True:
             pkt = self.getpkt()
@@ -93,7 +93,7 @@ class Client:
             'qid': 0,
             'sub': True,
         }
-        msg = messages.MsgList(msg)
+        msg = messages.MsgList(**msg)
         self.sock.sendall(msg.dumps(self.packer))
         while True:
             pkt = self.getpkt()

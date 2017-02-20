@@ -32,13 +32,6 @@ class Any(Field):
     pass
 
 
-class Nil(Field):
-    def validate(self, value):
-        if value is not None:
-            raise ValueError('Attribute {} has to be NoneType type.'.format(
-                self.name))
-
-
 class Integer(Field):
     def __init__(self, optional=False, minimum=-2**63, maximum=2**64-1):
         super().__init__(optional)

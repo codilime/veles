@@ -4,8 +4,8 @@ from messages import fields
 class MsgpackMsg:
     message_types = {}
 
-    def __init__(self, attrs={}):
-        for field_name, field in attrs.items():
+    def __init__(self, **kwargs):
+        for field_name, field in kwargs.items():
             setattr(self, field_name, field)
 
     def __init_subclass__(cls, **kwargs):
@@ -36,6 +36,15 @@ class MsgpackMsg:
         for field in self.fields:
             obj[field.name] = field.__get__(self)
         return packer.pack(obj)
+
+    def __str__(self):
+        obj = {}
+        for field in self.fields:
+            obj[field.name] = field.__get__(self)
+        msg = '{}: {}'.format(self.msg_type, obj)
+        return msg
+
+    __repr__ = __str__
 
 
 class MsgConnect(MsgpackMsg):
@@ -82,7 +91,7 @@ class MsgRegisterTrigger(MsgpackMsg):
 class MsgList(MsgpackMsg):
     msg_type = 'list'
 
-    parent = fields.Binary()
+    parent = fields.Binary(optional=True)
     tags = fields.Array(elements_types=[fields.Map(
         keys_types=[fields.String()], values_types=[fields.Boolean()])])
     qid = fields.Integer()
