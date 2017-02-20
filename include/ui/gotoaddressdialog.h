@@ -34,6 +34,9 @@ class GoToAddressDialog : public QDialog {
   void setRange(qint64 start, qint64 end);
   qint64 address();
 
+ protected:
+  void showEvent(QShowEvent* event) override;
+
  private:
   Ui::GoToAddressDialog *ui_;
  private slots:
