@@ -310,6 +310,12 @@ QColor HexEdit::byteBackroundColorFromPos(qint64 pos) {
   }
 
   auto index = dataModel_->indexFromPos(pos, selectedChunk().parent());
+
+  if (!index.isValid()) {
+    index = dataModel_->indexFromPos(pos,
+        dataModel_->index(0, 0, QModelIndex()));
+  }
+
   if (index.isValid()) {
     QVariant maybeColor = index.data(Qt::DecorationRole);
     if (maybeColor.canConvert<QColor>()) {
