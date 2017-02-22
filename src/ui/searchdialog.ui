@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>436</width>
-    <height>223</height>
+    <height>244</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -179,10 +179,10 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>cbFind</tabstop>
-  <tabstop>cbReplace</tabstop>
   <tabstop>cbFindFormat</tabstop>
+  <tabstop>cbFind</tabstop>
   <tabstop>cbReplaceFormat</tabstop>
+  <tabstop>cbReplace</tabstop>
   <tabstop>cbBackwards</tabstop>
   <tabstop>cbPrompt</tabstop>
   <tabstop>pbFind</tabstop>
