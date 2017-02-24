@@ -126,7 +126,7 @@ class MsgListReply(MsgpackMsg):
         ('pos_end', fields.Integer(optional=True)),
         ('tags', fields.Array(elements_types=[fields.String()],
                               local_type=set, optional=True)),
-        ('attr', fields.Map(optional=True)),
+        ('attr', fields.Map(optional=True, keys_types=[fields.String()])),
         ('data', fields.Array(optional=True)),
         ('bindata', fields.Map(optional=True))])])
     qid = fields.Integer()

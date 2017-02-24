@@ -7,18 +7,12 @@ import sqlite3
 import msgpack
 import weakref
 
+from messages import msgpackwrap
+
 from common import base
 
 
 APP_ID = int.from_bytes(b'ml0n', 'big')
-
-
-def serialize(data):
-    return msgpack.dumps(data, use_bin_type=True)
-
-
-def unserialize(data):
-    return msgpack.loads(data, encoding='utf-8')
 
 
 class BaseLister:
@@ -125,6 +119,13 @@ class Server:
         self.objs = weakref.WeakValueDictionary()
         self.next_cid = 0
         self.top_listers = set()
+        wrapper = msgpackwrap.MsgpackWrapper()
+        self.unpacker = wrapper.unpacker
+        self.packer = wrapper.packer
+
+    def _load(self, data):
+        self.unpacker.feed(data)
+        return self.unpacker.unpack()
 
     def new_db(self):
         c = self.db.cursor()
@@ -197,11 +198,11 @@ class Server:
         for key, val in attr.items():
             c.execute("""
                 INSERT INTO object_attr (obj_id, name, data) VALUES (?, ?, ?)
-            """, (raw_obj_id, key, serialize(val)))
+            """, (raw_obj_id, key, self.packer.pack(val)))
         for key, val in data.items():
             c.execute("""
                 INSERT INTO object_data (obj_id, name, data) VALUES (?, ?, ?)
-            """, (raw_obj_id, key, serialize(val)))
+            """, (raw_obj_id, key, self.packer.pack(val)))
         for key, val in bindata.items():
             c.execute("""
                 INSERT INTO object_bindata (obj_id, name, data)
@@ -278,7 +279,7 @@ class Server:
             c.execute("""
                 SELECT name, data FROM object_attr WHERE obj_id = ?
             """, (raw_obj_id,))
-            attr = {k: unserialize(v) for k, v in c.fetchall()}
+            attr = {k: self._load(v) for k, v in c.fetchall()}
             c.execute("""
                 SELECT name FROM object_data WHERE obj_id = ?
             """, (raw_obj_id,))
