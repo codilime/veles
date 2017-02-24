@@ -3,20 +3,21 @@ import msgpack
 import random
 
 from common import base
-from messages import messages
-from messages import msgpackwrap as packers
+from messages import definitions
+from messages import msgpackwrap
 
 
 class Client:
     def __init__(self, sock):
         self.sock = sock
-        self.unpacker = packers.unpacker
-        self.packer = packers.packer
+        wrapper = msgpackwrap.MsgpackWrapper()
+        self.unpacker = wrapper.unpacker
+        self.packer = wrapper.packer
 
     def getpkt(self):
         while True:
             try:
-                return messages.MsgpackMsg.loads(self.unpacker)
+                return definitions.MsgpackMsg.load(self.unpacker)
             except msgpack.OutOfData:
                 pass
             data = self.sock.recv(1024)
@@ -37,10 +38,10 @@ class Client:
             'bindata': bindata,
             'rid': 0,
         }
-        msg = messages.MsgCreate(**msg)
-        self.sock.sendall(msg.dumps(self.packer))
+        msg = definitions.MsgCreate(**msg)
+        self.sock.sendall(msg.dump(self.packer))
         pkt = self.getpkt()
-        if not isinstance(pkt, messages.MsgAck) or pkt.rid != 0:
+        if not isinstance(pkt, definitions.MsgAck) or pkt.rid != 0:
             print(pkt)
             raise Exception('weird reply to create')
         return msg.id
@@ -50,23 +51,24 @@ class Client:
             'ids': objs,
             'rid': 0,
         }
-        msg = messages.MsgDelete(**msg)
-        self.sock.sendall(msg.dumps(self.packer))
+        msg = definitions.MsgDelete(**msg)
+        self.sock.sendall(msg.dump(self.packer))
         pkt = self.getpkt()
-        if not isinstance(pkt, messages.MsgAck) or pkt.rid != 0:
+        if not isinstance(pkt, definitions.MsgAck) or pkt.rid != 0:
             raise Exception('weird reply to delete')
 
     def get(self, obj):
         msg = {
             'id': obj,
             'qid': 0,
+            'sub': False
         }
-        msg = messages.MsgGet(**msg)
-        self.sock.sendall(msg.dumps(self.packer))
+        msg = definitions.MsgGet(**msg)
+        self.sock.sendall(msg.dump(self.packer))
         pkt = self.getpkt()
-        if isinstance(pkt, messages.MsgGetReply) and pkt.qid == 0:
+        if isinstance(pkt, definitions.MsgGetReply) and pkt.qid == 0:
             return pkt
-        elif isinstance(pkt, messages.MsgObjGone) and pkt.qid == 0:
+        elif isinstance(pkt, definitions.MsgObjGone) and pkt.qid == 0:
             return None
         else:
             raise Exception('weird reply to get')
@@ -77,13 +79,13 @@ class Client:
             'qid': 0,
             'sub': True,
         }
-        msg = messages.MsgGet(**msg)
-        self.sock.sendall(msg.dumps(self.packer))
+        msg = definitions.MsgGet(**msg)
+        self.sock.sendall(msg.dump(self.packer))
         while True:
             pkt = self.getpkt()
-            if isinstance(pkt, messages.MsgGetReply) and pkt.qid == 0:
+            if isinstance(pkt, definitions.MsgGetReply) and pkt.qid == 0:
                 yield pkt
-            elif isinstance(pkt, messages.MsgObjGone) and pkt.qid == 0:
+            elif isinstance(pkt, definitions.MsgObjGone) and pkt.qid == 0:
                 return
             else:
                 raise Exception('weird reply to get')
@@ -95,13 +97,13 @@ class Client:
             'qid': 0,
             'sub': True,
         }
-        msg = messages.MsgList(**msg)
-        self.sock.sendall(msg.dumps(self.packer))
+        msg = definitions.MsgList(**msg)
+        self.sock.sendall(msg.dump(self.packer))
         while True:
             pkt = self.getpkt()
-            if isinstance(pkt, messages.MsgListReply) and pkt.qid == 0:
+            if isinstance(pkt, definitions.MsgListReply) and pkt.qid == 0:
                 yield pkt
-            elif isinstance(pkt, messages.MsgObjGone) and pkt.qid == 0:
+            elif isinstance(pkt, definitions.MsgObjGone) and pkt.qid == 0:
                 return
             else:
                 print(pkt)

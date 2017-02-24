@@ -21,9 +21,9 @@ class MsgpackMsg:
                 pass
 
     @classmethod
-    def loads(cls, unpacker):
+    def load(cls, unpacker):
         unpacked = unpacker.unpack()
-        if not isinstance(unpacked, dict) and 'type' not in unpacked:
+        if not isinstance(unpacked, dict) or 'type' not in unpacked:
             raise ValueError('Malformed message')
         if unpacked['type'] not in cls.message_types:
             raise ValueError('Unknown message type')
@@ -32,7 +32,7 @@ class MsgpackMsg:
             field.__set__(obj, unpacked.get(field.name, None))
         return obj
 
-    def dumps(self, packer):
+    def dump(self, packer):
         obj = {'type': self.msg_type}
         for field in self.fields:
             obj[field.name] = field.__get__(self)
@@ -52,11 +52,11 @@ class MsgConnect(MsgpackMsg):
     msg_type = 'connect'
 
     proto_version = fields.Integer(minimum=1)
-    client_name = fields.String()
-    client_version = fields.Integer(optional=True, minimum=1)
+    client_name = fields.String(optional=True)
+    client_version = fields.String(optional=True)
     client_description = fields.String(optional=True)
     client_type = fields.String(optional=True)
-    key = fields.String()
+    key = fields.String(optional=True)
 
 
 class MsgConnected(MsgpackMsg):
@@ -64,20 +64,20 @@ class MsgConnected(MsgpackMsg):
 
     proto_version = fields.Integer(minimum=1)
     server_name = fields.String()
-    server_version = fields.Integer()
+    server_version = fields.String()
 
 
 class MsgConnError(MsgpackMsg):
     msg_type = 'conn_error'
 
-    code = fields.Integer()
+    code = fields.String()
     msg = fields.String()
 
 
 class MsgProtoError(MsgpackMsg):
     msg_type = 'proto_error'
 
-    code = fields.Integer(optional=True)
+    code = fields.Integer()
     msg = fields.String(optional=True)
 
 
@@ -136,8 +136,8 @@ class MsgGet(MsgpackMsg):
     msg_type = 'get'
 
     id = fields.Extension(obj_type=base.ObjectID)
-    qid = fields.Integer(optional=True)
-    sub = fields.Boolean(optional=True)
+    qid = fields.Integer()
+    sub = fields.Boolean()
 
 
 class MsgGetReply(MsgpackMsg):

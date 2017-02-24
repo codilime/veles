@@ -2,7 +2,6 @@
 
 import sys
 from scli import client
-from binascii import b2a_hex
 
 client = client.create_client(sys.argv[1])
 

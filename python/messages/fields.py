@@ -100,11 +100,12 @@ class Binary(Field):
 class Array(Field):
     def __init__(self, optional=False, elements_types=None, local_type=list):
         super().__init__(optional)
+        self._allowed_local = (list, tuple, set, frozenset)
         if elements_types:
             self.elements_types = elements_types
         else:
             self.elements_types = [Any()]
-        if local_type not in [list, tuple, set]:
+        if local_type not in self._allowed_local:
             raise ValueError('Illegal local_type value')
         self.local_type = local_type
 
@@ -112,10 +113,10 @@ class Array(Field):
         super().validate(value)
         if value is None:
             return []
-        if not isinstance(value, (list, tuple, set)):
+        if not isinstance(value, self._allowed_local):
             raise ValueError(
-                'Attribute {} has to be list, tuple or set type.'.format(
-                    self.name))
+                'Attribute {} has to be one of {} type.'.format(
+                    self.name, self._allowed_local))
         prep_value = []
         for val in value:
             for element_type in self.elements_types:
@@ -189,10 +190,11 @@ class Extension(Field):
 
 
 class Object(Field):
-    def __init__(self, optional=False, attributes_spec=[]):
+    def __init__(self, optional=False, attributes_spec=[], local_type=None):
         super().__init__(optional)
         self.attributes = attributes_spec
         self.keys_types = [String()]
+        self.local_type = local_type
 
     def validate(self, value):
         super().validate(value)
@@ -210,4 +212,6 @@ class Object(Field):
         prep_val = {}
         for attr_name, attr_type in self.attributes:
             prep_val[attr_name] = attr_type.validate(value.get(attr_name, None))
+        if self.local_type:
+            return self.local_type(**prep_val)
         return prep_val

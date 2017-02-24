@@ -4,9 +4,15 @@ import msgpack
 
 
 class MsgpackWrapper:
+    def __init__(self):
+        self.packer = msgpack.Packer(
+            use_bin_type=True, default=MsgpackWrapper.pack_obj)
+        self.unpacker = msgpack.Unpacker(
+            encoding='utf-8', ext_hook=MsgpackWrapper.load_obj)
+
     @classmethod
     def pack_obj(cls, obj):
-        if isinstance(obj, set):
+        if isinstance(obj, (set, frozenset)):
             return list(obj)
         if obj.__class__ in cls.type_to_code:
             return msgpack.ExtType(
@@ -36,5 +42,3 @@ class MsgpackWrapper:
         cls.code_to_type[type_code] = type_class
         cls.type_to_code[type_class] = type_code
 
-packer = msgpack.Packer(use_bin_type=True, default=MsgpackWrapper.pack_obj)
-unpacker = msgpack.Unpacker(encoding='utf-8', ext_hook=MsgpackWrapper.load_obj)
