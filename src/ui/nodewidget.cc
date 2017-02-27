@@ -57,6 +57,8 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
       selection_model_(selection_model), sampler_(nullptr) {
   hex_edit_widget_ = new HexEditWidget(
       main_window, data_model, selection_model);
+  addAction(hex_edit_widget_->findAction());
+  addAction(hex_edit_widget_->findNextAction());
   setCentralWidget(hex_edit_widget_);
 
   node_tree_dock_ = new QDockWidget;
