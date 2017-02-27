@@ -7,13 +7,17 @@ import sqlite3
 import msgpack
 import weakref
 
+
 APP_ID = int.from_bytes(b'ml0n', 'big')
+
 
 def serialize(data):
     return msgpack.dumps(data, use_bin_type=True)
 
+
 def unserialize(data):
     return msgpack.loads(data, encoding='utf-8')
+
 
 class BaseLister:
     def __init__(self, srv, parent, pos, tags):
@@ -105,6 +109,7 @@ class Object:
             self.data_subs[sub.key] = set()
         self.data_subs[sub.key].add(sub)
 
+
 class Server:
     def __init__(self, loop, path):
         self.loop = loop
@@ -174,10 +179,12 @@ class Server:
         print("Conn {} gone.".format(conn.cid))
         self.conns[conn.cid] = None
 
-    def create(self, obj_id, parent, *, tags=[], attr={}, data={}, bindata={}, pos=(None, None)):
+    def create(self, obj_id, parent, *, tags=[], attr={}, data={}, bindata={},
+               pos=(None, None)):
         c = self.db.cursor()
         c.execute("""
-            INSERT INTO object (id, parent, pos_start, pos_end) VALUES (?, ?, ?, ?)
+            INSERT INTO object (id, parent, pos_start, pos_end)
+            VALUES (?, ?, ?, ?)
         """, (obj_id, parent, pos[0], pos[1]))
         for tag in tags:
             c.execute("""
@@ -193,7 +200,8 @@ class Server:
             """, (obj_id, key, serialize(val)))
         for key, val in bindata.items():
             c.execute("""
-                INSERT INTO object_bindata (obj_id, name, data) VALUES (?, ?, ?)
+                INSERT INTO object_bindata (obj_id, name, data)
+                VALUES (?, ?, ?)
             """, (obj_id, key, val))
         self.db.commit()
         obj = self.get(obj_id)
@@ -273,7 +281,8 @@ class Server:
                 SELECT name, length(data) FROM object_bindata WHERE obj_id = ?
             """, (obj_id,))
             bindata = {x: y for x, y in c.fetchall()}
-            res = Object(self, obj_id, parent, (pos_start, pos_end), tags, attr, data, bindata)
+            res = Object(self, obj_id, parent, (pos_start, pos_end),
+                         tags, attr, data, bindata)
             self.objs[obj_id] = res
             return res
 

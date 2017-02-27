@@ -11,6 +11,7 @@ from asrv.srv import BaseLister
 class ProtocolError(Exception):
     pass
 
+
 class GetSub:
     def __init__(self, conn, qid, obj):
         self.conn = conn
@@ -85,10 +86,10 @@ class Proto(asyncio.Protocol):
 
     def handle_msg(self, msg):
         if not isinstance(msg, dict):
-            self.protoerr('msg not a dict')
+            self.protoerr('type_error', 'Message is not a dict')
             return
         if 'type' not in msg:
-            self.protoerr('msg with no type')
+            self.protoerr('msg_no_type', 'Message with no type')
             return
         handlers = {
             'create': self.msg_create,
@@ -106,15 +107,19 @@ class Proto(asyncio.Protocol):
             'proc_reg': self.msg_proc_reg,
         }
         if msg['type'] not in handlers:
-            conn.protoerr('unhandled msg')
+            self.protoerr('unk_msg', 'Unknown message type')
             return
         try:
             handlers[msg['type']](msg)
         except ProtocolError as e:
-            self.send_msg({
-                'type': 'protoerr',
-                'error': e.args[0],
-            })
+            self.protoerr(e.args[0], e.args[1])
+
+    def protoerr(self, code, msg):
+        self.send_msg({
+            'type': 'protoerr',
+            'code': code,
+            'error': msg,
+        })
 
     def connection_lost(self, ex):
         for qid, sub in self.subs.items():
@@ -127,7 +132,8 @@ class Proto(asyncio.Protocol):
     def getnint(self, msg, field):
         val = msg.get(field, None)
         if not isinstance(val, int) and val is not None:
-            raise ProtocolError('{} is not int or None'.format(field))
+            raise ProtocolError('type_error',
+                                '{} is not int or None'.format(field))
         return val
 
     def getid(self, msg, field):
@@ -135,7 +141,8 @@ class Proto(asyncio.Protocol):
         if val is None:
             val = bytes(24)
         if not isinstance(val, bytes) or len(val) != 24:
-            raise ProtocolError('{} is not a valid id'.format(field))
+            raise ProtocolError('type_error',
+                                '{} is not a valid id'.format(field))
         if val == bytes(24):
             val = None
         return val
@@ -143,7 +150,7 @@ class Proto(asyncio.Protocol):
     def getfbool(self, msg, field):
         val = msg.get(field, False)
         if not isinstance(val, bool):
-            raise ProtocolError('{} is not bool'.format(field))
+            raise ProtocolError('type_error', '{} is not bool'.format(field))
         return val
 
     def msg_create(self, msg):
@@ -155,31 +162,32 @@ class Proto(asyncio.Protocol):
         data = msg.get('data', {})
         bindata = msg.get('bindata', {})
         if not isinstance(tags, (list, tuple)):
-            raise ProtocolError('tags is not list')
+            raise ProtocolError('type_error', 'tags is not list')
         for tag in tags:
             if not isinstance(tag, str):
-                raise ProtocolError('tag is not string')
+                raise ProtocolError('type_error', 'tag is not string')
         tags = set(tags)
         if not isinstance(attr, dict):
-            raise ProtocolError('attr is not dict')
+            raise ProtocolError('type_error', 'attr is not dict')
         for key in attr:
             if not isinstance(key, str):
-                raise ProtocolError('attr is not string')
+                raise ProtocolError('type_error', 'attr is not string')
         if not isinstance(data, dict):
-            raise ProtocolError('data is not dict')
+            raise ProtocolError('type_error', 'data is not dict')
         for key in data:
             if not isinstance(key, str):
-                raise ProtocolError('data key is not string')
+                raise ProtocolError('type_error', 'data key is not string')
         if not isinstance(bindata, dict):
-            raise ProtocolError('bindata is not dict')
+            raise ProtocolError('type_error', 'bindata is not dict')
         for key, val in bindata.items():
             if not isinstance(key, str):
-                raise ProtocolError('bindata key is not string')
+                raise ProtocolError('type_error', 'bindata key is not string')
             if not isinstance(val, bytes):
-                raise ProtocolError('bindata val is not bytes')
+                raise ProtocolError('type_error', 'bindata val is not bytes')
         obj_id = msg.get('id')
         if not isinstance(obj_id, bytes) or len(obj_id) != 24:
-            raise ProtocolError('obj_id is not bytes with len 24')
+            raise ProtocolError('invalid_id',
+                                'obj_id is not bytes with len 24')
         aid = self.getnint(msg, 'aid')
         self.srv.create(
             obj_id,
@@ -188,7 +196,7 @@ class Proto(asyncio.Protocol):
             attr=attr,
             data=data,
             bindata=bindata,
-            pos=(pos_start,pos_end),
+            pos=(pos_start, pos_end),
         )
         if aid is not None:
             self.send_msg({
@@ -203,10 +211,10 @@ class Proto(asyncio.Protocol):
     def msg_delete(self, msg):
         objs = msg.get('ids', [])
         if not isinstance(objs, (list, tuple)):
-            self.protoerr('ids is not list')
+            raise ProtocolError('type_error', 'ids is not a list')
         for obj in objs:
             if not isinstance(obj, bytes) or len(obj) != 24:
-                self.protoerr('obj is not valid id')
+                raise ProtocolError('invalid_id', 'obj is not a valid id')
         for obj in objs:
             self.srv.delete(obj)
         aid = self.getnint(msg, 'aid')
@@ -219,23 +227,24 @@ class Proto(asyncio.Protocol):
     def msg_list(self, msg):
         qid = self.getnint(msg, 'qid')
         if qid in self.subs:
-            raise ProtocoloError('qid already in use')
+            raise ProtocolError('qid_in_use', 'qid already in use')
         parent = self.getid(msg, 'parent')
         pos_start = self.getnint(msg, 'pos_start')
         pos_end = self.getnint(msg, 'pos_end')
         sub = self.getfbool(msg, 'sub')
         tagsets = msg.get('tags', [{}])
         if not isinstance(tagsets, list):
-            raise ProtocolError('tags is not list')
+            raise ProtocolError('type_error', 'tags is not list')
         for tags in tagsets:
             if not isinstance(tags, dict):
-                raise ProtocolError('tags is not dict')
+                raise ProtocolError('type_error', 'tags is not dict')
             for k, v in tags.items():
                 if not isinstance(k, str):
-                    raise ProtocolError('tag is not string')
+                    raise ProtocolError('type_error', 'tag is not string')
                 if not isinstance(v, bool):
-                    raise ProtocolError('tag state is not bool')
-        lister = Lister(self, qid, self.srv, parent, (pos_start, pos_end), tagsets)
+                    raise ProtocolError('type_error', 'tag state is not bool')
+        lister = Lister(self, qid, self.srv, parent,
+                        (pos_start, pos_end), tagsets)
         self.srv.run_lister(lister, sub)
         if sub:
             self.subs[qid] = lister
@@ -245,7 +254,7 @@ class Proto(asyncio.Protocol):
         sub = self.getfbool(msg, 'sub')
         qid = self.getnint(msg, 'qid')
         if qid in self.subs:
-            raise ProtocoloError('qid already in use')
+            raise ProtocolError('qid_in_use', 'qid already in use')
         obj = self.srv.get(obj)
         if obj is None:
             self.send_msg({
@@ -265,7 +274,7 @@ class Proto(asyncio.Protocol):
         qid = self.getnint(msg, 'qid')
         key = self.getstr(msg, 'key')
         if qid in self.subs:
-            raise ProtocoloError('qid already in use')
+            raise ProtocolError('qid_in_use', 'qid already in use')
         obj = self.srv.get(obj)
         if obj is None:
             self.send_msg({
@@ -359,9 +368,11 @@ class Proto(asyncio.Protocol):
             'qid': qid,
         })
 
+
 @asyncio.coroutine
 def unix_server(srv, path):
     return (yield from srv.loop.create_unix_server(lambda: Proto(srv), path))
+
 
 @asyncio.coroutine
 def tcp_server(srv, ip, port):

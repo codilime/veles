@@ -2,11 +2,14 @@ import socket
 import msgpack
 import random
 
+
 def serialize(data):
     return msgpack.dumps(data, use_bin_type=True)
 
+
 def unserialize(data):
     return msgpack.loads(data, encoding='utf-8')
+
 
 class Client:
     def __init__(self, sock):
@@ -24,7 +27,8 @@ class Client:
                 raise Exception("end of file")
             self.unpacker.feed(data)
 
-    def create(self, parent, *, tags=[], attr={}, data={}, bindata={}, pos=(None, None)):
+    def create(self, parent, *, tags=[], attr={}, data={}, bindata={},
+               pos=(None, None)):
         msg = {
             'type': 'create',
             'id': random.getrandbits(192).to_bytes(24, 'little'),
