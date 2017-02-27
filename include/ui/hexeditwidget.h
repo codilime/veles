@@ -59,6 +59,7 @@ class HexEditWidget : public View {
   void showNodeTree();
   void showHexEditor();
   void newBinData();
+  void enableFindNext(bool enable);
 
  private:
   bool saveFile(const QString &file_name);

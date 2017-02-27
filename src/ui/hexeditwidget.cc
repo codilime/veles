@@ -122,7 +122,10 @@ void HexEditWidget::createActions() {
   find_next_act_->setShortcuts(QKeySequence::FindNext);
   find_next_act_->setStatusTip(
       tr("Find next occurrence of the searched pattern"));
+  find_next_act_->setEnabled(false);
   connect(find_next_act_, SIGNAL(triggered()), this, SLOT(findNext()));
+  connect(search_dialog_, SIGNAL(enableFindNext(bool)),
+      this, SLOT(enableFindNext(bool)));
 
   QColor icon_color = palette().color(QPalette::WindowText);
   visualisation_act_ = new QAction(
@@ -263,6 +266,10 @@ void HexEditWidget::showHexEditor() {
 
 void HexEditWidget::newBinData() {
   visualisation_act_->setEnabled(data_model_->binData().size() > 0);
+}
+
+void HexEditWidget::enableFindNext(bool enable) {
+  find_next_act_->setEnabled(enable);
 }
 
 }  // namespace ui

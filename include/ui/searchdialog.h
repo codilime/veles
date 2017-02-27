@@ -37,6 +37,9 @@ class SearchDialog : public QDialog {
   qint64 findNext();
   Ui::SearchDialog *ui;
 
+ signals:
+  void enableFindNext(bool enable);
+
  protected:
   void showEvent(QShowEvent* event) override;
 

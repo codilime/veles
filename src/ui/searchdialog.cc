@@ -92,6 +92,8 @@ void SearchDialog::replace(qint64 pos, qint64 len, const data::BinData &data) {
 }
 
 qint64 SearchDialog::findNext() {
+  emit enableFindNext(false);
+
   _findBa =
       getContent(ui->cbFindFormat->currentIndex(), ui->cbFind->currentText());
 
@@ -118,6 +120,7 @@ qint64 SearchDialog::findNext() {
     _hexEdit->setSelection(idx, _findBa.size(), true);
     _lastFoundPos = idx;
     _lastFoundSize = _findBa.size();
+    emit enableFindNext(true);
   } else {
     _lastFoundPos = -1;
     _lastFoundSize = 0;
