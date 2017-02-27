@@ -36,13 +36,17 @@ class Insn(BaseInsn):
     is known, and it's just a matter of parsing its arguments.
     """
 
-    def __init__(self, name, *args):
+    def __init__(self, name, *args, mods=[]):
         self.name = name
         self.args = args
+        self.mods = mods
 
     def parse(self, state):
         args = [arg.parse(state) for arg in self.args]
-        return IsaSTInsn(self.name, args)
+        mods = []
+        for mod in self.mods:
+            mods += mod.parse(state)
+        return IsaSTInsn(self.name, args, mods)
 
 
 class InsnSwitch(BaseInsn, IsaSwitch):

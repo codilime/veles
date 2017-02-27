@@ -21,12 +21,14 @@ class IsaSTInsn:
     - args: list of IsaSTArg
     """
 
-    def __init__(self, name, args=[]):
+    def __init__(self, name, args=[], mods=[]):
         self.name = name
         self.args = tuple(args)
+        self.mods = tuple(mods)
 
     def __str__(self):
-        res = self.name or "???"
+        name = self.name or "???"
+        res = name + ''.join(".{}".format(mod) for mod in self.mods)
         if self.args:
             res += " " + ", ".join(str(x) for x in self.args)
         return res
