@@ -128,12 +128,14 @@ void HexEditWidget::createActions() {
   find_act_ = new QAction(QIcon(":/images/find.png"), tr("&Find/Replace"),
       this);
   find_act_->setShortcuts(QKeySequence::Find);
+  find_act_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
   find_act_->setStatusTip(tr("Show the Dialog for finding and replacing"));
   connect(find_act_, SIGNAL(triggered()), this, SLOT(showSearchDialog()));
 
   find_next_act_ = new QAction(QIcon(":/images/find.png"), tr("Find &next"),
       this);
   find_next_act_->setShortcuts(QKeySequence::FindNext);
+  find_next_act_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
   find_next_act_->setStatusTip(
       tr("Find next occurrence of the searched pattern"));
   find_next_act_->setEnabled(false);
