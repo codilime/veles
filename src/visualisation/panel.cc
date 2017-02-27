@@ -27,7 +27,6 @@
 #include "visualisation/digram.h"
 #include "visualisation/trigram.h"
 
-
 namespace veles {
 namespace visualisation {
 
@@ -41,21 +40,37 @@ const std::map<QString, VisualisationPanel::ESampler>
 /* Public methods */
 /*****************************************************************************/
 
-VisualisationPanel::VisualisationPanel(QWidget *parent) :
-  veles::ui::View("Visualization", ":/images/trigram_icon.png"),
-  sampler_type_(k_default_sampler),
-  visualisation_type_(k_default_visualisation), sample_size_(1024) {
-    sampler_ = getSampler(sampler_type_, data_, sample_size_);
-    sampler_->allowAsynchronousResampling(true);
-    minimap_sampler_ = getSampler(ESampler::UNIFORM_SAMPLER,
-                                  data_, k_minimap_sample_size);
-    minimap_ = new MinimapPanel(this);
-    minimap_->setSampler(minimap_sampler_);
-    connect(minimap_, SIGNAL(selectionChanged(size_t, size_t)), this,
-            SLOT(minimapSelectionChanged(size_t, size_t)));
+VisualisationPanel::VisualisationPanel(
+    ui::MainWindowWithDetachableDockWidgets* main_window,
+    QSharedPointer<ui::FileBlobModel>& data_model, QWidget *parent) :
+    veles::ui::View("Visualization", ":/images/trigram_icon.png"),
+    sampler_type_(k_default_sampler),
+    visualisation_type_(k_default_visualisation), sample_size_(1024),
+    data_model_(data_model), main_window_(main_window) {
+  sampler_ = getSampler(sampler_type_, data_, sample_size_);
+  sampler_->allowAsynchronousResampling(true);
+  minimap_sampler_ = getSampler(ESampler::UNIFORM_SAMPLER, data_,
+      k_minimap_sample_size);
+  minimap_ = new MinimapPanel(this);
+  minimap_->setSampler(minimap_sampler_);
+  connect(minimap_, SIGNAL(selectionChanged(size_t, size_t)), this,
+      SLOT(minimapSelectionChanged(size_t, size_t)));
 
-    visualisation_ = getVisualisation(visualisation_type_, this);
-    initLayout();
+  visualisation_ = getVisualisation(visualisation_type_, this);
+  visualisation_root_ = new QMainWindow;
+  visualisation_root_->setCentralWidget(visualisation_);
+
+  sampling_method_dialog_ = new SamplingMethodDialog(this);
+  sampling_method_dialog_->setSampleSize(sample_size_);
+  sampling_method_dialog_->setMaximumSampleSize(k_max_sample_size);
+
+  connect(sampling_method_dialog_,
+      SIGNAL(samplingMethodChanged(const QString&)),
+      this, SLOT(setSamplingMethod(const QString&)));
+  connect(sampling_method_dialog_, SIGNAL(sampleSizeChanged(int)),
+      this, SLOT(setSampleSize(int)));
+
+  initLayout();
 }
 
 VisualisationPanel::~VisualisationPanel() {
@@ -111,7 +126,7 @@ util::ISampler* VisualisationPanel::getSampler(ESampler type,
 }
 
 VisualisationWidget* VisualisationPanel::getVisualisation(EVisualisation type,
-                                                          QWidget* parent) {
+    QWidget* parent) {
   TrigramWidget* trigram = nullptr;
   switch (type) {
   case EVisualisation::DIGRAM:
@@ -130,7 +145,7 @@ VisualisationWidget* VisualisationPanel::getVisualisation(EVisualisation type,
 
 QString VisualisationPanel::prepareAddressString(size_t start, size_t end) {
   auto label = QString("0x%1 : ").arg(start, 8, 16, QChar('0'));
-  label.append(QString("0x%1\n").arg(end, 8, 16, QChar('0')));
+  label.append(QString("0x%1 ").arg(end, 8, 16, QChar('0')));
   label.append(QString("(%1 bytes)").arg(end - start));
   return label;
 }
@@ -153,7 +168,6 @@ void VisualisationPanel::setSamplingMethod(const QString &name) {
     delete old_sampler;
   }
   sampler_type_ = new_sampler_type;
-  sample_size_box_->setEnabled(sampler_type_ == ESampler::UNIFORM_SAMPLER);
 }
 
 void VisualisationPanel::setSampleSize(int kilobytes) {
@@ -192,32 +206,29 @@ void VisualisationPanel::minimapSelectionChanged(size_t start, size_t end) {
   sampler_->setRange(start, end);
 }
 
+void VisualisationPanel::showMoreOptions() {
+  sampling_method_dialog_->show();
+}
+
 /*****************************************************************************/
 /* Private methods */
 /*****************************************************************************/
 
 void VisualisationPanel::setVisualisation(EVisualisation type) {
   if (type != visualisation_type_) {
+    auto toolbars = visualisation_root_->findChildren<QToolBar*>();
+    for (auto toolbar : toolbars) {
+      if (toolbar->actions().empty() || !toolbar->property("common").toBool()) {
+        toolbar->deleteLater();
+      }
+    }
     VisualisationWidget *old = visualisation_;
-    auto sizes = splitter_->sizes();
     visualisation_type_ = type;
     visualisation_ = getVisualisation(visualisation_type_, this);
     visualisation_->setSampler(sampler_);
-
-    splitter_->addWidget(visualisation_);
-    old->hide();
-
-    QWidget *old_cow = child_options_wrapper_;
-    child_options_wrapper_ = new QWidget;
-    child_options_wrapper_->setLayout(prepareVisualisationOptions());
-    child_options_wrapper_->resize(200, 480);
-    QLayoutItem *cow_litem = options_layout_->replaceWidget(old_cow,
-        child_options_wrapper_);
-
-    delete cow_litem;
-    delete old_cow;
+    visualisation_root_->setCentralWidget(visualisation_);
+    prepareVisualisationOptions();
     delete old;
-    splitter_->setSizes(sizes);
   }
 }
 
@@ -230,97 +241,127 @@ void VisualisationPanel::refreshVisualisation() {
 void VisualisationPanel::initLayout() {
   initOptionsPanel();
 
-  QWidget* root_widget = new QWidget(this);
-  this->setCentralWidget(root_widget);
+  setCentralWidget(visualisation_root_);
+  setDockNestingEnabled(true);
 
-  splitter_ = new QSplitter(Qt::Horizontal);
-  splitter_->addWidget(minimap_);
-  splitter_->addWidget(visualisation_);
-  splitter_->setStretchFactor(1, 5);
+  node_tree_dock_ = new QDockWidget;
+  new ui::DockWidgetVisibilityGuard(node_tree_dock_);
+  node_tree_dock_->setWindowTitle("Node tree");
+  QSharedPointer<QItemSelectionModel> new_selection_model(
+            new QItemSelectionModel(data_model_.data()));
+  node_tree_widget_ = new ui::NodeTreeWidget(main_window_, data_model_,
+      new_selection_model);
+  node_tree_dock_->setWidget(node_tree_widget_);
+  node_tree_dock_->setContextMenuPolicy(Qt::PreventContextMenu);
+  node_tree_dock_->setAllowedAreas(
+      Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+  node_tree_dock_->hide();
+  addDockWidget(Qt::LeftDockWidgetArea, node_tree_dock_);
 
-  layout_ = new QHBoxLayout;
-  layout_->setContentsMargins(0, 0, 0, 0);
-  layout_->addWidget(splitter_, 8);
-  layout_->addLayout(options_layout_, 0);
-  root_widget->setLayout(layout_);
+  minimap_dock_ = new QDockWidget;
+  new ui::DockWidgetVisibilityGuard(minimap_dock_);
+  minimap_dock_->setWindowTitle("Minimap");
+  minimap_dock_->setWidget(minimap_);
+  minimap_dock_->setContextMenuPolicy(Qt::PreventContextMenu);
+  minimap_dock_->setAllowedAreas(
+      Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+  ui::MainWindowWithDetachableDockWidgets::splitDockWidget2(this,
+      node_tree_dock_, minimap_dock_, Qt::Horizontal);
+
+  connect(show_node_tree_act_, &QAction::toggled,
+      node_tree_dock_, &QDockWidget::setVisible);
+  connect(show_minimap_act_, &QAction::toggled,
+      minimap_dock_, &QDockWidget::setVisible);
 }
 
-QBoxLayout* VisualisationPanel::prepareVisualisationOptions() {
-  QBoxLayout *child_layout = new QVBoxLayout;
-  child_layout->setContentsMargins(0, 0, 0, 0);
-  visualisation_->prepareOptionsPanel(child_layout);
-  return child_layout;
+void VisualisationPanel::prepareVisualisationOptions() {
+  visualisation_->prepareOptions(visualisation_root_);
 }
 
 void VisualisationPanel::initOptionsPanel() {
-  options_layout_ = new QVBoxLayout;
+  /////////////////////////////////////
+  // Node tree / minimap
+  show_node_tree_act_ = new QAction(QIcon(":/images/show_node_tree.png"),
+      tr("&Node tree"), this);
+  show_node_tree_act_->setToolTip(tr("Node tree"));
+  show_node_tree_act_->setEnabled(true);
+  show_node_tree_act_->setCheckable(true);
+  show_node_tree_act_->setChecked(false);
+  show_minimap_act_ = new QAction(QIcon(":/images/show_minimap.png"),
+      tr("&Minimap"), this);
+  show_minimap_act_->setToolTip(tr("Minimap"));
+  show_minimap_act_->setEnabled(true);
+  show_minimap_act_->setCheckable(true);
+  show_minimap_act_->setChecked(true);
 
+  tools_tool_bar_ = new QToolBar(tr("Tools"));
+  tools_tool_bar_->setMovable(false);
+  //tools_tool_bar_->addAction(show_node_tree_act_);
+  tools_tool_bar_->addAction(show_minimap_act_);
+  tools_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
+  tools_tool_bar_->setProperty("common", true);
+  tools_tool_bar_->addSeparator();
+  visualisation_root_->addToolBar(tools_tool_bar_);
+
+  /////////////////////////////////////
+  // Modes: digram / trigrams
   QColor icon_color = palette().color(QPalette::WindowText);
-  digram_action_ =
-      new QAction(util::getColoredIcon(":/images/digram_icon.png", icon_color),
-                  tr("&Digram"), this);
+  digram_action_ = new QAction(util::getColoredIcon(
+      ":/images/digram_icon.png", icon_color), tr("&Digram"), this);
   digram_action_->setToolTip("Digram Visualisation");
   connect(digram_action_, SIGNAL(triggered()), this,
           SLOT(showDigramVisualisation()));
 
-  trigram_action_ =
-      new QAction(util::getColoredIcon(":/images/trigram_icon.png",
-                                       icon_color),
-                  tr("&Trigram"), this);
+  trigram_action_ = new QAction(util::getColoredIcon(
+      ":/images/trigram_icon.png", icon_color), tr("&Trigram"), this);
   trigram_action_->setToolTip("Trigram Visualisation");
   connect(trigram_action_, SIGNAL(triggered()), this,
           SLOT(showTrigramVisualisation()));
 
-  layered_digram_action_ =
-      new QAction(util::getColoredIcon(":/images/layered_digram_icon.png",
-                                       icon_color, false),
-                  tr("&Layered Digram"), this);
+  layered_digram_action_ = new QAction(util::getColoredIcon(
+      ":/images/layered_digram_icon.png", icon_color, false),
+      tr("&Layered Digram"), this);
   layered_digram_action_->setToolTip("Layered Digram Visualisation");
   connect(layered_digram_action_, SIGNAL(triggered()), this,
           SLOT(showLayeredDigramVisualisation()));
 
-  visualisation_toolbar_ = new QToolBar("Visualisation Type");
-  visualisation_toolbar_->addAction(digram_action_);
-  visualisation_toolbar_->addAction(trigram_action_);
-  visualisation_toolbar_->addAction(layered_digram_action_);
-  options_layout_->addWidget(visualisation_toolbar_);
+  modes_tool_bar_ = new QToolBar(tr("Modes"));
+  modes_tool_bar_->setMovable(false);
+  modes_tool_bar_->addAction(digram_action_);
+  modes_tool_bar_->addAction(trigram_action_);
+  modes_tool_bar_->addAction(layered_digram_action_);
+  modes_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
+  modes_tool_bar_->addSeparator();
+  modes_tool_bar_->setProperty("common", true);
+  visualisation_root_->addToolBar(modes_tool_bar_);
 
-  QLabel *sampling_label = new QLabel("Sampling method:");
-  sampling_label->setAlignment(Qt::AlignTop);
-  options_layout_->addWidget(sampling_label);
-
-  QComboBox *sampling_method = new QComboBox;
-  sampling_method->addItem("Uniform random sampling");
-  sampling_method->addItem("No sampling");
-  options_layout_->addWidget(sampling_method);
-
-  QLabel *sample_size_label = new QLabel("Sample size (KB):");
-  sample_size_label->setAlignment(Qt::AlignTop);
-  options_layout_->addWidget(sample_size_label);
-
-  sample_size_box_ = new QSpinBox;
-  sample_size_box_->setMinimum(256);
-  sample_size_box_->setMaximum(k_max_sample_size);
-  sample_size_box_->setSingleStep(1024);
-  sample_size_box_->setValue(sample_size_);
-  sample_size_box_->setEnabled(sampler_type_ == ESampler::UNIFORM_SAMPLER);
-  options_layout_->addWidget(sample_size_box_);
-
-  connect(sampling_method, SIGNAL(currentIndexChanged(const QString&)),
-          this, SLOT(setSamplingMethod(const QString&)));
-  connect(sample_size_box_, SIGNAL(valueChanged(int)),
-          this, SLOT(setSampleSize(int)));
-
-  child_options_wrapper_ = new QWidget;
-  child_options_wrapper_->setLayout(prepareVisualisationOptions());
-  child_options_wrapper_->resize(200, 480);
-  options_layout_->addWidget(child_options_wrapper_, 0);
-
-  options_layout_->addStretch(10);
+  /////////////////////////////////////
+  // Selection
+  QWidgetAction* selection_widget_action = new QWidgetAction(this);
   selection_label_ = new QLabel(prepareAddressString(0, 0));
-  selection_label_->setAlignment(Qt::AlignCenter);
+  selection_widget_action->setDefaultWidget(selection_label_);
+  selection_label_->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
+  selection_label_->setSizePolicy(
+      QSizePolicy::Expanding, QSizePolicy::Minimum);
   selection_label_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-  options_layout_->addWidget(selection_label_);
+  QToolBar* selection_toolbar = new QToolBar;
+  selection_toolbar->setMovable(false);
+  selection_toolbar->addAction(selection_widget_action);
+  selection_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
+  selection_toolbar->setProperty("common", true);
+  visualisation_root_->addToolBar(selection_toolbar);
+
+  /////////////////////////////////////
+  // Sampling
+  QAction* show_more_options_action = new QAction(QIcon(":/images/more.png"),
+      tr("More options"), this);
+  connect(show_more_options_action, &QAction::triggered,
+      this, &VisualisationPanel::showMoreOptions);
+  selection_toolbar->addAction(show_more_options_action);
+
+  /////////////////////////////////////
+  // Additional toolbars specific for current visualisation
+  prepareVisualisationOptions();
 }
 
 }  // namespace visualisation

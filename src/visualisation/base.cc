@@ -108,8 +108,7 @@ char VisualisationWidget::getByte(size_t index) {
   return (*sampler_)[index];
 }
 
-bool VisualisationWidget::prepareOptionsPanel(QBoxLayout *layout) {
-  return false;
+void VisualisationWidget::prepareOptions(QMainWindow *visualisation_window) {
 }
 
 void VisualisationWidget::resampleCallback() {

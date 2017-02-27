@@ -26,6 +26,8 @@
 #include <map>
 #include <memory>
 
+#include <QMainWindow>
+
 #include "util/sampling/isampler.h"
 
 namespace veles {
@@ -40,10 +42,10 @@ class VisualisationWidget : public QOpenGLWidget,
   ~VisualisationWidget();
 
   void setSampler(util::ISampler *sampler);
-  // This method takes a QLayout* and add any widgets necessary to manipulate
-  // options of this visualisation. Return true if anything was added to
-  // QLayout.
-  virtual bool prepareOptionsPanel(QBoxLayout *layout);
+
+  // This method takes a visualisation window (QMainWindow*) and adds any
+  // toolbars necessary to manipulate options of this visualisation.
+  virtual void prepareOptions(QMainWindow *visualisation_window);
 
   /**
    * Derive this if you want to produce some additional data in

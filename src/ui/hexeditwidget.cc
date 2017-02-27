@@ -310,9 +310,10 @@ bool HexEditWidget::saveAs() {
 }
 
 void HexEditWidget::showVisualisation() {
-  auto *panel = new visualisation::VisualisationPanel;
+  auto *panel = new visualisation::VisualisationPanel(main_window_,
+      data_model_);
   panel->setData(QByteArray((const char *)data_model_->binData().rawData(),
-                            static_cast<int>(data_model_->binData().size())));
+    static_cast<int>(data_model_->binData().size())));
   panel->setWindowTitle(cur_file_path_);
   panel->setAttribute(Qt::WA_DeleteOnClose);
 

@@ -105,7 +105,7 @@ class TrigramWidget : public VisualisationWidget {
   explicit TrigramWidget(QWidget *parent = 0);
   ~TrigramWidget();
 
-  bool prepareOptionsPanel(QBoxLayout *layout) override;
+  virtual void prepareOptions(QMainWindow *visualisation_window) override;
   void setMode(EVisualisationMode mode, bool animate = true);
 
   static float vfovDeg(float min_fov_deg, float aspect_ratio);
@@ -148,7 +148,7 @@ class TrigramWidget : public VisualisationWidget {
   QAction* createAction(const QIcon& icon, Manipulator* manipulator,
       const QList<QKeySequence>& sequences);
   QAbstractButton* createActionButton(QAction* action);
-  virtual void prepareManipulatorToolbar(QBoxLayout *layout);
+  virtual void prepareManipulatorToolbar(QMainWindow* visualisation_window);
 
  signals:
   void manipulatorChanged(Manipulator* manipulator);
@@ -177,7 +177,9 @@ class TrigramWidget : public VisualisationWidget {
   EVisualisationMode mode_;
   int brightness_;
 
-  QPushButton *pause_button_, *cube_button_, *cylinder_button_, *sphere_button_;
+  QAction *cube_action_;
+  QAction *cylinder_action_;
+  QAction *sphere_action_;
   QSlider *brightness_slider_;
   QCheckBox *use_heuristic_checkbox_;
   bool is_playing_, use_brightness_heuristic_;
