@@ -33,6 +33,7 @@
 #include "dbif/info.h"
 #include "dbif/types.h"
 #include "dbif/universe.h"
+#include "ui/nodewidget.h"
 #include "ui/hexeditwidget.h"
 #include "ui/nodetreewidget.h"
 #include "ui/veles_mainwindow.h"
@@ -150,20 +151,9 @@ void NodeTreeWidget::setupTreeViewHandlers() {
           new FileBlobModel(new_root, new_path));
       QSharedPointer<QItemSelectionModel> new_selection_model(
           new QItemSelectionModel(new_model.data()));
-      NodeTreeWidget *node_tree = new NodeTreeWidget(main_window_,
-          new_model, new_selection_model);
-      HexEditWidget *hex_edit = new HexEditWidget(main_window_,
-          new_model, new_selection_model);
 
-      DockWidget *sibling1(nullptr), *sibling2(nullptr);
-      main_window_->findTwoNonTabifiedDocks(sibling1, sibling2);
-      main_window_->addTab(node_tree, node_tree->windowTitle(), sibling1);
-      DockWidget* hex_edit_tab = main_window_->addTab(hex_edit,
-          new_model->path().join(" : "), sibling2);
-
-      if (sibling1 == sibling2) {
-        main_window_->addDockWidget(Qt::RightDockWidgetArea, hex_edit_tab);
-      }
+      NodeWidget* node_widget = new NodeWidget(main_window_, new_model, new_selection_model);
+      main_window_->addTab(node_widget, new_model->path().join(" : "), nullptr);
     }
   });
 }
