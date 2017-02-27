@@ -24,12 +24,16 @@
 #include <QSplitter>
 #include <QLabel>
 #include <QString>
+#include <QWidgetAction>
 
 #include <map>
 
 #include "ui/dockwidget.h"
+#include "ui/nodetreewidget.h"
+#include "ui/fileblobmodel.h"
 #include "visualisation/base.h"
 #include "visualisation/minimap_panel.h"
+#include "visualisation/samplingmethoddialog.h"
 
 namespace veles {
 namespace visualisation {
@@ -38,7 +42,9 @@ class VisualisationPanel : public ui::View {
   Q_OBJECT
 
  public:
-  explicit VisualisationPanel(QWidget *parent = 0);
+  explicit VisualisationPanel(
+      ui::MainWindowWithDetachableDockWidgets* main_window,
+      QSharedPointer<ui::FileBlobModel>& data_model, QWidget *parent = 0);
   ~VisualisationPanel();
 
   void setData(const QByteArray &data);
@@ -51,6 +57,7 @@ class VisualisationPanel : public ui::View {
   void showTrigramVisualisation();
   void showLayeredDigramVisualisation();
   void minimapSelectionChanged(size_t start, size_t end);
+  void showMoreOptions();
 
  private:
   enum class ESampler {NO_SAMPLER, UNIFORM_SAMPLER};
@@ -73,7 +80,7 @@ class VisualisationPanel : public ui::View {
   void refreshVisualisation();
   void initLayout();
   void initOptionsPanel();
-  QBoxLayout* prepareVisualisationOptions();
+  void prepareVisualisationOptions();
 
   QByteArray data_;
   ESampler sampler_type_;
@@ -82,14 +89,27 @@ class VisualisationPanel : public ui::View {
   util::ISampler *sampler_, *minimap_sampler_;
   MinimapPanel *minimap_;
   VisualisationWidget *visualisation_;
+  QMainWindow *visualisation_root_;
 
   QSpinBox *sample_size_box_;
   QBoxLayout *layout_, *options_layout_;
-  QSplitter *splitter_;
   QWidget *child_options_wrapper_;
   QAction *digram_action_, *trigram_action_, *layered_digram_action_;
-  QToolBar *visualisation_toolbar_;
   QLabel *selection_label_;
+
+  QToolBar *tools_tool_bar_;
+  QAction *show_node_tree_act_;
+  QAction *show_minimap_act_;
+  QToolBar *modes_tool_bar_;
+
+  QPointer<QDockWidget> node_tree_dock_;
+  QPointer<QDockWidget> minimap_dock_;
+
+  ui::NodeTreeWidget *node_tree_widget_;
+  QSharedPointer<ui::FileBlobModel> data_model_;
+
+  SamplingMethodDialog* sampling_method_dialog_;
+  ui::MainWindowWithDetachableDockWidgets* main_window_;
 };
 
 }  //  namespace visualisation

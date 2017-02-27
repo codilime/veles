@@ -88,6 +88,7 @@ target_link_libraries(veles_base ${ADDITIONAL_LINK_LIBRARIES})
 
 qt5_wrap_ui(VISUALISATION_FORMS
     ${SRC_DIR}/visualisation/selectrangedialog.ui
+    ${SRC_DIR}/visualisation/samplingmethoddialog.ui
     )
 
 qt5_add_resources(VISUALISATION_SHADERS ${SRC_DIR}/visualisation/shaders/shaders.qrc)
@@ -100,6 +101,7 @@ add_library(veles_visualisation
     ${INCLUDE_DIR}/visualisation/minimap_panel.h
     ${INCLUDE_DIR}/visualisation/selectrangedialog.h
     ${INCLUDE_DIR}/visualisation/manipulator.h
+    ${INCLUDE_DIR}/visualisation/samplingmethoddialog.h
     ${SRC_DIR}/visualisation/panel.cc
     ${SRC_DIR}/visualisation/base.cc
     ${SRC_DIR}/visualisation/digram.cc
@@ -108,6 +110,7 @@ add_library(veles_visualisation
     ${SRC_DIR}/visualisation/minimap_panel.cc
     ${SRC_DIR}/visualisation/selectrangedialog.cc
     ${SRC_DIR}/visualisation/manipulator.cc
+    ${SRC_DIR}/visualisation/samplingmethoddialog.cc
     ${VISUALISATION_FORMS}
     ${VISUALISATION_SHADERS})
 

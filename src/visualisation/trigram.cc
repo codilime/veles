@@ -34,7 +34,7 @@
 #include <QHBoxLayout>
 #include <QGroupBox>
 #include <QToolButton>
-
+#include <QWidgetAction>
 
 namespace veles {
 namespace visualisation {
@@ -52,7 +52,7 @@ TrigramWidget::TrigramWidget(QWidget *parent) :
     c_sph(0), c_cyl(0), c_pos(0), shape_(EVisualisationShape::CUBE),
     mode_(EVisualisationMode::TRIGRAM),
     brightness_((k_maximum_brightness + k_minimum_brightness) / 2),
-    pause_button_(nullptr), brightness_slider_(nullptr), is_playing_(true),
+    brightness_slider_(nullptr), is_playing_(true),
     use_brightness_heuristic_(true), show_labels_(true) {
   manipulators_.push_back(spin_manipulator_ = new SpinManipulator(this));
   manipulators_.push_back(trackball_manipulator_ = new TrackballManipulator(this));
@@ -119,77 +119,98 @@ void TrigramWidget::refresh(AdditionalResampleDataPtr ad) {
   doneCurrent();
 }
 
-bool TrigramWidget::prepareOptionsPanel(QBoxLayout *layout) {
-  VisualisationWidget::prepareOptionsPanel(layout);
+void TrigramWidget::prepareOptions(QMainWindow *visualisation_window) {
+  VisualisationWidget::prepareOptions(visualisation_window);
 
-  QLabel *brightness_label = new QLabel("Brightness: ");
-  brightness_label->setAlignment(Qt::AlignTop);
+  QColor icon_color = palette().color(QPalette::WindowText);
+  visualisation_window->addToolBarBreak();
+
+  /////////////////////////////////////
+  // Camera manipulators
+  prepareManipulatorToolbar(visualisation_window);
+
+  /////////////////////////////////////
+  // Shape
+  QToolBar* shape_toolbar = new QToolBar("Shape", this);
+  shape_toolbar->setMovable(false);
+  cube_action_ = new QAction(this);
+  cube_action_->setIcon(
+      util::getColoredIcon(":/images/cube.png", icon_color, false));
+  connect(cube_action_, &QAction::triggered, std::bind(
+      &TrigramWidget::setShape, this, EVisualisationShape::CUBE));
+  shape_toolbar->addAction(cube_action_);
+
+  cylinder_action_ = new QAction(this);
+  cylinder_action_->setIcon(
+      util::getColoredIcon(":/images/cylinder.png", icon_color, false));
+  connect(cylinder_action_, &QAction::triggered, std::bind(
+      &TrigramWidget::setShape, this, EVisualisationShape::CYLINDER));
+  shape_toolbar->addAction(cylinder_action_);
+
+  sphere_action_ = new QAction(this);
+  sphere_action_->setIcon(
+      util::getColoredIcon(":/images/sphere.png", icon_color));
+
+  connect(sphere_action_, &QAction::triggered,
+      std::bind(&TrigramWidget::setShape, this, EVisualisationShape::SPHERE));
+  shape_toolbar->addAction(sphere_action_);
+  shape_toolbar->addSeparator();
+  shape_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
+  visualisation_window->addToolBar(shape_toolbar);
+
+  /////////////////////////////////////
+  // Captions
+  QWidgetAction* rf_widget_action = new QWidgetAction(this);
+  show_labels_and_rf_checkbox_ = new QCheckBox(tr("Show captions"));
+  show_labels_and_rf_checkbox_->setChecked(show_labels_);
+  rf_widget_action->setDefaultWidget(show_labels_and_rf_checkbox_);
+  connect(show_labels_and_rf_checkbox_, &QCheckBox::toggled,
+      [this](bool toggled){show_labels_ = toggled;});
+  QToolBar* captions_toolbar = new QToolBar("Captions", this);
+  captions_toolbar->setMovable(false);
+  captions_toolbar->addAction(rf_widget_action);
+  captions_toolbar->addSeparator();
+  captions_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
+  visualisation_window->addToolBar(captions_toolbar);
+
+  /////////////////////////////////////
+  // Brightness
+  QWidgetAction* brightness_widget_action = new QWidgetAction(this);
+  QWidget* brightness_widget = new QWidget;
+  QHBoxLayout* layout = new QHBoxLayout;
+  brightness_widget->setLayout(layout);
+
+  QLabel *brightness_label = new QLabel;
+  brightness_label->setPixmap(QPixmap(":/images/brightness.png"));
+  brightness_label->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   layout->addWidget(brightness_label);
 
   brightness_ = suggestBrightness();
   brightness_slider_ = new QSlider(Qt::Horizontal);
   brightness_slider_->setMinimum(k_minimum_brightness);
   brightness_slider_->setMaximum(k_maximum_brightness);
+  brightness_slider_->setMaximumWidth(200);
   brightness_slider_->setValue(brightness_);
   connect(brightness_slider_, SIGNAL(valueChanged(int)), this,
-          SLOT(brightnessSliderMoved(int)));
+      SLOT(brightnessSliderMoved(int)));
   layout->addWidget(brightness_slider_);
 
-  use_heuristic_checkbox_ = new QCheckBox(
-    "Automatically adjust brightness");
+  use_heuristic_checkbox_ = new QCheckBox("Auto");
   use_heuristic_checkbox_->setChecked(use_brightness_heuristic_);
-  connect(use_heuristic_checkbox_, SIGNAL(stateChanged(int)),
-          this, SLOT(setUseBrightnessHeuristic(int)));
+  connect(use_heuristic_checkbox_, SIGNAL(stateChanged(int)), this,
+      SLOT(setUseBrightnessHeuristic(int)));
   layout->addWidget(use_heuristic_checkbox_);
-
-  QColor icon_color = palette().color(QPalette::WindowText);
-
-  pause_button_ = new QPushButton();
-  pause_button_->setIcon(util::getColoredIcon(":/images/pause.png",
-                                              icon_color));
-  layout->addWidget(pause_button_);
-  connect(pause_button_, SIGNAL(released()),
-          this, SLOT(playPause()));
-
-  QHBoxLayout *shape_box = new QHBoxLayout();
-  cube_button_ = new QPushButton();
-  cube_button_->setIcon(util::getColoredIcon(":/images/cube.png",
-                                             icon_color, false));
-  cube_button_->setIconSize(QSize(32, 32));
-  connect(cube_button_, &QPushButton::released,
-          std::bind(&TrigramWidget::setShape, this,
-                    EVisualisationShape::CUBE));
-  shape_box->addWidget(cube_button_);
-
-  cylinder_button_ = new QPushButton();
-  cylinder_button_->setIcon(util::getColoredIcon(":/images/cylinder.png",
-                                                 icon_color, false));
-  cylinder_button_->setIconSize(QSize(32, 32));
-  connect(cylinder_button_, &QPushButton::released,
-          std::bind(&TrigramWidget::setShape, this,
-                    EVisualisationShape::CYLINDER));
-  shape_box->addWidget(cylinder_button_);
-
-  sphere_button_ = new QPushButton();
-  sphere_button_->setIcon(util::getColoredIcon(":/images/sphere.png",
-                                               icon_color));
-  sphere_button_->setIconSize(QSize(32, 32));
-
-  connect(sphere_button_, &QPushButton::released,
-          std::bind(&TrigramWidget::setShape, this,
-                    EVisualisationShape::SPHERE));
-  shape_box->addWidget(sphere_button_);
-
-  layout->addLayout(shape_box);
-  prepareManipulatorToolbar(layout);
-
-  show_labels_and_rf_checkbox_ = new QCheckBox(tr("Show captions"));
-  show_labels_and_rf_checkbox_->setChecked(show_labels_);
-  layout->addWidget(show_labels_and_rf_checkbox_);
-  connect(show_labels_and_rf_checkbox_, &QCheckBox::toggled,
-      [this](bool toggled){show_labels_ = toggled;});
-
-  return true;
+  layout->setStretch(0, 0);
+  layout->setStretch(1, 0);
+  layout->setStretch(2, 1);
+  layout->setMargin(1);
+  brightness_widget_action->setDefaultWidget(brightness_widget);
+  QToolBar* brightness_toolbar = new QToolBar("Brightness", this);
+  brightness_toolbar->setMovable(false);
+  brightness_toolbar->addAction(brightness_widget_action);
+  brightness_toolbar->addSeparator();
+  brightness_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
+  visualisation_window->addToolBar(brightness_toolbar);
 }
 
 int TrigramWidget::suggestBrightness() {
@@ -224,15 +245,20 @@ VisualisationWidget::AdditionalResampleData* TrigramWidget::onAsyncResample() {
 }
 
 void TrigramWidget::playPause() {
+  // It is still unclear if current behaviour of manipulators is going to be
+  // subject of change.
+#if 0
   QPixmap pixmap;
   QColor icon_color = palette().color(QPalette::WindowText);
   if (is_playing_) {
     pause_button_->setIcon(util::getColoredIcon(":/images/play.png",
-                                                icon_color));
+        icon_color));
   } else {
     pause_button_->setIcon(util::getColoredIcon(":/images/pause.png",
-                                                icon_color));
+        icon_color));
   }
+#endif
+
   is_playing_ = !is_playing_;
 }
 
@@ -271,10 +297,6 @@ void TrigramWidget::setManipulator(Manipulator* manipulator) {
 
   if(!is_playing_) {
     playPause();
-  }
-
-  if (pause_button_) {
-    pause_button_->setEnabled(current_manipulator_->handlesPause());
   }
 
   emit manipulatorChanged(current_manipulator_);
@@ -444,20 +466,17 @@ QAbstractButton* TrigramWidget::createActionButton(QAction* action) {
   return button;
 }
 
-void TrigramWidget::prepareManipulatorToolbar(QBoxLayout *layout) {
-  QGroupBox* group = new QGroupBox;
-  QHBoxLayout *group_layout = new QHBoxLayout;
-  group->setTitle(tr("Camera manipulators"));
-  group->setLayout(group_layout);
+void TrigramWidget::prepareManipulatorToolbar(
+    QMainWindow* visualisation_window) {
+  QToolBar* manipulator_toolbar = new QToolBar("Camera manipulators", this);
+  manipulator_toolbar->setMovable(false);
 
   {
     QAction* action = createAction(
         QIcon(":/images/manipulator_spin.png"), spin_manipulator_,
         {QKeySequence(Qt::CTRL + Qt::Key_1), QKeySequence(Qt::Key_Escape)});
     addAction(action);
-    QAbstractButton* button = createActionButton(action);
-    group_layout->addWidget(button);
-    button->setChecked(true);
+    manipulator_toolbar->addAction(action);
   }
 
   {
@@ -465,8 +484,7 @@ void TrigramWidget::prepareManipulatorToolbar(QBoxLayout *layout) {
         QIcon(":/images/manipulator_trackball.png"), trackball_manipulator_,
         {QKeySequence(Qt::CTRL + Qt::Key_2)});
     addAction(action);
-    QAbstractButton* button = createActionButton(action);
-    group_layout->addWidget(button);
+    manipulator_toolbar->addAction(action);
   }
 
   {
@@ -474,11 +492,12 @@ void TrigramWidget::prepareManipulatorToolbar(QBoxLayout *layout) {
         QIcon(":/images/manipulator_free.png"), free_manipulator_,
         {QKeySequence(Qt::CTRL + Qt::Key_3)});
     addAction(action);
-    QAbstractButton* button = createActionButton(action);
-    group_layout->addWidget(button);
+    manipulator_toolbar->addAction(action);
   }
 
-  layout->addWidget(group);
+  manipulator_toolbar->addSeparator();
+  manipulator_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
+  visualisation_window->addToolBar(manipulator_toolbar);
 }
 
 void TrigramWidget::resizeGLImpl(int w, int h) {

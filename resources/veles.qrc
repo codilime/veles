@@ -40,5 +40,7 @@
         <file>images/layered_digram_icon.png</file>
         <file>images/split_horizontally.png</file>
         <file>images/split_vertically.png</file>
+        <file>images/brightness.png</file>
+        <file>images/more.png</file>
     </qresource>
 </RCC>
