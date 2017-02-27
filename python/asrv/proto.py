@@ -109,10 +109,10 @@ class Proto(asyncio.Protocol):
             self.protoerr(e.args[0], e.args[1])
 
     def protoerr(self, code, msg):
-        self.send_msg(messages.MsgProtoError({
+        self.send_msg(messages.MsgProtoError(
             code=code,
             error=msg,
-        }))
+        ))
 
     def connection_lost(self, ex):
         for qid, sub in self.subs.items():
