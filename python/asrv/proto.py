@@ -109,7 +109,7 @@ class Proto(asyncio.Protocol):
             self.protoerr(e.args[0], e.args[1])
 
     def protoerr(self, code, msg):
-        self.send_msg(messages.MsgProtoError(
+        self.send_msg(definitions.MsgProtoError(
             code=code,
             error=msg,
         ))
@@ -155,7 +155,8 @@ class Proto(asyncio.Protocol):
         if qid in self.subs:
             raise ProtocolError('qid_in_use', 'qid already in use')
         tagsets = msg.tags
-        lister = Lister(self, qid, self.srv, msg.parent, (msg.pos_start, msg.pos_end), tagsets)
+        lister = Lister(self, qid, self.srv, msg.parent,
+                        (msg.pos_start, msg.pos_end), tagsets)
         self.srv.run_lister(lister, msg.sub)
         if msg.sub:
             self.subs[qid] = lister
@@ -177,18 +178,17 @@ class Proto(asyncio.Protocol):
                 obj.add_sub(sub)
 
     def msg_get_data(self, msg):
-        obj = self.getid(msg, 'id')
-        sub = self.getfbool(msg, 'sub')
-        qid = self.getnint(msg, 'qid')
-        key = self.getstr(msg, 'key')
+        obj = msg.id
+        sub = msg.sub
+        qid = msg.qid
+        key = msg.key
         if qid in self.subs:
             raise ProtocolError('qid_in_use', 'qid already in use')
         obj = self.srv.get(obj)
         if obj is None:
-            self.send_msg({
-                'type': 'obj_gone',
-                'qid': qid,
-            })
+            self.send_msg(definitions.MsgObjGone(
+                qid=qid,
+            ))
         else:
             data = self.srv.get_data(obj, key)
             self.send_obj_data_reply(qid, data)
@@ -202,14 +202,13 @@ class Proto(asyncio.Protocol):
         raise NotImplementedError
 
     def msg_unsub(self, msg):
-        qid = self.getnint(msg, 'qid')
+        qid = msg.qid
         if qid in self.subs:
             self.subs[qid].kill()
             del self.subs[qid]
-        self.send_msg({
-            'type': 'sub_gone',
-            'qid': qid,
-        })
+        self.send_msg(definitions.MsgSubCancelled(
+            qid=qid,
+        ))
 
     def msg_mthd_run(self, msg):
         # XXX
@@ -230,6 +229,9 @@ class Proto(asyncio.Protocol):
     def msg_proc_reg(self, msg):
         # XXX
         raise NotImplementedError
+
+    def send_obj_data_reply(self, qid, data):
+        self.send_msg(definitions.MsgGetDataReply(qid=qid, data=data))
 
     def send_obj_reply(self, qid, obj):
         self.send_msg(definitions.MsgGetReply(

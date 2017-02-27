@@ -104,9 +104,13 @@ class MsgList(MsgpackMsg):
 class MsgCancelSub(MsgpackMsg):
     msg_type = 'cancel_sub'
 
+    qid = fields.Integer()
+
 
 class MsgSubCancelled(MsgpackMsg):
     msg_type = 'sub_cancelled'
+
+    qid = fields.Integer()
 
 
 class MsgObjGone(MsgpackMsg):
@@ -158,9 +162,17 @@ class MsgGetReply(MsgpackMsg):
 class MsgGetData(MsgpackMsg):
     msg_type = 'get_data'
 
+    qid = fields.Integer()
+    id = fields.Extension(obj_type=base.ObjectID)
+    sub = fields.Boolean()
+    key = fields.String()
+
 
 class MsgGetDataReply(MsgpackMsg):
     msg_type = 'get_data_reply'
+
+    qid = fields.Integer()
+    data = fields.Any()
 
 
 class MsgGetBindata(MsgpackMsg):

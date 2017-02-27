@@ -211,7 +211,8 @@ class Object(Field):
 
         prep_val = {}
         for attr_name, attr_type in self.attributes:
-            prep_val[attr_name] = attr_type.validate(value.get(attr_name, None))
+            prep_val[attr_name] = attr_type.validate(
+                value.get(attr_name, None))
         if self.local_type:
             return self.local_type(**prep_val)
         return prep_val

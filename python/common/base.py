@@ -26,7 +26,7 @@ class ObjectID:
         return binascii.b2a_hex(self.bytes).decode('ascii')
 
     def __repr__(self):
-        return f'ObjectID("{str(self)}")'
+        return 'ObjectID("{}")'.format(str(self))
 
     def __eq__(self, other):
         if isinstance(other, ObjectID):

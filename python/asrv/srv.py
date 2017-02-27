@@ -4,7 +4,6 @@
 # And in the silver rain
 
 import sqlite3
-import msgpack
 import weakref
 
 from messages import msgpackwrap
@@ -297,12 +296,12 @@ class Server:
         c = self.db.cursor()
         c.execute("""
             SELECT data FROM object_data WHERE obj_id = ? AND name = ?
-        """, (obj.id, key))
+        """, (obj.id.to_bytes(), key))
         rows = c.fetchall()
         if not rows:
             return None
         (data,), = rows
-        return data
+        return self._load(data)
 
     def run_lister(self, lister, sub=False):
         c = self.db.cursor()

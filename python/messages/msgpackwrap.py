@@ -41,4 +41,3 @@ class MsgpackWrapper:
 
         cls.code_to_type[type_code] = type_class
         cls.type_to_code[type_class] = type_code
-
