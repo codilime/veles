@@ -179,7 +179,8 @@ void HexEditWidget::createActions() {
 void HexEditWidget::createToolBars() {
   tools_tool_bar_ = new QToolBar(tr("Tools"));
   tools_tool_bar_->addAction(show_node_tree_act_);
-  tools_tool_bar_->addAction(show_minimap_act_);
+  //Disabled until minimap does anything of value in hex-view
+  //tools_tool_bar_->addAction(show_minimap_act_);
 
   auto parser_tool_button = new QToolButton();
   parser_tool_button->setMenu(&parsers_menu_);
