@@ -1,5 +1,17 @@
 # Veles changelog
 
+## 2017.02.0.YAGNI (2017-02-28)
+
+### Minor features and changes:
+
+  * Disassembler:
+    * Initial release of Python disassembler (for Python 3.x) - temporarily without specialized disassembler view.
+  * Python library related improvements:
+    * Added separate Python classes for blobs and chunks.
+  * UI improvements:
+    * HexEditWidget and NodeTreeWidget merged into single tab.
+    * Various refactors and fixes.
+
 ## 2017.01.0.MechanicalTurk (2017-01-26)
 
 ### Major features and changes:
