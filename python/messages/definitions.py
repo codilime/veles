@@ -1,8 +1,9 @@
 from common import base
+from compatibility.pep487 import NewObject
 from messages import fields
 
 
-class MsgpackMsg:
+class MsgpackMsg(NewObject):
     message_types = {}
 
     def __init__(self, **kwargs):
