@@ -677,7 +677,7 @@ DockWidget* MainWindowWithDetachableDockWidgets::addTab(QWidget *widget,
   if (sibling != nullptr) {
     tabifyDockWidget(sibling, dock_widget);
   } else {
-    QList<QDockWidget*> dock_widgets = findChildren<QDockWidget*>();
+    auto dock_widgets = findChildren<DockWidget*>();
     if (dock_widgets.size() > 0) {
       tabifyDockWidget(dock_widgets.back(), dock_widget);
     } else {
@@ -914,7 +914,7 @@ MainWindowWithDetachableDockWidgets* MainWindowWithDetachableDockWidgets
   for (auto window : main_windows_) {
     if (window->geometry().intersects(dock_widget->geometry())
         && !window->isAncestorOf(dock_widget)) {
-      if (window->findChildren<QDockWidget*>().contains(dock_widget)) {
+      if (window->findChildren<DockWidget*>().contains(dock_widget)) {
         return nullptr;
       }
 
@@ -960,7 +960,7 @@ MainWindowWithDetachableDockWidgets* MainWindowWithDetachableDockWidgets::
 MainWindowWithDetachableDockWidgets* MainWindowWithDetachableDockWidgets
     ::getOwnerOfDockWidget(DockWidget* dock_widget) {
   for (auto window : main_windows_) {
-    if (window->findChildren<QDockWidget*>().contains(dock_widget)) {
+    if (window->findChildren<DockWidget*>().contains(dock_widget)) {
       return window;
     }
   }
