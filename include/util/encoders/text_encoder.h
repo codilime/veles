@@ -14,20 +14,28 @@
  * limitations under the License.
  *
  */
+#ifndef VELES_UTIL_ENCODERS_RAW_ENCODER_H
+#define VELES_UTIL_ENCODERS_RAW_ENCODER_H
+
 #include "util/encoders/encoder.h"
-#include "util/string_utils.h"
 
 namespace veles {
 namespace util {
 namespace encoders {
 
-using veles::util::string::stripSpaces;
+class TextEncoder : public Encoder {
+  // Encodes/decodes raw bytes as Latin-1.
+  // TODO(mkow): This should use current encoding selected by user in HexView.
 
-bool Encoder::validateEncoded(const QString &str) {
-  QString toCompare = encode(decode(str));
-  return stripSpaces(str) == stripSpaces(toCompare);
-}
+ public:
+  QString encode(const QByteArray &data) override;
+  QByteArray decode(const QString &str) override;
+  QString displayName() override;
+  bool validateEncoded(const QString &str) override;
+};
 
 }  // namespace encoders
 }  // namespace util
 }  // namespace veles
+
+#endif  // VELES_UTIL_ENCODERS_RAW_ENCODER_H

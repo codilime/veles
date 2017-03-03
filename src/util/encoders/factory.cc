@@ -16,7 +16,7 @@
  */
 #include "util/encoders/factory.h"
 
-#include "util/encoders/raw_encoder.h"
+#include "util/encoders/text_encoder.h"
 #include "util/encoders/base64_encoder.h"
 #include "util/encoders/hex_encoder.h"
 
@@ -24,11 +24,11 @@ namespace veles {
 namespace util {
 namespace encoders {
 
-QStringList EncodersFactory::keys() { return {"raw", "hex", "base64"}; }
+QStringList EncodersFactory::keys() { return {"text", "hex", "base64"}; }
 
 Encoder *EncodersFactory::create(const QString &id) {
-  if (id == "raw") {
-      return new RawEncoder();
+  if (id == "text") {
+      return new TextEncoder();
   } else if (id == "hex") {
     return new HexEncoder();
   } else if (id == "base64") {

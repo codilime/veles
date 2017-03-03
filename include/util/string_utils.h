@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 CodiLime
+ * Copyright 2017 CodiLime
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,24 @@
  * limitations under the License.
  *
  */
-#include "util/encoders/raw_encoder.h"
-
-#include <cstring>
+#ifndef VELES_UTIL_STRINGUTILS_H
+#define VELES_UTIL_STRINGUTILS_H
+#include <functional>
+#include <QChar>
+#include <QString>
 
 namespace veles {
 namespace util {
-namespace encoders {
+namespace string {
 
-QString RawEncoder::displayName() {
-  return "Raw";
-}
+// Returns a string containing characters from `src` which satisfy `pred`.
+QString filter(QString src, std::function<bool(const QChar&)> pred);
 
-QString RawEncoder::encode(const QByteArray &data) {
-  return QString::fromLatin1(data);
-}
+QString stripNulls(QString src);
+QString stripSpaces(QString src);
 
-QByteArray RawEncoder::decode(const QString &str) {
-  return str.toLatin1();
-}
-
-bool RawEncoder::validateEncoded(const QString &str) {
-  return Encoder::validateEncoded(str.toLower());
-}
-
-}  // namespace encoders
+}  // namespace string
 }  // namespace util
 }  // namespace veles
+
+#endif  // VELES_UTIL_STRINGUTILS_H
