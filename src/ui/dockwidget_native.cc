@@ -64,5 +64,5 @@ void startDockDragging(QDockWidget* object) {}
 
 #endif
 
-} // namespace ui
-} // namespace veles
+}  // namespace ui
+}  // namespace veles

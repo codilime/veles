@@ -372,7 +372,7 @@ public:
     kaitai::kstream* _io__skip_me_strings() const { return m__io__skip_me_strings; }
 };
 
-} // namespace elf
-} // namespace kaitai
-} // namespace veles
+}  // namespace elf
+}  // namespace kaitai
+}  // namespace veles
 #endif  // ELF_H_

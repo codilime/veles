@@ -213,12 +213,12 @@ bool parseMarshal(StreamParser &parser, const QString &name, const PycVersion &v
   // XXX: annotate type enum val & ref bit
   // XXX: store ref
   switch (mtype & 0x7f) {
-  case '0': // NULL
-  case 'N': // None
-  case 'T': // True
-  case 'F': // False
-  case '.': // ...
-  case 'S': // StopIteration (unused)
+  case '0':  // NULL
+  case 'N':  // None
+  case 'T':  // True
+  case 'F':  // False
+  case '.':  // ...
+  case 'S':  // StopIteration (unused)
     break;
   case 'i': {
     // 32-bit signed int

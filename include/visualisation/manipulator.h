@@ -138,10 +138,10 @@ class SpinManipulator : public Manipulator {
   float time_;
   QQuaternion base_rotation_;
 
-  const float angular_speed_ = 30.f; // deg/s
+  const float angular_speed_ = 30.f;  // deg/s
 };
 
 }  // namespace visualisation
 }  // namespace veles
 
-#endif // VELES_VISUALISATION_MANIPULATOR_H
+#endif  // VELES_VISUALISATION_MANIPULATOR_H

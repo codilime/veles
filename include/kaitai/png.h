@@ -436,7 +436,7 @@ public:
     kaitai::kstruct* _parent() const { return m__parent; }
 };
 
-} // namespace png
-} // namespace kaitai
-} // namespace veles
+}  // namespace png
+}  // namespace kaitai
+}  // namespace veles
 #endif  // PNG_H_

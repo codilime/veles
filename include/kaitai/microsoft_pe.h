@@ -459,7 +459,7 @@ public:
     kaitai::kstream* _io__skip_me_optional_header() const { return m__io__skip_me_optional_header; }
 };
 
-} // namespace microsoft_pe
-} // namespace kaitai
-} // namespace veles
+}  // namespace microsoft_pe
+}  // namespace kaitai
+}  // namespace veles
 #endif  // MICROSOFT_PE_H_

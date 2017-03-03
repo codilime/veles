@@ -543,6 +543,6 @@ png_t::time_chunk_t::time_chunk_t(kaitai::kstream *p_io, png_t::chunk_t *p_paren
 png_t::time_chunk_t::~time_chunk_t() { 
 }
 
-} // namespace png
-} // namespace kaitai
-} // namespace veles
+}  // namespace png
+}  // namespace kaitai
+}  // namespace veles

@@ -289,6 +289,6 @@ avi_t::strf_body_t::strf_body_t(kaitai::kstream *p_io, kaitai::kstruct *p_parent
 avi_t::strf_body_t::~strf_body_t() { 
 }
 
-} // namespace avi
-} // namespace kaitai
-} // namespace veles
+}  // namespace avi
+}  // namespace kaitai
+}  // namespace veles

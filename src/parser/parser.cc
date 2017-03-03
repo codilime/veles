@@ -38,5 +38,5 @@ bool Parser::verifyAndParse(dbif::ObjectHandle blob, uint64_t start,
   return true;
 }
 
-} // namespace parser
-} // namespace veles
+}  // namespace parser
+}  // namespace veles

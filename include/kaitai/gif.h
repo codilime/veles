@@ -397,7 +397,7 @@ public:
     kaitai::kstream* _io__skip_me_global_color_table() const { return m__io__skip_me_global_color_table; }
 };
 
-} // namespace gif
-} // namespace kaitai
-} // namespace veles
+}  // namespace gif
+}  // namespace kaitai
+}  // namespace veles
 #endif  // GIF_H_

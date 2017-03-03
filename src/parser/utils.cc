@@ -72,5 +72,5 @@ QList<Parser *> createAllParsers() {
   return res;
 }
 
-} // namespace parser
-} // namespace veles
+}  // namespace parser
+}  // namespace veles
