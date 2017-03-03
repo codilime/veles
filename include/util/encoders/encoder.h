@@ -29,7 +29,7 @@ class Encoder {
   virtual ~Encoder() {}
   virtual QString encode(const QByteArray &data) = 0;
   virtual QByteArray decode(const QString &str) = 0;
-  virtual QString displayName(bool decode = false)= 0;
+  virtual QString displayName() = 0;
   virtual bool validateEncoded(const QString &str);
 };
 
@@ -37,4 +37,4 @@ class Encoder {
 }  // namespace util
 }  // namespace veles
 
-#endif
+#endif  // VELES_UTIL_ENCODERS_ENCODER_H

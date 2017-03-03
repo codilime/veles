@@ -35,4 +35,4 @@ class EncodersFactory {
 }  // namespace util
 }  // namespace veles
 
-#endif
+#endif  // VELES_UTIL_ENCODERS_FACTORY_H

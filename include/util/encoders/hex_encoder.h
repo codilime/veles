@@ -27,7 +27,7 @@ class HexEncoder : public Encoder {
  public:
   QString encode(const QByteArray &data) override;
   QByteArray decode(const QString &str) override;
-  QString displayName(bool decode) override;
+  QString displayName() override;
   bool validateEncoded(const QString &str) override;
 };
 
@@ -35,4 +35,4 @@ class HexEncoder : public Encoder {
 }  // namespace util
 }  // namespace veles
 
-#endif
+#endif  // VELES_UTIL_ENCODERS_HEX_ENCODER_H

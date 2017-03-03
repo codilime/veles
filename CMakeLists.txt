@@ -65,6 +65,7 @@ add_library(veles_base
     ${INCLUDE_DIR}/util/settings/network.h
     ${INCLUDE_DIR}/util/encoders/encoder.h
     ${INCLUDE_DIR}/util/encoders/factory.h
+    ${INCLUDE_DIR}/util/encoders/raw_encoder.h
     ${INCLUDE_DIR}/util/encoders/base64_encoder.h
     ${INCLUDE_DIR}/util/encoders/hex_encoder.h
     ${SRC_DIR}/util/icons.cc
@@ -76,6 +77,7 @@ add_library(veles_base
     ${SRC_DIR}/util/settings/hexedit.cc
     ${SRC_DIR}/util/settings/network.cc
     ${SRC_DIR}/util/encoders/encoder.cc
+    ${SRC_DIR}/util/encoders/raw_encoder.cc
     ${SRC_DIR}/util/encoders/base64_encoder.cc
     ${SRC_DIR}/util/encoders/hex_encoder.cc
     ${SRC_DIR}/util/encoders/factory.cc
