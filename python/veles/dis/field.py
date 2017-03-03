@@ -129,6 +129,41 @@ class IsaSubField(IsaBaseField):
         self.parent_field.setrm(state, mask << self.start)
 
 
+class IsaSplitField(IsaBaseField):
+    """
+    A field made up of several discontiguous smaller fields.  ``subfields``
+    is the list of fields to glue together, starting from LSB.
+    """
+
+    def __init__(self, *subfields):
+        super().__init__()
+        pos = 0
+        self.subfields = []
+        for field in subfields:
+            assert isinstance(field, IsaBaseField)
+            self.subfields.append((pos, field))
+            pos += field.width
+        self.width = pos
+
+    def get(self, state):
+        val = mask = 0
+        for p, f in self.subfields:
+            sv, sm = f.get(state)
+            val |= sv << p
+            mask |= sm << p
+        return val, mask
+
+    def set(self, state, val, mask):
+        for p, f in self.subfields:
+            m = f.fullmask()
+            f.set(state, val >> p & m, mask >> p & m)
+
+    def setrm(self, state, mask):
+        for p, f in self.subfields:
+            m = f.fullmask()
+            f.setrm(state, mask >> p & m)
+
+
 # Matches
 
 class MatchError(Exception):
