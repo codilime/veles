@@ -160,10 +160,15 @@ class ArgMem(BaseArg):
         self.space = space
         self.width = width
         self.arg_base = arg_base
+        self.arg_seg = seg
 
     def parse(self, dstate):
         base = self.arg_base.parse(dstate)
-        return IsaSTMem(self.space, base)
+        if self.arg_seg is None:
+            seg = None
+        else:
+            seg = self.arg_seg.parse(dstate)
+        return IsaSTMem(self.space, base, seg)
 
 
 class ArgMemRI(BaseArg):
@@ -172,11 +177,12 @@ class ArgMemRI(BaseArg):
     a non-immediate argument (most likely register), and displacement
     is an immediate.
     """
-    def __init__(self, space, width, arg_base, arg_disp):
+    def __init__(self, space, width, arg_base, arg_disp, seg=None):
         self.space = space
         self.width = width
         self.arg_base = arg_base
         self.arg_disp = arg_disp
+        self.arg_seg = seg
 
     def parse(self, dstate):
         base = self.arg_base.parse(dstate)
@@ -185,7 +191,11 @@ class ArgMemRI(BaseArg):
             expr = base
         else:
             expr = IsaSTAdd(base, idx)
-        return IsaSTMem(self.space, expr)
+        if self.arg_seg is None:
+            seg = None
+        else:
+            seg = self.arg_seg.parse(dstate)
+        return IsaSTMem(self.space, expr, seg)
 
 
 class ArgMemRRS(BaseArg):
@@ -194,12 +204,13 @@ class ArgMemRRS(BaseArg):
     index are non-immediate arguments (most likely registers), and scale
     is a constant.
     """
-    def __init__(self, space, width, arg_base, arg_idx, scale):
+    def __init__(self, space, width, arg_base, arg_idx, scale, seg=None):
         self.space = space
         self.width = width
         self.arg_base = arg_base
         self.arg_idx = arg_idx
         self.scale = scale
+        self.arg_seg = seg
 
     def parse(self, dstate):
         base = self.arg_base.parse(dstate)
@@ -207,7 +218,11 @@ class ArgMemRRS(BaseArg):
         if self.scale != 1:
             idx = IsaSTMul(idx, IsaSTImm(self.space.addr_width, self.scale))
         expr = IsaSTAdd(base, idx)
-        return IsaSTMem(self.space, expr)
+        if self.arg_seg is None:
+            seg = None
+        else:
+            seg = self.arg_seg.parse(dstate)
+        return IsaSTMem(self.space, expr, seg)
 
 
 class ArgSwitch(IsaSwitch):
