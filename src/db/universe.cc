@@ -131,5 +131,6 @@ void ParserWorker::parse(dbif::ObjectHandle blob, MethodRunner *runner,
   runner->sendResult<dbif::NullReply>();
   delete runner;
 }
-};
-};
+
+}  // namespace db
+}  // namespace veles

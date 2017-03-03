@@ -485,6 +485,7 @@ gif_t::extension_t::extension_t(kaitai::kstream *p_io, gif_t::block_t *p_parent,
 
 gif_t::extension_t::~extension_t() { 
 }
+
 } // namespace gif
 } // namespace kaitai
 } // namespace veles

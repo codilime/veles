@@ -452,5 +452,5 @@ void unpycFileBlob(dbif::ObjectHandle blob, uint64_t start,
   }
 }
 
-}
-}
+}  // namespace parser
+}  // namespace veles

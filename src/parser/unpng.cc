@@ -94,5 +94,5 @@ void unpngFileBlob(dbif::ObjectHandle blob, uint64_t start,
     makeSubBlob(png, "inflated_data", data::BinData(8, decompressed.size(), decompressed.data()));
 }
 
-}
-}
+}  // namespace parser
+}  // namespace veles

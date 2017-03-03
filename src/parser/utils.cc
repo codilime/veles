@@ -71,5 +71,6 @@ QList<Parser *> createAllParsers() {
   res.append(new kaitai::Quicktime_movParser());
   return res;
 }
+
 } // namespace parser
 } // namespace veles

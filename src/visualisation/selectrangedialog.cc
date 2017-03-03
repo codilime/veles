@@ -93,5 +93,5 @@ void SelectRangeDialog::numberBaseChanged(veles::ui::SpinBox* box, const QString
 }
 
 
-} // namespace visualisation
-} // namespace veles
+}  // namespace visualisation
+}  // namespace veles

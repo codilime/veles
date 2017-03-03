@@ -36,8 +36,8 @@ class Register {
     qRegisterMetaType<veles::dbif::PError>("veles::dbif::PError");
   }
 } _;
-};
+}  // namespace
 
-};
-};
+}  // namespace dbif
+}  // namespace veles
 

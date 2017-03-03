@@ -99,5 +99,5 @@ BinData repack(const BinData &src,
   return res;
 }
 
-}
-}
+}  // namespace data
+}  // namespace veles
