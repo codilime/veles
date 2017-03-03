@@ -84,12 +84,12 @@ class VisualisationMinimap : public QOpenGLWidget,
 
  private:
   struct ScalingInfo {
-    float line_width; // line width in GL coordinates
-    float scale_factor; // minimap operates on (-1, 1) coordinates, but
+    float line_width;  // line width in GL coordinates
+    float scale_factor;  // minimap operates on (-1, 1) coordinates, but
                         // margins (line resting points) take some space,
                         // so actual GL coordinates need to be scaled by this
-    float scaled_tlp; // top_line_positon_ scaled with scale_factor
-    float scaled_blp; // bottom_line_pos_ scaled  with scale_factor
+    float scaled_tlp;  // top_line_positon_ scaled with scale_factor
+    float scaled_blp;  // bottom_line_pos_ scaled  with scale_factor
   };
 
   ScalingInfo calculateScaledPositions();
@@ -160,4 +160,4 @@ class VisualisationMinimap : public QOpenGLWidget,
 }  //  namespace visualisation
 }  //  namespace veles
 
-#endif // VELES_VISUALISATION_MINIMAP_H
+#endif  // VELES_VISUALISATION_MINIMAP_H

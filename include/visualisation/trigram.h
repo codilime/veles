@@ -161,7 +161,7 @@ class TrigramWidget : public VisualisationWidget {
 
  private:
   void setBrightness(int value);
-  int suggestBrightness(); // heuristic
+  int suggestBrightness();  // heuristic
   void autoSetBrightness();
 
   QBasicTimer timer;
@@ -215,4 +215,4 @@ class TrigramWidget : public VisualisationWidget {
 }  // namespace visualisation
 }  // namespace veles
 
-#endif // VELES_VISUALISATION_TRIGRAM_H
+#endif  // VELES_VISUALISATION_TRIGRAM_H

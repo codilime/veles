@@ -227,7 +227,7 @@ public:
     kaitai::kstruct* _parent() const { return m__parent; }
 };
 
-} // namespace zip
-} // namespace kaitai
-} // namespace veles
+}  // namespace zip
+}  // namespace kaitai
+}  // namespace veles
 #endif  // ZIP_H_

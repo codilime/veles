@@ -196,7 +196,7 @@ public:
     kaitai::kstruct* _parent() const { return m__parent; }
 };
 
-} // namespace bmp
-} // namespace kaitai
-} // namespace veles
+}  // namespace bmp
+}  // namespace kaitai
+}  // namespace veles
 #endif  // BMP_H_

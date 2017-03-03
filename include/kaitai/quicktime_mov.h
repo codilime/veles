@@ -444,7 +444,7 @@ public:
     kaitai::kstruct* _parent() const { return m__parent; }
 };
 
-} // namespace quicktime_mov
-} // namespace kaitai
-} // namespace veles
+}  // namespace quicktime_mov
+}  // namespace kaitai
+}  // namespace veles
 #endif  // QUICKTIME_MOV_H_

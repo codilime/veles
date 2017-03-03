@@ -127,7 +127,7 @@ float* VisualisationMinimap::calculateAverageValueTexture(
     if (index < texture_size - 1 &&
         static_cast<double>(i) / point_size >= index + 1) {
       uint8_t result = (point_count == 0) ? 0 : point_sum / point_count;
-      bigtab[index] = static_cast<float>(result); // HAX
+      bigtab[index] = static_cast<float>(result);  // HAX
       index += 1;
       point_sum = 0;
       point_count = 0;
@@ -161,7 +161,7 @@ float* VisualisationMinimap::calculateEntropyTexturePerPixel(
   auto bigtab = new float[texture_size];
   memset(bigtab, 0, texture_size * sizeof(*bigtab));
 
-  auto counts = new uint64_t[256]; // assume 8-bit bytes
+  auto counts = new uint64_t[256];  // assume 8-bit bytes
   memset(counts, 0, 256 * sizeof(*counts));
 
   size_t index = 0, point_count = 0;
@@ -188,7 +188,7 @@ float* VisualisationMinimap::calculateEntropyTextureSlidingWindow(
   auto bigtab = new float[texture_size];
   memset(bigtab, 0, texture_size * sizeof(*bigtab));
 
-  auto counts = new uint64_t[256]; // assume 8-bit bytes
+  auto counts = new uint64_t[256];  // assume 8-bit bytes
   memset(counts, 0, 256 * sizeof(*counts));
 
   size_t start = 0, end = 0;
@@ -216,7 +216,7 @@ float* VisualisationMinimap::calculateEntropyTextureSingleWindow(
   auto bigtab = new float[texture_size];
   memset(bigtab, 0, texture_size * sizeof(*bigtab));
 
-  auto counts = new uint64_t[256]; // assume 8-bit bytes
+  auto counts = new uint64_t[256];  // assume 8-bit bytes
   memset(counts, 0, 256 * sizeof(*counts));
 
   for (size_t i = 0; i < sample_size; ++i) {
@@ -258,7 +258,7 @@ float VisualisationMinimap::calculateEntropyValue(uint64_t bytes_counts[],
       entropy -= fcounts * log2(fcounts);
     }
   }
-  entropy *= 32; // 256 / 8 (entropy will be in range [0,8], scale it
+  entropy *= 32;  // 256 / 8 (entropy will be in range [0,8], scale it
   return entropy;
 }
 

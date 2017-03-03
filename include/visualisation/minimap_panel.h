@@ -74,4 +74,4 @@ class MinimapPanel : public QWidget {
 }  //  namespace visualisation
 }  //  namespace veles
 
-#endif // VELES_VISUALISATION_MINIMAP_PANEL_H
+#endif  // VELES_VISUALISATION_MINIMAP_PANEL_H

@@ -223,6 +223,6 @@ std::vector<uint8_t> bmp_t::image() {
     return m_image;
 }
 
-} // namespace bmp
-} // namespace kaitai
-} // namespace veles
+}  // namespace bmp
+}  // namespace kaitai
+}  // namespace veles

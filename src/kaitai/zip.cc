@@ -247,6 +247,6 @@ zip_t::end_of_central_dir_t::end_of_central_dir_t(kaitai::kstream *p_io, zip_t::
 zip_t::end_of_central_dir_t::~end_of_central_dir_t() { 
 }
 
-} // namespace zip
-} // namespace kaitai
-} // namespace veles
+}  // namespace zip
+}  // namespace kaitai
+}  // namespace veles

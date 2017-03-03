@@ -500,6 +500,6 @@ elf_t::strings_t* elf_t::strings() {
     return m_strings;
 }
 
-} // namespace elf
-} // namespace kaitai
-} // namespace veles
+}  // namespace elf
+}  // namespace kaitai
+}  // namespace veles

@@ -290,7 +290,7 @@ public:
     kaitai::kstream* _io__skip_me_data() const { return m__io__skip_me_data; }
 };
 
-} // namespace avi
-} // namespace kaitai
-} // namespace veles
+}  // namespace avi
+}  // namespace kaitai
+}  // namespace veles
 #endif  // AVI_H_

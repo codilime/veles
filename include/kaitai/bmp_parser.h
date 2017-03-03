@@ -13,5 +13,5 @@ public:
     }
 };
 
-} // namespace kaitai
-} // namespace veles
+}  // namespace kaitai
+}  // namespace veles
