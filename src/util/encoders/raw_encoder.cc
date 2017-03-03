@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-#include "util/encoders/base64_encoder.h"
+#include "util/encoders/raw_encoder.h"
 
 #include <cstring>
 
@@ -22,16 +22,20 @@ namespace veles {
 namespace util {
 namespace encoders {
 
-QString Base64Encoder::displayName() {
-  return "Base64";
+QString RawEncoder::displayName() {
+  return "Raw";
 }
 
-QString Base64Encoder::encode(const QByteArray &data) {
-  return QString::fromLatin1(data.toBase64());
+QString RawEncoder::encode(const QByteArray &data) {
+  return QString::fromLatin1(data);
 }
 
-QByteArray Base64Encoder::decode(const QString &str) {
-  return QByteArray::fromBase64(str.toLatin1());
+QByteArray RawEncoder::decode(const QString &str) {
+  return str.toLatin1();
+}
+
+bool RawEncoder::validateEncoded(const QString &str) {
+  return Encoder::validateEncoded(str.toLower());
 }
 
 }  // namespace encoders

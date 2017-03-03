@@ -27,11 +27,11 @@ class Base64Encoder : public Encoder {
  public:
   QString encode(const QByteArray &data) override;
   QByteArray decode(const QString &str) override;
-  QString displayName(bool decode) override;
+  QString displayName() override;
 };
 
 }  // namespace encoders
 }  // namespace util
 }  // namespace veles
 
-#endif
+#endif  // VELES_UTIL_ENCODERS_BASE64_ENCODER_H

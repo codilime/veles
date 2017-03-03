@@ -22,12 +22,8 @@ namespace veles {
 namespace util {
 namespace encoders {
 
-QString HexEncoder::displayName(bool decode) {
-  if (decode) {
-    return "decode from raw hex";
-  }
-
-  return "encode to raw hex";
+QString HexEncoder::displayName() {
+  return "Hex";
 }
 
 QString HexEncoder::encode(const QByteArray &data) {

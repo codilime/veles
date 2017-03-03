@@ -14,26 +14,28 @@
  * limitations under the License.
  *
  */
-#include "util/encoders/base64_encoder.h"
+#ifndef VELES_UTIL_ENCODERS_RAW_ENCODER_H
+#define VELES_UTIL_ENCODERS_RAW_ENCODER_H
 
-#include <cstring>
+#include "util/encoders/encoder.h"
 
 namespace veles {
 namespace util {
 namespace encoders {
 
-QString Base64Encoder::displayName() {
-  return "Base64";
-}
+class RawEncoder : public Encoder {
+  // Encodes/decodes raw bytes as Latin-1.
+  // TODO(mkow): This should use current encoding selected by user in HexView.
 
-QString Base64Encoder::encode(const QByteArray &data) {
-  return QString::fromLatin1(data.toBase64());
-}
-
-QByteArray Base64Encoder::decode(const QString &str) {
-  return QByteArray::fromBase64(str.toLatin1());
-}
+ public:
+  QString encode(const QByteArray &data) override;
+  QByteArray decode(const QString &str) override;
+  QString displayName() override;
+  bool validateEncoded(const QString &str) override;
+};
 
 }  // namespace encoders
 }  // namespace util
 }  // namespace veles
+
+#endif  // VELES_UTIL_ENCODERS_RAW_ENCODER_H

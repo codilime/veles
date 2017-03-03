@@ -167,7 +167,7 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
   menu_.addAction(removeChunkAction_);
   menu_.addAction(saveSelectionAction_);
 
-  auto copyMenu = menu_.addMenu("Copy");
+  auto copyMenu = menu_.addMenu("Copy as");
 
   menu_.addSeparator();
 
@@ -175,7 +175,7 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
     QSharedPointer<util::encoders::Encoder> encoder(
         util::encoders::EncodersFactory::create(id));
 
-    auto copyAction = new QAction(encoder->displayName(false), this);
+    auto copyAction = new QAction(encoder->displayName(), this);
     connect(copyAction, &QAction::triggered,
             [this, encoder] { copyToClipboard(encoder.data()); });
 
