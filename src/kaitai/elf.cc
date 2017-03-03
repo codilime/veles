@@ -499,6 +499,7 @@ elf_t::strings_t* elf_t::strings() {
     m__io->popName();
     return m_strings;
 }
+
 } // namespace elf
 } // namespace kaitai
 } // namespace veles

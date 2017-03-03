@@ -393,7 +393,7 @@ class Register {
     qRegisterMetaType<veles::db::PLocalObject>("veles::db::PLocalObject");
   }
 } _;
-};
+}
 
-};
-};
+}  // namespace db
+}  // namespace veles

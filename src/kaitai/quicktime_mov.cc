@@ -400,6 +400,7 @@ quicktime_mov_t::tkhd_body_t::~tkhd_body_t() {
     delete m_width;
     delete m_height;
 }
+
 } // namespace quicktime_mov
 } // namespace kaitai
 } // namespace veles

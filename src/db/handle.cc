@@ -78,5 +78,5 @@ MethodRunner *MethodRunner::forwarder(QThread *thread) {
   return res;
 }
 
-};
-};
+}  // namespace db
+}  // namespace veles

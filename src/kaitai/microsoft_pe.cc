@@ -476,6 +476,7 @@ microsoft_pe_t::coff_header_t::coff_header_t(kaitai::kstream *p_io, microsoft_pe
 
 microsoft_pe_t::coff_header_t::~coff_header_t() { 
 }
+
 } // namespace microsoft_pe
 } // namespace kaitai
 } // namespace veles

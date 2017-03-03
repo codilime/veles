@@ -222,6 +222,7 @@ std::vector<uint8_t> bmp_t::image() {
     m__io->popName();
     return m_image;
 }
+
 } // namespace bmp
 } // namespace kaitai
 } // namespace veles

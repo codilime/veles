@@ -38,6 +38,6 @@ const QString string = patch ?
     QString("%1").arg(release),
     codename);
 
-}
-}
-}
+}  // namespace version
+}  // namespace util
+}  // namespace veles

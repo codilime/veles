@@ -95,5 +95,6 @@ QString BinData::toString(size_t maxElements) {
 
   return res + suffix;
 }
-}
-}
+
+}  // namespace data
+}  // namespace veles
