@@ -14,20 +14,30 @@
  * limitations under the License.
  *
  */
-#include "util/encoders/encoder.h"
 #include "util/string_utils.h"
 
 namespace veles {
 namespace util {
-namespace encoders {
+namespace string {
 
-using veles::util::string::stripSpaces;
-
-bool Encoder::validateEncoded(const QString &str) {
-  QString toCompare = encode(decode(str));
-  return stripSpaces(str) == stripSpaces(toCompare);
+QString filter(QString src, std::function<bool(const QChar&)> pred) {
+  QString newStr;
+  for (auto character : src) {
+    if (pred(character)) {
+      newStr.append(character);
+    }
+  }
+  return newStr;
 }
 
-}  // namespace encoders
+QString stripNulls(QString src) {
+  return filter(src, [](auto x){ return !x.isNull(); });
+}
+
+QString stripSpaces(QString src) {
+  return filter(src, [](auto x){ return !x.isSpace(); });
+}
+
+}  // namespace string
 }  // namespace util
 }  // namespace veles

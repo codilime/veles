@@ -14,28 +14,35 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UTIL_ENCODERS_RAW_ENCODER_H
-#define VELES_UTIL_ENCODERS_RAW_ENCODER_H
+#include "util/encoders/text_encoder.h"
+#include "util/string_utils.h"
 
-#include "util/encoders/encoder.h"
+#include <cstring>
+
+using veles::util::string::stripNulls;
 
 namespace veles {
 namespace util {
 namespace encoders {
 
-class RawEncoder : public Encoder {
-  // Encodes/decodes raw bytes as Latin-1.
-  // TODO(mkow): This should use current encoding selected by user in HexView.
+QString TextEncoder::displayName() {
+  return "Text";
+}
 
- public:
-  QString encode(const QByteArray &data) override;
-  QByteArray decode(const QString &str) override;
-  QString displayName() override;
-  bool validateEncoded(const QString &str) override;
-};
+QString TextEncoder::encode(const QByteArray &data) {
+  // On Windows, there's no way to copy a string containing nulls to clipboard,
+  // we have to strip them.
+  return stripNulls(QString::fromLatin1(data.data(), data.size()));
+}
+
+QByteArray TextEncoder::decode(const QString &str) {
+  return str.toLatin1();
+}
+
+bool TextEncoder::validateEncoded(const QString &str) {
+  return Encoder::validateEncoded(str.toLower());
+}
 
 }  // namespace encoders
 }  // namespace util
 }  // namespace veles
-
-#endif  // VELES_UTIL_ENCODERS_RAW_ENCODER_H
