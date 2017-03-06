@@ -15,7 +15,7 @@
  *
  */
 #include "gtest/gtest.h"
-#include "util/encoders/base64_encoder.h"
+#include "util/encoders/text_encoder.h"
 
 #include <QString>
 #include <QByteArray>
@@ -24,28 +24,25 @@ namespace veles {
 namespace util {
 namespace encoders {
 
-TEST(Base64Encoder, encode) {
-  auto encoder = Base64Encoder();
+TEST(TextEncoder, encode) {
+  auto encoder = TextEncoder();
   EXPECT_EQ(encoder.encode(QByteArray::fromHex("")), "");
-  EXPECT_EQ(encoder.encode(QByteArray::fromHex("01")), "AQ==");
-  EXPECT_EQ(encoder.encode(QByteArray::fromHex("0102")), "AQI=");
-  EXPECT_EQ(encoder.encode(QByteArray::fromHex("ffffff")), "////");
-  EXPECT_EQ(encoder.encode(QByteArray::fromHex("aabbccdd")), "qrvM3Q==");
+  EXPECT_EQ(encoder.encode(QByteArray::fromHex("00410041")), "AA");
+  EXPECT_EQ(encoder.encode(QByteArray::fromHex("0708090a0b0c0d")),
+            "\a\b\t\n\v\f\r");
 }
 
-TEST(Base64Encoder, decode) {
-  auto encoder = Base64Encoder();
-  EXPECT_EQ(encoder.decode("AQ=="), QByteArray::fromHex("01"));
-  EXPECT_EQ(encoder.decode("AP\n8="), QByteArray::fromHex("00ff"));
-  EXPECT_EQ(encoder.decode("qrv$$$M3Q=="), QByteArray::fromHex("aabbccdd"));
-  EXPECT_EQ(encoder.decode("qrv$$$M3Q"), QByteArray::fromHex("aabbccdd"));
+TEST(TextEncoder, decode) {
+  auto encoder = TextEncoder();
   EXPECT_EQ(encoder.decode(""), QByteArray::fromHex(""));
-  EXPECT_EQ(encoder.decode("a"), QByteArray::fromHex(""));
-  EXPECT_EQ(encoder.decode("aa"), QByteArray::fromHex("69"));
+  EXPECT_EQ(encoder.decode(QString::fromLatin1("\0" "a" "\0" "b" "\0", 5)),
+            QByteArray::fromHex("0061006200"));
+  EXPECT_EQ(encoder.decode("\a\b\t\n\v\f\r"),
+            QByteArray::fromHex("0708090a0b0c0d"));
 }
 
-TEST(Base64Encoder, validate) {
-  auto encoder = Base64Encoder();
+TEST(TextEncoder, validate) {
+  auto encoder = TextEncoder();
   auto test = [&encoder](const QByteArray& bytes) {
     EXPECT_EQ(encoder.decode(encoder.encode(bytes)), bytes);
   };
@@ -58,11 +55,11 @@ TEST(Base64Encoder, validate) {
   test_str("test_string_asdf\n\r\r\n\0asdf");
   test_str("");
   test_str(QString(1024, 'x'));
-  QByteArray allBytes;
-  for (int i = 0; i < 256; i++) {
-    allBytes.append(static_cast<char>(i));
+  QByteArray all_bytes;  // excluding null
+  for (int i = 1; i < 256; i++) {
+    all_bytes.append(static_cast<char>(i));
   }
-  test(allBytes);
+  test(all_bytes);
 }
 
 }  // namespace encoders

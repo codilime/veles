@@ -16,23 +16,34 @@
  */
 #include "util/encoders/factory.h"
 
-#include "util/encoders/text_encoder.h"
 #include "util/encoders/base64_encoder.h"
+#include "util/encoders/c_data_encoder.h"
+#include "util/encoders/c_string_encoder.h"
 #include "util/encoders/hex_encoder.h"
+#include "util/encoders/text_encoder.h"
+#include "util/encoders/url_encoder.h"
 
 namespace veles {
 namespace util {
 namespace encoders {
 
-QStringList EncodersFactory::keys() { return {"text", "hex", "base64"}; }
+QStringList EncodersFactory::keys() {
+  return {"text", "hex", "cstring", "cdata", "base64", "url"};
+}
 
-Encoder *EncodersFactory::create(const QString &id) {
+IEncoder* EncodersFactory::create(const QString& id) {
   if (id == "text") {
-      return new TextEncoder();
+    return new TextEncoder();
   } else if (id == "hex") {
     return new HexEncoder();
+  } else if (id == "cstring") {
+    return new CStringEncoder();
   } else if (id == "base64") {
     return new Base64Encoder();
+  } else if (id == "cdata") {
+    return new CDataEncoder();
+  } else if (id == "url") {
+    return new UrlEncoder();
   }
 
   return nullptr;

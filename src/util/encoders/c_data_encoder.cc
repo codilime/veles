@@ -14,27 +14,32 @@
  * limitations under the License.
  *
  */
-#include "util/encoders/hex_encoder.h"
+#include "util/encoders/c_data_encoder.h"
 
 namespace veles {
 namespace util {
 namespace encoders {
 
-QString HexEncoder::encodingDisplayName() {
-  return "Hex";
+QString CDataEncoder::encodingDisplayName() {
+  return "C Data";
 }
 
-QString HexEncoder::decodingDisplayName() {
-  return "Hex";
-}
-
-QString HexEncoder::encode(const QByteArray& data) {
-  QByteArray ba = data.toHex();
-  return QString::fromLatin1(ba);
-}
-
-QByteArray HexEncoder::decode(const QString& str) {
-  return QByteArray().fromHex(str.toLatin1());
+QString CDataEncoder::encode(const QByteArray& data) {
+  QString res = "unsigned char data[] = {";
+  int lineLen = 1000;  // fold after first line
+  for (auto byte : data) {
+    auto byteStr = QString::asprintf("0x%02x,", static_cast<unsigned char>(byte));
+    lineLen += byteStr.length() + 1;
+    if (lineLen > 80) {
+      byteStr = "\n" + QString(this->indentation, ' ') + byteStr;
+      lineLen = byteStr.length() - 1;  // - 1 for newline
+      res += byteStr;
+    } else {
+      res += " " + byteStr;
+    }
+  }
+  res += "\n};\n";
+  return res;
 }
 
 }  // namespace encoders

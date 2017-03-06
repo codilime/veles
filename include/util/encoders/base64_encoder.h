@@ -17,17 +17,22 @@
 #ifndef VELES_UTIL_ENCODERS_BASE64_ENCODER_H
 #define VELES_UTIL_ENCODERS_BASE64_ENCODER_H
 
-#include "util/encoders/encoder.h"
+#include "util/encoders/idecoder.h"
+#include "util/encoders/iencoder.h"
+
+#include <QByteArray>
+#include <QString>
 
 namespace veles {
 namespace util {
 namespace encoders {
 
-class Base64Encoder : public Encoder {
+class Base64Encoder : public IEncoder, public IDecoder {
  public:
-  QString encode(const QByteArray &data) override;
-  QByteArray decode(const QString &str) override;
-  QString displayName() override;
+  QString encode(const QByteArray& data) override;
+  QByteArray decode(const QString& str) override;
+  QString encodingDisplayName() override;
+  QString decodingDisplayName() override;
 };
 
 }  // namespace encoders

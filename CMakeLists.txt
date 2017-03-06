@@ -63,12 +63,19 @@ add_library(veles_base
     ${INCLUDE_DIR}/util/settings/theme.h
     ${INCLUDE_DIR}/util/settings/hexedit.h
     ${INCLUDE_DIR}/util/settings/network.h
-    ${INCLUDE_DIR}/util/encoders/encoder.h
-    ${INCLUDE_DIR}/util/encoders/factory.h
-    ${INCLUDE_DIR}/util/encoders/text_encoder.h
+
     ${INCLUDE_DIR}/util/encoders/base64_encoder.h
+    ${INCLUDE_DIR}/util/encoders/c_data_encoder.h
+    ${INCLUDE_DIR}/util/encoders/c_string_encoder.h
+    ${INCLUDE_DIR}/util/encoders/factory.h
     ${INCLUDE_DIR}/util/encoders/hex_encoder.h
+    ${INCLUDE_DIR}/util/encoders/idecoder.h
+    ${INCLUDE_DIR}/util/encoders/iencoder.h
+    ${INCLUDE_DIR}/util/encoders/text_encoder.h
+    ${INCLUDE_DIR}/util/encoders/url_encoder.h
+
     ${INCLUDE_DIR}/util/string_utils.h
+
     ${SRC_DIR}/util/icons.cc
     ${SRC_DIR}/util/concurrency/threadpool.cc
     ${SRC_DIR}/util/sampling/isampler.cc
@@ -77,11 +84,15 @@ add_library(veles_base
     ${SRC_DIR}/util/settings/theme.cc
     ${SRC_DIR}/util/settings/hexedit.cc
     ${SRC_DIR}/util/settings/network.cc
-    ${SRC_DIR}/util/encoders/encoder.cc
-    ${SRC_DIR}/util/encoders/text_encoder.cc
+
     ${SRC_DIR}/util/encoders/base64_encoder.cc
-    ${SRC_DIR}/util/encoders/hex_encoder.cc
+    ${SRC_DIR}/util/encoders/c_data_encoder.cc
+    ${SRC_DIR}/util/encoders/c_string_encoder.cc
     ${SRC_DIR}/util/encoders/factory.cc
+    ${SRC_DIR}/util/encoders/hex_encoder.cc
+    ${SRC_DIR}/util/encoders/text_encoder.cc
+    ${SRC_DIR}/util/encoders/url_encoder.cc
+
     ${SRC_DIR}/util/string_utils.cc
     ${SRC_DIR}/util/version.cc)
 
@@ -308,8 +319,12 @@ if(GTEST_FOUND AND GMOCK_FOUND)
         ${TEST_DIR}/data/bindata.cc
         ${TEST_DIR}/data/copybits.cc
         ${TEST_DIR}/data/repack.cc
-        ${TEST_DIR}/util/encoders/hex_encoder.cc
         ${TEST_DIR}/util/encoders/base64_encoder.cc
+        ${TEST_DIR}/util/encoders/c_data_encoder.cc
+        ${TEST_DIR}/util/encoders/c_string_encoder.cc
+        ${TEST_DIR}/util/encoders/hex_encoder.cc
+        ${TEST_DIR}/util/encoders/text_encoder.cc
+        ${TEST_DIR}/util/encoders/url_encoder.cc
         ${TEST_DIR}/util/encoders/factory.cc
         ${TEST_DIR}/util/sampling/isampler.cc
         ${TEST_DIR}/util/sampling/uniform_sampler.cc

@@ -17,30 +17,28 @@
 #include "util/encoders/text_encoder.h"
 #include "util/string_utils.h"
 
-#include <cstring>
-
 using veles::util::string::stripNulls;
 
 namespace veles {
 namespace util {
 namespace encoders {
 
-QString TextEncoder::displayName() {
+QString TextEncoder::encodingDisplayName() {
   return "Text";
 }
 
-QString TextEncoder::encode(const QByteArray &data) {
+QString TextEncoder::decodingDisplayName() {
+  return "Raw data";  // User can paste anything, not only text.
+}
+
+QString TextEncoder::encode(const QByteArray& data) {
   // On Windows, there's no way to copy a string containing nulls to clipboard,
   // we have to strip them.
   return stripNulls(QString::fromLatin1(data.data(), data.size()));
 }
 
-QByteArray TextEncoder::decode(const QString &str) {
+QByteArray TextEncoder::decode(const QString& str) {
   return str.toLatin1();
-}
-
-bool TextEncoder::validateEncoded(const QString &str) {
-  return Encoder::validateEncoded(str.toLower());
 }
 
 }  // namespace encoders

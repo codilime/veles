@@ -14,20 +14,29 @@
  * limitations under the License.
  *
  */
-#include "util/encoders/encoder.h"
-#include "util/string_utils.h"
+#ifndef VELES_UTIL_ENCODERS_URL_ENCODER_H
+#define VELES_UTIL_ENCODERS_URL_ENCODER_H
+
+#include "util/encoders/idecoder.h"
+#include "util/encoders/iencoder.h"
+
+#include <QByteArray>
+#include <QString>
 
 namespace veles {
 namespace util {
 namespace encoders {
 
-using veles::util::string::stripSpaces;
-
-bool Encoder::validateEncoded(const QString &str) {
-  QString toCompare = encode(decode(str));
-  return stripSpaces(str) == stripSpaces(toCompare);
-}
+class UrlEncoder : public IEncoder, public IDecoder {
+ public:
+  QString encode(const QByteArray& data) override;
+  QByteArray decode(const QString& str) override;
+  QString encodingDisplayName() override;
+  QString decodingDisplayName() override;
+};
 
 }  // namespace encoders
 }  // namespace util
 }  // namespace veles
+
+#endif  // VELES_UTIL_ENCODERS_URL_ENCODER_H
