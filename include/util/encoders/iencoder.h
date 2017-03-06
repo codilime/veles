@@ -14,8 +14,8 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UTIL_ENCODERS_ENCODER_H
-#define VELES_UTIL_ENCODERS_ENCODER_H
+#ifndef VELES_UTIL_IENCODER_IENCODER_H
+#define VELES_UTIL_IENCODER_IENCODER_H
 
 #include <QByteArray>
 #include <QString>
@@ -24,17 +24,15 @@ namespace veles {
 namespace util {
 namespace encoders {
 
-class Encoder {
+class IEncoder {
  public:
-  virtual ~Encoder() {}
-  virtual QString encode(const QByteArray &data) = 0;
-  virtual QByteArray decode(const QString &str) = 0;
-  virtual QString displayName() = 0;
-  virtual bool validateEncoded(const QString &str);
+  virtual ~IEncoder() {}
+  virtual QString encode(const QByteArray& data) = 0;
+  virtual QString encodingDisplayName() = 0;
 };
 
 }  // namespace encoders
 }  // namespace util
 }  // namespace veles
 
-#endif  // VELES_UTIL_ENCODERS_ENCODER_H
+#endif  // VELES_UTIL_IENCODER_IENCODER_H

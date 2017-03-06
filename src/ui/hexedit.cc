@@ -172,10 +172,10 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
   menu_.addSeparator();
 
   for (auto &id : util::encoders::EncodersFactory::keys()) {
-    QSharedPointer<util::encoders::Encoder> encoder(
+    QSharedPointer<util::encoders::IEncoder> encoder(
         util::encoders::EncodersFactory::create(id));
 
-    auto copyAction = new QAction(encoder->displayName(), this);
+    auto copyAction = new QAction(encoder->encodingDisplayName(), this);
     connect(copyAction, &QAction::triggered,
             [this, encoder] { copyToClipboard(encoder.data()); });
 
@@ -539,7 +539,7 @@ void HexEdit::mouseMoveEvent(QMouseEvent *event) {
   setSelectionEnd(pointToBytePos(event->pos()));
 }
 
-void HexEdit::copyToClipboard(util::encoders::Encoder *enc) {
+void HexEdit::copyToClipboard(util::encoders::IEncoder* enc) {
   if (enc == nullptr) {
     enc = hexEncoder_.data();
   }

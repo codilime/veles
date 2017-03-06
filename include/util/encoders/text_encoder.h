@@ -14,28 +14,32 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UTIL_ENCODERS_RAW_ENCODER_H
-#define VELES_UTIL_ENCODERS_RAW_ENCODER_H
+#ifndef VELES_UTIL_ENCODERS_TEXT_ENCODER_H
+#define VELES_UTIL_ENCODERS_TEXT_ENCODER_H
 
-#include "util/encoders/encoder.h"
+#include "util/encoders/idecoder.h"
+#include "util/encoders/iencoder.h"
+
+#include <QByteArray>
+#include <QString>
 
 namespace veles {
 namespace util {
 namespace encoders {
 
-class TextEncoder : public Encoder {
+class TextEncoder : public IEncoder, public IDecoder {
   // Encodes/decodes raw bytes as Latin-1.
   // TODO(mkow): This should use current encoding selected by user in HexView.
 
  public:
-  QString encode(const QByteArray &data) override;
-  QByteArray decode(const QString &str) override;
-  QString displayName() override;
-  bool validateEncoded(const QString &str) override;
+  QString encode(const QByteArray& data) override;
+  QByteArray decode(const QString& str) override;
+  QString encodingDisplayName() override;
+  QString decodingDisplayName() override;
 };
 
 }  // namespace encoders
 }  // namespace util
 }  // namespace veles
 
-#endif  // VELES_UTIL_ENCODERS_RAW_ENCODER_H
+#endif  // VELES_UTIL_ENCODERS_TEXT_ENCODER_H

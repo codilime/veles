@@ -17,6 +17,7 @@
 #include "gtest/gtest.h"
 #include "util/encoders/hex_encoder.h"
 
+#include <QByteArray>
 
 namespace veles {
 namespace util {
@@ -25,6 +26,7 @@ namespace encoders {
 TEST(HexEncoder, encode) {
   auto encoder = HexEncoder();
 
+  EXPECT_EQ(encoder.encode(QByteArray::fromHex("")), "");
   EXPECT_EQ(encoder.encode(QByteArray::fromHex("01")), "01");
   EXPECT_EQ(encoder.encode(QByteArray::fromHex("0102")), "0102");
   EXPECT_EQ(encoder.encode(QByteArray::fromHex("ffff")), "ffff");
@@ -32,25 +34,33 @@ TEST(HexEncoder, encode) {
 
 TEST(HexEncoder, decode) {
   auto encoder = HexEncoder();
+  EXPECT_EQ(encoder.decode(""), QByteArray::fromHex(""));
   EXPECT_EQ(encoder.decode("01"), QByteArray::fromHex("01"));
   EXPECT_EQ(encoder.decode("01 02"), QByteArray::fromHex("0102"));
   EXPECT_EQ(encoder.decode("00\nff"), QByteArray::fromHex("00ff"));
-  EXPECT_EQ(encoder.decode("00\nFFz"), QByteArray::fromHex("00ff"));
+  EXPECT_EQ(encoder.decode("00,11\nfFz"), QByteArray::fromHex("0011ff"));
 }
 
 TEST(HexEncoder, validate) {
   auto encoder = HexEncoder();
+  auto test = [&encoder](const QByteArray& bytes) {
+    EXPECT_EQ(encoder.decode(encoder.encode(bytes)), bytes);
+  };
+  auto test_str = [&encoder, &test](const QString& str) {
+    QByteArray bytes = str.toLatin1();
+    test(bytes);
+  };
 
-  ASSERT_TRUE(encoder.validateEncoded("01"));
-  ASSERT_TRUE(encoder.validateEncoded("01aa"));
-  ASSERT_TRUE(encoder.validateEncoded("01 aa"));
-  ASSERT_TRUE(encoder.validateEncoded("01 Aa\nbB"));
-
-  ASSERT_FALSE(encoder.validateEncoded("zz"));
-  ASSERT_FALSE(encoder.validateEncoded("AAA"));
+  test_str("aaaa");
+  test_str("test_string_asdf\n\r\r\n\0asdf");
+  test_str("");
+  test_str(QString(1024, 'x'));
+  QByteArray allBytes;
+  for (int i = 0; i < 256; i++) {
+    allBytes.append(static_cast<char>(i));
+  }
+  test(allBytes);
 }
-
-
 
 }  // namespace encoders
 }  // namespace util

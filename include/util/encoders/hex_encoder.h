@@ -17,18 +17,22 @@
 #ifndef VELES_UTIL_ENCODERS_HEX_ENCODER_H
 #define VELES_UTIL_ENCODERS_HEX_ENCODER_H
 
-#include "util/encoders/encoder.h"
+#include "util/encoders/idecoder.h"
+#include "util/encoders/iencoder.h"
+
+#include <QByteArray>
+#include <QString>
 
 namespace veles {
 namespace util {
 namespace encoders {
 
-class HexEncoder : public Encoder {
+class HexEncoder : public IEncoder, public IDecoder {
  public:
-  QString encode(const QByteArray &data) override;
-  QByteArray decode(const QString &str) override;
-  QString displayName() override;
-  bool validateEncoded(const QString &str) override;
+  QString encode(const QByteArray& data) override;
+  QByteArray decode(const QString& str) override;
+  QString encodingDisplayName() override;
+  QString decodingDisplayName() override;
 };
 
 }  // namespace encoders

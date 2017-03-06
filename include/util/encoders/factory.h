@@ -17,9 +17,10 @@
 #ifndef VELES_UTIL_ENCODERS_FACTORY_H
 #define VELES_UTIL_ENCODERS_FACTORY_H
 
-#include <QStringList>
+#include "util/encoders/iencoder.h"
 
-#include "util/encoders/encoder.h"
+#include <QString>
+#include <QStringList>
 
 namespace veles {
 namespace util {
@@ -28,7 +29,7 @@ namespace encoders {
 class EncodersFactory {
  public:
   static QStringList keys();
-  static Encoder *create(const QString &);
+  static IEncoder* create(const QString&);
 };
 
 }  // namespace encoders

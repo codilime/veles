@@ -16,21 +16,23 @@
  */
 #include "util/encoders/base64_encoder.h"
 
-#include <cstring>
-
 namespace veles {
 namespace util {
 namespace encoders {
 
-QString Base64Encoder::displayName() {
+QString Base64Encoder::encodingDisplayName() {
   return "Base64";
 }
 
-QString Base64Encoder::encode(const QByteArray &data) {
+QString Base64Encoder::decodingDisplayName() {
+  return "Base64";
+}
+
+QString Base64Encoder::encode(const QByteArray& data) {
   return QString::fromLatin1(data.toBase64());
 }
 
-QByteArray Base64Encoder::decode(const QString &str) {
+QByteArray Base64Encoder::decode(const QString& str) {
   return QByteArray::fromBase64(str.toLatin1());
 }
 
