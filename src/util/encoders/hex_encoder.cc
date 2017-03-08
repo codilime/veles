@@ -34,7 +34,7 @@ QString HexEncoder::encode(const QByteArray& data) {
 }
 
 QByteArray HexEncoder::decode(const QString& str) {
-  return QByteArray().fromHex(str.toLatin1());
+  return QByteArray::fromHex(str.toLatin1());
 }
 
 }  // namespace encoders
