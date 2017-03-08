@@ -30,7 +30,6 @@ class CStringEncoder : public IEncoder {
  public:
   QString encode(const QByteArray& data) override;
   QString encodingDisplayName() override;
-  QByteArray decode(const QString& str) {return {};}
 };
 
 }  // namespace encoders
