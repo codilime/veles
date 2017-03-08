@@ -53,7 +53,7 @@ struct RepackFormat {
        endian) of the resulting string, num_elements * (format.width +
        format.lowPad + format.highPad) bits are extracted and cut into
        num_elements pieces (again ordered according to the selected
-       endian)
+       endian).
     3. From each of the num_element pieces, high highPad and low lowPad bits
        are cut off, and the rest is returned as the result.
 
