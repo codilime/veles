@@ -128,6 +128,10 @@ class Server:
             self.new_db()
         elif appid != APP_ID:
             raise ValueError('invalid application ID')
+        self.db.cursor().execute('pragma foreign_keys = on')
+        fk = self.db.cursor().execute('pragma foreign_keys').fetchone()[0]
+        if not fk:
+            raise ValueError('foreign keys not supported by sqlite')
         self.conns = {}
         self.objs = weakref.WeakValueDictionary()
         self.next_cid = 0
