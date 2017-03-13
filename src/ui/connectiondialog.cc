@@ -26,6 +26,8 @@
 
 #include <QtGlobal>
 #include <QSettings>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 
 namespace veles {
 namespace ui {
@@ -34,6 +36,11 @@ ConnectionDialog::ConnectionDialog(QWidget* parent)
     : QDialog(parent),
       ui_(new Ui::ConnectionDialog) {
   ui_->setupUi(this);
+
+  QRegularExpressionValidator* validator
+      = new QRegularExpressionValidator(QRegularExpression(
+      "^[0-9A-F]{0,128}$", QRegularExpression::CaseInsensitiveOption), this);
+  ui_->key_line_edit->setValidator(validator);
 
   connect(ui_->ok_button, &QPushButton::clicked, this, &QDialog::accept);
   connect(ui_->cancel_button, &QPushButton::clicked, this, &QDialog::reject);
@@ -97,7 +104,7 @@ QString ConnectionDialog::clientInterface() {
 }
 
 QString ConnectionDialog::authenticationKey() {
-  return ui_->authentication_key_label->text();
+  return ui_->key_line_edit->text();
 }
 
 QString ConnectionDialog::clientName() {

@@ -234,6 +234,19 @@ add_library(veles_db
     ${SRC_DIR}/db/handle.cc
 )
 
+# LIB: veles_client
+add_library(veles_client
+#    ${CMAKE_BINARY_DIR}/messages.h
+    ${INCLUDE_DIR}/client/node.h
+    ${INCLUDE_DIR}/client/nodetree.h
+    ${INCLUDE_DIR}/client/networkclient.h
+    ${SRC_DIR}/client/node.cc
+    ${SRC_DIR}/client/nodetree.cc
+    ${SRC_DIR}/client/networkclient.cc)
+
+qt5_use_modules(veles_client Core Network)
+target_link_libraries(veles_client veles_base veles_data veles_network)
+
 qt5_use_modules(veles_db Core)
 add_dependencies(veles_db veles_network)
 target_link_libraries(veles_db veles_dbif parser)
@@ -352,7 +365,8 @@ add_executable(main_ui
     ${CMAKE_SOURCE_DIR}/moc_searchdialog.cpp
     ${CMAKE_SOURCE_DIR}/moc_trigram.cpp
     ${CMAKE_SOURCE_DIR}/moc_manipulator.cpp
-    ${CMAKE_SOURCE_DIR}/moc_connectiondialog.cpp)
+    ${CMAKE_SOURCE_DIR}/moc_connectiondialog.cpp
+    ${CMAKE_SOURCE_DIR}/moc_networkclient.cpp)
 
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${GENERATED_MOC_FILES})
 
@@ -394,7 +408,7 @@ endif(GTEST_FOUND AND GMOCK_FOUND)
 
 
 #target_link_libraries(test_veles veles)
-target_link_libraries(main_ui veles_base veles_db veles_network veles_visualization Qt5::Widgets parser)
+target_link_libraries(main_ui veles_base veles_db veles_network veles_client veles_visualization Qt5::Widgets parser)
 set_target_properties(main_ui PROPERTIES OUTPUT_NAME "veles")
 if(WIN32 AND NOT MSVC)
   set_target_properties(main_ui PROPERTIES RUNTIME_OUTPUT_DIRECTORY "bin")

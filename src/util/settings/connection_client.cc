@@ -143,7 +143,7 @@ void setDatabaseName(QString database_name) {
 }
 
 QString serverScriptDefault() {
-  return QString("");
+  return QString("../veles/python/srv.py");
 }
 
 QString serverScript() {

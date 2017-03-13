@@ -121,9 +121,9 @@ void VelesMainWindow::init() {
   tool_bar_ = addToolBar("Connection");
   tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
   connection_notification_widget_ = new ConnectionNotificationWidget(this);
-  connect(connection_manager_, &ConnectionManager::connectionStateChanged,
+  connect(connection_manager_, &ConnectionManager::connectionStatusChanged,
       connection_notification_widget_,
-      &ConnectionNotificationWidget::updateConnectionState);
+      &ConnectionNotificationWidget::updateConnectionStatus);
   tool_bar_->addWidget(connection_notification_widget_);
 
   connection_manager_->showConnectionDialogAction()->trigger();
