@@ -24,6 +24,8 @@
 #include <QPixmap>
 #include <QHBoxLayout>
 
+#include "client/networkclient.h"
+
 #include "ui/connectiondialog.h"
 #include "ui_connectionnotificationwidget.h"
 
@@ -38,8 +40,6 @@ class ConnectionManager : public QObject {
   Q_OBJECT
 
  public:
-  enum class ConnectionState {NotConnected, Connecting, Connected};
-
   ConnectionManager(QWidget* parent = nullptr);
   virtual ~ConnectionManager();
 
@@ -47,18 +47,22 @@ class ConnectionManager : public QObject {
   QAction* disconnectAction();
   QAction* killLocallyCreatedServerAction();
 
+ signals:
+  void connectionStatusChanged(
+      client::NetworkClient::ConnectionStatus connection_status);
+
  public slots:
   void locallyCreatedServerStarted();
   void locallyCreatedServerFinished(int exit_code,
       QProcess::ExitStatus exit_status);
   void connectionDialogAccepted();
+  void startClient();
   void startLocalServer();
   void killLocalServer();
   void disconnect();
   void serverProcessReadyRead();
-
- signals:
-  void connectionStateChanged(ConnectionState connection_state);
+  void updateConnectionStatus(
+      client::NetworkClient::ConnectionStatus connection_status);
 
  private:
   QAction* show_connection_dialog_action_;
@@ -67,6 +71,8 @@ class ConnectionManager : public QObject {
   QProcess* server_process_;
   ConnectionDialog* connection_dialog_;
   bool shut_down_server_on_close_;
+  client::NetworkClient* network_client_;
+  QTextStream* network_client_output_;
 };
 
 /*****************************************************************************/
@@ -81,14 +87,14 @@ class ConnectionNotificationWidget : public QWidget {
   virtual ~ConnectionNotificationWidget();
 
  public slots:
-  void updateConnectionState(
-      ConnectionManager::ConnectionState connection_state);
+  void updateConnectionStatus(
+      client::NetworkClient::ConnectionStatus connection_status);
 
  protected:
   void timerEvent(QTimerEvent* event);
 
  private:
-  ConnectionManager::ConnectionState connection_state_;
+  client::NetworkClient::ConnectionStatus connection_status_;
 
   int frame_;
   int last_status_change_;

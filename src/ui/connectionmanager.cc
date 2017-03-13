@@ -16,10 +16,12 @@
  */
 #include <QAction>
 #include <QFileDialog>
+#include <QTimer>
 
 #include "ui/logwidget.h"
 #include "ui/connectiondialog.h"
 #include "ui/connectionmanager.h"
+#include "util/version.h"
 
 namespace veles {
 namespace ui {
@@ -29,7 +31,8 @@ namespace ui {
 /*****************************************************************************/
 
 ConnectionManager::ConnectionManager(QWidget* parent)
-    : QObject(parent), server_process_(nullptr) {
+    : QObject(parent), server_process_(nullptr),
+    network_client_output_(nullptr) {
   connection_dialog_ = new ConnectionDialog(parent);
   show_connection_dialog_action_ = new QAction("Connect...", this);
   disconnect_action_ = new QAction("Disconnect", this);
@@ -46,6 +49,13 @@ ConnectionManager::ConnectionManager(QWidget* parent)
       this, &ConnectionManager::killLocalServer);
   connect(disconnect_action_, &QAction::triggered,
         this, &ConnectionManager::disconnect);
+
+  network_client_ = new client::NetworkClient(this);
+  network_client_output_ = new QTextStream(LogWidget::output());
+  network_client_->setOutput(network_client_output_);
+
+  connect(network_client_, &client::NetworkClient::connectionStatusChanged,
+      this, &ConnectionManager::updateConnectionStatus);
 }
 
 ConnectionManager::~ConnectionManager() {
@@ -54,6 +64,7 @@ ConnectionManager::~ConnectionManager() {
   }
 
   connection_dialog_->deleteLater();
+  delete network_client_output_;
 }
 
 QAction* ConnectionManager::showConnectionDialogAction() {
@@ -90,10 +101,24 @@ void ConnectionManager::connectionDialogAccepted() {
   if(connection_dialog_->runANewServer()) {
     shut_down_server_on_close_ = connection_dialog_->shutDownServerOnClose();
     startLocalServer();
+    QTextStream out(LogWidget::output());
+    out << "Waiting for a new server to start..." << endl;
+    QTimer::singleShot(2000, this, &ConnectionManager::startClient);
+  } else {
+    startClient();
   }
+}
 
-  // TODO actually connect with the server
-  // Can be done once C++ client library is created.
+void ConnectionManager::startClient() {
+  network_client_->connect(
+      connection_dialog_->serverHost(),
+      connection_dialog_->serverPort(),
+      connection_dialog_->clientInterface(),
+      connection_dialog_->clientName(),
+      veles::util::version::string,
+      "Veles UI",
+      "Veles UI",
+      QByteArray::fromHex(connection_dialog_->authenticationKey().toUtf8()));
 }
 
 void ConnectionManager::startLocalServer() {
@@ -127,7 +152,8 @@ void ConnectionManager::startLocalServer() {
       << server_file_name
       << connection_dialog_->databaseFile()
       << QString("%1:%2").arg(connection_dialog_->serverHost())
-      .arg(connection_dialog_->serverPort());
+      .arg(connection_dialog_->serverPort())
+      << connection_dialog_->authenticationKey();
 
 #if defined(Q_OS_LINUX)
   QString python_interpreter_executable("python3");
@@ -165,8 +191,9 @@ void ConnectionManager::killLocalServer() {
 }
 
 void ConnectionManager::disconnect() {
-  // TODO disconnect from the server
-  // Can be done once C++ client library is created.
+  if (network_client_) {
+    network_client_->disconnect();
+  }
 }
 
 void ConnectionManager::serverProcessReadyRead() {
@@ -179,13 +206,20 @@ void ConnectionManager::serverProcessReadyRead() {
   }
 }
 
+void ConnectionManager::updateConnectionStatus(
+      client::NetworkClient::ConnectionStatus connection_status) {
+  emit connectionStatusChanged(connection_status);
+  disconnect_action_->setEnabled(
+      connection_status != client::NetworkClient::ConnectionStatus::NotConnected);
+}
+
 /*****************************************************************************/
 /* ConnectionNotificationWidget */
 /*****************************************************************************/
 
 ConnectionNotificationWidget::ConnectionNotificationWidget(QWidget* parent)
     : QWidget(parent),
-      connection_state_(ConnectionManager::ConnectionState::NotConnected),
+      connection_status_(client::NetworkClient::ConnectionStatus::NotConnected),
     frame_(0), last_status_change_(-10) {
   ui_ = new Ui::ConnectionNotificationWidget;
   ui_->setupUi(this);
@@ -194,45 +228,45 @@ ConnectionNotificationWidget::ConnectionNotificationWidget(QWidget* parent)
   icon_not_connected_ = QPixmap(":/images/connection_not_connected.png");
   icon_alarm_ = QPixmap(":/images/connection_alarm.png");
 
-  updateConnectionState(connection_state_);
+  updateConnectionStatus(connection_status_);
   startTimer(500);
 }
 
 ConnectionNotificationWidget::~ConnectionNotificationWidget() {}
 
-void ConnectionNotificationWidget::updateConnectionState(
-    ConnectionManager::ConnectionState connection_state) {
-  if (connection_state != connection_state_) {
+void ConnectionNotificationWidget::updateConnectionStatus(
+    client::NetworkClient::ConnectionStatus connection_status) {
+  if (connection_status != connection_status_) {
     last_status_change_ = frame_;
   }
 
-  switch (connection_state) {
-  case ConnectionManager::ConnectionState::NotConnected:
+  switch (connection_status) {
+  case client::NetworkClient::ConnectionStatus::NotConnected:
     ui_->connection_status_text_label->setText("Not connected");
     ui_->connection_status_icon_label->setPixmap(icon_not_connected_);
     break;
-  case ConnectionManager::ConnectionState::Connecting:
+  case client::NetworkClient::ConnectionStatus::Connecting:
     ui_->connection_status_text_label->setText("Connecting");
     ui_->connection_status_icon_label->setPixmap(icon_not_connected_);
     break;
-  case ConnectionManager::ConnectionState::Connected:
+  case client::NetworkClient::ConnectionStatus::Connected:
     ui_->connection_status_text_label->setText("Connected");
     ui_->connection_status_icon_label->setPixmap(icon_connected_);
     break;
   }
 
-  connection_state_ = connection_state;
+  connection_status_ = connection_status;
 
 }
 
 void ConnectionNotificationWidget::timerEvent(QTimerEvent* event) {
   ++frame_;
 
-  if (connection_state_ == ConnectionManager::ConnectionState::Connecting) {
+  if (connection_status_ == client::NetworkClient::ConnectionStatus::Connecting) {
     ui_->connection_status_icon_label->setPixmap(
         frame_ % 2 ? icon_connected_ : icon_not_connected_);
-  } else if (connection_state_
-      == ConnectionManager::ConnectionState::NotConnected) {
+  } else if (connection_status_
+      == client::NetworkClient::ConnectionStatus::NotConnected) {
     if(frame_ - last_status_change_ < 10) {
       ui_->connection_status_icon_label->setPixmap(
           frame_ % 2 ? icon_alarm_ : icon_not_connected_);

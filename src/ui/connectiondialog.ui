@@ -133,8 +133,14 @@
      </item>
      <item row="3" column="1">
       <widget class="QLineEdit" name="key_line_edit">
+       <property name="inputMask">
+        <string/>
+       </property>
+       <property name="maxLength">
+        <number>128</number>
+       </property>
        <property name="placeholderText">
-        <string>Keep it a secret</string>
+        <string>Up to 128 hexadecimal digits. Keep it a secret!</string>
        </property>
       </widget>
      </item>
