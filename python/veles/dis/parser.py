@@ -42,8 +42,7 @@ class ParseWord:
     def parse(self, pstate):
         if pstate.res.desync:
             return
-        # XXX BinData support
-        width = 8
+        width = pstate.data.width
         nbytes = self.field.width // width
         assert self.field.width % width == 0
         if nbytes != 1:
