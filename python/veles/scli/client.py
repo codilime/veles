@@ -44,7 +44,7 @@ class Client:
         msg = {
             'id': base.ObjectID(
                 random.getrandbits(192).to_bytes(24, 'little')),
-            'parent': parent,
+            'parent': parent or base.ObjectID(),
             'pos_start': pos[0],
             'pos_end': pos[1],
             'tags': tags,

@@ -250,38 +250,14 @@ class Proto(asyncio.Protocol):
     def send_obj_reply(self, qid, obj):
         self.send_msg(definitions.MsgGetReply(
             qid=qid,
-            id=obj.id,
-            parent=obj.parent.id if obj.parent is not None else None,
-            pos_start=obj.pos[0],
-            pos_end=obj.pos[1],
-            tags=list(obj.tags),
-            attr=obj.attr,
-            data=list(obj.data),
-            bindata=obj.bindata,
+            obj=obj.node,
         ))
 
     def send_list_reply(self, qid, new, gone):
-        res = []
-        for obj in new:
-            res.append({
-                'id': obj.id,
-                'gone': False,
-                'parent': obj.parent.id if obj.parent is not None else None,
-                'pos_start': obj.pos[0],
-                'pos_end': obj.pos[1],
-                'tags': list(obj.tags),
-                'attr': obj.attr,
-                'data': list(obj.data),
-                'bindata': obj.bindata,
-            })
-        for id in gone:
-            res.append({
-                'id': id,
-                'gone': True,
-            })
         self.send_msg(definitions.MsgListReply(
-            objs=res,
+            objs=[obj.node for obj in new],
             qid=qid,
+            gone=gone
         ))
 
     def send_obj_gone(self, qid):

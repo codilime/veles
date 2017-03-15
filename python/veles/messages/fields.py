@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from veles.compatibility import pep487
 
-class Field:
+
+class Field(pep487.NewObject):
     def __init__(self, optional=False):
         self.name = None
         self.optional = optional
@@ -48,12 +50,12 @@ class Any(Field):
 
 class Integer(Field):
     def __init__(self, optional=False, minimum=-2**63, maximum=2**64-1):
-        super().__init__(optional)
+        super(Integer, self).__init__(optional)
         self.minimum = minimum
         self.maximum = maximum
 
     def validate(self, value):
-        super().validate(value)
+        super(Integer, self).validate(value)
         if value is None:
             return
         if not isinstance(value, int):
@@ -70,7 +72,7 @@ class Integer(Field):
 
 class Boolean(Field):
     def validate(self, value):
-        super().validate(value)
+        super(Boolean, self).validate(value)
         if value is None:
             return
         if not isinstance(value, bool):
@@ -81,7 +83,7 @@ class Boolean(Field):
 
 class Float(Field):
     def validate(self, value):
-        super().validate(value)
+        super(Float, self).validate(value)
         if value is None:
             return
         if not isinstance(value, float):
@@ -92,7 +94,7 @@ class Float(Field):
 
 class String(Field):
     def validate(self, value):
-        super().validate(value)
+        super(String, self).validate(value)
         if value is None:
             return
         if not isinstance(value, str):
@@ -103,7 +105,7 @@ class String(Field):
 
 class Binary(Field):
     def validate(self, value):
-        super().validate(value)
+        super(Binary, self).validate(value)
         if value is None:
             return
         if not isinstance(value, bytes):
@@ -114,7 +116,7 @@ class Binary(Field):
 
 class Array(Field):
     def __init__(self, optional=False, elements_types=None, local_type=list):
-        super().__init__(optional)
+        super(Array, self).__init__(optional)
         self._allowed_local = (list, tuple, set, frozenset)
         if elements_types:
             self.elements_types = elements_types
@@ -125,7 +127,7 @@ class Array(Field):
         self.local_type = local_type
 
     def validate(self, value):
-        super().validate(value)
+        super(Array, self).validate(value)
         if value is None:
             return []
         if not isinstance(value, self._allowed_local):
@@ -148,7 +150,7 @@ class Array(Field):
 
 class Map(Field):
     def __init__(self, optional=False, keys_types=None, values_types=None):
-        super().__init__(optional)
+        super(Map, self).__init__(optional)
         if keys_types:
             self.keys_types = keys_types
         else:
@@ -159,7 +161,7 @@ class Map(Field):
             self.values_types = [Any()]
 
     def validate(self, value):
-        super().validate(value)
+        super(Map, self).validate(value)
         if value is None:
             return {}
         if not isinstance(value, dict):
@@ -191,11 +193,11 @@ class Map(Field):
 
 class Extension(Field):
     def __init__(self, obj_type, optional=False):
-        super().__init__(optional)
+        super(Extension, self).__init__(optional)
         self.obj_type = obj_type
 
     def validate(self, value):
-        super().validate(value)
+        super(Extension, self).validate(value)
         if value is None:
             return
         if not isinstance(value, self.obj_type):
@@ -205,29 +207,19 @@ class Extension(Field):
 
 
 class Object(Field):
-    def __init__(self, optional=False, attributes_spec=[], local_type=None):
-        super().__init__(optional)
-        self.attributes = attributes_spec
+    def __init__(self, local_type, optional=False):
+        super(Object, self).__init__(optional)
         self.keys_types = [String()]
         self.local_type = local_type
 
     def validate(self, value):
-        super().validate(value)
-        if not isinstance(value, dict):
-            raise ValueError(
-                'Attribute {} has to be dict type.'.format(self.name))
-        for val in value.keys():
-            for key_type in self.keys_types:
-                try:
-                    key_type.validate(val)
-                    break
-                except ValueError:
-                    pass
+        super(Object, self).validate(value)
+        if isinstance(value, dict):
+            return self.local_type(**value)
 
-        prep_val = {}
-        for attr_name, attr_type in self.attributes:
-            prep_val[attr_name] = attr_type.validate(
-                value.get(attr_name, None))
-        if self.local_type:
-            return self.local_type(**prep_val)
-        return prep_val
+        if isinstance(value, self.local_type):
+            return value
+
+        raise ValueError(
+            'Attribute {} has to be dict or type.'.format(
+                self.name, self.local_type))

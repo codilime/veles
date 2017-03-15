@@ -13,27 +13,16 @@
 # limitations under the License.
 
 from veles.common import base
-from veles.compatibility.pep487 import NewObject
 from . import fields
 
 
-class MsgpackMsg(NewObject):
+class MsgpackMsg(base.Model):
     message_types = {}
 
-    def __init__(self, **kwargs):
-        for field_name, field in kwargs.items():
-            setattr(self, field_name, field)
-
     def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
+        super(MsgpackMsg, cls).__init_subclass__(**kwargs)
 
         cls.message_types[cls.msg_type] = cls
-        cls.fields = []
-        for attr_name, attr in cls.__dict__.items():
-            try:
-                attr.add_to_class(cls)
-            except AttributeError:
-                pass
 
     @classmethod
     def load(cls, unpacker):
@@ -54,10 +43,7 @@ class MsgpackMsg(NewObject):
         return packer.pack(obj)
 
     def __str__(self):
-        obj = {}
-        for field in self.fields:
-            obj[field.name] = field.__get__(self)
-        msg = '{}: {}'.format(self.msg_type, obj)
+        msg = '{}: {}'.format(self.msg_type, self.to_dict())
         return msg
 
     __repr__ = __str__
@@ -137,17 +123,10 @@ class MsgObjGone(MsgpackMsg):
 class MsgListReply(MsgpackMsg):
     msg_type = 'list_reply'
 
-    objs = fields.Array(elements_types=[fields.Object(attributes_spec=[
-        ('id', fields.Extension(obj_type=base.ObjectID)),
-        ('gone', fields.Boolean()),
-        ('parent', fields.Extension(obj_type=base.ObjectID, optional=True)),
-        ('pos_start', fields.Integer(optional=True)),
-        ('pos_end', fields.Integer(optional=True)),
-        ('tags', fields.Array(elements_types=[fields.String()],
-                              local_type=set, optional=True)),
-        ('attr', fields.Map(optional=True, keys_types=[fields.String()])),
-        ('data', fields.Array(optional=True)),
-        ('bindata', fields.Map(optional=True))])])
+    objs = fields.Array(elements_types=[fields.Object(
+        local_type=base.Node)])
+    gone = fields.Array(elements_types=[fields.Extension(
+        obj_type=base.ObjectID)])
     qid = fields.Integer()
 
 
@@ -163,15 +142,7 @@ class MsgGetReply(MsgpackMsg):
     msg_type = 'get_reply'
 
     qid = fields.Integer()
-    id = fields.Extension(obj_type=base.ObjectID)
-    parent = fields.Extension(obj_type=base.ObjectID, optional=True)
-    pos_start = fields.Integer(optional=True)
-    pos_end = fields.Integer(optional=True)
-    attr = fields.Map(optional=True, keys_types=[fields.String()])
-    tags = fields.Array(optional=True, elements_types=[fields.String()],
-                        local_type=set)
-    data = fields.Array(optional=True, elements_types=[fields.String()])
-    bindata = fields.Map(optional=True, keys_types=[fields.String()])
+    obj = fields.Object(local_type=base.Node)
 
 
 class MsgGetData(MsgpackMsg):

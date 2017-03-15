@@ -16,8 +16,11 @@ import inspect
 
 import msgpack
 
+from veles.common import base
+from veles.compatibility import pep487
 
-class MsgpackWrapper:
+
+class MsgpackWrapper(pep487.NewObject):
     def __init__(self):
         self.packer = msgpack.Packer(
             use_bin_type=True, default=MsgpackWrapper.pack_obj)
@@ -31,6 +34,8 @@ class MsgpackWrapper:
         if obj.__class__ in cls.type_to_code:
             return msgpack.ExtType(
                 cls.type_to_code[obj.__class__], obj.to_bytes())
+        if callable(getattr(obj, "to_dict", None)):
+            return obj.to_dict()
         raise TypeError('Object of unknown type {}'.format(obj))
 
     @classmethod
@@ -43,7 +48,7 @@ class MsgpackWrapper:
     code_to_type = {}
 
     @classmethod
-    def register_type(cls, type_class, type_code):
+    def register_ext_type(cls, type_class, type_code):
         if type_code < 0 or type_code > 127:
             raise ValueError('type_code must be between 0 and 127')
         if type_code in cls.code_to_type:
@@ -55,3 +60,6 @@ class MsgpackWrapper:
 
         cls.code_to_type[type_code] = type_class
         cls.type_to_code[type_class] = type_code
+
+
+MsgpackWrapper.register_ext_type(base.ObjectID, 0)
