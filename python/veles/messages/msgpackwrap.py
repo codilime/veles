@@ -12,12 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import inspect
-
 import msgpack
 
+import six
+
 from veles.common import base
+from veles.data.bindata import BinData
 from veles.compatibility import pep487
+from veles.compatibility.int_bytes import int_to_bytes, int_from_bytes
+
+
+EXT_NODE_ID = 0
+EXT_BINDATA = 1
+EXT_BIGINT = 2
+EXT_NEGBIGINT = 3
 
 
 class MsgpackWrapper(pep487.NewObject):
@@ -31,35 +39,32 @@ class MsgpackWrapper(pep487.NewObject):
     def pack_obj(cls, obj):
         if isinstance(obj, (set, frozenset)):
             return list(obj)
-        if obj.__class__ in cls.type_to_code:
-            return msgpack.ExtType(
-                cls.type_to_code[obj.__class__], obj.to_bytes())
+        if isinstance(obj, base.ObjectID):
+            return msgpack.ExtType(EXT_NODE_ID, obj.bytes)
+        if isinstance(obj, BinData):
+            width = int_to_bytes(obj.width, 4, 'little')
+            return msgpack.ExtType(EXT_BINDATA, width + obj.raw_data)
+        if isinstance(obj, six.integer_types):
+            sz = (obj.bit_length() + 7) // 8
+            if obj < 0:
+                raw = int_to_bytes(-obj, sz, 'little')
+                return msgpack.ExtType(EXT_NEGBIGINT, raw)
+            else:
+                raw = int_to_bytes(obj, sz, 'little')
+                return msgpack.ExtType(EXT_BIGINT, raw)
         if callable(getattr(obj, "to_dict", None)):
             return obj.to_dict()
         raise TypeError('Object of unknown type {}'.format(obj))
 
     @classmethod
     def load_obj(cls, code, data):
-        if code in cls.code_to_type:
-            return cls.code_to_type[code](data)
+        if code == EXT_NODE_ID:
+            return base.ObjectID(data)
+        elif code == EXT_BINDATA:
+            width = int_from_bytes(data[:4], 'little')
+            return BinData.from_raw_data(width, data[4:])
+        elif code == EXT_BIGINT:
+            return int_from_bytes(data, 'little')
+        elif code == EXT_NEGBIGINT:
+            return -int_from_bytes(data, 'little')
         return msgpack.ExtType(code, data)
-
-    type_to_code = {}
-    code_to_type = {}
-
-    @classmethod
-    def register_ext_type(cls, type_class, type_code):
-        if type_code < 0 or type_code > 127:
-            raise ValueError('type_code must be between 0 and 127')
-        if type_code in cls.code_to_type:
-            raise ValueError('type_code already used')
-        if not inspect.isclass(type_class):
-            raise ValueError('type_class is not a class')
-        if not callable(getattr(type_class, "to_bytes", None)):
-            raise ValueError('type_class has to have to_bytes method')
-
-        cls.code_to_type[type_code] = type_class
-        cls.type_to_code[type_class] = type_code
-
-
-MsgpackWrapper.register_ext_type(base.ObjectID, 0)
