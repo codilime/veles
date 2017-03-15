@@ -16,38 +16,7 @@ import operator
 
 from six.moves import range
 
-
-def _to_bytes(num, size, endian):
-    try:
-        return num.to_bytes(size, endian)
-    except AttributeError:
-        if num >= (1 << (size * 8)):
-            raise OverflowError('int too big to convert')
-        if num < 0:
-            raise OverflowError('can\'t convert negative int to unsigned')
-        if endian not in ['little', 'big']:
-            raise ValueError('byteorder must be either \'little\' or \'big\'')
-        res = bytearray([
-            num >> (x * 8) & 0xff
-            for x in range(size)
-        ])
-        if endian == 'big':
-            return res[::-1]
-        return res
-
-
-def _from_bytes(data, endian):
-    try:
-        return int.from_bytes(data, endian)
-    except AttributeError:
-        if endian not in ['little', 'big']:
-            raise ValueError('byteorder must be either \'little\' or \'big\'')
-        if endian == 'big':
-            data = data[::-1]
-        return sum(
-            x << (i * 8)
-            for i, x in enumerate(bytearray(data))
-        )
+from veles.compatibility.int_bytes import int_to_bytes, int_from_bytes
 
 
 class BinData(object):
@@ -88,7 +57,7 @@ class BinData(object):
                 x = operator.index(x)
                 if x >= (1 << width) or x < 0:
                     raise ValueError('BinData element out of range for width')
-                self._raw_data += _to_bytes(x, ope, 'little')
+                self._raw_data += int_to_bytes(x, ope, 'little')
 
     @classmethod
     def from_spaced_hex(cls, width, data):
@@ -198,7 +167,7 @@ class BinData(object):
                 if idx >= len(self):
                     raise IndexError('BinData index out of range')
             raw = self._raw_data[ope * idx:ope * (idx + 1)]
-            return _from_bytes(raw, 'little')
+            return int_from_bytes(raw, 'little')
 
     def __setitem__(self, idx, val):
         """
@@ -246,7 +215,7 @@ class BinData(object):
             val = operator.index(val)
             if val >= (1 << self._width) or val < 0:
                 raise ValueError('BinData element out of range for width')
-            raw = _to_bytes(val, ope, 'little')
+            raw = int_to_bytes(val, ope, 'little')
             self._raw_data[ope * idx:ope * (idx + 1)] = raw
 
     def __str__(self):
