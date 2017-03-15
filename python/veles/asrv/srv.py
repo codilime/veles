@@ -17,12 +17,11 @@
 # They are hidden in the mist
 # And in the silver rain
 
-import sqlite3
 import weakref
 
-from veles.messages import msgpackwrap
-from veles.schema import nodeid
-from veles.proto import node
+from veles.proto.node import Node
+from veles.db import Database
+
 
 APP_ID = int.from_bytes(b'ml0n', 'big')
 
@@ -73,13 +72,10 @@ class BaseLister:
 
 
 class Object:
-    def __init__(self, srv, id, parent, pos, tags, attr, data, bindata):
+    def __init__(self, srv, parent, node):
         self.srv = srv
         self.parent = parent
-        self.node = node.Node(
-            id=id, parent=parent.node.id if parent else None,
-            pos_start=pos[0], pos_end=pos[1],
-            tags=tags, attr=attr, data=data, bindata=bindata)
+        self.node = node
         self.subs = set()
         self.data_subs = {}
         self.listers = set()
@@ -119,71 +115,11 @@ class Object:
 class Server:
     def __init__(self, loop, path):
         self.loop = loop
-        self.db = sqlite3.connect(path)
-        appid = self.db.cursor().execute('pragma application_id').fetchone()[0]
-        if appid == 0:
-            self.new_db()
-        elif appid != APP_ID:
-            raise ValueError('invalid application ID')
-        self.db.cursor().execute('pragma foreign_keys = on')
-        fk = self.db.cursor().execute('pragma foreign_keys').fetchone()[0]
-        if not fk:
-            raise ValueError('foreign keys not supported by sqlite')
+        self.db = Database(path)
         self.conns = {}
         self.objs = weakref.WeakValueDictionary()
         self.next_cid = 0
         self.top_listers = set()
-        wrapper = msgpackwrap.MsgpackWrapper()
-        self.unpacker = wrapper.unpacker
-        self.packer = wrapper.packer
-
-    def _load(self, data):
-        self.unpacker.feed(data)
-        return self.unpacker.unpack()
-
-    def new_db(self):
-        c = self.db.cursor()
-        c.execute('pragma application_id = {}'.format(APP_ID))
-        c.execute("""
-            CREATE TABLE object(
-                id BLOB PRIMARY KEY,
-                parent REFERENCES object(id),
-                pos_start INTEGER,
-                pos_end INTEGER
-            )
-        """)
-        c.execute("""
-            CREATE TABLE object_tag(
-                obj_id BLOB REFERENCES object(id),
-                name VARCHAR,
-                PRIMARY KEY (obj_id, name)
-            )
-        """)
-        c.execute("""
-            CREATE TABLE object_attr(
-                obj_id BLOB REFERENCES object(id),
-                name VARCHAR,
-                data BLOB,
-                PRIMARY KEY (obj_id, name)
-            )
-        """)
-        c.execute("""
-            CREATE TABLE object_data(
-                obj_id BLOB REFERENCES object(id),
-                name VARCHAR,
-                data BLOB,
-                PRIMARY KEY (obj_id, name)
-            )
-        """)
-        c.execute("""
-            CREATE TABLE object_bindata(
-                obj_id BLOB REFERENCES object(id),
-                name VARCHAR,
-                data BLOB,
-                PRIMARY KEY (obj_id, name)
-            )
-        """)
-        self.db.commit()
 
     def new_conn(self, conn):
         cid = self.next_cid
@@ -198,31 +134,15 @@ class Server:
 
     def create(self, obj_id, parent, *, tags=[], attr={}, data={}, bindata={},
                pos=(None, None)):
-        raw_obj_id = obj_id.bytes
-        raw_parent = parent.bytes if parent else None
-        c = self.db.cursor()
-        c.execute("""
-            INSERT INTO object (id, parent, pos_start, pos_end)
-            VALUES (?, ?, ?, ?)
-        """, (raw_obj_id, raw_parent, pos[0], pos[1]))
-        for tag in tags:
-            c.execute("""
-                INSERT INTO object_tag (obj_id, name) VALUES (?, ?)
-            """, (raw_obj_id, tag))
-        for key, val in attr.items():
-            c.execute("""
-                INSERT INTO object_attr (obj_id, name, data) VALUES (?, ?, ?)
-            """, (raw_obj_id, key, self.packer.pack(val)))
+        node = Node(id=obj_id, parent=parent, pos_start=pos[0],
+                    pos_end=pos[1], tags=tags, attr=attr, data=set(data),
+                    bindata={x: len(y) for x, y in bindata.items()})
+        self.db.create(node)
         for key, val in data.items():
-            c.execute("""
-                INSERT INTO object_data (obj_id, name, data) VALUES (?, ?, ?)
-            """, (raw_obj_id, key, self.packer.pack(val)))
+            self.db.set_data(node.id, key, val)
         for key, val in bindata.items():
-            c.execute("""
-                INSERT INTO object_bindata (obj_id, name, data)
-                VALUES (?, ?, ?)
-            """, (raw_obj_id, key, val))
-        self.db.commit()
+            self.db.set_bindata(node.id, key, start=0, data=val,
+                                truncate=False)
         obj = self.get(obj_id)
         if obj.parent is None:
             listers = self.top_listers
@@ -235,31 +155,11 @@ class Server:
 
     def delete(self, obj_id):
         obj = self.get(obj_id)
-        raw_obj_id = obj_id.bytes
         if obj is None:
             return
-        c = self.db.cursor()
-        c.execute("""
-            SELECT id FROM object WHERE parent = ?
-        """, (raw_obj_id,))
-        for id, in c.fetchall():
-            self.delete(nodeid.NodeID(id))
-        c.execute("""
-            DELETE FROM object_tag WHERE obj_id = ?
-        """, (raw_obj_id,))
-        c.execute("""
-            DELETE FROM object_attr WHERE obj_id = ?
-        """, (raw_obj_id,))
-        c.execute("""
-            DELETE FROM object_data WHERE obj_id = ?
-        """, (raw_obj_id,))
-        c.execute("""
-            DELETE FROM object_bindata WHERE obj_id = ?
-        """, (raw_obj_id,))
-        c.execute("""
-            DELETE FROM object WHERE id = ?
-        """, (raw_obj_id,))
-        self.db.commit()
+        for oid in self.db.list(obj_id):
+            self.delete(oid)
+        self.db.delete(obj_id)
         obj.clear_subs()
         if obj.parent is None:
             listers = self.top_listers
@@ -275,60 +175,26 @@ class Server:
         try:
             return self.objs[obj_id]
         except KeyError:
-            raw_obj_id = obj_id.bytes
-            c = self.db.cursor()
-            c.execute("""
-                SELECT parent, pos_start, pos_end FROM object WHERE id = ?
-            """, (raw_obj_id,))
-            rows = c.fetchall()
-            if not rows:
+            node = self.db.get(obj_id)
+            if not node:
                 return None
-            (parent, pos_start, pos_end), = rows
-            if parent is not None:
-                parent = self.get(nodeid.NodeID(parent))
-            c.execute("""
-                SELECT name FROM object_tag WHERE obj_id = ?
-            """, (raw_obj_id,))
-            tags = {x for x, in c.fetchall()}
-            c.execute("""
-                SELECT name, data FROM object_attr WHERE obj_id = ?
-            """, (raw_obj_id,))
-            attr = {k: self._load(v) for k, v in c.fetchall()}
-            c.execute("""
-                SELECT name FROM object_data WHERE obj_id = ?
-            """, (raw_obj_id,))
-            data = {x for x, in c.fetchall()}
-            c.execute("""
-                SELECT name, length(data) FROM object_bindata WHERE obj_id = ?
-            """, (raw_obj_id,))
-            bindata = {x: y for x, y in c.fetchall()}
-            res = Object(self, obj_id, parent, (pos_start, pos_end),
-                         tags, attr, data, bindata)
+            if node.parent:
+                parent = self.get(node.parent)
+            else:
+                parent = None
+            res = Object(self, parent, node)
             self.objs[obj_id] = res
             return res
 
     def get_data(self, obj, key):
-        c = self.db.cursor()
-        c.execute("""
-            SELECT data FROM object_data WHERE obj_id = ? AND name = ?
-        """, (obj.id.bytes, key))
-        rows = c.fetchall()
-        if not rows:
-            return None
-        (data,), = rows
-        return self._load(data)
+        return self.db.get_data(obj.node.id, key)
 
     def run_lister(self, lister, sub=False):
-        c = self.db.cursor()
         if lister.parent is not None:
-            c.execute("""
-                SELECT id FROM object WHERE parent = ?
-            """, (lister.parent.node.id.bytes,))
+            parent = lister.parent.node.id
         else:
-            c.execute("""
-                SELECT id FROM object WHERE parent IS NULL
-            """)
-        obj_ids = [nodeid.NodeID(x) for x, in c.fetchall()]
+            parent = None
+        obj_ids = self.db.list(parent)
         objs = [self.get(x) for x in obj_ids]
         objs = [x for x in objs if lister.matches(x)]
         lister.list_changed(objs, [])
