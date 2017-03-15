@@ -62,6 +62,63 @@ class Model(pep487.NewObject):
                 val.popitem()[0], cls.__name__))
         return cls(**args)
 
+    @classmethod
+    def generate_cpp_code(cls, bases=None, extra_pack=None, extra_code=''):
+        # TODO nil handling
+        code = '\\\n'
+        inherit = ''
+        if bases:
+            inherit = ' : {}'.format(
+                ', '.join(['public {}'.format(base[0]) for base in bases]))
+        code += 'class {}{} {{\\\n'.format(cls.__name__, inherit)
+        code += ' public:\\\n'
+
+        # TODO some encapsulation ?
+        for field in cls.fields:
+            code += '  {} {};\\\n'.format(field.cpp_type(), field.name)
+
+        # TODO set basic types to some predictable starting value
+        if bases:
+            bases_cons = ', '.join(['{}({})'.format(base[0], base[1])
+                                    for base in bases])
+            code += '  {}() : {} {{}}\\\n'.format(
+                cls.__name__, bases_cons)
+            if cls.fields:
+                code += '  {}({}) : {}, {} {{}}\\\n'.format(
+                    cls.__name__,
+                    ', '.join(
+                        'const {}& {}'.format(field.cpp_type(), field.name)
+                        for field in cls.fields),
+                    bases_cons,
+                    ', '.join('{}({})'.format(field.name, field.name)
+                              for field in cls.fields))
+        else:
+            code += '  {}() {{}}\\\n'.format(cls.__name__)
+            if cls.fields:
+                code += '  {}({}) : {} {{}}\\\n'.format(
+                    cls.__name__,
+                    ', '.join(
+                        'const {}& {}'.format(field.cpp_type(), field.name)
+                        for field in cls.fields),
+                    ', '.join('{}({})'.format(field.name, field.name)
+                              for field in cls.fields))
+
+        code += extra_code
+
+        if extra_pack is None:
+            extra_pack = []
+        code += ' public:\\\n'
+        code += '  MSGPACK_DEFINE_MAP(' + ', '.join(
+            [field.name for field in cls.fields] + extra_pack) + ');\\\n'
+
+        code += '};\\\n'
+
+        return code
+
+    @classmethod
+    def cpp_type(cls):
+        return cls.__name__
+
     def __str__(self):
         return '{}({})'.format(type(self).__name__, ', '.join(
             '{}={!r}'.format(field.name, field.__get__(self))
@@ -117,3 +174,40 @@ class PolymorphicModel(Model):
             raise SchemaError('Object type not a subclass of {}'.format(
                 cls.__name__))
         return super(PolymorphicModel, rcls).load(val)
+
+    @classmethod
+    def generate_base_code(cls):
+        code = '''\\
+class {0} {{\\
+ public:\\
+  template<typename T> static {0} * createInstance() {{ return new T; }}\\
+  static std::map<std::string, {0}*(*)()>& object_types() {{\\
+    static std::map<std::string, {0}*(*)()> object_types;\\
+    return object_types;\\
+  }}\\
+  static void initObjectTypes() {{\\
+{1}  }}\\
+  std::string object_type;\\
+  {0}(std::string object_type) : object_type(object_type) {{}}\\
+  virtual void msgpack_unpack(msgpack::object const& o) = 0;\\
+  virtual void serialize(msgpack::packer<msgpack::sbuffer>& pac) = 0;\\
+}};\\
+'''.format(cls.cpp_type(),
+           ''.join(
+               ['    object_types()["{}"] = &createInstance<{}>;\\\n'.format(
+                   obj_type, obj_class.cpp_type())
+                for obj_type, obj_class in cls.object_types.items()]))
+        return code
+
+    @classmethod
+    def generate_cpp_code(cls, bases=None, extra_pack=None, extra_code=''):
+        # TODO think how serialize should behave exactly - we can't do it like
+        # msgpack_unpack since it is template function
+        serialize = '''\\
+  void serialize(msgpack::packer<msgpack::sbuffer>& pac) {\\
+    pac.pack(*this);\\
+  }'''
+
+        return super(PolymorphicModel, cls).generate_cpp_code(
+            [(cls.__bases__[0].__name__,
+              '"{}"'.format(cls.object_type))], ['object_type'], serialize)

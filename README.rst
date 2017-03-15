@@ -12,6 +12,8 @@ Dependencies:
 - ``cmake`` >= 3.1.0
 - ``zlib``
 - ``qt`` >= 5.5
+- ``Python3``
+    - ``virtualenv``
 
 Caveats:
 ``qt`` >= 5.6 is required if you want to rearrange tabs using drag&drop.
