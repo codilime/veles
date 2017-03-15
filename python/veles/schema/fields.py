@@ -78,9 +78,15 @@ class Field(pep487.NewObject):
     def _dump(self, value):
         return value
 
+    def cpp_type(self):
+        raise NotImplementedError()
+
 
 class Any(Field):
     value_type = object
+
+    def cpp_type(self):
+        return 'msgpack::object'
 
 
 class Integer(Field):
@@ -107,6 +113,10 @@ class Integer(Field):
             raise SchemaError('Attribute {} maximum value is {}.'.format(
                 self.name, self.maximum))
 
+    # TODO convert to use bignums
+    def cpp_type(self):
+        return 'int64_t'
+
 
 class UnsignedInteger(Integer):
     def __init__(self, optional=False, default=None,
@@ -117,6 +127,10 @@ class UnsignedInteger(Integer):
             raise ValueError('UnsignedInteger minimum must not be negative')
         super(UnsignedInteger, self).__init__(
             optional, default, minimum, maximum)
+
+    # TODO convert to use bignums
+    def cpp_type(self):
+        return 'uint64_t'
 
 
 INT64_MIN = -2**63
@@ -138,6 +152,9 @@ class SmallInteger(Integer):
         super(SmallInteger, self).__init__(
             optional, default, minimum, maximum)
 
+    def cpp_type(self):
+        return 'int64_t'
+
 
 class SmallUnsignedInteger(Integer):
     def __init__(self, optional=False, default=None,
@@ -153,29 +170,50 @@ class SmallUnsignedInteger(Integer):
         super(SmallUnsignedInteger, self).__init__(
             optional, default, minimum, maximum)
 
+    def cpp_type(self):
+        return 'uint64_t'
+
 
 class Boolean(Field):
     value_type = bool
+
+    def cpp_type(self):
+        return 'bool'
 
 
 class Float(Field):
     value_type = float
 
+    def cpp_type(self):
+        return 'double'
+
 
 class String(Field):
     value_type = six.text_type
+
+    def cpp_type(self):
+        return 'std::string'
 
 
 class Binary(Field):
     value_type = bytes
 
+    def cpp_type(self):
+        return 'std::vector<uint8_t>'
+
 
 class NodeID(Field):
     value_type = nodeid.NodeID
 
+    def cpp_type(self):
+        return 'veles::data::NodeID'
+
 
 class BinData(Field):
     value_type = bindata.BinData
+
+    def cpp_type(self):
+        return 'veles::data::BinData'
 
 
 class Collection(Field):
@@ -215,9 +253,17 @@ class Collection(Field):
 class List(Collection):
     value_type = list
 
+    def cpp_type(self):
+        elem_type = self.element.cpp_type()
+        return 'std::vector<{}>'.format(elem_type)
+
 
 class Set(Collection):
     value_type = set
+
+    def cpp_type(self):
+        elem_type = self.element.cpp_type()
+        return 'std::unordered_set<{}>'.format(elem_type)
 
 
 class Map(Field):
@@ -238,6 +284,11 @@ class Map(Field):
         for k, v in value.items():
             self.key.validate(k)
             self.value.validate(v)
+
+    def cpp_type(self):
+        key_type = self.key.cpp_type()
+        value_type = self.value.cpp_type()
+        return 'std::unordered_map<{},{}>'.format(key_type, value_type)
 
     def _load(self, value):
         if not isinstance(value, dict):
@@ -266,6 +317,9 @@ class Object(Field):
     def _dump(self, value):
         return value.dump()
 
+    def cpp_type(self):
+        return self.value_type.cpp_type()
+
 
 class Enum(Field):
     def __init__(self, value_type, optional=False, default=None):
@@ -283,3 +337,8 @@ class Enum(Field):
 
     def _dump(self, value):
         return six.text_type(value.name)
+
+    def cpp_type(self):
+        # TODO implement this - we will need to generate
+        # some code from value_type class
+        raise NotImplementedError()

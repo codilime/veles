@@ -28,6 +28,7 @@ include("cmake/googletest.cmake")
 include("cmake/qt.cmake")
 include("cmake/zlib.cmake")
 include("cmake/protobuf.cmake")
+include("cmake/msgpack.cmake")
 # Compiler flags
 set(CMAKE_CXX_STANDARD_REQUIRED 11) # Use c++11
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -140,10 +141,13 @@ add_library(veles_data
     ${INCLUDE_DIR}/data/bindata.h
     ${INCLUDE_DIR}/data/repack.h
     ${INCLUDE_DIR}/data/field.h
+    ${INCLUDE_DIR}/data/msgobject.h
     ${SRC_DIR}/data/bindata.cc
     ${SRC_DIR}/data/repack.cc
+    ${SRC_DIR}/data/msgobject.cc
 )
 
+add_dependencies(veles_data msgpack-c)
 qt5_use_modules(veles_data Core)
 
 # LIB: veles_dbif
