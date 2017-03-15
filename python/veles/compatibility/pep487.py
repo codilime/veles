@@ -15,15 +15,17 @@
 import sys
 import types
 
+import six
+
 
 if sys.version_info < (3, 6):
     class NewType(type):
         def __init__(self, name, bases, ns, **kwargs):
-            super().__init__(name, bases, ns)
+            super(NewType, self).__init__(name, bases, ns)
 
         def __new__(cls, *args, **kwargs):
             if len(args) != 3:
-                return super().__new__(cls, *args)
+                return super(NewType, cls).__new__(cls, *args)
 
             name, bases, ns = args
 
@@ -31,18 +33,20 @@ if sys.version_info < (3, 6):
             if isinstance(init, types.FunctionType):
                 ns['__init_subclass__'] = classmethod(init)
 
-            self = super().__new__(cls, name, bases, ns)
+            self = super(NewType, cls).__new__(cls, name, bases, ns)
 
             for k, v in self.__dict__.items():
                 func = getattr(v, '__set_name__', None)
                 if func is not None:
                     func(self, k)
-            if bases:
-                super(self, self).__init_subclass__(**kwargs)
+
+            init = getattr(super(self, self), '__init_subclass__', None)
+            if init is not None:
+                init(**kwargs)
 
             return self
 
-    class NewObject(metaclass=NewType):
+    class NewObject(six.with_metaclass(NewType, object)):
         @classmethod
         def __init_subclass__(cls, **kwargs):
             pass

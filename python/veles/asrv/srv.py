@@ -21,7 +21,6 @@ import sqlite3
 import weakref
 
 from veles.messages import msgpackwrap
-
 from veles.common import base
 
 
@@ -51,12 +50,12 @@ class BaseLister:
 
     def matches(self, obj):
         if self.pos[0] is not None:
-            if obj.pos[0] is None:
+            if obj.pos_start is None:
                 return False
-            if obj.pos[1] is not None and obj.pos[1] <= self.pos[0]:
+            if obj.pos_end is not None and obj.pos_end <= self.pos[0]:
                 return False
         if self.pos[1] is not None:
-            if obj.pos[0] is not None and obj.pos[0] >= self.pos[1]:
+            if obj.pos_start is not None and obj.pos_start >= self.pos[1]:
                 return False
         for tags in self.tags:
             for k, v in tags:
@@ -76,13 +75,11 @@ class BaseLister:
 class Object:
     def __init__(self, srv, id, parent, pos, tags, attr, data, bindata):
         self.srv = srv
-        self.id = id
         self.parent = parent
-        self.pos = pos
-        self.tags = tags
-        self.attr = attr
-        self.data = data
-        self.bindata = bindata
+        self.node = base.Node(
+            id=id, parent=parent.node.id if parent else None,
+            pos_start=pos[0], pos_end=pos[1],
+            tags=tags, attr=attr, data=data, bindata=bindata)
         self.subs = set()
         self.data_subs = {}
         self.listers = set()
@@ -232,7 +229,7 @@ class Server:
         else:
             listers = obj.parent.listers
         for lister in listers:
-            if lister.matches(obj):
+            if lister.matches(obj.node):
                 lister.list_changed([obj], [])
                 lister.objs.add(obj)
 
@@ -272,7 +269,7 @@ class Server:
             if obj in lister.objs:
                 lister.list_changed([], [obj_id])
                 lister.objs.remove(obj)
-        del self.objs[obj.id]
+        del self.objs[obj.node.id]
 
     def get(self, obj_id):
         try:

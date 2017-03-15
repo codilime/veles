@@ -14,10 +14,40 @@
 
 import binascii
 
-from veles.messages import msgpackwrap
+from veles.messages import fields
+from veles.compatibility import pep487
 
 
-class ObjectID:
+class Model(pep487.NewObject):
+    def __init__(self, **kwargs):
+        if any(i not in [field.name for field in self.fields] for i in kwargs):
+            raise TypeError('got an unexpected keyword argument')
+        for field_name, field in kwargs.items():
+            setattr(self, field_name, field)
+
+    def __init_subclass__(cls, **kwargs):
+        super(Model, cls).__init_subclass__(**kwargs)
+
+        cls.fields = []
+        for attr_name, attr in cls.__dict__.items():
+            try:
+                attr.add_to_class(cls)
+            except AttributeError:
+                pass
+
+    def to_dict(self):
+        val = {}
+        for field in self.fields:
+            val[field.name] = field.__get__(self)
+        return val
+
+    def __str__(self):
+        return str(self.to_dict())
+
+    __repr__ = __str__
+
+
+class ObjectID(pep487.NewObject):
     NULL_VAL = b'\00'*24
 
     def __init__(self, value=None):
@@ -54,4 +84,14 @@ class ObjectID:
         return self.bytes != self.NULL_VAL
 
 
-msgpackwrap.MsgpackWrapper.register_type(ObjectID, 0)
+class Node(Model):
+    id = fields.Extension(obj_type=ObjectID)
+    parent = fields.Extension(obj_type=ObjectID, optional=True)
+    pos_start = fields.Integer(optional=True)
+    pos_end = fields.Integer(optional=True)
+    tags = fields.Array(elements_types=[fields.String()],
+                        local_type=set, optional=True)
+    attr = fields.Map(keys_types=[fields.String()], optional=True)
+    data = fields.Array(elements_types=[fields.String()], optional=True)
+    bindata = fields.Map(keys_types=[fields.String()],
+                         values_types=[fields.Integer()], optional=True)
