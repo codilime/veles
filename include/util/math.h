@@ -17,11 +17,21 @@
 #ifndef VELES_UTIL_MATH_H
 #define VELES_UTIL_MATH_H
 
+#include <type_traits>
+
 namespace veles {
 namespace util {
 namespace math {
 
-size_t gcd(size_t a, size_t b);
+template<typename T1, typename T2>
+typename std::common_type<T1, T2>::type gcd(T1 a, T2 b) {
+  while (b) {
+    auto tmp = a % b;
+    a = b;
+    b = tmp;
+  }
+  return a;
+}
 
 }  // namespace math
 }  // namespace util
