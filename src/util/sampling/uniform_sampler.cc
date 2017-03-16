@@ -55,7 +55,7 @@ void UniformSampler::setWindowSize(size_t size) {
 UniformSampler::UniformSampler(const UniformSampler& other) :
     ISampler(other), window_size_(other.window_size_), buffer_(nullptr) {}
 
-char UniformSampler::getSampleByte(size_t index) {
+char UniformSampler::getSampleByte(size_t index) const {
   if (buffer_ != nullptr) {
     return buffer_[index];
   }
@@ -63,20 +63,20 @@ char UniformSampler::getSampleByte(size_t index) {
   return getDataByte(base_index + (index % window_size_));
 }
 
-const char* UniformSampler::getData() {
+const char* UniformSampler::getData() const {
   return buffer_;
 }
 
-size_t UniformSampler::getRealSampleSize() {
+size_t UniformSampler::getRealSampleSize() const {
   return window_size_ * windows_count_;
 }
 
-size_t UniformSampler::getFileOffsetImpl(size_t index) {
+size_t UniformSampler::getFileOffsetImpl(size_t index) const {
   size_t base_index = windows_[index / window_size_];
   return base_index + (index % window_size_);
 }
 
-size_t UniformSampler::getSampleOffsetImpl(size_t address) {
+size_t UniformSampler::getSampleOffsetImpl(size_t address) const {
   // we want the last window less or equal to address (or first window if
   // no such window exists)
   if (address < windows_[0]) return 0;
@@ -159,7 +159,7 @@ void UniformSampler::cleanupResample(ResampleData *rd) {
   delete usrd;
 }
 
-UniformSampler* UniformSampler::cloneImpl() {
+UniformSampler* UniformSampler::cloneImpl() const {
   return new UniformSampler(*this);
 }
 

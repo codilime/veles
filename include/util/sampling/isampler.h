@@ -153,7 +153,7 @@ class ISampler {
    * Return true if sample is empty.
    * Generally true if underlying data is empty.
    */
-  bool empty();
+  bool empty() const;
 
   /**
    * Get lock protecting sampler data.
@@ -182,7 +182,7 @@ class ISampler {
    * This does not use any synchronisation and may give false positives
    * or false negatives unless you're holding sampler lock when calling this.
    */
-  bool isFinished();
+  bool isFinished() const;
 
   /**
    * Register a callback that will be called when resampling is finished.
@@ -251,7 +251,7 @@ class ISampler {
    * This does not do any locking, which doesn't matter if sc != nullptr and
    * may be pretty bad otherwise.
    */
-  size_t getDataSize(SamplerConfig *sc = nullptr);
+  size_t getDataSize(SamplerConfig *sc = nullptr) const;
 
   /**
    * Get n-th byte of input data.
@@ -260,26 +260,26 @@ class ISampler {
    * If sc is provided it uses the range represented by sc instead of this
    * stored by sampler.
    */
-  char getDataByte(size_t index, SamplerConfig *sc = nullptr);
+  char getDataByte(size_t index, SamplerConfig *sc = nullptr) const;
 
   /**
    * Return the size of sample requested by user (with setSampleSize).
    */
-  size_t getRequestedSampleSize(SamplerConfig *sc = nullptr);
+  size_t getRequestedSampleSize(SamplerConfig *sc = nullptr) const;
 
   /**
    * Return real size of the sample. This method must be overriden by any
    * implementation, that may return sample of different size than
    * getRequestedSampleSize().
    */
-  virtual size_t getRealSampleSize();
+  virtual size_t getRealSampleSize() const;
 
   /**
    * Return the input data as simple array. Size of array is getDataSize().
    * If sc is provided it uses the range represented by sc instead of this
    * stored by sampler.
    */
-  const char* getRawData(SamplerConfig *sc = nullptr);
+  const char* getRawData(SamplerConfig *sc = nullptr) const;
 
   ISampler(const ISampler& other);
 
@@ -287,7 +287,7 @@ class ISampler {
   /**
    * Get n-th byte of sample.
    */
-  virtual char getSampleByte(size_t index) = 0;
+  virtual char getSampleByte(size_t index) const = 0;
 
   /**
    * Get whole sample as simple array. The size of the array must be the
@@ -295,17 +295,17 @@ class ISampler {
    * the array, including deleting it on Sampler deallocation and
    * re-initialisation.
    */
-  virtual const char* getData() = 0;
+  virtual const char* getData() const = 0;
 
   /**
    * Implementation of getFileOffset public method.
    */
-  virtual size_t getFileOffsetImpl(size_t index) = 0;
+  virtual size_t getFileOffsetImpl(size_t index) const = 0;
 
   /**
    * Implementation of getSampleOffset public method.
    */
-  virtual size_t getSampleOffsetImpl(size_t index) = 0;
+  virtual size_t getSampleOffsetImpl(size_t index) const = 0;
 
   /**
    * Prepare resampled data.
@@ -340,7 +340,7 @@ class ISampler {
   /**
    * Implementation of clone method.
    */
-  virtual ISampler* cloneImpl() = 0;
+  virtual ISampler* cloneImpl() const = 0;
 
 
   size_t samplingRequired(SamplerConfig *sc = nullptr);

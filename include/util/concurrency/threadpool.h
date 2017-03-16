@@ -41,20 +41,20 @@ enum class SchedulingResult {
 /**
  * Create a new topic and set number of workers for it.
  */
-void createTopic(std::string topic, size_t workers);
+void createTopic(const std::string& topic, size_t workers);
 
 /**
  * Create a topic without any workers and run tasks in thread calling runTask().
  * This is meant for testing, when we may not want to actually spawn threads.
  */
-void mockTopic(std::string topic);
+void mockTopic(const std::string& topic);
 
 /**
  * Schedule a job to be run on one of worker threads assigned to a given topic.
  * The job is run asynchronously, use callbacks or similar to communicate its
  * result.
  */
-SchedulingResult runTask(std::string topic, Task t);
+SchedulingResult runTask(const std::string& topic, Task t);
 
 
 }  // namespace threadpool

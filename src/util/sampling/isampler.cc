@@ -117,7 +117,7 @@ const char* ISampler::data() {
   return getData();
 }
 
-bool ISampler::empty() {
+bool ISampler::empty() const {
   return data_.isEmpty();
 }
 
@@ -139,7 +139,7 @@ std::unique_lock<SamplerMutex> ISampler::waitAndLock() {
   return lc;
 }
 
-bool ISampler::isFinished() {
+bool ISampler::isFinished() const {
   return (current_version_.load() == requested_version_.load());
 }
 
@@ -184,28 +184,28 @@ ISampler::ISampler(const ISampler& other) : data_(other.data_),
                    current_version_(0), requested_version_(0),
                    callbacks_(other.callbacks_) {}
 
-size_t ISampler::getDataSize(SamplerConfig *sc) {
+size_t ISampler::getDataSize(SamplerConfig *sc) const {
   if (sc == nullptr) {
     return std::min((size_t)data_.size(), end_ - start_);
   }
   return std::min((size_t)data_.size(), sc->end - sc->start);
 }
 
-char ISampler::getDataByte(size_t index, SamplerConfig *sc) {
+char ISampler::getDataByte(size_t index, SamplerConfig *sc) const {
   size_t start = (sc == nullptr) ? start_ : sc->start;
   return data_[static_cast<int>(start + index)];
 }
 
-size_t ISampler::getRealSampleSize() {
+size_t ISampler::getRealSampleSize() const {
   return getRequestedSampleSize();
 }
 
-size_t ISampler::getRequestedSampleSize(SamplerConfig *sc) {
+size_t ISampler::getRequestedSampleSize(SamplerConfig *sc) const {
   size_t sample_size = (sc == nullptr) ? sample_size_ : sc->sample_size;
   return std::min(getDataSize(sc), sample_size);
 }
 
-const char* ISampler::getRawData(SamplerConfig *sc) {
+const char* ISampler::getRawData(SamplerConfig *sc) const {
   size_t start = (sc == nullptr) ? start_ : sc->start;
   return data_.data() + start;
 }

@@ -25,12 +25,12 @@ namespace util {
 class MockSampler : public ISampler {
  public:
   explicit MockSampler(const QByteArray &data) : ISampler(data) {}
-  MOCK_METHOD0(cloneImpl, ISampler*());
+  MOCK_CONST_METHOD0(cloneImpl, ISampler*());
   MOCK_METHOD0(getRealSampleSize, size_t());
-  MOCK_METHOD1(getSampleByte, char(size_t index));
-  MOCK_METHOD0(getData, const char*());
-  MOCK_METHOD1(getFileOffsetImpl, size_t(size_t index));
-  MOCK_METHOD1(getSampleOffsetImpl, size_t(size_t index));
+  MOCK_CONST_METHOD1(getSampleByte, char(size_t index));
+  MOCK_CONST_METHOD0(getData, const char*());
+  MOCK_CONST_METHOD1(getFileOffsetImpl, size_t(size_t index));
+  MOCK_CONST_METHOD1(getSampleOffsetImpl, size_t(size_t index));
   MOCK_METHOD1(prepareResample, ResampleData*(SamplerConfig*));
   MOCK_METHOD1(applyResample, void(ResampleData*));
   MOCK_METHOD1(cleanupResample, void(ResampleData*));

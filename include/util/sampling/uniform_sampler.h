@@ -37,15 +37,15 @@ class UniformSampler : public ISampler {
   };
 
   UniformSampler(const UniformSampler& other);
-  char getSampleByte(size_t index) override;
-  const char* getData() override;
-  size_t getRealSampleSize() override;
-  size_t getFileOffsetImpl(size_t index) override;
-  size_t getSampleOffsetImpl(size_t address) override;
+  char getSampleByte(size_t index) const override;
+  const char* getData() const override;
+  size_t getRealSampleSize() const override;
+  size_t getFileOffsetImpl(size_t index) const override;
+  size_t getSampleOffsetImpl(size_t address) const override;
   ResampleData* prepareResample(SamplerConfig *sc) override;
   void applyResample(ResampleData *rd) override;
   void cleanupResample(ResampleData *rd) override;
-  UniformSampler* cloneImpl() override;
+  UniformSampler* cloneImpl() const override;
 
   size_t window_size_, windows_count_;
   bool use_default_window_size_;
