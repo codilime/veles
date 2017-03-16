@@ -15,19 +15,15 @@
  *
  */
 #include "data/repack.h"
+
 #include <stdlib.h>
+
+#include "util/math.h"
+
+using veles::util::math::gcd;
 
 namespace veles {
 namespace data {
-
-static size_t gcd(size_t a, size_t b) {
-  while (b) {
-    size_t tmp = a % b;
-    a = b;
-    b = tmp;
-  }
-  return a;
-}
 
 unsigned repackUnit(unsigned src_width,
                     const RepackFormat &format) {
