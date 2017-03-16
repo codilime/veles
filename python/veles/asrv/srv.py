@@ -21,8 +21,8 @@ import sqlite3
 import weakref
 
 from veles.messages import msgpackwrap
-from veles.common import base
-
+from veles.schema import nodeid
+from veles.proto import node
 
 APP_ID = int.from_bytes(b'ml0n', 'big')
 
@@ -76,7 +76,7 @@ class Object:
     def __init__(self, srv, id, parent, pos, tags, attr, data, bindata):
         self.srv = srv
         self.parent = parent
-        self.node = base.Node(
+        self.node = node.Node(
             id=id, parent=parent.node.id if parent else None,
             pos_start=pos[0], pos_end=pos[1],
             tags=tags, attr=attr, data=data, bindata=bindata)
@@ -243,7 +243,7 @@ class Server:
             SELECT id FROM object WHERE parent = ?
         """, (raw_obj_id,))
         for id, in c.fetchall():
-            self.delete(base.ObjectID(id))
+            self.delete(nodeid.NodeID(id))
         c.execute("""
             DELETE FROM object_tag WHERE obj_id = ?
         """, (raw_obj_id,))
@@ -285,7 +285,7 @@ class Server:
                 return None
             (parent, pos_start, pos_end), = rows
             if parent is not None:
-                parent = self.get(base.ObjectID(parent))
+                parent = self.get(nodeid.NodeID(parent))
             c.execute("""
                 SELECT name FROM object_tag WHERE obj_id = ?
             """, (raw_obj_id,))
@@ -328,7 +328,7 @@ class Server:
             c.execute("""
                 SELECT id FROM object WHERE parent IS NULL
             """)
-        obj_ids = [base.ObjectID(x) for x, in c.fetchall()]
+        obj_ids = [nodeid.NodeID(x) for x, in c.fetchall()]
         objs = [self.get(x) for x in obj_ids]
         objs = [x for x in objs if lister.matches(x)]
         lister.list_changed(objs, [])

@@ -13,12 +13,11 @@
 # limitations under the License.
 
 import msgpack
-
 import six
 
-from veles.common import base
 from veles.data.bindata import BinData
 from veles.compatibility import pep487
+from veles.schema import nodeid
 from veles.compatibility.int_bytes import int_to_bytes, int_from_bytes
 
 
@@ -39,7 +38,7 @@ class MsgpackWrapper(pep487.NewObject):
     def pack_obj(cls, obj):
         if isinstance(obj, (set, frozenset)):
             return list(obj)
-        if isinstance(obj, base.ObjectID):
+        if isinstance(obj, nodeid.NodeID):
             return msgpack.ExtType(EXT_NODE_ID, obj.bytes)
         if isinstance(obj, BinData):
             width = int_to_bytes(obj.width, 4, 'little')
@@ -59,7 +58,7 @@ class MsgpackWrapper(pep487.NewObject):
     @classmethod
     def load_obj(cls, code, data):
         if code == EXT_NODE_ID:
-            return base.ObjectID(data)
+            return nodeid.NodeID(data)
         elif code == EXT_BINDATA:
             width = int_from_bytes(data[:4], 'little')
             return BinData.from_raw_data(width, data[4:])
