@@ -243,8 +243,14 @@ if(APPLE)
     MACOSX_PACKAGE_LOCATION Resources)
 endif(APPLE)
 
+if(WIN32)
+  # Don't create console window.
+  set(GUI_TYPE WIN32)
+endif(WIN32)
+
 # EXE: Main executable
 add_executable(main_ui
+    ${GUI_TYPE}
     ${INCLUDE_DIR}/ui/logwidget.h
     ${INCLUDE_DIR}/ui/veles_mainwindow.h
     ${INCLUDE_DIR}/ui/dockwidget.h
