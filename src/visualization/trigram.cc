@@ -73,7 +73,7 @@ TrigramWidget::~TrigramWidget() {
   doneCurrent();
 }
 
-void TrigramWidget::setBrightness(const int value) {
+void TrigramWidget::setBrightness(int value) {
   brightness_ = value;
   c_brightness = static_cast<float>(value) * value * value;
   c_brightness /= getDataSize();
