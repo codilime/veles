@@ -12,18 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from veles.schema import model
+from veles.messages import fields
 
-class BaseRegister:
+
+class BaseRegister(model.PolymorphicModel):
     """
     Represents an ISA register.  Fields:
 
     - name: a name displayed for this register, should be unique.
     - width: width in bits.
     """
-
-    def __init__(self, name, width):
-        self.name = name
-        self.width = width
+    name = fields.String()
+    width = fields.Integer(minimum=1)
 
     def __str__(self):
         return "${}".format(self.name)
@@ -38,6 +39,8 @@ class Register(BaseRegister):
     converted wholly to SSA.
     """
 
+    object_type = 'Register'
+
 
 class RegisterPC(BaseRegister):
     """
@@ -46,10 +49,10 @@ class RegisterPC(BaseRegister):
     when read.
     """
 
-    def __init__(self, name, width, anchor='start', offset=0):
-        super().__init__(name, width)
-        self.anchor = anchor
-        self.offset = offset
+    object_type = 'RegisterPC'
+
+    anchor = fields.String()
+    offset = fields.Integer()
 
 
 class RegisterSP(BaseRegister):
@@ -60,6 +63,8 @@ class RegisterSP(BaseRegister):
     # XXX: does this warrant a special class?  Might be better to handle it
     # elsewhere.
 
+    object_type = 'RegisterSP'
+
 
 # "You know what "special" means, right?" -- mupuf
 class RegisterSpecial(BaseRegister):
@@ -67,6 +72,8 @@ class RegisterSpecial(BaseRegister):
     Represents a special register.  Reads and writes of this register will be
     considered to be interesting events, and will not be converted to SSA.
     """
+
+    object_type = 'RegisterSpecial'
 
 
 class RegisterSplit(BaseRegister):
@@ -77,9 +84,10 @@ class RegisterSplit(BaseRegister):
     to multiple smaller accesses to the parts.
     """
 
-    def __init__(self, name, width, parts):
-        super().__init__(name, width)
-        self.parts = parts
+    object_type = 'RegisterSplit'
+
+    # TODO how should this exactly work
+    parts = fields.Array()
 
 
 class SubRegister(BaseRegister):
@@ -88,7 +96,7 @@ class SubRegister(BaseRegister):
     position in the parent and width.
     """
 
-    def __init__(self, name, parent, start, width):
-        super().__init__(name, width)
-        self.parent = parent
-        self.start = start
+    object_type = 'SubRegister'
+
+    parent = fields.Object(local_type=BaseRegister)
+    start = fields.Integer(minimum=0)

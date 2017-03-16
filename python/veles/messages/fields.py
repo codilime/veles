@@ -130,7 +130,7 @@ class Array(Field):
     def validate(self, value):
         super(Array, self).validate(value)
         if value is None:
-            return []
+            return self.local_type()
         if not isinstance(value, self._allowed_local):
             raise ValueError(
                 'Attribute {} has to be one of {} type.'.format(

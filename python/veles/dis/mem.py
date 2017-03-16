@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from veles.schema import model
+from veles.messages import fields
 
-class MemSpace:
+
+class MemSpace(model.Model):
     """
     Represents a memory space.  Fields:
 
@@ -22,7 +25,6 @@ class MemSpace:
     - addr_width: width of addresses in this space, in bits
     """
 
-    def __init__(self, name, width, addr_width):
-        self.name = name
-        self.width = width
-        self.addr_width = addr_width
+    name = fields.String(optional=True)
+    width = fields.Integer(minimum=1)
+    addr_width = fields.Integer(minimum=1)
