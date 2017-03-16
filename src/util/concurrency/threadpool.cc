@@ -51,7 +51,7 @@ void threadFunction(TopicInfo *ti) {
   }
 }
 
-void createTopic(std::string topic, size_t workers) {
+void createTopic(const std::string& topic, size_t workers) {
   std::unique_lock<std::mutex> lc(map_mutex_);
   if (topics_.find(topic) != topics_.end()) return;
   TopicInfo *ti = new TopicInfo();
@@ -63,7 +63,7 @@ void createTopic(std::string topic, size_t workers) {
   }
 }
 
-void mockTopic(std::string topic) {
+void mockTopic(const std::string& topic) {
   std::unique_lock<std::mutex> lc(map_mutex_);
   if (topics_.find(topic) != topics_.end()) return;
   TopicInfo *ti = new TopicInfo();
@@ -71,7 +71,7 @@ void mockTopic(std::string topic) {
   topics_[topic] = ti;
 }
 
-SchedulingResult runTask(std::string topic, Task t) {
+SchedulingResult runTask(const std::string& topic, Task t) {
   std::unique_lock<std::mutex> lc(map_mutex_);
   if (topics_.find(topic) == topics_.end()) {
     return SchedulingResult::ERR_UNKNOWN_TOPIC;
