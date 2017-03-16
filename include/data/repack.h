@@ -84,8 +84,8 @@ size_t repackableSize(unsigned src_width,
                       const RepackFormat &format,
                       size_t src_size);
 
-}
-}
+}  // namespace data
+}  // namespace veles
 
-#endif
+#endif  // VELES_DATA_REPACK_H
 

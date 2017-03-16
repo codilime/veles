@@ -168,7 +168,7 @@ struct ChunkDataItem {
   }
 };
 
-};
-};
+}  // namespace data
+}  // namespace veles
 
-#endif
+#endif  // VELES_DATA_FIELD
