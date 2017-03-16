@@ -293,7 +293,7 @@ class ISampler {
    * Get whole sample as simple array. The size of the array must be the
    * result of getRealSampleSize(). The implementation is required to manage
    * the array, including deleting it on Sampler deallocation and
-   * re-initialisation.
+   * re-initialization.
    */
   virtual const char* getData() const = 0;
 
