@@ -30,8 +30,8 @@ class Parser {
   Parser(QString id, QList<data::BinData> magic) : _id(id), _magic(magic) {}
   Parser(QString id, data::BinData magic) : _id(id) { _magic.append(magic); }
   Parser(QString id) : _id(id) {}
-  QString id() { return _id; }
-  QList<data::BinData> magic() { return _magic; }
+  QString id() const { return _id; }
+  QList<data::BinData> magic() const { return _magic; }
   bool verifyAndParse(dbif::ObjectHandle blob, uint64_t start = 0,
                       dbif::ObjectHandle parent_chunk = dbif::ObjectHandle());
   virtual void parse(
@@ -43,7 +43,7 @@ class Parser {
   QList<data::BinData> _magic;
 };
 
-};  // namespace parser
-};  // namespace veles
+}  // namespace parser
+}  // namespace veles
 
 #endif  // VELES_PARSER_PARSER_H
