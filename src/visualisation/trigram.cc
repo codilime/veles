@@ -53,7 +53,7 @@ TrigramWidget::TrigramWidget(QWidget *parent) :
     mode_(EVisualisationMode::TRIGRAM),
     brightness_((k_maximum_brightness + k_minimum_brightness) / 2),
     brightness_slider_(nullptr), is_playing_(true),
-    use_brightness_heuristic_(true), show_labels_(true) {
+    use_brightness_heuristic_(true), show_labels_(false) {
   manipulators_.push_back(spin_manipulator_ = new SpinManipulator(this));
   manipulators_.push_back(trackball_manipulator_ = new TrackballManipulator(this));
   manipulators_.push_back(free_manipulator_ = new FreeManipulator(this));
