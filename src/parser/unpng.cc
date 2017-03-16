@@ -34,7 +34,6 @@ std::vector<uint8_t> do_inflate(const std::vector<uint8_t> &d) {
   strm.zfree = Z_NULL;
   strm.opaque = Z_NULL;
   strm.avail_in = static_cast<uInt>(d.size());
-  // fuck you too.
   strm.next_in = const_cast<uint8_t *>(d.data());
   if (inflateInit(&strm) != Z_OK)
     return res;
