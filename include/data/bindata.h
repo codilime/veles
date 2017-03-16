@@ -309,7 +309,7 @@ class BinData {
   }
 };
 
-}
-}
+}  // namespace data
+}  // namespace veles
 
-#endif
+#endif  // VELES_DATA_BINDATA_H

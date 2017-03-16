@@ -24,12 +24,12 @@ namespace veles {
 namespace dbif {
 class ObjectHandleBase;
 typedef QSharedPointer<ObjectHandleBase> ObjectHandle;
-};
+}  // namespace dbif
 
 namespace data {
 using dbif::ObjectHandle;
-};
+}  // namespace data
 
-};
+}  // namespace veles
 
-#endif
+#endif  // VELES_DATA_TYPES
