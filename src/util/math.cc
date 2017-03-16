@@ -20,15 +20,6 @@ namespace veles {
 namespace util {
 namespace math {
 
-size_t gcd(size_t a, size_t b) {
-  while (b) {
-    size_t tmp = a % b;
-    a = b;
-    b = tmp;
-  }
-  return a;
-}
-
 }  // namespace math
 }  // namespace util
 }  // namespace veles
