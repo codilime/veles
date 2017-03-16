@@ -75,6 +75,7 @@ add_library(veles_base
     ${INCLUDE_DIR}/util/encoders/url_encoder.h
 
     ${INCLUDE_DIR}/util/string_utils.h
+    ${INCLUDE_DIR}/util/math.h
 
     ${SRC_DIR}/util/icons.cc
     ${SRC_DIR}/util/concurrency/threadpool.cc
@@ -94,6 +95,7 @@ add_library(veles_base
     ${SRC_DIR}/util/encoders/url_encoder.cc
 
     ${SRC_DIR}/util/string_utils.cc
+    ${SRC_DIR}/util/math.cc
     ${SRC_DIR}/util/version.cc)
 
 qt5_use_modules(veles_base Core Gui Widgets)
