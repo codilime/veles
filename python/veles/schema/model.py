@@ -58,9 +58,9 @@ class Model(pep487.NewObject):
 
 
 class PolymorphicModel(Model):
-    object_types = {}
-    # string name representing the type, None will result in effectively
-    # abstract model that can be used to group different models - i.e. messages
+    # string name representing the type, base abstract classes should leave
+    # this as None, while its subclasses should set it to value unique amongst
+    # other subclasses
     object_type = None
 
     def __init__(self, **kwargs):
@@ -70,6 +70,7 @@ class PolymorphicModel(Model):
 
     def __init_subclass__(cls, **kwargs):
         if cls.object_type is None:
+            cls.object_types = {}
             return
 
         super(PolymorphicModel, cls).__init_subclass__(**kwargs)

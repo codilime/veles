@@ -99,9 +99,6 @@ class Proto(asyncio.Protocol):
         while True:
             try:
                 msg = definitions.MsgpackMsg.load(self.unpacker.unpack())
-                if not isinstance(msg, definitions.MsgpackMsg):
-                    raise ValueError(
-                        'received an object that isn\'t a message')
                 self.handle_msg(msg)
             except msgpack.OutOfData:
                 return

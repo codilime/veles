@@ -18,7 +18,7 @@ from . import fields
 
 
 class MsgpackMsg(model.PolymorphicModel):
-    object_type = None
+    pass
 
 
 class MsgConnect(MsgpackMsg):
