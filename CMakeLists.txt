@@ -334,6 +334,7 @@ if(GTEST_FOUND AND GMOCK_FOUND)
         ${TEST_DIR}/util/encoders/text_encoder.cc
         ${TEST_DIR}/util/encoders/url_encoder.cc
         ${TEST_DIR}/util/encoders/factory.cc
+        ${TEST_DIR}/util/sampling/mock_sampler.h
         ${TEST_DIR}/util/sampling/isampler.cc
         ${TEST_DIR}/util/sampling/uniform_sampler.cc
     )
