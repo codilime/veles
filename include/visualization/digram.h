@@ -17,7 +17,7 @@
 #ifndef DIGRAM_H
 #define DIGRAM_H
 
-#include "visualisation/digram.h"
+#include "visualization/digram.h"
 
 #include <stdint.h>
 
@@ -31,12 +31,12 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLFunctions_3_2_Core>
 
-#include "visualisation/base.h"
+#include "visualization/base.h"
 
 namespace veles {
-namespace visualisation {
+namespace visualization {
 
-class DigramWidget : public VisualisationWidget {
+class DigramWidget : public VisualizationWidget {
   Q_OBJECT
 
  public:
@@ -46,7 +46,7 @@ class DigramWidget : public VisualisationWidget {
 
  protected:
   void refresh(AdditionalResampleDataPtr ad) override;
-  bool initializeVisualisationGL() override;
+  bool initializeVisualizationGL() override;
 
   void resizeGLImpl(int w, int h) override;
   void paintGLImpl() override;
@@ -63,7 +63,7 @@ class DigramWidget : public VisualisationWidget {
   QOpenGLVertexArrayObject vao_;
 };
 
-}  // namespace visualisation
+}  // namespace visualization
 }  // namespace veles
 
 #endif

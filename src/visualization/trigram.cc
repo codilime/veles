@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-#include "visualisation/trigram.h"
+#include "visualization/trigram.h"
 #include "util/icons.h"
 
 #include <stdio.h>
@@ -37,7 +37,7 @@
 #include <QWidgetAction>
 
 namespace veles {
-namespace visualisation {
+namespace visualization {
 
 const int k_minimum_brightness = 25;
 const int k_maximum_brightness = 103;
@@ -48,9 +48,9 @@ const int k_brightness_heuristic_max = 66;
 const double k_brightness_heuristic_scaling = 2.5;
 
 TrigramWidget::TrigramWidget(QWidget *parent) :
-    VisualisationWidget(parent), texture(nullptr), databuf(nullptr), angle(0),
-    c_sph(0), c_cyl(0), c_pos(0), shape_(EVisualisationShape::CUBE),
-    mode_(EVisualisationMode::TRIGRAM),
+    VisualizationWidget(parent), texture(nullptr), databuf(nullptr), angle(0),
+    c_sph(0), c_cyl(0), c_pos(0), shape_(EVisualizationShape::CUBE),
+    mode_(EVisualizationMode::TRIGRAM),
     brightness_((k_maximum_brightness + k_minimum_brightness) / 2),
     brightness_slider_(nullptr), is_playing_(true),
     use_brightness_heuristic_(true), show_labels_(false) {
@@ -79,11 +79,11 @@ void TrigramWidget::setBrightness(const int value) {
   c_brightness /= getDataSize();
 }
 
-void TrigramWidget::setMode(EVisualisationMode mode, bool animate) {
+void TrigramWidget::setMode(EVisualizationMode mode, bool animate) {
   mode_ = mode;
-  if (mode_ == EVisualisationMode::LAYERED_DIGRAM && !animate) {
+  if (mode_ == EVisualizationMode::LAYERED_DIGRAM && !animate) {
     c_pos = 1;
-  } else if (mode_ == EVisualisationMode::TRIGRAM && !animate) {
+  } else if (mode_ == EVisualizationMode::TRIGRAM && !animate) {
     c_pos = 0;
   }
 }
@@ -119,15 +119,15 @@ void TrigramWidget::refresh(AdditionalResampleDataPtr ad) {
   doneCurrent();
 }
 
-void TrigramWidget::prepareOptions(QMainWindow *visualisation_window) {
-  VisualisationWidget::prepareOptions(visualisation_window);
+void TrigramWidget::prepareOptions(QMainWindow *visualization_window) {
+  VisualizationWidget::prepareOptions(visualization_window);
 
   QColor icon_color = palette().color(QPalette::WindowText);
-  visualisation_window->addToolBarBreak();
+  visualization_window->addToolBarBreak();
 
   /////////////////////////////////////
   // Camera manipulators
-  prepareManipulatorToolbar(visualisation_window);
+  prepareManipulatorToolbar(visualization_window);
 
   /////////////////////////////////////
   // Shape
@@ -137,14 +137,14 @@ void TrigramWidget::prepareOptions(QMainWindow *visualisation_window) {
   cube_action_->setIcon(
       util::getColoredIcon(":/images/cube.png", icon_color, false));
   connect(cube_action_, &QAction::triggered, std::bind(
-      &TrigramWidget::setShape, this, EVisualisationShape::CUBE));
+      &TrigramWidget::setShape, this, EVisualizationShape::CUBE));
   shape_toolbar->addAction(cube_action_);
 
   cylinder_action_ = new QAction(this);
   cylinder_action_->setIcon(
       util::getColoredIcon(":/images/cylinder.png", icon_color, false));
   connect(cylinder_action_, &QAction::triggered, std::bind(
-      &TrigramWidget::setShape, this, EVisualisationShape::CYLINDER));
+      &TrigramWidget::setShape, this, EVisualizationShape::CYLINDER));
   shape_toolbar->addAction(cylinder_action_);
 
   sphere_action_ = new QAction(this);
@@ -152,11 +152,11 @@ void TrigramWidget::prepareOptions(QMainWindow *visualisation_window) {
       util::getColoredIcon(":/images/sphere.png", icon_color));
 
   connect(sphere_action_, &QAction::triggered,
-      std::bind(&TrigramWidget::setShape, this, EVisualisationShape::SPHERE));
+      std::bind(&TrigramWidget::setShape, this, EVisualizationShape::SPHERE));
   shape_toolbar->addAction(sphere_action_);
   shape_toolbar->addSeparator();
   shape_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
-  visualisation_window->addToolBar(shape_toolbar);
+  visualization_window->addToolBar(shape_toolbar);
 
   /////////////////////////////////////
   // Captions
@@ -171,7 +171,7 @@ void TrigramWidget::prepareOptions(QMainWindow *visualisation_window) {
   captions_toolbar->addAction(rf_widget_action);
   captions_toolbar->addSeparator();
   captions_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
-  visualisation_window->addToolBar(captions_toolbar);
+  visualization_window->addToolBar(captions_toolbar);
 
   /////////////////////////////////////
   // Brightness
@@ -210,7 +210,7 @@ void TrigramWidget::prepareOptions(QMainWindow *visualisation_window) {
   brightness_toolbar->addAction(brightness_widget_action);
   brightness_toolbar->addSeparator();
   brightness_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
-  visualisation_window->addToolBar(brightness_toolbar);
+  visualization_window->addToolBar(brightness_toolbar);
 }
 
 int TrigramWidget::suggestBrightness() {
@@ -235,7 +235,7 @@ int TrigramWidget::suggestBrightness() {
                   k_brightness_heuristic_max - offset);
 }
 
-VisualisationWidget::AdditionalResampleData* TrigramWidget::onAsyncResample() {
+VisualizationWidget::AdditionalResampleData* TrigramWidget::onAsyncResample() {
   if (use_brightness_heuristic_) {
     BrightnessData* res = new BrightnessData();
     res->brightness = suggestBrightness();
@@ -262,7 +262,7 @@ void TrigramWidget::playPause() {
   is_playing_ = !is_playing_;
 }
 
-void TrigramWidget::setShape(EVisualisationShape shape) {
+void TrigramWidget::setShape(EVisualizationShape shape) {
   shape_ = shape;
 }
 
@@ -339,12 +339,12 @@ void TrigramWidget::timerEvent(QTimerEvent *e) {
     angle += 0.5f;
   }
 
-  if (shape_ == EVisualisationShape::CYLINDER) {
+  if (shape_ == EVisualizationShape::CYLINDER) {
     c_cyl += 0.01f;
   } else {
     c_cyl -= 0.01f;
   }
-  if (shape_ == EVisualisationShape::SPHERE) {
+  if (shape_ == EVisualizationShape::SPHERE) {
     c_sph += 0.01f;
   } else {
     c_sph -= 0.01f;
@@ -354,18 +354,18 @@ void TrigramWidget::timerEvent(QTimerEvent *e) {
   if (c_sph > 1) c_sph = 1;
   if (c_sph < 0) c_sph = 0;
 
-  if (mode_ == EVisualisationMode::LAYERED_DIGRAM && c_pos < 1) {
+  if (mode_ == EVisualizationMode::LAYERED_DIGRAM && c_pos < 1) {
     c_pos += 0.01f;
     if (c_pos > 1) c_pos = 1;
   }
-  if (mode_ != EVisualisationMode::LAYERED_DIGRAM && c_pos) {
+  if (mode_ != EVisualizationMode::LAYERED_DIGRAM && c_pos) {
     c_pos -= 0.01f;
     if (c_pos < 0) c_pos = 0;
   }
   update();
 }
 
-bool TrigramWidget::initializeVisualisationGL() {
+bool TrigramWidget::initializeVisualizationGL() {
   if (!initializeOpenGLFunctions()) return false;
 
   glClearColor(0, 0, 0, 1);
@@ -467,7 +467,7 @@ QAbstractButton* TrigramWidget::createActionButton(QAction* action) {
 }
 
 void TrigramWidget::prepareManipulatorToolbar(
-    QMainWindow* visualisation_window) {
+    QMainWindow* visualization_window) {
   QToolBar* manipulator_toolbar = new QToolBar("Camera manipulators", this);
   manipulator_toolbar->setMovable(false);
 
@@ -497,7 +497,7 @@ void TrigramWidget::prepareManipulatorToolbar(
 
   manipulator_toolbar->addSeparator();
   manipulator_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
-  visualisation_window->addToolBar(manipulator_toolbar);
+  visualization_window->addToolBar(manipulator_toolbar);
 }
 
 void TrigramWidget::resizeGLImpl(int w, int h) {
@@ -702,17 +702,17 @@ void TrigramWidget::paintRF(QMatrix4x4& mvp) {
   rf_program_.bind();
   rf_program_.setUniformValue("mvp", mvp);
   switch (shape_) {
-  case EVisualisationShape::CUBE:
+  case EVisualizationShape::CUBE:
     if (c_cyl == 0.f && c_sph == 0.f) {
       glDrawArrays(GL_LINES, 0, 6);
     }
     break;
-  case EVisualisationShape::CYLINDER:
+  case EVisualizationShape::CYLINDER:
     if (c_cyl == 1.f) {
       glDrawArrays(GL_LINES, 6, 4);
     }
     break;
-  case EVisualisationShape::SPHERE:
+  case EVisualizationShape::SPHERE:
     if (c_sph == 1.f) {
       glDrawArrays(GL_LINES, 10, 2);
     }
@@ -872,5 +872,5 @@ void TrigramWidget::initLabelPositionMixers() {
       );
 }
 
-}  // namespace visualisation
+}  // namespace visualization
 }  // namespace veles

@@ -14,8 +14,8 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_VISUALISATION_MINIMAP_PANEL_H
-#define VELES_VISUALISATION_MINIMAP_PANEL_H
+#ifndef VELES_VISUALIZATION_MINIMAP_PANEL_H
+#define VELES_VISUALIZATION_MINIMAP_PANEL_H
 
 #include <QBoxLayout>
 #include <QPair>
@@ -24,11 +24,11 @@
 #include <QVector>
 
 #include "util/sampling/isampler.h"
-#include "visualisation/minimap.h"
-#include "visualisation/selectrangedialog.h"
+#include "visualization/minimap.h"
+#include "visualization/selectrangedialog.h"
 
 namespace veles {
-namespace visualisation {
+namespace visualization {
 
 class MinimapPanel : public QWidget {
   Q_OBJECT
@@ -53,16 +53,16 @@ class MinimapPanel : public QWidget {
 
  private:
   void initLayout();
-  VisualisationMinimap::MinimapColor getMinimapColor();
+  VisualizationMinimap::MinimapColor getMinimapColor();
 
   util::ISampler *sampler_;
   QVector<util::ISampler*> minimap_samplers_;
-  QVector<VisualisationMinimap*> minimaps_;
+  QVector<VisualizationMinimap*> minimaps_;
   QVector<QSpacerItem*> minimap_spacers_;
 
   QPair<size_t, size_t> selection_;
 
-  VisualisationMinimap::MinimapMode mode_;
+  VisualizationMinimap::MinimapMode mode_;
 
   QBoxLayout *layout_, *minimaps_layout_;
   QPushButton *add_minimap_button_, *remove_minimap_button_;
@@ -71,7 +71,7 @@ class MinimapPanel : public QWidget {
   SelectRangeDialog *select_range_dialog_;
 };
 
-}  //  namespace visualisation
+}  //  namespace visualization
 }  //  namespace veles
 
-#endif  // VELES_VISUALISATION_MINIMAP_PANEL_H
+#endif  // VELES_VISUALIZATION_MINIMAP_PANEL_H

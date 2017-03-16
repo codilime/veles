@@ -20,10 +20,10 @@
 #include <QWheelEvent>
 #include <cmath>
 
-#include "visualisation/manipulator.h"
+#include "visualization/manipulator.h"
 
 namespace veles {
-namespace visualisation {
+namespace visualization {
 
 float len(QPoint p) {
   return std::sqrt(p.x() * p.x() + p.y() * p.y());
@@ -359,5 +359,5 @@ bool SpinManipulator::handlesPause() {
   return true;
 }
 
-}  // namespace visualisation
+}  // namespace visualization
 }  // namespace veles

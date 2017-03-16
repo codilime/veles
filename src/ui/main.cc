@@ -23,9 +23,9 @@
 
 #include "ui/dockwidget.h"
 #include "ui/veles_mainwindow.h"
-#include "visualisation/base.h"
-#include "visualisation/digram.h"
-#include "visualisation/trigram.h"
+#include "visualization/base.h"
+#include "visualization/digram.h"
+#include "visualization/trigram.h"
 #include "util/settings/network.h"
 #include "util/settings/theme.h"
 #include "util/concurrency/threadpool.h"
@@ -56,9 +56,9 @@ int main(int argc, char *argv[]) {
   translator.load(QString("hexedit_") + locale);
   app.installTranslator(&translator);
 
-  veles::util::threadpool::createTopic("visualisation", 3);
+  veles::util::threadpool::createTopic("visualization", 3);
 
-  qRegisterMetaType<veles::visualisation::VisualisationWidget::AdditionalResampleDataPtr>("AdditionalResampleDataPtr");
+  qRegisterMetaType<veles::visualization::VisualizationWidget::AdditionalResampleDataPtr>("AdditionalResampleDataPtr");
 
   QCommandLineParser parser;
   parser.addHelpOption();

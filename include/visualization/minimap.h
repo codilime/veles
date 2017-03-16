@@ -14,8 +14,8 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_VISUALISATION_MINIMAP_H
-#define VELES_VISUALISATION_MINIMAP_H
+#ifndef VELES_VISUALIZATION_MINIMAP_H
+#define VELES_VISUALIZATION_MINIMAP_H
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_3_2_Core>
@@ -31,9 +31,9 @@
 #include "util/sampling/isampler.h"
 
 namespace veles {
-namespace visualisation {
+namespace visualization {
 
-class VisualisationMinimap : public QOpenGLWidget,
+class VisualizationMinimap : public QOpenGLWidget,
                              protected QOpenGLFunctions_3_2_Core {
   Q_OBJECT
 
@@ -49,8 +49,8 @@ class VisualisationMinimap : public QOpenGLWidget,
     ENTROPY
   };
 
-  explicit VisualisationMinimap(QWidget *parent = 0);
-  ~VisualisationMinimap();
+  explicit VisualizationMinimap(QWidget *parent = 0);
+  ~VisualizationMinimap();
 
   void setSampler(util::ISampler * sampler);
   void setRange(size_t start, size_t end, bool reset_selection = true);
@@ -157,7 +157,7 @@ class VisualisationMinimap : public QOpenGLWidget,
 };
 
 
-}  //  namespace visualisation
+}  //  namespace visualization
 }  //  namespace veles
 
-#endif  // VELES_VISUALISATION_MINIMAP_H
+#endif  // VELES_VISUALIZATION_MINIMAP_H

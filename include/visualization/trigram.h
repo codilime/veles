@@ -14,10 +14,10 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_VISUALISATION_TRIGRAM_H
-#define VELES_VISUALISATION_TRIGRAM_H
+#ifndef VELES_VISUALIZATION_TRIGRAM_H
+#define VELES_VISUALIZATION_TRIGRAM_H
 
-#include "visualisation/trigram.h"
+#include "visualization/trigram.h"
 
 #include <stdint.h>
 
@@ -37,11 +37,11 @@
 #include <QToolBar>
 #include <QAction>
 
-#include "visualisation/base.h"
-#include "visualisation/manipulator.h"
+#include "visualization/base.h"
+#include "visualization/manipulator.h"
 
 namespace veles {
-namespace visualisation {
+namespace visualization {
 
 /*****************************************************************************/
 /* LabelPositionMixer */
@@ -95,18 +95,18 @@ class LabelPositionMixer {
 /* TrigramWidget */
 /*****************************************************************************/
 
-class TrigramWidget : public VisualisationWidget {
+class TrigramWidget : public VisualizationWidget {
   Q_OBJECT
 
  public:
-  enum class EVisualisationShape {CUBE, CYLINDER, SPHERE};
-  enum class EVisualisationMode {TRIGRAM, LAYERED_DIGRAM};
+  enum class EVisualizationShape {CUBE, CYLINDER, SPHERE};
+  enum class EVisualizationMode {TRIGRAM, LAYERED_DIGRAM};
 
   explicit TrigramWidget(QWidget *parent = 0);
   ~TrigramWidget();
 
-  virtual void prepareOptions(QMainWindow *visualisation_window) override;
-  void setMode(EVisualisationMode mode, bool animate = true);
+  virtual void prepareOptions(QMainWindow *visualization_window) override;
+  void setMode(EVisualizationMode mode, bool animate = true);
 
   static float vfovDeg(float min_fov_deg, float aspect_ratio);
 
@@ -119,7 +119,7 @@ class TrigramWidget : public VisualisationWidget {
 
  protected:
   void refresh(AdditionalResampleDataPtr ad) override;
-  bool initializeVisualisationGL() override;
+  bool initializeVisualizationGL() override;
 
   bool event(QEvent *event) override;
   void timerEvent(QTimerEvent *e) override;
@@ -148,14 +148,14 @@ class TrigramWidget : public VisualisationWidget {
   QAction* createAction(const QIcon& icon, Manipulator* manipulator,
       const QList<QKeySequence>& sequences);
   QAbstractButton* createActionButton(QAction* action);
-  virtual void prepareManipulatorToolbar(QMainWindow* visualisation_window);
+  virtual void prepareManipulatorToolbar(QMainWindow* visualization_window);
 
  signals:
   void manipulatorChanged(Manipulator* manipulator);
 
  private slots:
   void playPause();
-  void setShape(EVisualisationShape shape);
+  void setShape(EVisualizationShape shape);
   void setUseBrightnessHeuristic(int state);
   void setManipulator(Manipulator* manipulator);
 
@@ -173,8 +173,8 @@ class TrigramWidget : public VisualisationWidget {
   float angle;
   float c_sph, c_cyl, c_pos, c_brightness;
   int width, height;
-  EVisualisationShape shape_;
-  EVisualisationMode mode_;
+  EVisualizationShape shape_;
+  EVisualizationMode mode_;
   int brightness_;
 
   QAction *cube_action_;
@@ -214,7 +214,7 @@ class TrigramWidget : public VisualisationWidget {
       lpm_0_digram_, lpm_1_digram_, lpm_2_digram_, lpm_N0_digram_;
 };
 
-}  // namespace visualisation
+}  // namespace visualization
 }  // namespace veles
 
-#endif  // VELES_VISUALISATION_TRIGRAM_H
+#endif  // VELES_VISUALIZATION_TRIGRAM_H

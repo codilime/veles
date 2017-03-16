@@ -27,7 +27,7 @@
 #include <QToolButton>
 #include <QMainWindow>
 #include <QSharedPointer>
-#include "visualisation/base.h"
+#include "visualization/base.h"
 
 #include "ui/fileblobmodel.h"
 #include "ui/hexedit.h"
@@ -65,7 +65,7 @@ class HexEditWidget : public View {
   void showSearchDialog();
   void uploadChanges();
   bool saveAs();
-  void showVisualisation();
+  void showVisualization();
   void showHexEditor();
   void newBinData();
   void enableFindNext(bool enable);
@@ -105,7 +105,7 @@ class HexEditWidget : public View {
   QAction *redo_act_;
   QAction *find_act_;
   QAction *find_next_act_;
-  QAction *visualisation_act_;
+  QAction *visualization_act_;
   QAction *show_node_tree_act_;
   QAction *show_minimap_act_;
   QAction *show_hex_edit_act_;

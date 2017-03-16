@@ -21,21 +21,21 @@
 #include <QHBoxLayout>
 #include <QSpacerItem>
 
-#include "visualisation/minimap_panel.h"
+#include "visualization/minimap_panel.h"
 
 
 namespace veles {
-namespace visualisation {
+namespace visualization {
 
 const float k_minimum_auto_selection_size = 0.1f;
 
-typedef VisualisationMinimap::MinimapMode MinimapMode;
+typedef VisualizationMinimap::MinimapMode MinimapMode;
 
 MinimapPanel::MinimapPanel(QWidget *parent) :
     QWidget(parent), mode_(MinimapMode::VALUE),
     select_range_dialog_(new SelectRangeDialog(this)) {
-  minimaps_.push_back(new VisualisationMinimap(this));
-  connect(minimaps_[0], &VisualisationMinimap::selectionChanged,
+  minimaps_.push_back(new VisualizationMinimap(this));
+  connect(minimaps_[0], &VisualizationMinimap::selectionChanged,
           std::bind(&MinimapPanel::updateSelection, this,
                     0, std::placeholders::_1,
                     std::placeholders::_2));
@@ -113,14 +113,14 @@ void MinimapPanel::initLayout() {
   setLayout(layout_);
 }
 
-VisualisationMinimap::MinimapColor MinimapPanel::getMinimapColor() {
+VisualizationMinimap::MinimapColor MinimapPanel::getMinimapColor() {
   switch(mode_) {
   case MinimapMode::VALUE:
-    return VisualisationMinimap::MinimapColor::GREEN;
+    return VisualizationMinimap::MinimapColor::GREEN;
   case MinimapMode::ENTROPY:
-    return VisualisationMinimap::MinimapColor::RED;
+    return VisualizationMinimap::MinimapColor::RED;
   default:
-    return VisualisationMinimap::MinimapColor::BLUE;
+    return VisualizationMinimap::MinimapColor::BLUE;
   }
 }
 
@@ -129,14 +129,14 @@ VisualisationMinimap::MinimapColor MinimapPanel::getMinimapColor() {
 /*****************************************************************************/
 
 void MinimapPanel::addMinimap() {
-  auto new_minimap = new VisualisationMinimap(this);
+  auto new_minimap = new VisualizationMinimap(this);
   auto new_sampler = minimap_samplers_.back()->clone();
   auto range = minimaps_.back()->getSelectedRange();
   new_sampler->setRange(range.first, range.second);
   new_minimap->setSampler(new_sampler);
   new_minimap->setMinimapColor(getMinimapColor());
   new_minimap->setMinimapMode(mode_);
-  connect(new_minimap, &VisualisationMinimap::selectionChanged,
+  connect(new_minimap, &VisualizationMinimap::selectionChanged,
           std::bind(&MinimapPanel::updateSelection, this,
                     minimaps_.length(), std::placeholders::_1,
                     std::placeholders::_2));
@@ -247,5 +247,5 @@ void MinimapPanel::selectRange() {
   }
 }
 
-}  //  namespace visualisation
+}  //  namespace visualization
 }  //  namespace veles

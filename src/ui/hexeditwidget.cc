@@ -40,7 +40,7 @@
 #include "util/settings/theme.h"
 #include "util/icons.h"
 
-#include "visualisation/panel.h"
+#include "visualization/panel.h"
 
 namespace veles {
 namespace ui {
@@ -142,13 +142,13 @@ void HexEditWidget::createActions() {
       this, SLOT(enableFindNext(bool)));
 
   QColor icon_color = palette().color(QPalette::WindowText);
-  visualisation_act_ = new QAction(
+  visualization_act_ = new QAction(
       util::getColoredIcon(":/images/trigram_icon.png", icon_color),
-      tr("&Visualisation"), this);
-  visualisation_act_->setToolTip(tr("Visualisation"));
-  visualisation_act_->setEnabled(data_model_->binData().size() > 0);
-  connect(visualisation_act_, SIGNAL(triggered()), this,
-          SLOT(showVisualisation()));
+      tr("&Visualization"), this);
+  visualization_act_->setToolTip(tr("Visualization"));
+  visualization_act_->setEnabled(data_model_->binData().size() > 0);
+  connect(visualization_act_, SIGNAL(triggered()), this,
+          SLOT(showVisualization()));
 
   show_node_tree_act_ = new QAction(QIcon(":/images/show_node_tree.png"),
       tr("&Node tree"), this);
@@ -193,7 +193,7 @@ void HexEditWidget::createToolBars() {
   widget_action->setDefaultWidget(parser_tool_button);
   tools_tool_bar_->addAction(widget_action);
 
-  tools_tool_bar_->addAction(visualisation_act_);
+  tools_tool_bar_->addAction(visualization_act_);
   tools_tool_bar_->addAction(show_hex_edit_act_);
   tools_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
   addToolBar(tools_tool_bar_);
@@ -310,8 +310,8 @@ bool HexEditWidget::saveAs() {
   return saveFile(file_name);
 }
 
-void HexEditWidget::showVisualisation() {
-  auto *panel = new visualisation::VisualisationPanel(main_window_,
+void HexEditWidget::showVisualization() {
+  auto *panel = new visualization::VisualizationPanel(main_window_,
       data_model_);
   panel->setData(QByteArray((const char *)data_model_->binData().rawData(),
     static_cast<int>(data_model_->binData().size())));
@@ -336,7 +336,7 @@ void HexEditWidget::showHexEditor() {
 }
 
 void HexEditWidget::newBinData() {
-  visualisation_act_->setEnabled(data_model_->binData().size() > 0);
+  visualization_act_->setEnabled(data_model_->binData().size() > 0);
 }
 
 void HexEditWidget::enableFindNext(bool enable) {

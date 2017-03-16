@@ -26,8 +26,8 @@
 
 #include "util/sampling/uniform_sampler.h"
 
-#include "visualisation/base.h"
-#include "visualisation/minimap_panel.h"
+#include "visualization/base.h"
+#include "visualization/minimap_panel.h"
 
 #include "ui/fileblobmodel.h"
 #include "ui/hexedit.h"
@@ -55,7 +55,7 @@ class NodeWidget : public View {
   MainWindowWithDetachableDockWidgets *main_window_;
 
   HexEditWidget* hex_edit_widget_;
-  visualisation::MinimapPanel* minimap_;
+  visualization::MinimapPanel* minimap_;
 
   QPointer<NodeTreeWidget> node_tree_widget_;
   QPointer<QDockWidget> node_tree_dock_;

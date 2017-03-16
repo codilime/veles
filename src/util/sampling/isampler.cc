@@ -239,7 +239,7 @@ void ISampler::runResample(SamplerConfig *sc) {
       delete sc;
       return;
     }
-    threadpool::runTask("visualisation",
+    threadpool::runTask("visualization",
       std::bind(&ISampler::resampleAsync, this, ++requested_version_, sc));
   } else {
     if (samplingRequired(sc)) {

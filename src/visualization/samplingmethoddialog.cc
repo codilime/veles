@@ -17,11 +17,11 @@
 #include <QComboBox>
 
 #include "ui_samplingmethoddialog.h"
-#include "include/visualisation/samplingmethoddialog.h"
+#include "include/visualization/samplingmethoddialog.h"
 
 
 namespace veles {
-namespace visualisation {
+namespace visualization {
 
 SamplingMethodDialog::SamplingMethodDialog(QWidget* parent) :
       QDialog(parent), ui(new Ui::SamplingMethodDialog) {
@@ -53,5 +53,5 @@ void SamplingMethodDialog::setSampleSize(int size) {
   ui->sample_size->setValue(size);
 }
 
-} // namespace visualisation
+} // namespace visualization
 } // namespace veles

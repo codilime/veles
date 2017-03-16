@@ -14,8 +14,8 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_VISUALISATION_PANEL_H
-#define VELES_VISUALISATION_PANEL_H
+#ifndef VELES_VISUALIZATION_PANEL_H
+#define VELES_VISUALIZATION_PANEL_H
 
 #include <QWidget>
 #include <QBoxLayout>
@@ -31,21 +31,21 @@
 #include "ui/dockwidget.h"
 #include "ui/nodetreewidget.h"
 #include "ui/fileblobmodel.h"
-#include "visualisation/base.h"
-#include "visualisation/minimap_panel.h"
-#include "visualisation/samplingmethoddialog.h"
+#include "visualization/base.h"
+#include "visualization/minimap_panel.h"
+#include "visualization/samplingmethoddialog.h"
 
 namespace veles {
-namespace visualisation {
+namespace visualization {
 
-class VisualisationPanel : public ui::View {
+class VisualizationPanel : public ui::View {
   Q_OBJECT
 
  public:
-  explicit VisualisationPanel(
+  explicit VisualizationPanel(
       ui::MainWindowWithDetachableDockWidgets* main_window,
       QSharedPointer<ui::FileBlobModel>& data_model, QWidget *parent = 0);
-  ~VisualisationPanel();
+  ~VisualizationPanel();
 
   void setData(const QByteArray &data);
   void setRange(const size_t start, const size_t end);
@@ -53,43 +53,43 @@ class VisualisationPanel : public ui::View {
  private slots:
   void setSamplingMethod(const QString &name);
   void setSampleSize(int kilobytes);
-  void showDigramVisualisation();
-  void showTrigramVisualisation();
-  void showLayeredDigramVisualisation();
+  void showDigramVisualization();
+  void showTrigramVisualization();
+  void showLayeredDigramVisualization();
   void minimapSelectionChanged(size_t start, size_t end);
   void showMoreOptions();
 
  private:
   enum class ESampler {NO_SAMPLER, UNIFORM_SAMPLER};
-  enum class EVisualisation {DIGRAM, TRIGRAM, LAYERED_DIGRAM};
+  enum class EVisualization {DIGRAM, TRIGRAM, LAYERED_DIGRAM};
 
   static const std::map<QString, ESampler> k_sampler_map;
   static const ESampler k_default_sampler = ESampler::UNIFORM_SAMPLER;
-  static const EVisualisation k_default_visualisation = EVisualisation::TRIGRAM;
+  static const EVisualization k_default_visualization = EVisualization::TRIGRAM;
   static const int k_max_sample_size = 128 * 1024;
   static const int k_minimap_sample_size = 4096;
 
   static util::ISampler* getSampler(ESampler type,
                                     const QByteArray &data,
                                     int sample_size);
-  static VisualisationWidget* getVisualisation(EVisualisation type,
+  static VisualizationWidget* getVisualization(EVisualization type,
                                                QWidget *parent = 0);
   static QString prepareAddressString(size_t start, size_t end);
 
-  void setVisualisation(EVisualisation type);
-  void refreshVisualisation();
+  void setVisualization(EVisualization type);
+  void refreshVisualization();
   void initLayout();
   void initOptionsPanel();
-  void prepareVisualisationOptions();
+  void prepareVisualizationOptions();
 
   QByteArray data_;
   ESampler sampler_type_;
-  EVisualisation visualisation_type_;
+  EVisualization visualization_type_;
   int sample_size_;
   util::ISampler *sampler_, *minimap_sampler_;
   MinimapPanel *minimap_;
-  VisualisationWidget *visualisation_;
-  QMainWindow *visualisation_root_;
+  VisualizationWidget *visualization_;
+  QMainWindow *visualization_root_;
 
   QSpinBox *sample_size_box_;
   QBoxLayout *layout_, *options_layout_;
@@ -112,7 +112,7 @@ class VisualisationPanel : public ui::View {
   ui::MainWindowWithDetachableDockWidgets* main_window_;
 };
 
-}  //  namespace visualisation
+}  //  namespace visualization
 }  //  namespace veles
 
-#endif  //  VELES_VISUALISATION_PANEL_H
+#endif  //  VELES_VISUALIZATION_PANEL_H

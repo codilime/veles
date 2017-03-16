@@ -39,7 +39,7 @@
 #include "util/settings/hexedit.h"
 #include "util/icons.h"
 
-#include "visualisation/panel.h"
+#include "visualization/panel.h"
 
 namespace veles {
 namespace ui {
@@ -73,7 +73,7 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
   minimap_dock_ = new QDockWidget;
   new DockWidgetVisibilityGuard(minimap_dock_);
   minimap_dock_->setWindowTitle("Minimap");
-  minimap_ = new visualisation::MinimapPanel(this);
+  minimap_ = new visualization::MinimapPanel(this);
 
   if(data_model_->binData().size() > 0) {
     loadBinDataToMinimap();
