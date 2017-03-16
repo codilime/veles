@@ -40,7 +40,7 @@ class NodeID(pep487.NewObject):
         return binascii.b2a_hex(self.bytes).decode('ascii')
 
     def __repr__(self):
-        return 'ObjectID("{}")'.format(str(self))
+        return 'NodeID("{}")'.format(str(self))
 
     def __eq__(self, other):
         if isinstance(other, NodeID):

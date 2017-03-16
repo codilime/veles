@@ -16,23 +16,13 @@ from veles.compatibility import pep487
 
 
 class Model(pep487.NewObject):
-    object_types = {}
-    # string name representing the type, None will result in effectively
-    # abstract model that can be used to group different models - i.e. messages
-    object_type = None
-
     def __init__(self, **kwargs):
-        assert self.object_type is not None, (
-            'Can\'t instantiate class {}'.format(self.__class__.__name__))
         if any(i not in [field.name for field in self.fields] for i in kwargs):
             raise TypeError('got an unexpected keyword argument')
         for field_name, field in kwargs.items():
             setattr(self, field_name, field)
 
     def __init_subclass__(cls, **kwargs):
-        if cls.object_type is None:
-            return
-
         super(Model, cls).__init_subclass__(**kwargs)
 
         cls.fields = []
@@ -43,12 +33,8 @@ class Model(pep487.NewObject):
                 except AttributeError:
                     pass
 
-        assert cls.object_type not in cls.object_types, (
-            'object_type {} already used'.format(cls.object_type))
-        cls.object_types[cls.object_type] = cls
-
     def to_dict(self):
-        val = {'object_type': self.object_type}
+        val = {}
         for field in self.fields:
             val[field.name] = field.__get__(self)
         return val
@@ -60,14 +46,50 @@ class Model(pep487.NewObject):
 
     @classmethod
     def load(cls, val):
+        return cls.from_dict(val)
+
+    def dump(self, packer):
+        return packer.pack(self.to_dict())
+
+    def __str__(self):
+        return '{}: {}'.format(self.__class__.__name__, self.to_dict())
+
+    __repr__ = __str__
+
+
+class PolymorphicModel(Model):
+    object_types = {}
+    # string name representing the type, None will result in effectively
+    # abstract model that can be used to group different models - i.e. messages
+    object_type = None
+
+    def __init__(self, **kwargs):
+        assert self.object_type is not None, (
+            'Can\'t instantiate class {}'.format(self.__class__.__name__))
+        super(PolymorphicModel, self).__init__(**kwargs)
+
+    def __init_subclass__(cls, **kwargs):
+        if cls.object_type is None:
+            return
+
+        super(PolymorphicModel, cls).__init_subclass__(**kwargs)
+
+        assert cls.object_type not in cls.object_types, (
+            'object_type {} already used'.format(cls.object_type))
+        cls.object_types[cls.object_type] = cls
+
+    def to_dict(self):
+        val = super(PolymorphicModel, self).to_dict()
+        val['object_type'] = self.object_type
+        return val
+
+    @classmethod
+    def load(cls, val):
         if not isinstance(val, dict) or 'object_type' not in val:
             raise ValueError('Malformed object')
         if val['object_type'] not in cls.object_types:
             raise ValueError('Unknown object type')
         return cls.object_types[val.pop('object_type')].from_dict(val)
-
-    def dump(self, packer):
-        return packer.pack(self.to_dict())
 
     def __str__(self):
         return '{}: {}'.format(self.object_type, self.to_dict())

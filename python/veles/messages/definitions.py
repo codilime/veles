@@ -17,7 +17,7 @@ from veles.schema import nodeid, model
 from . import fields
 
 
-class MsgpackMsg(model.Model):
+class MsgpackMsg(model.PolymorphicModel):
     object_type = None
 
 
@@ -96,7 +96,7 @@ class MsgListReply(MsgpackMsg):
     object_type = 'list_reply'
 
     objs = fields.Array(elements_types=[fields.Object(
-        local_types=(node.Node,))])
+        local_type=node.Node)])
     gone = fields.Array(elements_types=[fields.Extension(
         obj_type=nodeid.NodeID)])
     qid = fields.Integer()
@@ -114,7 +114,7 @@ class MsgGetReply(MsgpackMsg):
     object_type = 'get_reply'
 
     qid = fields.Integer()
-    obj = fields.Object(local_types=(node.Node,))
+    obj = fields.Object(local_type=node.Node)
 
 
 class MsgGetData(MsgpackMsg):

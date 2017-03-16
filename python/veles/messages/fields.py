@@ -208,21 +208,19 @@ class Extension(Field):
 
 
 class Object(Field):
-    def __init__(self, local_types, optional=False):
+    def __init__(self, local_type, optional=False):
         super(Object, self).__init__(optional)
-        assert isinstance(local_types, tuple)
-        for type in local_types:
-            assert issubclass(type, model.Model)
-        self.local_types = local_types
+        assert issubclass(local_type, model.Model)
+        self.local_type = local_type
 
     def validate(self, value):
         super(Object, self).validate(value)
         if isinstance(value, dict):
-            value = model.Model.load(value)
+            value = self.local_type.load(value)
 
-        if isinstance(value, self.local_types):
+        if isinstance(value, self.local_type):
             return value
 
         raise ValueError(
             'Attribute {} has to be {} type or dict that maps to it.'.format(
-                self.name, self.local_types))
+                self.name, self.local_type))

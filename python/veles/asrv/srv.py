@@ -323,7 +323,7 @@ class Server:
         if lister.parent is not None:
             c.execute("""
                 SELECT id FROM object WHERE parent = ?
-            """, (lister.parent.id.to_bytes(),))
+            """, (lister.parent.node.id.to_bytes(),))
         else:
             c.execute("""
                 SELECT id FROM object WHERE parent IS NULL

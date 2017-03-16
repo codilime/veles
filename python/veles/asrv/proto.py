@@ -23,7 +23,6 @@ import msgpack
 
 from veles.messages import definitions
 from veles.messages import msgpackwrap
-from veles.schema import model
 from .srv import BaseLister
 
 
@@ -99,7 +98,7 @@ class Proto(asyncio.Protocol):
         self.unpacker.feed(data)
         while True:
             try:
-                msg = model.Model.load(self.unpacker.unpack())
+                msg = definitions.MsgpackMsg.load(self.unpacker.unpack())
                 if not isinstance(msg, definitions.MsgpackMsg):
                     raise ValueError(
                         'received an object that isn\'t a message')

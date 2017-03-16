@@ -17,8 +17,6 @@ from veles.schema import nodeid, model
 
 
 class Node(model.Model):
-    object_type = 'node'
-
     id = fields.Extension(obj_type=nodeid.NodeID)
     parent = fields.Extension(obj_type=nodeid.NodeID, optional=True)
     pos_start = fields.Integer(optional=True)

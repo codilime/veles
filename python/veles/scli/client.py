@@ -19,7 +19,6 @@ import msgpack
 
 from veles.messages import definitions
 from veles.messages import msgpackwrap
-from veles.schema import model
 from veles.schema import nodeid
 
 
@@ -33,7 +32,7 @@ class Client:
     def getpkt(self):
         while True:
             try:
-                return model.Model.load(self.unpacker.unpack())
+                return definitions.MsgpackMsg.load(self.unpacker.unpack())
             except msgpack.OutOfData:
                 pass
             data = self.sock.recv(1024)
