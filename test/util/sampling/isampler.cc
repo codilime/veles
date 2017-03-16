@@ -200,7 +200,7 @@ TEST(ISamplerWithSampling, getDataFromIsampler) {
 /*****************************************************************************/
 
 TEST(ISamplerAsynchronous, addAndClearCallbacks) {
-  threadpool::mockTopic("visualisation");
+  threadpool::mockTopic("visualization");
   auto data = prepare_data(100);
   MockCallback mc1, mc2, mc3;
   mc1.resetCallCount();
@@ -239,7 +239,7 @@ TEST(ISamplerAsynchronous, addAndClearCallbacks) {
 }
 
 TEST(ISamplerAsynchronous, prepareAndApplySample) {
-  threadpool::mockTopic("visualisation");
+  threadpool::mockTopic("visualization");
   auto data = prepare_data(100);
   MockCallback mc;
   mc.resetCallCount();
