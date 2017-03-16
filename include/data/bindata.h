@@ -114,7 +114,7 @@ class BinData {
   }
 
   /** Checks if all attributes of BinData's are equal. */
-  bool operator==(const BinData &other) {
+  bool operator==(const BinData &other) const {
     if (width_ != other.width_ || size_ != other.size_) {
       return false;
     }
@@ -190,7 +190,7 @@ class BinData {
   /** Returns a subrange of bits of a single element of data.  Bits are
       counted from LSB, 0-based.  Result is a single-element BinData
       with a width equal to num_bits.  */
-  BinData bits(size_t el, unsigned start_bit, unsigned num_bits) {
+  BinData bits(size_t el, unsigned start_bit, unsigned num_bits) const {
     assert(start_bit + num_bits <= width_);
     assert(el < size_);
     BinData res(num_bits, 1);

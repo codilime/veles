@@ -15,8 +15,11 @@
  *
  */
 #include "data/bindata.h"
-#include <QtGlobal>
+
 #include <algorithm>
+#include <cassert>
+
+#include <QtGlobal>
 
 namespace veles {
 namespace data {
@@ -38,7 +41,7 @@ void BinData::copyBits(uint8_t *dst,
       src += cur_bytes;
       num_bits -= cur_bytes << 3;
     } else {
-      unsigned cur_bits = std::min(std::min(8 - src_bit, 8 - dst_bit), num_bits);
+      unsigned cur_bits = std::min({8 - src_bit, 8 - dst_bit, num_bits});
       uint8_t mask = (1 << cur_bits) - 1;
       uint8_t bits = (*src >> src_bit) & mask;
       *dst &= ~(mask << dst_bit);
@@ -74,9 +77,8 @@ QString BinData::toString(size_t maxElements) {
 
     QString element = "0x";
     auto bitsLeft = width();
-    auto bitsToRead = width() % 64;
+    auto bitsToRead = bitsLeft % 64;
     if (bitsToRead != 0) {
-      auto bitsToRead = width() % 64;
       element +=
           QString::number(
               bits64(elementIndex, bitsLeft - bitsToRead, bitsToRead), 16)
@@ -84,11 +86,12 @@ QString BinData::toString(size_t maxElements) {
       bitsLeft -= bitsToRead;
     }
 
-    while (bitsLeft) {
+    while (bitsLeft >= 64) {
       element += QString::number(bits64(elementIndex, bitsLeft - 64, 64), 16)
                      .rightJustified(16, '0');
       bitsLeft -= 64;
     }
+    assert(bitsLeft == 0);
 
     res += element;
   }
