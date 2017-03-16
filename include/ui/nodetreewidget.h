@@ -25,7 +25,7 @@
 #include <QToolBar>
 #include <QSharedPointer>
 
-#include "visualisation/base.h"
+#include "visualization/base.h"
 
 #include "ui/fileblobmodel.h"
 #include "ui/hexedit.h"

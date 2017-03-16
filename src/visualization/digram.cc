@@ -14,12 +14,12 @@
  * limitations under the License.
  *
  */
-#include "visualisation/digram.h"
+#include "visualization/digram.h"
 
 namespace veles {
-namespace visualisation {
+namespace visualization {
 
-DigramWidget::DigramWidget(QWidget *parent) : VisualisationWidget(parent),
+DigramWidget::DigramWidget(QWidget *parent) : VisualizationWidget(parent),
   texture_(nullptr) {}
 
 DigramWidget::~DigramWidget() {
@@ -38,7 +38,7 @@ void DigramWidget::refresh(AdditionalResampleDataPtr ad) {
   update();
 }
 
-bool DigramWidget::initializeVisualisationGL() {
+bool DigramWidget::initializeVisualizationGL() {
   if (!initializeOpenGLFunctions()) return false;
 
   glClearColor(0, 0, 0, 1);
@@ -131,5 +131,5 @@ void DigramWidget::paintGLImpl() {
   program_.setUniformValue("tx", 0);
 }
 
-}  // namespace visualisation
+}  // namespace visualization
 }  // namespace veles

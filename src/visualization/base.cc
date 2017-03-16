@@ -15,7 +15,7 @@
  *
  */
 
-#include "visualisation/base.h"
+#include "visualization/base.h"
 #include "util/sampling/fake_sampler.h"
 #include "util/sampling/uniform_sampler.h"
 #include <functional>
@@ -24,41 +24,41 @@
 
 
 namespace veles {
-namespace visualisation {
+namespace visualization {
 
-VisualisationWidget::VisualisationWidget(QWidget *parent) :
+VisualizationWidget::VisualizationWidget(QWidget *parent) :
   QOpenGLWidget(parent), initialised_(false), gl_initialised_(false),
   gl_broken_(false), error_message_set_(false), sampler_(nullptr) {
-  connect(this, &VisualisationWidget::resampled,
-          this, &VisualisationWidget::refreshVisualisation);
+  connect(this, &VisualizationWidget::resampled,
+          this, &VisualizationWidget::refreshVisualization);
 }
 
-VisualisationWidget::~VisualisationWidget() {
+VisualizationWidget::~VisualizationWidget() {
   if (sampler_) {
     sampler_->removeResampleCallback(resample_cb_id_);
   }
 }
 
-void VisualisationWidget::setSampler(util::ISampler *sampler) {
+void VisualizationWidget::setSampler(util::ISampler *sampler) {
   if (sampler_) {
     sampler_->removeResampleCallback(resample_cb_id_);
   }
   sampler_ = sampler;
   resample_cb_id_ = sampler_->registerResampleCallback(
     std::function<void()>(
-      std::bind(&VisualisationWidget::resampleCallback, this)));
+      std::bind(&VisualizationWidget::resampleCallback, this)));
   initialised_ = true;
-  refreshVisualisation();
+  refreshVisualization();
 }
 
-void VisualisationWidget::refreshVisualisation(AdditionalResampleDataPtr ad) {
+void VisualizationWidget::refreshVisualization(AdditionalResampleDataPtr ad) {
   if (gl_initialised_ && !error_message_set_) {
     auto lc = sampler_->lock();
     refresh(ad);
   }
 }
 
-void VisualisationWidget::paintGL() {
+void VisualizationWidget::paintGL() {
   if (error_message_set_) return;
   if (gl_broken_) {
     QVBoxLayout *layout = new QVBoxLayout();
@@ -76,45 +76,45 @@ void VisualisationWidget::paintGL() {
   }
 }
 
-void VisualisationWidget::resizeGL(int w, int h) {
+void VisualizationWidget::resizeGL(int w, int h) {
   if (!gl_initialised_ || gl_broken_) return;
   resizeGLImpl(w, h);
 }
 
-void VisualisationWidget::initializeGL() {
+void VisualizationWidget::initializeGL() {
   if (gl_initialised_ || gl_broken_) return;
-  if (initializeVisualisationGL()) {
+  if (initializeVisualizationGL()) {
     gl_initialised_ = true;
   } else {
     gl_broken_ = true;
   }
 }
 
-size_t VisualisationWidget::getDataSize() {
+size_t VisualizationWidget::getDataSize() {
   if (!initialised_ || sampler_->empty()) {
     return 0;
   }
   return sampler_->getSampleSize();
 }
 
-const char* VisualisationWidget::getData() {
+const char* VisualizationWidget::getData() {
   if (!initialised_ || sampler_->empty()) {
     return nullptr;
   }
   return sampler_->data();
 }
 
-char VisualisationWidget::getByte(size_t index) {
+char VisualizationWidget::getByte(size_t index) {
   return (*sampler_)[index];
 }
 
-void VisualisationWidget::prepareOptions(QMainWindow *visualisation_window) {
+void VisualizationWidget::prepareOptions(QMainWindow *visualization_window) {
 }
 
-void VisualisationWidget::resampleCallback() {
+void VisualizationWidget::resampleCallback() {
   AdditionalResampleDataPtr additionalData(onAsyncResample());
   emit resampled(additionalData);
 }
 
-}  // namespace visualisation
+}  // namespace visualization
 }  // namespace veles

@@ -101,38 +101,38 @@ add_library(veles_base
 qt5_use_modules(veles_base Core Gui Widgets)
 target_link_libraries(veles_base ${ADDITIONAL_LINK_LIBRARIES})
 
-# LIB: veles_visualisation
+# LIB: veles_visualization
 
-qt5_wrap_ui(VISUALISATION_FORMS
-    ${SRC_DIR}/visualisation/selectrangedialog.ui
-    ${SRC_DIR}/visualisation/samplingmethoddialog.ui
+qt5_wrap_ui(VISUALIZATION_FORMS
+    ${SRC_DIR}/visualization/selectrangedialog.ui
+    ${SRC_DIR}/visualization/samplingmethoddialog.ui
     )
 
-qt5_add_resources(VISUALISATION_SHADERS ${SRC_DIR}/visualisation/shaders/shaders.qrc)
-add_library(veles_visualisation
-    ${INCLUDE_DIR}/visualisation/panel.h
-    ${INCLUDE_DIR}/visualisation/base.h
-    ${INCLUDE_DIR}/visualisation/digram.h
-    ${INCLUDE_DIR}/visualisation/trigram.h
-    ${INCLUDE_DIR}/visualisation/minimap.h
-    ${INCLUDE_DIR}/visualisation/minimap_panel.h
-    ${INCLUDE_DIR}/visualisation/selectrangedialog.h
-    ${INCLUDE_DIR}/visualisation/manipulator.h
-    ${INCLUDE_DIR}/visualisation/samplingmethoddialog.h
-    ${SRC_DIR}/visualisation/panel.cc
-    ${SRC_DIR}/visualisation/base.cc
-    ${SRC_DIR}/visualisation/digram.cc
-    ${SRC_DIR}/visualisation/trigram.cc
-    ${SRC_DIR}/visualisation/minimap.cc
-    ${SRC_DIR}/visualisation/minimap_panel.cc
-    ${SRC_DIR}/visualisation/selectrangedialog.cc
-    ${SRC_DIR}/visualisation/manipulator.cc
-    ${SRC_DIR}/visualisation/samplingmethoddialog.cc
-    ${VISUALISATION_FORMS}
-    ${VISUALISATION_SHADERS})
+qt5_add_resources(VISUALIZATION_SHADERS ${SRC_DIR}/visualization/shaders/shaders.qrc)
+add_library(veles_visualization
+    ${INCLUDE_DIR}/visualization/panel.h
+    ${INCLUDE_DIR}/visualization/base.h
+    ${INCLUDE_DIR}/visualization/digram.h
+    ${INCLUDE_DIR}/visualization/trigram.h
+    ${INCLUDE_DIR}/visualization/minimap.h
+    ${INCLUDE_DIR}/visualization/minimap_panel.h
+    ${INCLUDE_DIR}/visualization/selectrangedialog.h
+    ${INCLUDE_DIR}/visualization/manipulator.h
+    ${INCLUDE_DIR}/visualization/samplingmethoddialog.h
+    ${SRC_DIR}/visualization/panel.cc
+    ${SRC_DIR}/visualization/base.cc
+    ${SRC_DIR}/visualization/digram.cc
+    ${SRC_DIR}/visualization/trigram.cc
+    ${SRC_DIR}/visualization/minimap.cc
+    ${SRC_DIR}/visualization/minimap_panel.cc
+    ${SRC_DIR}/visualization/selectrangedialog.cc
+    ${SRC_DIR}/visualization/manipulator.cc
+    ${SRC_DIR}/visualization/samplingmethoddialog.cc
+    ${VISUALIZATION_FORMS}
+    ${VISUALIZATION_SHADERS})
 
-qt5_use_modules(veles_visualisation Core Gui Widgets)
-target_link_libraries(veles_visualisation veles_base)
+qt5_use_modules(veles_visualization Core Gui Widgets)
+target_link_libraries(veles_visualization veles_base)
 
 # LIB: veles_data
 add_library(veles_data
@@ -295,7 +295,7 @@ add_executable(main_ui
     ${SRC_DIR}/ui/spinbox.cc
     ${SRC_DIR}/ui/spinboxvalidator.cc
     ${RESOURCES}
-    ${VISUALISATION_SHADERS}
+    ${VISUALIZATION_SHADERS}
     ${FORMS}
     ${ICONS})
 
@@ -319,7 +319,7 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${GENERATED_M
 
 qt5_use_modules(main_ui Core Gui Widgets)
 
-target_link_libraries(veles_visualisation veles_base)
+target_link_libraries(veles_visualization veles_base)
 if(GTEST_FOUND AND GMOCK_FOUND)
     include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
     add_executable(run_test
@@ -355,7 +355,7 @@ endif(GTEST_FOUND AND GMOCK_FOUND)
 
 
 #target_link_libraries(test_veles veles)
-target_link_libraries(main_ui veles_base veles_db veles_network veles_visualisation Qt5::Widgets parser)
+target_link_libraries(main_ui veles_base veles_db veles_network veles_visualization Qt5::Widgets parser)
 set_target_properties(main_ui PROPERTIES OUTPUT_NAME "veles")
 if(WIN32 AND NOT MSVC)
   set_target_properties(main_ui PROPERTIES RUNTIME_OUTPUT_DIRECTORY "bin")

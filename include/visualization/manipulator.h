@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef VELES_VISUALISATION_MANIPULATOR_H
-#define VELES_VISUALISATION_MANIPULATOR_H
+#ifndef VELES_VISUALIZATION_MANIPULATOR_H
+#define VELES_VISUALIZATION_MANIPULATOR_H
 
 #include <QObject>
 #include <QQuaternion>
@@ -24,7 +24,7 @@
 #include <QVector3D>
 
 namespace veles {
-namespace visualisation {
+namespace visualization {
 
 /*****************************************************************************/
 /* Manipulator */
@@ -141,7 +141,7 @@ class SpinManipulator : public Manipulator {
   const float angular_speed_ = 30.f;  // deg/s
 };
 
-}  // namespace visualisation
+}  // namespace visualization
 }  // namespace veles
 
-#endif  // VELES_VISUALISATION_MANIPULATOR_H
+#endif  // VELES_VISUALIZATION_MANIPULATOR_H

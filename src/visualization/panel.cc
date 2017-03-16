@@ -20,32 +20,32 @@
 #include <QLayoutItem>
 #include <QLabel>
 
-#include "visualisation/panel.h"
+#include "visualization/panel.h"
 #include "util/icons.h"
 #include "util/sampling/fake_sampler.h"
 #include "util/sampling/uniform_sampler.h"
-#include "visualisation/digram.h"
-#include "visualisation/trigram.h"
+#include "visualization/digram.h"
+#include "visualization/trigram.h"
 
 namespace veles {
-namespace visualisation {
+namespace visualization {
 
-const std::map<QString, VisualisationPanel::ESampler>
-  VisualisationPanel::k_sampler_map = {
-    {"No sampling", VisualisationPanel::ESampler::NO_SAMPLER},
-    {"Uniform random sampling", VisualisationPanel::ESampler::UNIFORM_SAMPLER}
+const std::map<QString, VisualizationPanel::ESampler>
+  VisualizationPanel::k_sampler_map = {
+    {"No sampling", VisualizationPanel::ESampler::NO_SAMPLER},
+    {"Uniform random sampling", VisualizationPanel::ESampler::UNIFORM_SAMPLER}
 };
 
 /*****************************************************************************/
 /* Public methods */
 /*****************************************************************************/
 
-VisualisationPanel::VisualisationPanel(
+VisualizationPanel::VisualizationPanel(
     ui::MainWindowWithDetachableDockWidgets* main_window,
     QSharedPointer<ui::FileBlobModel>& data_model, QWidget *parent) :
     veles::ui::View("Visualization", ":/images/trigram_icon.png"),
     sampler_type_(k_default_sampler),
-    visualisation_type_(k_default_visualisation), sample_size_(1024),
+    visualization_type_(k_default_visualization), sample_size_(1024),
     data_model_(data_model), main_window_(main_window) {
   sampler_ = getSampler(sampler_type_, data_, sample_size_);
   sampler_->allowAsynchronousResampling(true);
@@ -56,9 +56,9 @@ VisualisationPanel::VisualisationPanel(
   connect(minimap_, SIGNAL(selectionChanged(size_t, size_t)), this,
       SLOT(minimapSelectionChanged(size_t, size_t)));
 
-  visualisation_ = getVisualisation(visualisation_type_, this);
-  visualisation_root_ = new QMainWindow;
-  visualisation_root_->setCentralWidget(visualisation_);
+  visualization_ = getVisualization(visualization_type_, this);
+  visualization_root_ = new QMainWindow;
+  visualization_root_->setCentralWidget(visualization_);
 
   sampling_method_dialog_ = new SamplingMethodDialog(this);
   sampling_method_dialog_->setSampleSize(sample_size_);
@@ -73,14 +73,14 @@ VisualisationPanel::VisualisationPanel(
   initLayout();
 }
 
-VisualisationPanel::~VisualisationPanel() {
-  delete visualisation_;
+VisualizationPanel::~VisualizationPanel() {
+  delete visualization_;
   delete minimap_;
   delete sampler_;
   delete minimap_sampler_;
 }
 
-void VisualisationPanel::setData(const QByteArray &data) {
+void VisualizationPanel::setData(const QByteArray &data) {
   delete sampler_;
   delete minimap_sampler_;
   data_ = data;
@@ -89,13 +89,13 @@ void VisualisationPanel::setData(const QByteArray &data) {
   minimap_sampler_ = getSampler(ESampler::UNIFORM_SAMPLER,
                                 data_, k_minimap_sample_size);
   minimap_->setSampler(minimap_sampler_);
-  visualisation_->setSampler(sampler_);
+  visualization_->setSampler(sampler_);
   selection_label_->setText(prepareAddressString(0,
                             sampler_->getFileOffset(sampler_->getSampleSize())));
 
 }
 
-void VisualisationPanel::setRange(const size_t start, const size_t end) {
+void VisualizationPanel::setRange(const size_t start, const size_t end) {
   sampler_->setRange(start, end);
 }
 
@@ -103,7 +103,7 @@ void VisualisationPanel::setRange(const size_t start, const size_t end) {
 /* Static factory methods */
 /*****************************************************************************/
 
-util::ISampler* VisualisationPanel::getSampler(ESampler type,
+util::ISampler* VisualizationPanel::getSampler(ESampler type,
                                           const QByteArray &data,
                                           int sample_size) {
   switch (type) {
@@ -117,25 +117,25 @@ util::ISampler* VisualisationPanel::getSampler(ESampler type,
   return nullptr;
 }
 
-VisualisationWidget* VisualisationPanel::getVisualisation(EVisualisation type,
+VisualizationWidget* VisualizationPanel::getVisualization(EVisualization type,
     QWidget* parent) {
   TrigramWidget* trigram = nullptr;
   switch (type) {
-  case EVisualisation::DIGRAM:
+  case EVisualization::DIGRAM:
     return new DigramWidget(parent);
-  case EVisualisation::TRIGRAM:
+  case EVisualization::TRIGRAM:
     trigram = new TrigramWidget(parent);
-    trigram->setMode(TrigramWidget::EVisualisationMode::TRIGRAM);
+    trigram->setMode(TrigramWidget::EVisualizationMode::TRIGRAM);
     return trigram;
-  case EVisualisation::LAYERED_DIGRAM:
+  case EVisualization::LAYERED_DIGRAM:
     trigram = new TrigramWidget(parent);
-    trigram->setMode(TrigramWidget::EVisualisationMode::LAYERED_DIGRAM, false);
+    trigram->setMode(TrigramWidget::EVisualizationMode::LAYERED_DIGRAM, false);
     return trigram;
   }
   return nullptr;
 }
 
-QString VisualisationPanel::prepareAddressString(size_t start, size_t end) {
+QString VisualizationPanel::prepareAddressString(size_t start, size_t end) {
   auto label = QString("0x%1 : ").arg(start, 8, 16, QChar('0'));
   label.append(QString("0x%1 ").arg(end, 8, 16, QChar('0')));
   label.append(QString("(%1 bytes)").arg(end - start));
@@ -146,7 +146,7 @@ QString VisualisationPanel::prepareAddressString(size_t start, size_t end) {
 /* Private slots */
 /*****************************************************************************/
 
-void VisualisationPanel::setSamplingMethod(const QString &name) {
+void VisualizationPanel::setSamplingMethod(const QString &name) {
   auto new_sampler_type = k_sampler_map.at(name);
   if (new_sampler_type == sampler_type_) return;
 
@@ -155,48 +155,48 @@ void VisualisationPanel::setSamplingMethod(const QString &name) {
   sampler_->allowAsynchronousResampling(true);
   auto selection = minimap_->getSelection();
   sampler_->setRange(selection.first, selection.second);
-  visualisation_->setSampler(sampler_);
+  visualization_->setSampler(sampler_);
   delete old_sampler;
   sampler_type_ = new_sampler_type;
 }
 
-void VisualisationPanel::setSampleSize(int kilobytes) {
+void VisualizationPanel::setSampleSize(int kilobytes) {
   sample_size_ = kilobytes;
   if (sampler_type_ == ESampler::UNIFORM_SAMPLER) {
     sampler_->setSampleSize(1024 * kilobytes);
   }
 }
 
-void VisualisationPanel::showDigramVisualisation() {
-  setVisualisation(EVisualisation::DIGRAM);
+void VisualizationPanel::showDigramVisualization() {
+  setVisualization(EVisualization::DIGRAM);
 }
 
-void VisualisationPanel::showTrigramVisualisation() {
-  if (visualisation_type_ == EVisualisation::LAYERED_DIGRAM) {
-    visualisation_type_ = EVisualisation::TRIGRAM;
-    auto trigram = static_cast<TrigramWidget*>(visualisation_);
-    trigram->setMode(TrigramWidget::EVisualisationMode::TRIGRAM);
+void VisualizationPanel::showTrigramVisualization() {
+  if (visualization_type_ == EVisualization::LAYERED_DIGRAM) {
+    visualization_type_ = EVisualization::TRIGRAM;
+    auto trigram = static_cast<TrigramWidget*>(visualization_);
+    trigram->setMode(TrigramWidget::EVisualizationMode::TRIGRAM);
   } else {
-    setVisualisation(EVisualisation::TRIGRAM);
+    setVisualization(EVisualization::TRIGRAM);
   }
 }
 
-void VisualisationPanel::showLayeredDigramVisualisation() {
- if (visualisation_type_ == EVisualisation::TRIGRAM) {
-    visualisation_type_ = EVisualisation::LAYERED_DIGRAM;
-    auto trigram = static_cast<TrigramWidget*>(visualisation_);
-    trigram->setMode(TrigramWidget::EVisualisationMode::LAYERED_DIGRAM);
+void VisualizationPanel::showLayeredDigramVisualization() {
+ if (visualization_type_ == EVisualization::TRIGRAM) {
+    visualization_type_ = EVisualization::LAYERED_DIGRAM;
+    auto trigram = static_cast<TrigramWidget*>(visualization_);
+    trigram->setMode(TrigramWidget::EVisualizationMode::LAYERED_DIGRAM);
   } else {
-    setVisualisation(EVisualisation::LAYERED_DIGRAM);
+    setVisualization(EVisualization::LAYERED_DIGRAM);
   }
 }
 
-void VisualisationPanel::minimapSelectionChanged(size_t start, size_t end) {
+void VisualizationPanel::minimapSelectionChanged(size_t start, size_t end) {
   selection_label_->setText(prepareAddressString(start, end));
   sampler_->setRange(start, end);
 }
 
-void VisualisationPanel::showMoreOptions() {
+void VisualizationPanel::showMoreOptions() {
   sampling_method_dialog_->show();
 }
 
@@ -204,34 +204,34 @@ void VisualisationPanel::showMoreOptions() {
 /* Private methods */
 /*****************************************************************************/
 
-void VisualisationPanel::setVisualisation(EVisualisation type) {
-  if (type != visualisation_type_) {
-    auto toolbars = visualisation_root_->findChildren<QToolBar*>();
+void VisualizationPanel::setVisualization(EVisualization type) {
+  if (type != visualization_type_) {
+    auto toolbars = visualization_root_->findChildren<QToolBar*>();
     for (auto toolbar : toolbars) {
       if (toolbar->actions().empty() || !toolbar->property("common").toBool()) {
         toolbar->deleteLater();
       }
     }
-    VisualisationWidget *old = visualisation_;
-    visualisation_type_ = type;
-    visualisation_ = getVisualisation(visualisation_type_, this);
-    visualisation_->setSampler(sampler_);
-    visualisation_root_->setCentralWidget(visualisation_);
-    prepareVisualisationOptions();
+    VisualizationWidget *old = visualization_;
+    visualization_type_ = type;
+    visualization_ = getVisualization(visualization_type_, this);
+    visualization_->setSampler(sampler_);
+    visualization_root_->setCentralWidget(visualization_);
+    prepareVisualizationOptions();
     delete old;
   }
 }
 
-void VisualisationPanel::refreshVisualisation() {
-  if (visualisation_ != nullptr) {
-    visualisation_->refreshVisualisation();
+void VisualizationPanel::refreshVisualization() {
+  if (visualization_ != nullptr) {
+    visualization_->refreshVisualization();
   }
 }
 
-void VisualisationPanel::initLayout() {
+void VisualizationPanel::initLayout() {
   initOptionsPanel();
 
-  setCentralWidget(visualisation_root_);
+  setCentralWidget(visualization_root_);
   setDockNestingEnabled(true);
 
   node_tree_dock_ = new QDockWidget;
@@ -264,11 +264,11 @@ void VisualisationPanel::initLayout() {
       minimap_dock_, &QDockWidget::setVisible);
 }
 
-void VisualisationPanel::prepareVisualisationOptions() {
-  visualisation_->prepareOptions(visualisation_root_);
+void VisualizationPanel::prepareVisualizationOptions() {
+  visualization_->prepareOptions(visualization_root_);
 }
 
-void VisualisationPanel::initOptionsPanel() {
+void VisualizationPanel::initOptionsPanel() {
   /////////////////////////////////////
   // Node tree / minimap
   show_node_tree_act_ = new QAction(QIcon(":/images/show_node_tree.png"),
@@ -291,29 +291,29 @@ void VisualisationPanel::initOptionsPanel() {
   tools_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
   tools_tool_bar_->setProperty("common", true);
   tools_tool_bar_->addSeparator();
-  visualisation_root_->addToolBar(tools_tool_bar_);
+  visualization_root_->addToolBar(tools_tool_bar_);
 
   /////////////////////////////////////
   // Modes: digram / trigrams
   QColor icon_color = palette().color(QPalette::WindowText);
   digram_action_ = new QAction(util::getColoredIcon(
       ":/images/digram_icon.png", icon_color), tr("&Digram"), this);
-  digram_action_->setToolTip("Digram Visualisation");
+  digram_action_->setToolTip("Digram Visualization");
   connect(digram_action_, SIGNAL(triggered()), this,
-          SLOT(showDigramVisualisation()));
+          SLOT(showDigramVisualization()));
 
   trigram_action_ = new QAction(util::getColoredIcon(
       ":/images/trigram_icon.png", icon_color), tr("&Trigram"), this);
-  trigram_action_->setToolTip("Trigram Visualisation");
+  trigram_action_->setToolTip("Trigram Visualization");
   connect(trigram_action_, SIGNAL(triggered()), this,
-          SLOT(showTrigramVisualisation()));
+          SLOT(showTrigramVisualization()));
 
   layered_digram_action_ = new QAction(util::getColoredIcon(
       ":/images/layered_digram_icon.png", icon_color, false),
       tr("&Layered Digram"), this);
-  layered_digram_action_->setToolTip("Layered Digram Visualisation");
+  layered_digram_action_->setToolTip("Layered Digram Visualization");
   connect(layered_digram_action_, SIGNAL(triggered()), this,
-          SLOT(showLayeredDigramVisualisation()));
+          SLOT(showLayeredDigramVisualization()));
 
   modes_tool_bar_ = new QToolBar(tr("Modes"));
   modes_tool_bar_->setMovable(false);
@@ -323,7 +323,7 @@ void VisualisationPanel::initOptionsPanel() {
   modes_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
   modes_tool_bar_->addSeparator();
   modes_tool_bar_->setProperty("common", true);
-  visualisation_root_->addToolBar(modes_tool_bar_);
+  visualization_root_->addToolBar(modes_tool_bar_);
 
   /////////////////////////////////////
   // Selection
@@ -339,20 +339,20 @@ void VisualisationPanel::initOptionsPanel() {
   selection_toolbar->addAction(selection_widget_action);
   selection_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
   selection_toolbar->setProperty("common", true);
-  visualisation_root_->addToolBar(selection_toolbar);
+  visualization_root_->addToolBar(selection_toolbar);
 
   /////////////////////////////////////
   // Sampling
   QAction* show_more_options_action = new QAction(QIcon(":/images/more.png"),
       tr("More options"), this);
   connect(show_more_options_action, &QAction::triggered,
-      this, &VisualisationPanel::showMoreOptions);
+      this, &VisualizationPanel::showMoreOptions);
   selection_toolbar->addAction(show_more_options_action);
 
   /////////////////////////////////////
-  // Additional toolbars specific for current visualisation
-  prepareVisualisationOptions();
+  // Additional toolbars specific for current visualization
+  prepareVisualizationOptions();
 }
 
-}  // namespace visualisation
+}  // namespace visualization
 }  // namespace veles

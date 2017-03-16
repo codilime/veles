@@ -28,7 +28,7 @@
 #include <QVBoxLayout>
 #include <QWidgetAction>
 
-#include "visualisation/panel.h"
+#include "visualization/panel.h"
 
 #include "dbif/info.h"
 #include "dbif/types.h"

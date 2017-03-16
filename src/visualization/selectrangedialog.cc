@@ -19,11 +19,11 @@
 #include <assert.h>
 
 #include "ui_selectrangedialog.h"
-#include "include/visualisation/selectrangedialog.h"
+#include "include/visualization/selectrangedialog.h"
 
 
 namespace veles {
-namespace visualisation {
+namespace visualization {
 
 SelectRangeDialog::SelectRangeDialog(QWidget* parent) :
       QDialog(parent), ui(new Ui::SelectRangeDialog) {
@@ -93,5 +93,5 @@ void SelectRangeDialog::numberBaseChanged(veles::ui::SpinBox* box, const QString
 }
 
 
-}  // namespace visualisation
+}  // namespace visualization
 }  // namespace veles

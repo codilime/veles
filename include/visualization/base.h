@@ -14,8 +14,8 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_VISUALISATION_BASE_H
-#define VELES_VISUALISATION_BASE_H
+#ifndef VELES_VISUALIZATION_BASE_H
+#define VELES_VISUALIZATION_BASE_H
 
 #include <QString>
 #include <QBoxLayout>
@@ -31,21 +31,21 @@
 #include "util/sampling/isampler.h"
 
 namespace veles {
-namespace visualisation {
+namespace visualization {
 
-class VisualisationWidget : public QOpenGLWidget,
+class VisualizationWidget : public QOpenGLWidget,
                             protected QOpenGLFunctions_3_2_Core {
   Q_OBJECT
 
  public:
-  explicit VisualisationWidget(QWidget *parent = 0);
-  ~VisualisationWidget();
+  explicit VisualizationWidget(QWidget *parent = 0);
+  ~VisualizationWidget();
 
   void setSampler(util::ISampler *sampler);
 
-  // This method takes a visualisation window (QMainWindow*) and adds any
-  // toolbars necessary to manipulate options of this visualisation.
-  virtual void prepareOptions(QMainWindow *visualisation_window);
+  // This method takes a visualization window (QMainWindow*) and adds any
+  // toolbars necessary to manipulate options of this visualization.
+  virtual void prepareOptions(QMainWindow *visualization_window);
 
   /**
    * Derive this if you want to produce some additional data in
@@ -56,7 +56,7 @@ class VisualisationWidget : public QOpenGLWidget,
   };
   typedef std::shared_ptr<AdditionalResampleData> AdditionalResampleDataPtr;
 
-  void refreshVisualisation(AdditionalResampleDataPtr ad = AdditionalResampleDataPtr());
+  void refreshVisualization(AdditionalResampleDataPtr ad = AdditionalResampleDataPtr());
 
  signals:
   void resampled(AdditionalResampleDataPtr ad);
@@ -66,7 +66,7 @@ class VisualisationWidget : public QOpenGLWidget,
   void resizeGL(int w, int h) override;
   void paintGL() override;
 
-  virtual bool initializeVisualisationGL() = 0;
+  virtual bool initializeVisualizationGL() = 0;
   virtual void refresh(AdditionalResampleDataPtr ad) = 0;
   virtual void paintGLImpl() = 0;
   virtual void resizeGLImpl(int w, int h) = 0;
@@ -94,7 +94,7 @@ class VisualisationWidget : public QOpenGLWidget,
   util::ResampleCallbackId resample_cb_id_;
 };
 
-}  // namespace visualisation
+}  // namespace visualization
 }  // namespace veles
 
-#endif  // VELES_VISUALISATION_BASE_H
+#endif  // VELES_VISUALIZATION_BASE_H

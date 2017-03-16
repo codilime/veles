@@ -14,8 +14,8 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_VISUALISATION_SAMPLINGMETHODDIALOG_H
-#define VELES_VISUALISATION_SAMPLINGMETHODDIALOG_H
+#ifndef VELES_VISUALIZATION_SAMPLINGMETHODDIALOG_H
+#define VELES_VISUALIZATION_SAMPLINGMETHODDIALOG_H
 
 #include <QDialog>
 #include <QString>
@@ -25,7 +25,7 @@ class SamplingMethodDialog;
 }
 
 namespace veles {
-namespace visualisation {
+namespace visualization {
 
 class SamplingMethodDialog : public QDialog {
   Q_OBJECT
@@ -48,7 +48,7 @@ class SamplingMethodDialog : public QDialog {
 
 };
 
-}  // namespace visualisation
+}  // namespace visualization
 }  // namespace veles
 
-#endif // VELES_VISUALISATION_SAMPLINGMETHODDIALOG_H
+#endif // VELES_VISUALIZATION_SAMPLINGMETHODDIALOG_H
