@@ -109,9 +109,7 @@ NodeWidget::~NodeWidget() {
 }
 
 void NodeWidget::loadBinDataToMinimap() {
-  if(sampler_) {
-    delete sampler_;
-  }
+  delete sampler_;
 
   sampler_data_ = QByteArray((const char *)data_model_->binData().rawData(),
           static_cast<int>(data_model_->binData().octets()));

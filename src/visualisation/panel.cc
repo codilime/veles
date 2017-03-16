@@ -76,21 +76,13 @@ VisualisationPanel::VisualisationPanel(
 VisualisationPanel::~VisualisationPanel() {
   delete visualisation_;
   delete minimap_;
-  if (sampler_ != nullptr) {
-    delete sampler_;
-  }
-  if (minimap_sampler_ != nullptr) {
-    delete minimap_sampler_;
-  }
+  delete sampler_;
+  delete minimap_sampler_;
 }
 
 void VisualisationPanel::setData(const QByteArray &data) {
-  if (sampler_ != nullptr) {
-    delete sampler_;
-  }
-  if (minimap_sampler_ != nullptr) {
-    delete minimap_sampler_;
-  }
+  delete sampler_;
+  delete minimap_sampler_;
   data_ = data;
   sampler_ = getSampler(sampler_type_, data_, sample_size_);
   sampler_->allowAsynchronousResampling(true);
@@ -164,9 +156,7 @@ void VisualisationPanel::setSamplingMethod(const QString &name) {
   auto selection = minimap_->getSelection();
   sampler_->setRange(selection.first, selection.second);
   visualisation_->setSampler(sampler_);
-  if (old_sampler != nullptr) {
-    delete old_sampler;
-  }
+  delete old_sampler;
   sampler_type_ = new_sampler_type;
 }
 
