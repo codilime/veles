@@ -18,10 +18,12 @@
 # A girl without a name
 
 import asyncio
+
 import msgpack
-from .srv import BaseLister
+
 from veles.messages import definitions
 from veles.messages import msgpackwrap
+from .srv import BaseLister
 
 
 class ProtocolError(Exception):
@@ -96,7 +98,7 @@ class Proto(asyncio.Protocol):
         self.unpacker.feed(data)
         while True:
             try:
-                msg = definitions.MsgpackMsg.load(self.unpacker)
+                msg = definitions.MsgpackMsg.load(self.unpacker.unpack())
                 self.handle_msg(msg)
             except msgpack.OutOfData:
                 return
@@ -118,7 +120,7 @@ class Proto(asyncio.Protocol):
             'proc_reg': self.msg_proc_reg,
         }
         try:
-            handlers[msg.msg_type](msg)
+            handlers[msg.object_type](msg)
         except ProtocolError as e:
             self.protoerr(e.args[0], e.args[1])
 

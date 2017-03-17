@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import socket
-import msgpack
 import random
+import socket
 
-from veles.common import base
+import msgpack
+
 from veles.messages import definitions
 from veles.messages import msgpackwrap
+from veles.schema import nodeid
 
 
 class Client:
@@ -31,7 +32,7 @@ class Client:
     def getpkt(self):
         while True:
             try:
-                return definitions.MsgpackMsg.load(self.unpacker)
+                return definitions.MsgpackMsg.load(self.unpacker.unpack())
             except msgpack.OutOfData:
                 pass
             data = self.sock.recv(1024)
@@ -42,9 +43,9 @@ class Client:
     def create(self, parent, *, tags=[], attr={}, data={}, bindata={},
                pos=(None, None)):
         msg = {
-            'id': base.ObjectID(
+            'id': nodeid.NodeID(
                 random.getrandbits(192).to_bytes(24, 'little')),
-            'parent': parent or base.ObjectID(),
+            'parent': parent or nodeid.NodeID(),
             'pos_start': pos[0],
             'pos_end': pos[1],
             'tags': tags,

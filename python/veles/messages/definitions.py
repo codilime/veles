@@ -12,45 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from veles.common import base
+from veles.proto import node
+from veles.schema import nodeid, model
 from . import fields
 
 
-class MsgpackMsg(base.Model):
-    message_types = {}
-
-    def __init_subclass__(cls, **kwargs):
-        super(MsgpackMsg, cls).__init_subclass__(**kwargs)
-
-        cls.message_types[cls.msg_type] = cls
-
-    @classmethod
-    def load(cls, unpacker):
-        unpacked = unpacker.unpack()
-        if not isinstance(unpacked, dict) or 'type' not in unpacked:
-            raise ValueError('Malformed message')
-        if unpacked['type'] not in cls.message_types:
-            raise ValueError('Unknown message type')
-        obj = cls.message_types[unpacked.pop('type')]()
-        for field in obj.fields:
-            field.__set__(obj, unpacked.get(field.name, None))
-        return obj
-
-    def dump(self, packer):
-        obj = {'type': self.msg_type}
-        for field in self.fields:
-            obj[field.name] = field.__get__(self)
-        return packer.pack(obj)
-
-    def __str__(self):
-        msg = '{}: {}'.format(self.msg_type, self.to_dict())
-        return msg
-
-    __repr__ = __str__
+class MsgpackMsg(model.PolymorphicModel):
+    pass
 
 
 class MsgConnect(MsgpackMsg):
-    msg_type = 'connect'
+    object_type = 'connect'
 
     proto_version = fields.Integer(minimum=1)
     client_name = fields.String(optional=True)
@@ -61,7 +33,7 @@ class MsgConnect(MsgpackMsg):
 
 
 class MsgConnected(MsgpackMsg):
-    msg_type = 'connected'
+    object_type = 'connected'
 
     proto_version = fields.Integer(minimum=1)
     server_name = fields.String()
@@ -69,31 +41,31 @@ class MsgConnected(MsgpackMsg):
 
 
 class MsgConnError(MsgpackMsg):
-    msg_type = 'conn_error'
+    object_type = 'conn_error'
 
     code = fields.String()
     msg = fields.String()
 
 
 class MsgProtoError(MsgpackMsg):
-    msg_type = 'proto_error'
+    object_type = 'proto_error'
 
     code = fields.Integer()
     msg = fields.String(optional=True)
 
 
 class MsgRegisterMethod(MsgpackMsg):
-    msg_type = 'register_mthd'
+    object_type = 'register_mthd'
 
 
 class MsgRegisterTrigger(MsgpackMsg):
-    msg_type = 'register_trigger'
+    object_type = 'register_trigger'
 
 
 class MsgList(MsgpackMsg):
-    msg_type = 'list'
+    object_type = 'list'
 
-    parent = fields.Extension(obj_type=base.ObjectID, optional=True)
+    parent = fields.Extension(obj_type=nodeid.NodeID, optional=True)
     tags = fields.Array(elements_types=[fields.Map(
         keys_types=[fields.String()], values_types=[fields.Boolean()])])
     qid = fields.Integer()
@@ -103,95 +75,95 @@ class MsgList(MsgpackMsg):
 
 
 class MsgCancelSub(MsgpackMsg):
-    msg_type = 'cancel_sub'
+    object_type = 'cancel_sub'
 
     qid = fields.Integer()
 
 
 class MsgSubCancelled(MsgpackMsg):
-    msg_type = 'sub_cancelled'
+    object_type = 'sub_cancelled'
 
     qid = fields.Integer()
 
 
 class MsgObjGone(MsgpackMsg):
-    msg_type = 'obj_gone'
+    object_type = 'obj_gone'
 
     qid = fields.Integer()
 
 
 class MsgListReply(MsgpackMsg):
-    msg_type = 'list_reply'
+    object_type = 'list_reply'
 
     objs = fields.Array(elements_types=[fields.Object(
-        local_type=base.Node)])
+        local_type=node.Node)])
     gone = fields.Array(elements_types=[fields.Extension(
-        obj_type=base.ObjectID)])
+        obj_type=nodeid.NodeID)])
     qid = fields.Integer()
 
 
 class MsgGet(MsgpackMsg):
-    msg_type = 'get'
+    object_type = 'get'
 
-    id = fields.Extension(obj_type=base.ObjectID)
+    id = fields.Extension(obj_type=nodeid.NodeID)
     qid = fields.Integer()
     sub = fields.Boolean()
 
 
 class MsgGetReply(MsgpackMsg):
-    msg_type = 'get_reply'
+    object_type = 'get_reply'
 
     qid = fields.Integer()
-    obj = fields.Object(local_type=base.Node)
+    obj = fields.Object(local_type=node.Node)
 
 
 class MsgGetData(MsgpackMsg):
-    msg_type = 'get_data'
+    object_type = 'get_data'
 
     qid = fields.Integer()
-    id = fields.Extension(obj_type=base.ObjectID)
+    id = fields.Extension(obj_type=nodeid.NodeID)
     sub = fields.Boolean()
     key = fields.String()
 
 
 class MsgGetDataReply(MsgpackMsg):
-    msg_type = 'get_data_reply'
+    object_type = 'get_data_reply'
 
     qid = fields.Integer()
     data = fields.Any()
 
 
 class MsgGetBindata(MsgpackMsg):
-    msg_type = 'get_bindata'
+    object_type = 'get_bindata'
 
 
 class MsgGetBindataReply(MsgpackMsg):
-    msg_type = 'get_bindata_reply'
+    object_type = 'get_bindata_reply'
 
 
 class MsgListConnections(MsgpackMsg):
-    msg_type = 'list_connections'
+    object_type = 'list_connections'
 
 
 class MsgConnectionsReply(MsgpackMsg):
-    msg_type = 'connections_reply'
+    object_type = 'connections_reply'
 
 
 class MsgListRegistry(MsgpackMsg):
-    msg_type = 'list_registry'
+    object_type = 'list_registry'
 
 
 class MsgRegistryReply(MsgpackMsg):
-    msg_type = 'registry_reply'
+    object_type = 'registry_reply'
 
 
 class MsgCreate(MsgpackMsg):
-    msg_type = 'create'
+    object_type = 'create'
 
-    id = fields.Extension(obj_type=base.ObjectID)
+    id = fields.Extension(obj_type=nodeid.NodeID)
     rid = fields.Integer()
     qid = fields.Integer(optional=True)
-    parent = fields.Extension(obj_type=base.ObjectID, optional=True)
+    parent = fields.Extension(obj_type=nodeid.NodeID, optional=True)
     pos_start = fields.Integer(optional=True)
     pos_end = fields.Integer(optional=True)
     attr = fields.Map(optional=True, keys_types=[fields.String()])
@@ -202,58 +174,58 @@ class MsgCreate(MsgpackMsg):
 
 
 class MsgModify(MsgpackMsg):
-    msg_type = 'modify'
+    object_type = 'modify'
 
 
 class MsgDelete(MsgpackMsg):
-    msg_type = 'delete'
+    object_type = 'delete'
 
     rid = fields.Integer()
     ids = fields.Array(
-        elements_types=[fields.Extension(obj_type=base.ObjectID)])
+        elements_types=[fields.Extension(obj_type=nodeid.NodeID)])
 
 
 class MsgAck(MsgpackMsg):
-    msg_type = 'ack'
+    object_type = 'ack'
 
     rid = fields.Integer()
 
 
 class MsgModifyError(MsgpackMsg):
-    msg_type = 'modify_err'
+    object_type = 'modify_err'
 
 
 class MsgMethodRun(MsgpackMsg):
-    msg_type = 'mthd_run'
+    object_type = 'mthd_run'
 
 
 class MsgMethodRes(MsgpackMsg):
-    msg_type = 'mthd_res'
+    object_type = 'mthd_res'
 
 
 class MsgMethodError(MsgpackMsg):
-    msg_type = 'mthd_err'
+    object_type = 'mthd_err'
 
 
 class MsgPluginMethodRun(MsgpackMsg):
-    msg_type = 'plugin_mthd_run'
+    object_type = 'plugin_mthd_run'
 
 
 class MsgPluginMethodDone(MsgpackMsg):
-    msg_type = 'plugin_mthd_done'
+    object_type = 'plugin_mthd_done'
 
 
 class MsgPluginMethodError(MsgpackMsg):
-    msg_type = 'plugin_mthd_err'
+    object_type = 'plugin_mthd_err'
 
 
 class MsgPluginTriggerRun(MsgpackMsg):
-    msg_type = 'plugin_trigger_run'
+    object_type = 'plugin_trigger_run'
 
 
 class MsgPluginTriggerDone(MsgpackMsg):
-    msg_type = 'plugin_trigger_done'
+    object_type = 'plugin_trigger_done'
 
 
 class MsgPluginTriggerError(MsgpackMsg):
-    msg_type = 'plugin_trigger_err'
+    object_type = 'plugin_trigger_err'
