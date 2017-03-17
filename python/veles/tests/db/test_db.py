@@ -24,6 +24,7 @@ from veles.db import Database
 from veles.data.bindata import BinData
 from veles.proto.node import Node
 from veles.schema.nodeid import NodeID
+from veles.proto.exceptions import WritePastEndError
 
 
 class TestDatabase(unittest.TestCase):
@@ -342,6 +343,103 @@ class TestDatabase(unittest.TestCase):
         with self.assertRaises(TypeError):
             db.get_data(node.id, 123)
 
-    # XXX bindata
+    def test_bindata(self):
+        db = Database(None)
+        node = Node(id=NodeID(),
+                    tags=set(),
+                    attr={},
+                    pos_start=None,
+                    pos_end=None,
+                    data=set(),
+                    bindata={'my_bindata': 12345})
+        db.create(node)
+        db.set_bindata(node.id, 'one', start=0, data=b'')
+        db.set_bindata(node.id, 'two', start=0, data=b'\x12\x34\x56')
+        db.set_bindata(node.id, 'three', start=0, data=b'\x11' * 0x123456)
+        n2 = db.get(node.id)
+        self.assertEqual(n2.bindata, {
+            'two': 3,
+            'three': 0x123456,
+        })
+        self.assertEqual(db.get_bindata(node.id, 'one'), b'')
+        self.assertEqual(db.get_bindata(node.id, 'one', start=3), b'')
+        self.assertEqual(db.get_bindata(node.id, 'one', start=3, end=15), b'')
+        self.assertEqual(db.get_bindata(node.id, 'two'), b'\x12\x34\x56')
+        self.assertEqual(db.get_bindata(node.id, 'two', start=2), b'\x56')
+        self.assertEqual(db.get_bindata(node.id, 'two', start=4), b'')
+        self.assertEqual(db.get_bindata(node.id, 'two', start=1, end=2),
+                         b'\x34')
+        self.assertEqual(db.get_bindata(node.id, 'two', start=1, end=6),
+                         b'\x34\x56')
+        self.assertEqual(db.get_bindata(node.id, 'three'), b'\x11' * 0x123456)
+        db.set_bindata(node.id, 'one', start=0, data=b'\x11\x22')
+        self.assertEqual(db.get_bindata(node.id, 'one'), b'\x11\x22')
+        db.set_bindata(node.id, 'one', start=1, data=b'\x33\x44\x55')
+        self.assertEqual(db.get_bindata(node.id, 'one'), b'\x11\x33\x44\x55')
+        db.set_bindata(node.id, 'one', start=2, data=b'\x66')
+        self.assertEqual(db.get_bindata(node.id, 'one'), b'\x11\x33\x66\x55')
+        db.set_bindata(node.id, 'one', start=2, data=b'\x77', truncate=True)
+        self.assertEqual(db.get_bindata(node.id, 'one'), b'\x11\x33\x77')
+        n2 = db.get(node.id)
+        self.assertIn('one', n2.bindata)
+        db.set_bindata(node.id, 'one', start=0, data=b'', truncate=True)
+        self.assertEqual(db.get_bindata(node.id, 'one'), b'')
+        n2 = db.get(node.id)
+        self.assertNotIn('one', n2.bindata)
+        db.set_bindata(node.id, 'three', start=0x12345, data=b'\x22' * 0x789ab)
+        n2 = db.get(node.id)
+        self.assertEqual(n2.bindata['three'], 0x123456)
+        correct = (b'\x11' * 0x12345 +
+                   b'\x22' * 0x789ab +
+                   b'\x11' * (0x123456 - 0x789ab - 0x12345))
+        self.assertEqual(db.get_bindata(node.id, 'three'), correct)
+        with self.assertRaises(WritePastEndError):
+            db.set_bindata(node.id, 'three', start=0x1234567, data=b'\x33')
+        with self.assertRaises(ValueError):
+            db.set_bindata(node.id, 'three', start=-1, data=b'\x33')
+        db.set_bindata(node.id, 'three', start=0x123456,
+                       data=b'\x33' * 0x789ab)
+        n2 = db.get(node.id)
+        self.assertEqual(n2.bindata['three'], 0x123456 + 0x789ab)
+        correct = (b'\x11' * 0x12345 +
+                   b'\x22' * 0x789ab +
+                   b'\x11' * (0x123456 - 0x789ab - 0x12345) +
+                   b'\x33' * 0x789ab)
+        self.assertEqual(db.get_bindata(node.id, 'three'), correct)
+        db.set_bindata(node.id, 'three', start=0x6789a,
+                       data=b'\x44' * 0x789ab, truncate=True)
+        n2 = db.get(node.id)
+        self.assertEqual(n2.bindata['three'], 0x6789a + 0x789ab)
+        correct = (b'\x11' * 0x12345 +
+                   b'\x22' * (0x6789a - 0x12345) +
+                   b'\x44' * 0x789ab)
+        self.assertEqual(db.get_bindata(node.id, 'three'), correct)
+        self.assertEqual(db.get_bindata(node.id, 'three', start=0x789ab),
+                         b'\x44' * 0x6789a)
+        self.assertEqual(db.get_bindata(node.id, 'three', start=0x789ab,
+                                        end=0xdeadbeef),
+                         b'\x44' * 0x6789a)
+        self.assertEqual(db.get_bindata(node.id, 'three',
+                                        start=0x55555, end=0x88888),
+                         b'\x22' * 0x12345 + b'\x44' * (0x33333 - 0x12345))
+        db.set_bindata(node.id, 'three', start=0x1234, data=b'', truncate=True)
+        n2 = db.get(node.id)
+        self.assertEqual(n2.bindata['three'], 0x1234)
+        correct = b'\x11' * 0x1234
+        self.assertEqual(db.get_bindata(node.id, 'three'), correct)
+        with self.assertRaises(TypeError):
+            db.set_bindata(node.id, b'zlew', 0, b'zlew')
+        with self.assertRaises(TypeError):
+            db.set_bindata(node.id, 'abc', 0, 'zlew')
+        with self.assertRaises(TypeError):
+            db.set_bindata(node.id, 'abc', 0, 1234)
+        with self.assertRaises(TypeError):
+            db.set_bindata(node.id, 'zlew', b'zlew', b'zlew')
+        with self.assertRaises(TypeError):
+            db.set_bindata(node.id, 'zlew', 0, b'zlew', truncate='zlew')
+        with self.assertRaises(TypeError):
+            db.get_bindata(node.id, b'zlew')
+        with self.assertRaises(TypeError):
+            db.get_bindata(node.id, 123)
 
     # XXX list

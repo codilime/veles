@@ -34,3 +34,8 @@ class ObjectGoneError(VelesException):
 class ObjectExistsError(VelesException):
     code = 'object_exists'
     msg = "Object with the given id already exists"
+
+
+class WritePastEndError(VelesException):
+    code = 'write_past_end'
+    msg = "Data written past the end of object"
