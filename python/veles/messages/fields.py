@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import six
+
 from veles.compatibility import pep487
 from veles.schema import model
 
@@ -98,7 +100,7 @@ class String(Field):
         super(String, self).validate(value)
         if value is None:
             return
-        if not isinstance(value, str):
+        if not isinstance(value, six.text_type):
             raise ValueError('Attribute {} has to be str type.'.format(
                 self.name))
         return value
@@ -110,7 +112,7 @@ class Binary(Field):
         if value is None:
             return
         if not isinstance(value, bytes):
-            raise ValueError('Attribute {} has to be str type.'.format(
+            raise ValueError('Attribute {} has to be bytes type.'.format(
                 self.name))
         return value
 
@@ -145,7 +147,7 @@ class Array(Field):
                     pass
             else:
                 raise ValueError(
-                    '{} doesn\'t fit in allowed element types'.format(val))
+                    '{!r} doesn\'t fit in allowed element types'.format(val))
         return self.local_type(prep_value)
 
 
@@ -177,7 +179,7 @@ class Map(Field):
                     pass
             else:
                 raise ValueError(
-                    '{} doesn\'t fit in allowed key types'.format(val))
+                    '{!r} doesn\'t fit in allowed key types'.format(val))
         prep_value = {}
         for name, val in value.items():
             for value_type in self.values_types:

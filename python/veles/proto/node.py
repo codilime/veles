@@ -24,6 +24,7 @@ class Node(model.Model):
     tags = fields.Array(elements_types=[fields.String()],
                         local_type=set, optional=True)
     attr = fields.Map(keys_types=[fields.String()], optional=True)
-    data = fields.Array(elements_types=[fields.String()], optional=True)
+    data = fields.Array(elements_types=[fields.String()],
+                        local_type=set, optional=True)
     bindata = fields.Map(keys_types=[fields.String()],
                          values_types=[fields.Integer()], optional=True)
