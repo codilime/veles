@@ -7,7 +7,7 @@ from veles.scli import client
 
 client = client.create_client(sys.argv[1])
 
-obj = nodeid.NodeID(sys.argv[2])
+obj = nodeid.NodeID.from_hex(sys.argv[2])
 
 import pprint
 for x in client.get_sub(obj):

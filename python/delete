@@ -7,7 +7,7 @@ from veles.scli import client
 
 client = client.create_client(sys.argv[1])
 
-objs = [nodeid.NodeID(x) for x in sys.argv[2:]]
+objs = [nodeid.NodeID.from_hex(x) for x in sys.argv[2:]]
 
 client.delete(objs)
 print('DELETED')
