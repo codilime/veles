@@ -34,6 +34,7 @@ class TestIntBytes(unittest.TestCase):
         self.assertEqual(int_from_bytes(x, 'big'), z)
 
     def test_int_to_bytes(self):
+        self.assertIsInstance(int_to_bytes(0, 0, 'little'), bytes)
         self.assertEqual(int_to_bytes(0, 0, 'little'), b'')
         self.assertEqual(int_to_bytes(0, 0, 'big'), b'')
         with self.assertRaises(TypeError):
