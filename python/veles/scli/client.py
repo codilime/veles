@@ -43,8 +43,7 @@ class Client:
     def create(self, parent, *, tags=[], attr={}, data={}, bindata={},
                pos=(None, None)):
         msg = {
-            'id': nodeid.NodeID(
-                random.getrandbits(192).to_bytes(24, 'little')),
+            'id': nodeid.NodeID(),
             'parent': parent,
             'pos_start': pos[0],
             'pos_end': pos[1],

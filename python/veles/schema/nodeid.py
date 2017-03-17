@@ -20,35 +20,26 @@ from veles.compatibility.int_bytes import int_to_bytes
 
 
 class NodeID(pep487.NewObject):
-    _NULL_VAL = b'\x00'*24
-    _ROOT_VAL = b'\xff'*24
+    WIDTH = 24
+    _NULL_VAL = b'\x00'*WIDTH
+    _ROOT_VAL = b'\xff'*WIDTH
     _rand = random.SystemRandom()
-    _root = None
 
     def __init__(self, value=None):
         if value is None:
-            value = int_to_bytes(self._rand.getrandbits(192), 24, 'little')
+            value = int_to_bytes(
+                self._rand.getrandbits(192), self.WIDTH, 'little')
         if isinstance(value, bytearray):
             value = bytes(value)
         if not isinstance(value, bytes):
             raise TypeError('wrong type provided')
-        if len(value) != 24 or value in [self._NULL_VAL, self._ROOT_VAL]:
+        if len(value) != self.WIDTH or value == self._NULL_VAL:
             raise ValueError('value is not valid id')
         self._bytes = value
 
     @staticmethod
     def from_hex(value):
         return NodeID(binascii.a2b_hex(value))
-
-    @classmethod
-    def root_id(cls):
-        if cls._root:
-            return cls._root
-        # not the most elegant way since we prohibit normal creation of
-        # object with this value of id
-        cls._root = NodeID()
-        cls._root._bytes = cls._ROOT_VAL
-        return cls._root
 
     @property
     def bytes(self):
@@ -67,3 +58,6 @@ class NodeID(pep487.NewObject):
 
     def __hash__(self):
         return hash(self.bytes)
+
+
+NodeID.root_id = NodeID(NodeID._ROOT_VAL)
