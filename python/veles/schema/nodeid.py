@@ -13,28 +13,46 @@
 # limitations under the License.
 
 import binascii
+import random
 
 from veles.compatibility import pep487
+from veles.compatibility.int_bytes import int_to_bytes
 
 
 class NodeID(pep487.NewObject):
-    NULL_VAL = b'\00'*24
+    _NULL_VAL = b'\x00'*24
+    _ROOT_VAL = b'\xff'*24
+    _rand = random.SystemRandom()
+    _root = None
 
     def __init__(self, value=None):
         if value is None:
-            value = self.NULL_VAL
-        if isinstance(value, str):
-            value = binascii.a2b_hex(value)
-        if not isinstance(value, bytes) or len(value) != 24:
+            value = int_to_bytes(self._rand.getrandbits(192), 24, 'little')
+        if isinstance(value, bytearray):
+            value = bytes(value)
+        if not isinstance(value, bytes):
+            raise TypeError('wrong type provided')
+        if len(value) != 24 or value in [self._NULL_VAL, self._ROOT_VAL]:
             raise ValueError('value is not valid id')
         self._bytes = value
+
+    @staticmethod
+    def from_hex(value):
+        return NodeID(binascii.a2b_hex(value))
+
+    @classmethod
+    def root_id(cls):
+        if cls._root:
+            return cls._root
+        # not the most elegant way since we prohibit normal creation of
+        # object with this value of id
+        cls._root = NodeID()
+        cls._root._bytes = cls._ROOT_VAL
+        return cls._root
 
     @property
     def bytes(self):
         return self._bytes
-
-    def to_bytes(self):
-        return self.bytes
 
     def __str__(self):
         return binascii.b2a_hex(self.bytes).decode('ascii')
@@ -49,6 +67,3 @@ class NodeID(pep487.NewObject):
 
     def __hash__(self):
         return hash(self.bytes)
-
-    def __bool__(self):
-        return self.bytes != self.NULL_VAL

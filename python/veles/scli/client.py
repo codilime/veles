@@ -45,7 +45,7 @@ class Client:
         msg = {
             'id': nodeid.NodeID(
                 random.getrandbits(192).to_bytes(24, 'little')),
-            'parent': parent or nodeid.NodeID(),
+            'parent': parent,
             'pos_start': pos[0],
             'pos_end': pos[1],
             'tags': tags,

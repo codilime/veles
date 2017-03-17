@@ -198,8 +198,8 @@ class Server:
 
     def create(self, obj_id, parent, *, tags=[], attr={}, data={}, bindata={},
                pos=(None, None)):
-        raw_obj_id = obj_id.to_bytes()
-        raw_parent = parent.to_bytes() if parent else None
+        raw_obj_id = obj_id.bytes
+        raw_parent = parent.bytes if parent else None
         c = self.db.cursor()
         c.execute("""
             INSERT INTO object (id, parent, pos_start, pos_end)
@@ -235,7 +235,7 @@ class Server:
 
     def delete(self, obj_id):
         obj = self.get(obj_id)
-        raw_obj_id = obj_id.to_bytes()
+        raw_obj_id = obj_id.bytes
         if obj is None:
             return
         c = self.db.cursor()
@@ -275,7 +275,7 @@ class Server:
         try:
             return self.objs[obj_id]
         except KeyError:
-            raw_obj_id = obj_id.to_bytes()
+            raw_obj_id = obj_id.bytes
             c = self.db.cursor()
             c.execute("""
                 SELECT parent, pos_start, pos_end FROM object WHERE id = ?
@@ -311,7 +311,7 @@ class Server:
         c = self.db.cursor()
         c.execute("""
             SELECT data FROM object_data WHERE obj_id = ? AND name = ?
-        """, (obj.id.to_bytes(), key))
+        """, (obj.id.bytes, key))
         rows = c.fetchall()
         if not rows:
             return None
@@ -323,7 +323,7 @@ class Server:
         if lister.parent is not None:
             c.execute("""
                 SELECT id FROM object WHERE parent = ?
-            """, (lister.parent.node.id.to_bytes(),))
+            """, (lister.parent.node.id.bytes,))
         else:
             c.execute("""
                 SELECT id FROM object WHERE parent IS NULL
