@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import operator
+
 import sqlite3
 
 import six
@@ -19,6 +21,7 @@ import six
 from veles.proto import msgpackwrap
 from veles.schema.nodeid import NodeID
 from veles.proto.node import Node, PosFilter
+from veles.proto.exceptions import WritePastEndError
 from veles.compatibility.int_bytes import int_from_bytes
 from veles.util.bigint import bigint_encode, bigint_decode
 
@@ -292,6 +295,13 @@ class Database:
     def get_bindata(self, obj_id, key, start=0, end=None):
         if not isinstance(obj_id, NodeID):
             raise TypeError('node id has wrong type')
+        start = operator.index(start)
+        if end is not None:
+            end = operator.index(end)
+        if start < 0:
+            raise ValueError('start must not be negative')
+        if end is not None and end < start:
+            raise ValueError('end must be >= start')
         if not isinstance(key, six.text_type):
             raise TypeError('key is not a string')
         c = self.db.cursor()
@@ -307,18 +317,25 @@ class Database:
     def set_bindata(self, obj_id, key, start, data, truncate=False):
         if not isinstance(obj_id, NodeID):
             raise TypeError('node id has wrong type')
+        start = operator.index(start)
+        if start < 0:
+            raise ValueError('start must not be negative')
         if not isinstance(key, six.text_type):
             raise TypeError('key is not a string')
+        if not isinstance(truncate, bool):
+            raise TypeError('truncate is not a bool')
         cur = self.get_bindata(obj_id, key)
         raw_obj_id = buffer(obj_id.bytes)
         new_data = bytearray(cur)
+        if len(new_data) < start:
+            raise WritePastEndError()
         new_data[start:start+len(data)] = data
         if truncate:
             del new_data[start+len(data):]
         new_data = bytes(new_data)
         c = self.db.cursor()
         c.execute("""
-            DELETE FROM object_data WHERE obj_id = ? AND name = ?
+            DELETE FROM object_bindata WHERE obj_id = ? AND name = ?
         """, (raw_obj_id, key))
         if new_data:
             c.execute("""
