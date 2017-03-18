@@ -16,8 +16,7 @@ import socket
 
 import msgpack
 
-from veles.messages import definitions
-from veles.messages import msgpackwrap
+from veles.proto import messages, msgpackwrap
 from veles.schema import nodeid
 
 
@@ -31,7 +30,7 @@ class Client:
     def getpkt(self):
         while True:
             try:
-                return definitions.MsgpackMsg.load(self.unpacker.unpack())
+                return messages.MsgpackMsg.load(self.unpacker.unpack())
             except msgpack.OutOfData:
                 pass
             data = self.sock.recv(1024)
@@ -52,10 +51,10 @@ class Client:
             'bindata': bindata,
             'rid': 0,
         }
-        msg = definitions.MsgCreate(**msg)
+        msg = messages.MsgCreate(**msg)
         self.sock.sendall(msg.dump(self.packer))
         pkt = self.getpkt()
-        if not isinstance(pkt, definitions.MsgAck) or pkt.rid != 0:
+        if not isinstance(pkt, messages.MsgAck) or pkt.rid != 0:
             print(pkt)
             raise Exception('weird reply to create')
         return msg.id
@@ -65,10 +64,10 @@ class Client:
             'ids': objs,
             'rid': 0,
         }
-        msg = definitions.MsgDelete(**msg)
+        msg = messages.MsgDelete(**msg)
         self.sock.sendall(msg.dump(self.packer))
         pkt = self.getpkt()
-        if not isinstance(pkt, definitions.MsgAck) or pkt.rid != 0:
+        if not isinstance(pkt, messages.MsgAck) or pkt.rid != 0:
             raise Exception('weird reply to delete')
 
     def get(self, obj):
@@ -77,12 +76,12 @@ class Client:
             'qid': 0,
             'sub': False
         }
-        msg = definitions.MsgGet(**msg)
+        msg = messages.MsgGet(**msg)
         self.sock.sendall(msg.dump(self.packer))
         pkt = self.getpkt()
-        if isinstance(pkt, definitions.MsgGetReply) and pkt.qid == 0:
+        if isinstance(pkt, messages.MsgGetReply) and pkt.qid == 0:
             return pkt
-        elif isinstance(pkt, definitions.MsgObjGone) and pkt.qid == 0:
+        elif isinstance(pkt, messages.MsgObjGone) and pkt.qid == 0:
             return None
         else:
             raise Exception('weird reply to get')
@@ -93,13 +92,13 @@ class Client:
             'qid': 0,
             'sub': True,
         }
-        msg = definitions.MsgGet(**msg)
+        msg = messages.MsgGet(**msg)
         self.sock.sendall(msg.dump(self.packer))
         while True:
             pkt = self.getpkt()
-            if isinstance(pkt, definitions.MsgGetReply) and pkt.qid == 0:
+            if isinstance(pkt, messages.MsgGetReply) and pkt.qid == 0:
                 yield pkt
-            elif isinstance(pkt, definitions.MsgObjGone) and pkt.qid == 0:
+            elif isinstance(pkt, messages.MsgObjGone) and pkt.qid == 0:
                 return
             else:
                 raise Exception('weird reply to get')
@@ -111,13 +110,13 @@ class Client:
             'qid': 0,
             'sub': True,
         }
-        msg = definitions.MsgList(**msg)
+        msg = messages.MsgList(**msg)
         self.sock.sendall(msg.dump(self.packer))
         while True:
             pkt = self.getpkt()
-            if isinstance(pkt, definitions.MsgListReply) and pkt.qid == 0:
+            if isinstance(pkt, messages.MsgListReply) and pkt.qid == 0:
                 yield pkt
-            elif isinstance(pkt, definitions.MsgObjGone) and pkt.qid == 0:
+            elif isinstance(pkt, messages.MsgObjGone) and pkt.qid == 0:
                 return
             else:
                 print(pkt)
