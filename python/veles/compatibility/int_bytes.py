@@ -32,7 +32,7 @@ def int_to_bytes(num, size, endian):
             for x in range(size)
         ])
         if endian == 'big':
-            return res[::-1]
+            res = res[::-1]
         return bytes(res)
 
 
