@@ -20,14 +20,14 @@ from veles.messages import msgpackwrap
 from veles.schema.nodeid import NodeID
 from veles.proto.node import Node
 from veles.compatibility.int_bytes import int_from_bytes
+from veles.util.bigint import bigint_encode, bigint_decode
 
 
-APP_ID = int_from_bytes(b'ml0n', 'big')
+APP_ID = int_from_bytes(b'mln0', 'big')
 
 
 # TODO:
 #
-# - bignum positions
 # - use root id
 # - link support
 # - xref support
@@ -37,6 +37,14 @@ APP_ID = int_from_bytes(b'ml0n', 'big')
 if six.PY3:
     def buffer(x):
         return x
+
+
+def db_bigint_encode(val):
+    return None if val is None else buffer(bigint_encode(val))
+
+
+def db_bigint_decode(val):
+    return None if val is None else bigint_decode(bytes(val))
 
 
 class Database:
@@ -70,8 +78,8 @@ class Database:
             CREATE TABLE object(
                 id BLOB PRIMARY KEY,
                 parent REFERENCES object(id),
-                pos_start INTEGER,
-                pos_end INTEGER
+                pos_start BLOB,
+                pos_end BLOB
             )
         """)
         c.execute("""
@@ -136,9 +144,10 @@ class Database:
             SELECT name, length(data) FROM object_bindata WHERE obj_id = ?
         """, (raw_obj_id,))
         bindata = {x: y for x, y in c.fetchall()}
-        return Node(id=obj_id, parent=parent, pos_start=pos_start,
-                    pos_end=pos_end, tags=tags, attr=attr, data=data,
-                    bindata=bindata)
+        return Node(id=obj_id, parent=parent,
+                    pos_start=db_bigint_decode(pos_start),
+                    pos_end=db_bigint_decode(pos_end), tags=tags, attr=attr,
+                    data=data, bindata=bindata)
 
     def create(self, node):
         if not isinstance(node, Node):
@@ -149,7 +158,11 @@ class Database:
         c.execute("""
             INSERT INTO object (id, parent, pos_start, pos_end)
             VALUES (?, ?, ?, ?)
-        """, (raw_obj_id, raw_parent, node.pos_start, node.pos_end))
+        """, (
+            raw_obj_id, raw_parent,
+            db_bigint_encode(node.pos_start),
+            db_bigint_encode(node.pos_end)
+        ))
         for tag in node.tags:
             c.execute("""
                 INSERT INTO object_tag (obj_id, name) VALUES (?, ?)
@@ -175,7 +188,11 @@ class Database:
             UPDATE object
             SET pos_start = ?, pos_end = ?
             WHERE id = ?
-        """, (pos_start, pos_end, raw_obj_id))
+        """, (
+            db_bigint_encode(pos_start),
+            db_bigint_encode(pos_end),
+            raw_obj_id
+        ))
         self.db.commit()
 
     def set_parent(self, obj_id, parent_id):
@@ -354,18 +371,18 @@ class Database:
             s, e = pos_start_range
             if s is not None:
                 stmt += " AND pos_start >= ?"
-                args += (s,)
+                args += (db_bigint_encode(s),)
             if e is not None:
                 stmt += " AND pos_start < ?"
-                args += (e,)
+                args += (db_bigint_encode(e),)
         if pos_end_range:
             s, e = pos_end_range
             if s is not None:
                 stmt += " AND pos_end >= ?"
-                args += (s,)
+                args += (db_bigint_encode(s),)
             if e is not None:
                 stmt += " AND pos_end < ?"
-                args += (e,)
+                args += (db_bigint_encode(e),)
         c = self.db.cursor()
         c.execute(stmt, args)
         return {NodeID(bytes(x)) for x, in c.fetchall()}
