@@ -135,7 +135,7 @@ class Proto(asyncio.Protocol):
         self.srv.remove_conn(self)
 
     def send_msg(self, msg):
-        self.transport.write(msg.dump(self.packer))
+        self.transport.write(self.packer.pack(msg.dump()))
 
     def msg_create(self, msg):
         self.srv.create(

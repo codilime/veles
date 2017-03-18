@@ -12,18 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from veles.schema import nodeid, model, fields
+from veles.schema import model, fields
 
 
 class Node(model.Model):
-    id = fields.Extension(obj_type=nodeid.NodeID)
-    parent = fields.Extension(obj_type=nodeid.NodeID, optional=True)
+    id = fields.NodeID()
+    parent = fields.NodeID(optional=True)
     pos_start = fields.Integer(optional=True)
     pos_end = fields.Integer(optional=True)
-    tags = fields.Array(elements_types=[fields.String()],
-                        local_type=set, optional=True)
-    attr = fields.Map(keys_types=[fields.String()], optional=True)
-    data = fields.Array(elements_types=[fields.String()],
-                        local_type=set, optional=True)
-    bindata = fields.Map(keys_types=[fields.String()],
-                         values_types=[fields.Integer()], optional=True)
+    tags = fields.Set(fields.String())
+    attr = fields.Map(fields.String(), fields.Any())
+    data = fields.Set(fields.String())
+    bindata = fields.Map(fields.String(), fields.SmallUnsignedInteger())

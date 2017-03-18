@@ -38,21 +38,20 @@ class Client:
                 raise Exception("end of file")
             self.unpacker.feed(data)
 
-    def create(self, parent, *, tags=[], attr={}, data={}, bindata={},
+    def create(self, parent, *, tags=set(), attr={}, data={}, bindata={},
                pos=(None, None)):
-        msg = {
-            'id': nodeid.NodeID(),
-            'parent': parent,
-            'pos_start': pos[0],
-            'pos_end': pos[1],
-            'tags': tags,
-            'attr': attr,
-            'data': data,
-            'bindata': bindata,
-            'rid': 0,
-        }
-        msg = messages.MsgCreate(**msg)
-        self.sock.sendall(msg.dump(self.packer))
+        msg = messages.MsgCreate(
+            id=nodeid.NodeID(),
+            parent=parent,
+            pos_start=pos[0],
+            pos_end=pos[1],
+            tags=tags,
+            attr=attr,
+            data=data,
+            bindata=bindata,
+            rid=0,
+        )
+        self.sock.sendall(self.packer.pack(msg.dump()))
         pkt = self.getpkt()
         if not isinstance(pkt, messages.MsgAck) or pkt.rid != 0:
             print(pkt)
@@ -60,24 +59,21 @@ class Client:
         return msg.id
 
     def delete(self, objs):
-        msg = {
-            'ids': objs,
-            'rid': 0,
-        }
-        msg = messages.MsgDelete(**msg)
-        self.sock.sendall(msg.dump(self.packer))
+        msg = messages.MsgDelete(
+            ids=objs,
+            rid=0
+        )
+        self.sock.sendall(self.packer.pack(msg.dump()))
         pkt = self.getpkt()
         if not isinstance(pkt, messages.MsgAck) or pkt.rid != 0:
             raise Exception('weird reply to delete')
 
     def get(self, obj):
-        msg = {
-            'id': obj,
-            'qid': 0,
-            'sub': False
-        }
-        msg = messages.MsgGet(**msg)
-        self.sock.sendall(msg.dump(self.packer))
+        msg = messages.MsgGet(
+            id=obj,
+            qid=0,
+        )
+        self.sock.sendall(self.packer.pack(msg.dump()))
         pkt = self.getpkt()
         if isinstance(pkt, messages.MsgGetReply) and pkt.qid == 0:
             return pkt
@@ -87,13 +83,12 @@ class Client:
             raise Exception('weird reply to get')
 
     def get_sub(self, obj):
-        msg = {
-            'id': obj,
-            'qid': 0,
-            'sub': True,
-        }
-        msg = messages.MsgGet(**msg)
-        self.sock.sendall(msg.dump(self.packer))
+        msg = messages.MsgGet(
+            id=obj,
+            qid=0,
+            sub=True,
+        )
+        self.sock.sendall(self.packer.pack(msg.dump()))
         while True:
             pkt = self.getpkt()
             if isinstance(pkt, messages.MsgGetReply) and pkt.qid == 0:
@@ -104,14 +99,12 @@ class Client:
                 raise Exception('weird reply to get')
 
     def list_sub(self, obj):
-        msg = {
-            'parent': obj,
-            'tags': [{}],
-            'qid': 0,
-            'sub': True,
-        }
-        msg = messages.MsgList(**msg)
-        self.sock.sendall(msg.dump(self.packer))
+        msg = messages.MsgList(
+            qid=0,
+            parent=obj,
+            sub=True
+        )
+        self.sock.sendall(self.packer.pack(msg.dump()))
         while True:
             pkt = self.getpkt()
             if isinstance(pkt, messages.MsgListReply) and pkt.qid == 0:

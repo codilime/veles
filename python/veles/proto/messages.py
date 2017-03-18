@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from veles.proto import node
-from veles.schema import nodeid, model, fields
+from veles.proto.node import Node
+from veles.schema import model, fields
 
 
 class MsgpackMsg(model.PolymorphicModel):
@@ -23,7 +23,7 @@ class MsgpackMsg(model.PolymorphicModel):
 class MsgConnect(MsgpackMsg):
     object_type = 'connect'
 
-    proto_version = fields.Integer(minimum=1)
+    proto_version = fields.SmallInteger(minimum=1)
     client_name = fields.String(optional=True)
     client_version = fields.String(optional=True)
     client_description = fields.String(optional=True)
@@ -34,7 +34,7 @@ class MsgConnect(MsgpackMsg):
 class MsgConnected(MsgpackMsg):
     object_type = 'connected'
 
-    proto_version = fields.Integer(minimum=1)
+    proto_version = fields.SmallInteger(minimum=1)
     server_name = fields.String()
     server_version = fields.String()
 
@@ -50,7 +50,7 @@ class MsgProtoError(MsgpackMsg):
     object_type = 'proto_error'
 
     code = fields.Integer()
-    msg = fields.String(optional=True)
+    msg = fields.String()
 
 
 class MsgRegisterMethod(MsgpackMsg):
@@ -64,11 +64,10 @@ class MsgRegisterTrigger(MsgpackMsg):
 class MsgList(MsgpackMsg):
     object_type = 'list'
 
-    parent = fields.Extension(obj_type=nodeid.NodeID, optional=True)
-    tags = fields.Array(elements_types=[fields.Map(
-        keys_types=[fields.String()], values_types=[fields.Boolean()])])
-    qid = fields.Integer()
-    sub = fields.Boolean()
+    parent = fields.NodeID(optional=True)
+    tags = fields.Set(fields.String())
+    qid = fields.SmallUnsignedInteger()
+    sub = fields.Boolean(default=False)
     pos_start = fields.Integer(optional=True)
     pos_end = fields.Integer(optional=True)
 
@@ -76,59 +75,57 @@ class MsgList(MsgpackMsg):
 class MsgCancelSub(MsgpackMsg):
     object_type = 'cancel_sub'
 
-    qid = fields.Integer()
+    qid = fields.SmallUnsignedInteger()
 
 
 class MsgSubCancelled(MsgpackMsg):
     object_type = 'sub_cancelled'
 
-    qid = fields.Integer()
+    qid = fields.SmallUnsignedInteger()
 
 
 class MsgObjGone(MsgpackMsg):
     object_type = 'obj_gone'
 
-    qid = fields.Integer()
+    qid = fields.SmallUnsignedInteger()
 
 
 class MsgListReply(MsgpackMsg):
     object_type = 'list_reply'
 
-    objs = fields.Array(elements_types=[fields.Object(
-        local_type=node.Node)])
-    gone = fields.Array(elements_types=[fields.Extension(
-        obj_type=nodeid.NodeID)])
-    qid = fields.Integer()
+    objs = fields.List(fields.Object(Node))
+    gone = fields.List(fields.NodeID())
+    qid = fields.SmallUnsignedInteger()
 
 
 class MsgGet(MsgpackMsg):
     object_type = 'get'
 
-    id = fields.Extension(obj_type=nodeid.NodeID)
-    qid = fields.Integer()
-    sub = fields.Boolean()
+    id = fields.NodeID()
+    qid = fields.SmallUnsignedInteger()
+    sub = fields.Boolean(default=False)
 
 
 class MsgGetReply(MsgpackMsg):
     object_type = 'get_reply'
 
-    qid = fields.Integer()
-    obj = fields.Object(local_type=node.Node)
+    qid = fields.SmallUnsignedInteger()
+    obj = fields.Object(Node)
 
 
 class MsgGetData(MsgpackMsg):
     object_type = 'get_data'
 
-    qid = fields.Integer()
-    id = fields.Extension(obj_type=nodeid.NodeID)
-    sub = fields.Boolean()
+    qid = fields.SmallUnsignedInteger()
+    id = fields.NodeID()
+    sub = fields.Boolean(default=False)
     key = fields.String()
 
 
 class MsgGetDataReply(MsgpackMsg):
     object_type = 'get_data_reply'
 
-    qid = fields.Integer()
+    qid = fields.SmallUnsignedInteger()
     data = fields.Any()
 
 
@@ -159,17 +156,16 @@ class MsgRegistryReply(MsgpackMsg):
 class MsgCreate(MsgpackMsg):
     object_type = 'create'
 
-    id = fields.Extension(obj_type=nodeid.NodeID)
-    rid = fields.Integer()
-    qid = fields.Integer(optional=True)
-    parent = fields.Extension(obj_type=nodeid.NodeID, optional=True)
+    id = fields.NodeID()
+    rid = fields.SmallUnsignedInteger()
+    qid = fields.SmallUnsignedInteger(optional=True)
+    parent = fields.NodeID(optional=True)
     pos_start = fields.Integer(optional=True)
     pos_end = fields.Integer(optional=True)
-    attr = fields.Map(optional=True, keys_types=[fields.String()])
-    tags = fields.Array(optional=True, elements_types=[fields.String()],
-                        local_type=set)
-    data = fields.Map(optional=True, keys_types=[fields.String()])
-    bindata = fields.Map(optional=True, keys_types=[fields.String()])
+    attr = fields.Map(fields.String(), fields.Any())
+    tags = fields.Set(fields.String())
+    data = fields.Map(fields.String(), fields.Any())
+    bindata = fields.Map(fields.String(), fields.Binary())
 
 
 class MsgModify(MsgpackMsg):
@@ -179,15 +175,14 @@ class MsgModify(MsgpackMsg):
 class MsgDelete(MsgpackMsg):
     object_type = 'delete'
 
-    rid = fields.Integer()
-    ids = fields.Array(
-        elements_types=[fields.Extension(obj_type=nodeid.NodeID)])
+    rid = fields.SmallUnsignedInteger()
+    ids = fields.List(fields.NodeID())
 
 
 class MsgAck(MsgpackMsg):
     object_type = 'ack'
 
-    rid = fields.Integer()
+    rid = fields.SmallUnsignedInteger()
 
 
 class MsgModifyError(MsgpackMsg):

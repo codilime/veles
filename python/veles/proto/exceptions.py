@@ -39,3 +39,8 @@ class ObjectExistsError(VelesException):
 class WritePastEndError(VelesException):
     code = 'write_past_end'
     msg = "Data written past the end of object"
+
+
+class SchemaError(VelesException):
+    code = 'schema_error'
+    msg = "Schema violation"

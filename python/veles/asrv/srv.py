@@ -56,13 +56,10 @@ class BaseLister:
         if self.pos[1] is not None:
             if obj.pos_start is not None and obj.pos_start >= self.pos[1]:
                 return False
-        for tags in self.tags:
-            for k, v in tags:
-                if v != (k in obj.tags):
-                    break
-            else:
-                return True
-        return False
+        for tag in self.tags:
+            if tag not in obj.tags:
+                return False
+        return True
 
     def list_changed(self):
         raise NotImplementedError
