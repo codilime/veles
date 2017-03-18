@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from veles.common.base import NodeID
+from veles.schema.nodeid import NodeID
 
 
 class AsyncConnection:
