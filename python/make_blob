@@ -9,7 +9,7 @@ with open(sys.argv[2], 'rb') as f:
     data = f.read()
 
 id = client.create(None,
-    tags=['blob', 'fileblob'],
+    tags={'blob', 'fileblob'},
     attr={
         'name': sys.argv[2],
     },

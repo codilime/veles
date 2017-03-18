@@ -36,8 +36,6 @@ class MsgpackWrapper(pep487.NewObject):
 
     @classmethod
     def pack_obj(cls, obj):
-        if isinstance(obj, (set, frozenset)):
-            return list(obj)
         if isinstance(obj, nodeid.NodeID):
             return msgpack.ExtType(EXT_NODE_ID, obj.bytes)
         if isinstance(obj, BinData):
@@ -45,8 +43,6 @@ class MsgpackWrapper(pep487.NewObject):
             return msgpack.ExtType(EXT_BINDATA, width + obj.raw_data)
         if isinstance(obj, six.integer_types):
             return msgpack.ExtType(EXT_BIGINT, bigint_encode(obj))
-        if callable(getattr(obj, "to_dict", None)):
-            return obj.to_dict()
         raise TypeError('Object of unknown type {}'.format(obj))
 
     @classmethod

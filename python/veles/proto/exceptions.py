@@ -34,3 +34,8 @@ class ObjectGoneError(VelesException):
 class ObjectExistsError(VelesException):
     code = 'object_exists'
     msg = "Object with the given id already exists"
+
+
+class SchemaError(VelesException):
+    code = 'schema_error'
+    msg = "Schema violation"
