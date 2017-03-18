@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from veles.messages import fields
-from veles.schema import nodeid, model
+from veles.schema import nodeid, model, fields
 
 
 class Node(model.Model):

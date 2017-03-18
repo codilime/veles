@@ -15,7 +15,7 @@
 import six
 
 from veles.compatibility import pep487
-from veles.schema import model
+from . import model
 
 
 class Field(pep487.NewObject):

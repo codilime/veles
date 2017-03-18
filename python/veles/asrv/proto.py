@@ -21,8 +21,7 @@ import asyncio
 
 import msgpack
 
-from veles.messages import definitions
-from veles.messages import msgpackwrap
+from veles.proto import messages, msgpackwrap
 from .srv import BaseLister
 
 
@@ -98,7 +97,7 @@ class Proto(asyncio.Protocol):
         self.unpacker.feed(data)
         while True:
             try:
-                msg = definitions.MsgpackMsg.load(self.unpacker.unpack())
+                msg = messages.MsgpackMsg.load(self.unpacker.unpack())
                 self.handle_msg(msg)
             except msgpack.OutOfData:
                 return
@@ -125,7 +124,7 @@ class Proto(asyncio.Protocol):
             self.protoerr(e.args[0], e.args[1])
 
     def protoerr(self, code, msg):
-        self.send_msg(definitions.MsgProtoError(
+        self.send_msg(messages.MsgProtoError(
             code=code,
             error=msg,
         ))
@@ -149,7 +148,7 @@ class Proto(asyncio.Protocol):
             pos=(msg.pos_start, msg.pos_end),
         )
         if msg.rid is not None:
-            self.send_msg(definitions.MsgAck(
+            self.send_msg(messages.MsgAck(
                 rid=msg.rid,
             ))
 
@@ -162,7 +161,7 @@ class Proto(asyncio.Protocol):
         for obj in objs:
             self.srv.delete(obj)
         if msg.rid is not None:
-            self.send_msg(definitions.MsgAck(
+            self.send_msg(messages.MsgAck(
                 rid=msg.rid,
             ))
 
@@ -183,7 +182,7 @@ class Proto(asyncio.Protocol):
             raise ProtocolError('qid_in_use', 'qid already in use')
         obj = self.srv.get(msg.id)
         if obj is None:
-            self.send_msg(definitions.MsgObjGone(
+            self.send_msg(messages.MsgObjGone(
                 qid=qid,
             ))
         else:
@@ -202,7 +201,7 @@ class Proto(asyncio.Protocol):
             raise ProtocolError('qid_in_use', 'qid already in use')
         obj = self.srv.get(obj)
         if obj is None:
-            self.send_msg(definitions.MsgObjGone(
+            self.send_msg(messages.MsgObjGone(
                 qid=qid,
             ))
         else:
@@ -222,7 +221,7 @@ class Proto(asyncio.Protocol):
         if qid in self.subs:
             self.subs[qid].kill()
             del self.subs[qid]
-        self.send_msg(definitions.MsgSubCancelled(
+        self.send_msg(messages.MsgSubCancelled(
             qid=qid,
         ))
 
@@ -247,23 +246,23 @@ class Proto(asyncio.Protocol):
         raise NotImplementedError
 
     def send_obj_data_reply(self, qid, data):
-        self.send_msg(definitions.MsgGetDataReply(qid=qid, data=data))
+        self.send_msg(messages.MsgGetDataReply(qid=qid, data=data))
 
     def send_obj_reply(self, qid, obj):
-        self.send_msg(definitions.MsgGetReply(
+        self.send_msg(messages.MsgGetReply(
             qid=qid,
             obj=obj.node,
         ))
 
     def send_list_reply(self, qid, new, gone):
-        self.send_msg(definitions.MsgListReply(
+        self.send_msg(messages.MsgListReply(
             objs=[obj.node for obj in new],
             qid=qid,
             gone=gone
         ))
 
     def send_obj_gone(self, qid):
-        self.send_msg(definitions.MsgObjGone(
+        self.send_msg(messages.MsgObjGone(
             qid=qid,
         ))
 

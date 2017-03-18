@@ -16,7 +16,7 @@ import sqlite3
 
 import six
 
-from veles.messages import msgpackwrap
+from veles.proto import msgpackwrap
 from veles.schema.nodeid import NodeID
 from veles.proto.node import Node
 from veles.compatibility.int_bytes import int_from_bytes

@@ -13,8 +13,7 @@
 # limitations under the License.
 
 from veles.proto import node
-from veles.schema import nodeid, model
-from . import fields
+from veles.schema import nodeid, model, fields
 
 
 class MsgpackMsg(model.PolymorphicModel):
