@@ -33,7 +33,7 @@ class TestDatabase(unittest.TestCase):
                     tags={'my_tag'},
                     attr={'my_attr': 'my_val'},
                     pos_start=0x123,
-                    pos_end=0x456,
+                    pos_end=0x456789abcdef1122334456789abcdef,
                     data={'my_key'},
                     bindata={'my_bindata': 12345})
         db.create(node)
@@ -189,10 +189,11 @@ class TestDatabase(unittest.TestCase):
         n2 = db.get(node.id)
         self.assertEqual(n2.pos_start, 123)
         self.assertEqual(n2.pos_end, None)
-        db.set_pos(node.id, 0x111, 0x222)
+        db.set_pos(node.id, 0x11111111111111111111111111111111111,
+                   0x222222222222222222222222222222222222222)
         n2 = db.get(node.id)
-        self.assertEqual(n2.pos_start, 0x111)
-        self.assertEqual(n2.pos_end, 0x222)
+        self.assertEqual(n2.pos_start, 0x11111111111111111111111111111111111)
+        self.assertEqual(n2.pos_end, 0x222222222222222222222222222222222222222)
         with self.assertRaises(TypeError):
             db.set_pos(node.id, 123, b'zlew')
         with self.assertRaises(TypeError):

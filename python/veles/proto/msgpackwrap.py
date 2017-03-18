@@ -19,12 +19,12 @@ from veles.data.bindata import BinData
 from veles.compatibility import pep487
 from veles.schema import nodeid
 from veles.compatibility.int_bytes import int_to_bytes, int_from_bytes
+from veles.util.bigint import bigint_encode, bigint_decode
 
 
 EXT_NODE_ID = 0
 EXT_BINDATA = 1
 EXT_BIGINT = 2
-EXT_NEGBIGINT = 3
 
 
 class MsgpackWrapper(pep487.NewObject):
@@ -44,13 +44,7 @@ class MsgpackWrapper(pep487.NewObject):
             width = int_to_bytes(obj.width, 4, 'little')
             return msgpack.ExtType(EXT_BINDATA, width + obj.raw_data)
         if isinstance(obj, six.integer_types):
-            sz = (obj.bit_length() + 7) // 8
-            if obj < 0:
-                raw = int_to_bytes(-obj, sz, 'little')
-                return msgpack.ExtType(EXT_NEGBIGINT, raw)
-            else:
-                raw = int_to_bytes(obj, sz, 'little')
-                return msgpack.ExtType(EXT_BIGINT, raw)
+            return msgpack.ExtType(EXT_BIGINT, bigint_encode(obj))
         if callable(getattr(obj, "to_dict", None)):
             return obj.to_dict()
         raise TypeError('Object of unknown type {}'.format(obj))
@@ -63,7 +57,5 @@ class MsgpackWrapper(pep487.NewObject):
             width = int_from_bytes(data[:4], 'little')
             return BinData.from_raw_data(width, data[4:])
         elif code == EXT_BIGINT:
-            return int_from_bytes(data, 'little')
-        elif code == EXT_NEGBIGINT:
-            return -int_from_bytes(data, 'little')
+            return bigint_decode(data)
         return msgpack.ExtType(code, data)

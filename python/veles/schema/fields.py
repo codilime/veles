@@ -52,7 +52,7 @@ class Any(Field):
 
 
 class Integer(Field):
-    def __init__(self, optional=False, minimum=-2**63, maximum=2**64-1):
+    def __init__(self, optional=False, minimum=None, maximum=None):
         super(Integer, self).__init__(optional)
         self.minimum = minimum
         self.maximum = maximum
@@ -61,13 +61,13 @@ class Integer(Field):
         super(Integer, self).validate(value)
         if value is None:
             return
-        if not isinstance(value, int):
+        if not isinstance(value, six.integer_types):
             raise ValueError('Attribute {} has to be int type.'.format(
                 self.name))
-        if value < self.minimum:
+        if self.minimum is not None and value < self.minimum:
             raise ValueError('Attribute {} minimum value is {}.'.format(
                 self.name, self.minimum))
-        if value > self.maximum:
+        if self.maximum is not None and value > self.maximum:
             raise ValueError('Attribute {} maximum value is {}.'.format(
                 self.name, self.maximum))
         return value
