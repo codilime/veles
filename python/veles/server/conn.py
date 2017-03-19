@@ -23,19 +23,18 @@ from veles.proto.node import Node
 from veles.schema.nodeid import NodeID
 from veles.db import Database
 
-
-APP_ID = int.from_bytes(b'ml0n', 'big')
+from .node import AsyncLocalNode
 
 
 class BaseLister:
-    def __init__(self, srv, parent, pos, tags):
-        self.srv = srv
+    def __init__(self, conn, parent, pos, tags):
+        self.conn = conn
         self.pos = pos
         self.tags = tags
         self.subs = set()
         self.objs = set()
         if parent != NodeID.root_id:
-            self.parent = srv.get(parent)
+            self.parent = conn.get(parent)
             if self.parent is None:
                 self.obj_gone()
                 return
@@ -44,7 +43,7 @@ class BaseLister:
 
     def kill(self):
         if self.parent is None:
-            self.srv.top_listers.remove(self)
+            self.conn.top_listers.remove(self)
         else:
             self.parent.listers.remove(self)
 
@@ -62,48 +61,7 @@ class BaseLister:
         raise NotImplementedError
 
 
-class Object:
-    def __init__(self, srv, parent, node):
-        self.srv = srv
-        self.parent = parent
-        self.node = node
-        self.subs = set()
-        self.data_subs = {}
-        self.listers = set()
-
-    def send_subs(self):
-        for sub in self.subs:
-            sub.obj_changed(self)
-
-    def send_data_subs(self, key, data):
-        for sub in self.data_subs.get(key, ()):
-            sub.data_changed(self, data)
-
-    def clear_subs(self):
-        for sub in self.subs:
-            sub.obj_gone()
-        for k, v in self.data_subs.items():
-            for sub in v:
-                sub.obj_gone()
-        for lister in self.listers:
-            lister.obj_gone()
-
-    def remove_sub(self, sub):
-        self.subs.remove(sub)
-
-    def add_sub(self, sub):
-        self.subs.add(sub)
-
-    def remove_data_sub(self, sub):
-        self.data_subs[sub.key].remove(sub)
-
-    def add_data_sub(self, sub):
-        if sub.key not in self.data_subs:
-            self.data_subs[sub.key] = set()
-        self.data_subs[sub.key].add(sub)
-
-
-class Server:
+class AsyncLocalConnection:
     def __init__(self, loop, path):
         self.loop = loop
         self.db = Database(path)
@@ -173,7 +131,7 @@ class Server:
                 parent = self.get(node.parent)
             else:
                 parent = None
-            res = Object(self, parent, node)
+            res = AsyncLocalNode(self, parent, node)
             self.objs[obj_id] = res
             return res
 

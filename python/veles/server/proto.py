@@ -22,7 +22,7 @@ import asyncio
 import msgpack
 
 from veles.proto import messages, msgpackwrap
-from .srv import BaseLister
+from .conn import BaseLister
 
 
 class ProtocolError(Exception):
@@ -30,8 +30,8 @@ class ProtocolError(Exception):
 
 
 class GetSub:
-    def __init__(self, conn, qid, obj):
-        self.conn = conn
+    def __init__(self, proto, qid, obj):
+        self.proto = proto
         self.qid = qid
         self.obj = obj
 
@@ -39,17 +39,17 @@ class GetSub:
         self.obj.remove_sub(self)
 
     def obj_changed(self):
-        self.conn.send_obj_reply(self.qid, self.obj)
+        self.proto.send_obj_reply(self.qid, self.obj)
 
     def obj_gone(self):
-        if self.qid in self.conn.subs:
-            del self.conn.subs[self.qid]
-        self.conn.send_obj_gone(self.qid)
+        if self.qid in self.proto.subs:
+            del self.proto.subs[self.qid]
+        self.proto.send_obj_gone(self.qid)
 
 
 class GetDataSub:
-    def __init__(self, conn, qid, obj, key):
-        self.conn = conn
+    def __init__(self, proto, qid, obj, key):
+        self.proto = proto
         self.qid = qid
         self.obj = obj
         self.key = key
@@ -58,37 +58,37 @@ class GetDataSub:
         self.obj.remove_data_sub(self)
 
     def data_changed(self, data):
-        self.conn.send_obj_data_reply(self.qid, data)
+        self.proto.send_obj_data_reply(self.qid, data)
 
     def obj_gone(self):
-        if self.qid in self.conn.subs:
-            del self.conn.subs[self.qid]
-        self.conn.send_obj_gone(self.qid)
+        if self.qid in self.proto.subs:
+            del self.proto.subs[self.qid]
+        self.proto.send_obj_gone(self.qid)
 
 
 class Lister(BaseLister):
-    def __init__(self, conn, qid, srv, obj, pos, tags):
-        self.conn = conn
+    def __init__(self, proto, qid, conn, obj, pos, tags):
+        self.proto = proto
         self.qid = qid
-        super().__init__(srv, obj, pos, tags)
+        super().__init__(conn, obj, pos, tags)
 
     def list_changed(self, new, gone):
-        self.conn.send_list_reply(self.qid, new, gone)
+        self.proto.send_list_reply(self.qid, new, gone)
 
     def obj_gone(self):
-        if self.qid in self.conn.subs:
-            del self.conn.subs[self.qid]
-        self.conn.send_obj_gone(self.qid)
+        if self.qid in self.proto.subs:
+            del self.proto.subs[self.qid]
+        self.proto.send_obj_gone(self.qid)
 
 
-class Proto(asyncio.Protocol):
-    def __init__(self, srv):
-        self.srv = srv
+class ServerProto(asyncio.Protocol):
+    def __init__(self, conn):
+        self.conn = conn
         self.subs = {}
 
     def connection_made(self, transport):
         self.transport = transport
-        self.cid = self.srv.new_conn(self)
+        self.cid = self.conn.new_conn(self)
         wrapper = msgpackwrap.MsgpackWrapper()
         self.unpacker = wrapper.unpacker
         self.packer = wrapper.packer
@@ -132,13 +132,13 @@ class Proto(asyncio.Protocol):
     def connection_lost(self, ex):
         for qid, sub in self.subs.items():
             sub.kill()
-        self.srv.remove_conn(self)
+        self.conn.remove_conn(self)
 
     def send_msg(self, msg):
         self.transport.write(self.packer.pack(msg.dump()))
 
     def msg_create(self, msg):
-        self.srv.create(
+        self.conn.create(
             msg.id,
             msg.parent,
             tags=msg.tags,
@@ -159,7 +159,7 @@ class Proto(asyncio.Protocol):
     def msg_delete(self, msg):
         objs = msg.ids
         for obj in objs:
-            self.srv.delete(obj)
+            self.conn.delete(obj)
         if msg.rid is not None:
             self.send_msg(messages.MsgAck(
                 rid=msg.rid,
@@ -169,9 +169,9 @@ class Proto(asyncio.Protocol):
         qid = msg.qid
         if qid in self.subs:
             raise ProtocolError('qid_in_use', 'qid already in use')
-        lister = Lister(self, qid, self.srv, msg.parent,
+        lister = Lister(self, qid, self.conn, msg.parent,
                         msg.pos_filter, msg.tags)
-        self.srv.run_lister(lister, msg.sub)
+        self.conn.run_lister(lister, msg.sub)
         if msg.sub:
             self.subs[qid] = lister
 
@@ -179,7 +179,7 @@ class Proto(asyncio.Protocol):
         qid = msg.qid
         if qid in self.subs:
             raise ProtocolError('qid_in_use', 'qid already in use')
-        obj = self.srv.get(msg.id)
+        obj = self.conn.get(msg.id)
         if obj is None:
             self.send_msg(messages.MsgObjGone(
                 qid=qid,
@@ -198,13 +198,13 @@ class Proto(asyncio.Protocol):
         key = msg.key
         if qid in self.subs:
             raise ProtocolError('qid_in_use', 'qid already in use')
-        obj = self.srv.get(obj)
+        obj = self.conn.get(obj)
         if obj is None:
             self.send_msg(messages.MsgObjGone(
                 qid=qid,
             ))
         else:
-            data = self.srv.get_data(obj, key)
+            data = self.conn.get_data(obj, key)
             self.send_obj_data_reply(qid, data)
             if sub:
                 sub = GetDataSub(self, qid, obj, key)
@@ -266,11 +266,9 @@ class Proto(asyncio.Protocol):
         ))
 
 
-@asyncio.coroutine
-def unix_server(srv, path):
-    return (yield from srv.loop.create_unix_server(lambda: Proto(srv), path))
+async def create_unix_server(conn, path):
+    return await conn.loop.create_unix_server(lambda: ServerProto(conn), path)
 
 
-@asyncio.coroutine
-def tcp_server(srv, ip, port):
-    return (yield from srv.loop.create_server(lambda: Proto(srv), ip, port))
+async def create_tcp_server(conn, ip, port):
+    return await conn.loop.create_server(lambda: ServerProto(conn), ip, port)
