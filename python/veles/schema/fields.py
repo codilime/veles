@@ -177,10 +177,10 @@ class BinData(Field):
 
 class List(Field):
     def __init__(self, element, optional=False, default=[]):
-        super(List, self).__init__(optional, default)
         if not isinstance(element, Field):
             raise TypeError("List element must be a Field.")
         self.element = element
+        super(List, self).__init__(optional, default)
 
     def __set_name__(self, owner, name):
         super(List, self).__set_name__(owner, name)
@@ -211,10 +211,10 @@ class List(Field):
 
 class Set(Field):
     def __init__(self, element, optional=False, default=set()):
-        super(Set, self).__init__(optional, default)
         if not isinstance(element, Field):
             raise TypeError("Set element must be a Field.")
         self.element = element
+        super(Set, self).__init__(optional, default)
 
     def __set_name__(self, owner, name):
         super(Set, self).__set_name__(owner, name)
@@ -245,9 +245,9 @@ class Set(Field):
 
 class Map(Field):
     def __init__(self, key, value, optional=False, default={}):
-        super(Map, self).__init__(optional, default)
         self.key = key
         self.value = value
+        super(Map, self).__init__(optional, default)
 
     def __set_name__(self, owner, name):
         super(Map, self).__set_name__(owner, name)
@@ -280,8 +280,8 @@ class Map(Field):
 
 class Object(Field):
     def __init__(self, value_type, optional=False, default=None):
-        super(Object, self).__init__(optional, default)
         self.value_type = value_type
+        super(Object, self).__init__(optional, default)
 
     def _load(self, value):
         if value is None:
