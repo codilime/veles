@@ -31,7 +31,6 @@ APP_ID = int_from_bytes(b'mln0', 'big')
 
 # TODO:
 #
-# - use root id
 # - link support
 # - xref support
 # - paged BinData
@@ -130,7 +129,7 @@ class Database:
         if not rows:
             return None
         (raw_parent, pos_start, pos_end), = rows
-        parent = NodeID(bytes(raw_parent)) if raw_parent else None
+        parent = NodeID(bytes(raw_parent)) if raw_parent else NodeID.root_id
         c.execute("""
             SELECT name FROM object_tag WHERE obj_id = ?
         """, (raw_obj_id,))
@@ -155,8 +154,13 @@ class Database:
     def create(self, node):
         if not isinstance(node, Node):
             raise TypeError('node has wrong type')
+        if node.id == NodeID.root_id:
+            raise ValueError('cannot create root')
         raw_obj_id = buffer(node.id.bytes)
-        raw_parent = buffer(node.parent.bytes) if node.parent else None
+        if node.parent == NodeID.root_id:
+            raw_parent = None
+        else:
+            raw_parent = buffer(node.parent.bytes)
         c = self.db.cursor()
         c.execute("""
             INSERT INTO object (id, parent, pos_start, pos_end)
@@ -201,10 +205,13 @@ class Database:
     def set_parent(self, obj_id, parent_id):
         if not isinstance(obj_id, NodeID):
             raise TypeError('node id has wrong type')
-        if not isinstance(parent_id, NodeID) and parent_id is not None:
+        if not isinstance(parent_id, NodeID):
             raise TypeError('parent id has wrong type')
         raw_obj_id = buffer(obj_id.bytes)
-        raw_parent = buffer(parent_id.bytes) if parent_id else None
+        if parent_id == NodeID.root_id:
+            raw_parent = None
+        else:
+            raw_parent = buffer(parent_id.bytes)
         c = self.db.cursor()
         c.execute("""
             UPDATE object
@@ -367,22 +374,22 @@ class Database:
         self.db.commit()
 
     def list(self, parent, tags=frozenset(), pos_filter=PosFilter()):
-        if not isinstance(parent, NodeID) and parent is not None:
-            raise TypeError('parent must be NodeID or None')
+        if not isinstance(parent, NodeID):
+            raise TypeError('parent must be a NodeID')
         if not isinstance(tags, (set, frozenset)):
             raise TypeError('tags must be a set')
         if not isinstance(pos_filter, PosFilter):
             raise TypeError('pos_filter must be a PosFilter')
-        if parent:
-            stmt = """
-                SELECT id FROM object WHERE parent = ?
-            """
-            args = (buffer(parent.bytes), )
-        else:
+        if parent == NodeID.root_id:
             stmt = """
                 SELECT id FROM object WHERE parent IS NULL
             """
             args = ()
+        else:
+            stmt = """
+                SELECT id FROM object WHERE parent = ?
+            """
+            args = (buffer(parent.bytes), )
         for tag in tags:
             if not isinstance(tag, six.text_type):
                 raise TypeError('tag is not a string')

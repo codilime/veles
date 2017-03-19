@@ -13,11 +13,12 @@
 # limitations under the License.
 
 from veles.schema import model, fields
+from veles.schema.nodeid import NodeID
 
 
 class Node(model.Model):
     id = fields.NodeID()
-    parent = fields.NodeID(optional=True)
+    parent = fields.NodeID(default=NodeID.root_id)
     pos_start = fields.Integer(optional=True)
     pos_end = fields.Integer(optional=True)
     tags = fields.Set(fields.String())
