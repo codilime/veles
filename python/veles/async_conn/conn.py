@@ -21,6 +21,9 @@ class AsyncConnection:
     A proxy class used to access a server's nodes asynchronously.
     """
 
+    def __init__(self):
+        self.root = self.get_node_norefresh(NodeID.root_id)
+
     def get_node_norefresh(self, id):
         """
         Returns an AsyncNode with the given id immediately.  Does not fetch it

@@ -179,8 +179,8 @@ class ServerProto(asyncio.Protocol):
         qid = msg.qid
         if qid in self.subs:
             raise ProtocolError('qid_in_use', 'qid already in use')
-        obj = self.conn.get(msg.id)
-        if obj is None:
+        obj = self.conn.get_node_norefresh(msg.id)
+        if obj.node is None:
             self.send_msg(messages.MsgObjGone(
                 qid=qid,
             ))
@@ -198,7 +198,7 @@ class ServerProto(asyncio.Protocol):
         key = msg.key
         if qid in self.subs:
             raise ProtocolError('qid_in_use', 'qid already in use')
-        obj = self.conn.get(obj)
+        obj = self.conn.get_node_norefresh(obj)
         if obj is None:
             self.send_msg(messages.MsgObjGone(
                 qid=qid,

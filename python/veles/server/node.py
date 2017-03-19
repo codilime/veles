@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from veles.async_conn.node import AsyncNode
 
-class AsyncLocalNode:
-    def __init__(self, conn, parent, node):
-        self.conn = conn
+
+class AsyncLocalNode(AsyncNode):
+    def __init__(self, conn, id, node, parent):
+        super().__init__(conn, id, node)
         self.parent = parent
-        self.node = node
         self.subs = set()
         self.data_subs = {}
         self.listers = set()
