@@ -316,6 +316,10 @@ class TestFields(unittest.TestCase):
             a.load(None)
         self.assertEqual(a.dump(Zlew()), 'zlew')
 
+        fields.Object(Zlew, default=Zlew())
+        with self.assertRaises(SchemaError):
+            fields.Object(Zlew, default=Piwo())
+
     def test_list(self):
         a = fields.List(fields.Object(Piwo))
         a.validate([])
@@ -345,6 +349,7 @@ class TestFields(unittest.TestCase):
             a.validate(a.load(['piwo', None]))
         self.assertEqual(a.dump([]), [])
         self.assertEqual(a.dump([Piwo(), Piwo()]), ['piwo', 'piwo'])
+        fields.List(fields.Integer(), default=[1, 2, 3])
 
     def test_set(self):
         a = fields.Set(fields.Object(Piwo))
@@ -374,6 +379,7 @@ class TestFields(unittest.TestCase):
             a.validate(a.load(['piwo', None]))
         self.assertEqual(a.dump({}), [])
         self.assertEqual(a.dump({Piwo()}), ['piwo'])
+        fields.Set(fields.Integer(), default={1, 2, 3})
 
     def test_map(self):
         a = fields.Map(fields.Object(Piwo), fields.Object(Zlew))
@@ -411,3 +417,4 @@ class TestFields(unittest.TestCase):
             a.validate(a.load({'piwo', 'zlew'}))
         self.assertEqual(a.dump({}), {})
         self.assertEqual(a.dump({Piwo(): Zlew()}), {'piwo': 'zlew'})
+        fields.Map(fields.Integer(), fields.String(), default={1: 'a'})
