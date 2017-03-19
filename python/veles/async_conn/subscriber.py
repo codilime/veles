@@ -13,6 +13,9 @@
 # limitations under the License.
 
 
+from veles.proto.node import PosFilter
+
+
 class BaseSubscriber:
     """
     A subscriber of node modifications.  To watch for node modifications,
@@ -115,19 +118,18 @@ class BaseSubscriberQuery:
 
 class BaseSubscriberList:
     def __init__(self, srv, parent, tags=frozenset(),
-                 pos_start_range=None, pos_end_range=None):
+                 pos_filter=PosFilter()):
         self.srv = srv
         self.parent = parent
         self.tags = tags
-        self.pos_start_range = pos_start_range or (None, None)
-        self.pos_end_range = pos_end_range or (None, None)
+        self.pos_filter = pos_filter
         self.alive = True
         self.srv._add_sub_list(self)
 
     def cancel(self):
         if self.alive:
             self.alive = False
-            self.srv._del_sub_query(self)
+            self.srv._del_sub_list(self)
 
     def list_changed(self, changed, gone):
         raise NotImplementedError
