@@ -14,6 +14,7 @@
 
 from veles.proto.node import Node
 from veles.schema import model, fields
+from veles.schema.nodeid import NodeID
 
 
 class MsgpackMsg(model.PolymorphicModel):
@@ -64,7 +65,7 @@ class MsgRegisterTrigger(MsgpackMsg):
 class MsgList(MsgpackMsg):
     object_type = 'list'
 
-    parent = fields.NodeID(optional=True)
+    parent = fields.NodeID(default=NodeID.root_id)
     tags = fields.Set(fields.String())
     qid = fields.SmallUnsignedInteger()
     sub = fields.Boolean(default=False)
@@ -159,7 +160,7 @@ class MsgCreate(MsgpackMsg):
     id = fields.NodeID()
     rid = fields.SmallUnsignedInteger()
     qid = fields.SmallUnsignedInteger(optional=True)
-    parent = fields.NodeID(optional=True)
+    parent = fields.NodeID(default=NodeID.root_id)
     pos_start = fields.Integer(optional=True)
     pos_end = fields.Integer(optional=True)
     attr = fields.Map(fields.String(), fields.Any())

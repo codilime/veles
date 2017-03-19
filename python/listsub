@@ -2,15 +2,15 @@
 
 import sys
 
-from veles.schema import nodeid
+from veles.schema.nodeid import NodeID
 from veles.scli import client
 
 client = client.create_client(sys.argv[1])
 
 if len(sys.argv) > 2:
-	obj = nodeid.NodeID.from_hex(sys.argv[2])
+	obj = NodeID.from_hex(sys.argv[2])
 else:
-	obj = None
+	obj = NodeID.root_id
 
 import pprint
 for x in client.list_sub(obj):

@@ -20,6 +20,7 @@
 import weakref
 
 from veles.proto.node import Node
+from veles.schema.nodeid import NodeID
 from veles.db import Database
 
 
@@ -33,7 +34,7 @@ class BaseLister:
         self.tags = tags
         self.subs = set()
         self.objs = set()
-        if parent is not None:
+        if parent != NodeID.root_id:
             self.parent = srv.get(parent)
             if self.parent is None:
                 self.obj_gone()
@@ -193,7 +194,7 @@ class Server:
         if lister.parent is not None:
             parent = lister.parent.node.id
         else:
-            parent = None
+            parent = NodeID.root_id
         obj_ids = self.db.list(parent)
         objs = [self.get(x) for x in obj_ids]
         objs = [x for x in objs if lister.matches(x)]
