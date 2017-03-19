@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from veles.proto.node import Node
+from veles.proto.node import Node, PosFilter
 from veles.schema import model, fields
 
 
@@ -68,8 +68,7 @@ class MsgList(MsgpackMsg):
     tags = fields.Set(fields.String())
     qid = fields.SmallUnsignedInteger()
     sub = fields.Boolean(default=False)
-    pos_start = fields.Integer(optional=True)
-    pos_end = fields.Integer(optional=True)
+    pos_filter = fields.Object(PosFilter, default=PosFilter())
 
 
 class MsgCancelSub(MsgpackMsg):

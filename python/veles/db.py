@@ -20,7 +20,7 @@ import six
 
 from veles.proto import msgpackwrap
 from veles.schema.nodeid import NodeID
-from veles.proto.node import Node
+from veles.proto.node import Node, PosFilter
 from veles.proto.exceptions import WritePastEndError
 from veles.compatibility.int_bytes import int_from_bytes
 from veles.util.bigint import bigint_encode, bigint_decode
@@ -366,8 +366,13 @@ class Database:
         """, (raw_obj_id,))
         self.db.commit()
 
-    def list(self, parent, tags=frozenset(),
-             pos_start_range=None, pos_end_range=None):
+    def list(self, parent, tags=frozenset(), pos_filter=PosFilter()):
+        if not isinstance(parent, NodeID) and parent is not None:
+            raise TypeError('parent must be NodeID or None')
+        if not isinstance(tags, (set, frozenset)):
+            raise TypeError('tags must be a set')
+        if not isinstance(pos_filter, PosFilter):
+            raise TypeError('pos_filter must be a PosFilter')
         if parent:
             stmt = """
                 SELECT id FROM object WHERE parent = ?
@@ -379,27 +384,25 @@ class Database:
             """
             args = ()
         for tag in tags:
+            if not isinstance(tag, six.text_type):
+                raise TypeError('tag is not a string')
             stmt += """ AND EXISTS (
                 SELECT 1 FROM object_tag
                 WHERE obj_id = id AND name = ?
             )"""
             args += (tag,)
-        if pos_start_range:
-            s, e = pos_start_range
-            if s is not None:
-                stmt += " AND pos_start >= ?"
-                args += (db_bigint_encode(s),)
-            if e is not None:
-                stmt += " AND pos_start < ?"
-                args += (db_bigint_encode(e),)
-        if pos_end_range:
-            s, e = pos_end_range
-            if s is not None:
-                stmt += " AND pos_end >= ?"
-                args += (db_bigint_encode(s),)
-            if e is not None:
-                stmt += " AND pos_end < ?"
-                args += (db_bigint_encode(e),)
+        if pos_filter.start_from is not None:
+            stmt += " AND pos_start >= ?"
+            args += (db_bigint_encode(pos_filter.start_from),)
+        if pos_filter.start_to is not None:
+            stmt += " AND (pos_start <= ? OR pos_start IS NULL)"
+            args += (db_bigint_encode(pos_filter.start_to),)
+        if pos_filter.end_from is not None:
+            stmt += " AND (pos_end >= ? OR pos_end is NULL)"
+            args += (db_bigint_encode(pos_filter.end_from),)
+        if pos_filter.end_to is not None:
+            stmt += " AND pos_end <= ?"
+            args += (db_bigint_encode(pos_filter.end_to),)
         c = self.db.cursor()
         c.execute(stmt, args)
         return {NodeID(bytes(x)) for x, in c.fetchall()}

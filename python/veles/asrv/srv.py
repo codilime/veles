@@ -48,17 +48,10 @@ class BaseLister:
             self.parent.listers.remove(self)
 
     def matches(self, obj):
-        if self.pos[0] is not None:
-            if obj.pos_start is None:
-                return False
-            if obj.pos_end is not None and obj.pos_end <= self.pos[0]:
-                return False
-        if self.pos[1] is not None:
-            if obj.pos_start is not None and obj.pos_start >= self.pos[1]:
-                return False
-        for tag in self.tags:
-            if tag not in obj.tags:
-                return False
+        if not self.pos.matches(obj):
+            return False
+        if not self.tags <= obj.tags:
+            return False
         return True
 
     def list_changed(self):
@@ -191,9 +184,8 @@ class Server:
             parent = lister.parent.node.id
         else:
             parent = None
-        obj_ids = self.db.list(parent)
+        obj_ids = self.db.list(parent, lister.tags, lister.pos)
         objs = [self.get(x) for x in obj_ids]
-        objs = [x for x in objs if lister.matches(x)]
         lister.list_changed(objs, [])
         if sub:
             lister.objs = set(objs)
