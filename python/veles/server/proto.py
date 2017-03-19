@@ -98,11 +98,12 @@ class ServerProto(asyncio.Protocol):
         while True:
             try:
                 msg = messages.MsgpackMsg.load(self.unpacker.unpack())
-                self.handle_msg(msg)
+                loop = asyncio.get_event_loop()
+                loop.create_task(self.handle_msg(msg))
             except msgpack.OutOfData:
                 return
 
-    def handle_msg(self, msg):
+    async def handle_msg(self, msg):
         handlers = {
             'create': self.msg_create,
             'modify': self.msg_modify,
@@ -119,7 +120,7 @@ class ServerProto(asyncio.Protocol):
             'proc_reg': self.msg_proc_reg,
         }
         try:
-            handlers[msg.object_type](msg)
+            await handlers[msg.object_type](msg)
         except ProtocolError as e:
             self.protoerr(e.args[0], e.args[1])
 
@@ -137,7 +138,7 @@ class ServerProto(asyncio.Protocol):
     def send_msg(self, msg):
         self.transport.write(self.packer.pack(msg.dump()))
 
-    def msg_create(self, msg):
+    async def msg_create(self, msg):
         self.conn.create(
             msg.id,
             msg.parent,
@@ -152,11 +153,11 @@ class ServerProto(asyncio.Protocol):
                 rid=msg.rid,
             ))
 
-    def msg_modify(self, msg):
+    async def msg_modify(self, msg):
         # XXX
         raise NotImplementedError
 
-    def msg_delete(self, msg):
+    async def msg_delete(self, msg):
         objs = msg.ids
         for obj in objs:
             self.conn.delete(obj)
@@ -165,7 +166,7 @@ class ServerProto(asyncio.Protocol):
                 rid=msg.rid,
             ))
 
-    def msg_list(self, msg):
+    async def msg_list(self, msg):
         qid = msg.qid
         if qid in self.subs:
             raise ProtocolError('qid_in_use', 'qid already in use')
@@ -175,7 +176,7 @@ class ServerProto(asyncio.Protocol):
         if msg.sub:
             self.subs[qid] = lister
 
-    def msg_get(self, msg):
+    async def msg_get(self, msg):
         qid = msg.qid
         if qid in self.subs:
             raise ProtocolError('qid_in_use', 'qid already in use')
@@ -191,7 +192,7 @@ class ServerProto(asyncio.Protocol):
                 self.subs[qid] = sub
                 obj.add_sub(sub)
 
-    def msg_get_data(self, msg):
+    async def msg_get_data(self, msg):
         obj = msg.id
         sub = msg.sub
         qid = msg.qid
@@ -211,11 +212,11 @@ class ServerProto(asyncio.Protocol):
                 self.subs[qid] = sub
                 obj.add_data_sub(sub)
 
-    def msg_get_bin(self, msg):
+    async def msg_get_bin(self, msg):
         # XXX
         raise NotImplementedError
 
-    def msg_unsub(self, msg):
+    async def msg_unsub(self, msg):
         qid = msg.qid
         if qid in self.subs:
             self.subs[qid].kill()
@@ -224,23 +225,23 @@ class ServerProto(asyncio.Protocol):
             qid=qid,
         ))
 
-    def msg_mthd_run(self, msg):
+    async def msg_mthd_run(self, msg):
         # XXX
         raise NotImplementedError
 
-    def msg_mthd_done(self, msg):
+    async def msg_mthd_done(self, msg):
         # XXX
         raise NotImplementedError
 
-    def msg_proc_done(self, msg):
+    async def msg_proc_done(self, msg):
         # XXX
         raise NotImplementedError
 
-    def msg_mthd_reg(self, msg):
+    async def msg_mthd_reg(self, msg):
         # XXX
         raise NotImplementedError
 
-    def msg_proc_reg(self, msg):
+    async def msg_proc_reg(self, msg):
         # XXX
         raise NotImplementedError
 
