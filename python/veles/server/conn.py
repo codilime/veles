@@ -19,7 +19,6 @@
 
 import weakref
 
-from veles.proto.node import Node
 from veles.schema.nodeid import NodeID
 from veles.db import Database
 
@@ -80,23 +79,6 @@ class AsyncLocalConnection(AsyncConnection):
     def remove_conn(self, conn):
         print("Conn {} gone.".format(conn.cid))
         self.conns[conn.cid] = None
-
-    def create(self, obj_id, parent, *, tags=[], attr={}, data={}, bindata={},
-               pos=(None, None)):
-        node = Node(id=obj_id, parent=parent, pos_start=pos[0],
-                    pos_end=pos[1], tags=tags, attr=attr, data=set(data),
-                    bindata={x: len(y) for x, y in bindata.items()})
-        self.db.create(node)
-        for key, val in data.items():
-            self.db.set_data(node.id, key, val)
-        for key, val in bindata.items():
-            self.db.set_bindata(node.id, key, start=0, data=val,
-                                truncate=False)
-        obj = self.get_node_norefresh(obj_id)
-        for lister in obj.parent.listers:
-            if lister.matches(obj.node):
-                lister.list_changed([obj], [])
-                lister.objs.add(obj)
 
     def delete(self, obj_id):
         obj = self.get_node_norefresh(obj_id)

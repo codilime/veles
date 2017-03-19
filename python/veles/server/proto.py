@@ -26,6 +26,8 @@ from .conn import BaseLister
 from veles.async_conn.subscriber import (
     BaseSubscriber,
 )
+from veles.proto.exceptions import VelesException
+
 
 class ProtocolError(Exception):
     pass
@@ -143,17 +145,24 @@ class ServerProto(asyncio.Protocol):
         self.transport.write(self.packer.pack(msg.dump()))
 
     async def msg_create(self, msg):
-        self.conn.create(
-            msg.id,
-            msg.parent,
-            tags=msg.tags,
-            attr=msg.attr,
-            data=msg.data,
-            bindata=msg.bindata,
-            pos=(msg.pos_start, msg.pos_end),
-        )
-        if msg.rid is not None:
-            self.send_msg(messages.MsgAck(
+        try:
+            await self.conn.create(
+                msg.id,
+                msg.parent,
+                tags=msg.tags,
+                attr=msg.attr,
+                data=msg.data,
+                bindata=msg.bindata,
+                pos=(msg.pos_start, msg.pos_end),
+            )[1]
+        except VelesException as e:
+            self.send_msg(messages.MsgRequestError(
+                rid=msg.rid,
+                code=e.code,
+                msg=e.msg,
+            ))
+        else:
+            self.send_msg(messages.MsgRequestAck(
                 rid=msg.rid,
             ))
 
@@ -166,7 +175,7 @@ class ServerProto(asyncio.Protocol):
         for obj in objs:
             self.conn.delete(obj)
         if msg.rid is not None:
-            self.send_msg(messages.MsgAck(
+            self.send_msg(messages.MsgRequestAck(
                 rid=msg.rid,
             ))
 

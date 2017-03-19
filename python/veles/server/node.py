@@ -14,7 +14,18 @@
 
 from veles.util.future import done_future, bad_future
 from veles.async_conn.node import AsyncNode
-from veles.proto.exceptions import ObjectGoneError
+from veles.proto.exceptions import ObjectGoneError, ObjectExistsError
+from veles.proto.node import Node
+from veles.schema.nodeid import NodeID
+
+
+def _resolve_obj(conn, obj):
+    if isinstance(obj, NodeID):
+        return obj, conn.get_node_norefresh(obj)
+    elif isinstance(obj, AsyncNode):
+        return obj.id, obj
+    else:
+        raise TypeError('expected NodeID or AsyncNode')
 
 
 class AsyncLocalNode(AsyncNode):
@@ -37,28 +48,58 @@ class AsyncLocalNode(AsyncNode):
     def _add_sub(self, sub):
         self.subs.add(sub)
         self.conn.all_subs.add(sub)
-        if self.node is not None:
-            sub.object_changed()
-        else:
-            sub.error(ObjectGoneError())
+        self._send_sub(sub)
 
     def _del_sub(self, sub):
         self.subs.remove(sub)
         self.conn.all_subs.remove(sub)
 
-    # misc
-
-    def send_subs(self):
-        for sub in self.subs:
+    def _send_sub(self, sub):
+        if self.node is not None:
             sub.object_changed(self)
+        else:
+            sub.error(ObjectGoneError())
+
+    def _send_subs(self):
+        for sub in self.subs:
+            self._send_sub(sub)
+
+    # mutators
+
+    def _create(self, parent=None, pos=(None, None), tags=set(), attr={},
+                data={}, bindata={}):
+        if self.node is not None:
+            raise ObjectExistsError()
+        parent_id, parent = _resolve_obj(self.conn, parent)
+        if parent.node is None and parent != self.conn.root:
+            print(parent, parent.node, self.conn.root)
+            raise ObjectGoneError()
+        node = Node(id=self.id, parent=parent_id, pos_start=pos[0],
+                    pos_end=pos[1], tags=tags, attr=attr, data=set(data),
+                    bindata={x: len(y) for x, y in bindata.items()})
+        self.conn.db.create(node)
+        self.node = node
+        self.parent = parent
+        self._send_subs()
+        for key, val in data.items():
+            self.conn.db.set_data(node.id, key, val)
+        for key, val in bindata.items():
+            self.conn.db.set_bindata(node.id, key, start=0, data=val,
+                                     truncate=False)
+        for lister in self.parent.listers:
+            if lister.matches(self.node):
+                lister.list_changed([self], [])
+                lister.objs.add(self)
+        return done_future(self)
+
+    # misc
 
     def send_data_subs(self, key, data):
         for sub in self.data_subs.get(key, ()):
             sub.data_changed(self, data)
 
     def clear_subs(self):
-        for sub in self.subs:
-            sub.error(ObjectGoneError())
+        self._send_subs()
         for k, v in self.data_subs.items():
             for sub in v:
                 sub.obj_gone()

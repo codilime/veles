@@ -54,10 +54,13 @@ class Client:
         )
         self.sock.sendall(self.packer.pack(msg.dump()))
         pkt = self.getpkt()
-        if not isinstance(pkt, messages.MsgAck) or pkt.rid != 0:
+        if isinstance(pkt, messages.MsgRequestAck) and pkt.rid == 0:
+            return msg.id
+        elif isinstance(pkt, messages.MsgRequestError) and pkt.rid == 0:
+            raise VelesException(pkt.code, pkt.msg)
+        else:
             print(pkt)
             raise Exception('weird reply to create')
-        return msg.id
 
     def delete(self, objs):
         msg = messages.MsgDelete(
@@ -66,7 +69,12 @@ class Client:
         )
         self.sock.sendall(self.packer.pack(msg.dump()))
         pkt = self.getpkt()
-        if not isinstance(pkt, messages.MsgAck) or pkt.rid != 0:
+        if isinstance(pkt, messages.MsgRequestAck) and pkt.rid == 0:
+            return
+        elif isinstance(pkt, messages.MsgRequestError) and pkt.rid == 0:
+            raise VelesException(pkt.code, pkt.msg)
+        else:
+            print(pkt)
             raise Exception('weird reply to delete')
 
     def get(self, obj):

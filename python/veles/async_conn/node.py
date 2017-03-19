@@ -93,7 +93,7 @@ class AsyncNode:
 
     # mutators
 
-    def _create(self, parent=None, pos=(None, None), tags=set(), attr={},
+    def _create(self, parent, pos=(None, None), tags=set(), attr={},
                 data={}, bindata={}):
         """
         Fills this object with data and creates it on the server.

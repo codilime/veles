@@ -62,6 +62,8 @@ class MsgRegisterTrigger(MsgpackMsg):
     object_type = 'register_trigger'
 
 
+# queries and subscriptions
+
 class MsgList(MsgpackMsg):
     object_type = 'list'
 
@@ -162,12 +164,13 @@ class MsgRegistryReply(MsgpackMsg):
     object_type = 'registry_reply'
 
 
+# mutators
+
 class MsgCreate(MsgpackMsg):
     object_type = 'create'
 
     id = fields.NodeID()
     rid = fields.SmallUnsignedInteger()
-    qid = fields.SmallUnsignedInteger(optional=True)
     parent = fields.NodeID(default=NodeID.root_id)
     pos_start = fields.Integer(optional=True)
     pos_end = fields.Integer(optional=True)
@@ -185,18 +188,24 @@ class MsgDelete(MsgpackMsg):
     object_type = 'delete'
 
     rid = fields.SmallUnsignedInteger()
-    ids = fields.List(fields.NodeID())
+    id = fields.NodeID()
 
 
-class MsgAck(MsgpackMsg):
-    object_type = 'ack'
+class MsgRequestAck(MsgpackMsg):
+    object_type = 'request_ack'
 
     rid = fields.SmallUnsignedInteger()
 
 
-class MsgModifyError(MsgpackMsg):
-    object_type = 'modify_err'
+class MsgRequestError(MsgpackMsg):
+    object_type = 'request_error'
 
+    rid = fields.SmallUnsignedInteger()
+    code = fields.String()
+    msg = fields.String()
+
+
+# methods & triggers
 
 class MsgMethodRun(MsgpackMsg):
     object_type = 'mthd_run'
