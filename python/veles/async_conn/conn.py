@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from veles.schema.nodeid import NodeID
+from veles.proto.node import PosFilter
 
 
 class AsyncConnection:
@@ -37,8 +38,7 @@ class AsyncConnection:
         """
         return self.get_node_norefresh(id).refresh()
 
-    def get_list(self, parent, tags=frozenset(), pos_start_range=None,
-                 pos_end_range=None):
+    def get_list(self, parent, tags=frozenset(), pos_filter=PosFilter()):
         """
         Fetches a list of nodes with the given parent, containing given
         tags, and with pos_start/pos_end in the given ranges.

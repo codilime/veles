@@ -169,9 +169,8 @@ class Proto(asyncio.Protocol):
         qid = msg.qid
         if qid in self.subs:
             raise ProtocolError('qid_in_use', 'qid already in use')
-        tagsets = msg.tags
         lister = Lister(self, qid, self.srv, msg.parent,
-                        (msg.pos_start, msg.pos_end), tagsets)
+                        msg.pos_filter, msg.tags)
         self.srv.run_lister(lister, msg.sub)
         if msg.sub:
             self.subs[qid] = lister
