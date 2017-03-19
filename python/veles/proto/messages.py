@@ -84,6 +84,15 @@ class MsgSubCancelled(MsgpackMsg):
     qid = fields.SmallUnsignedInteger()
 
 
+class MsgQueryError(MsgpackMsg):
+    object_type = 'query_error'
+
+    qid = fields.SmallUnsignedInteger()
+    code = fields.String()
+    msg = fields.String()
+
+
+# XXX nuke this
 class MsgObjGone(MsgpackMsg):
     object_type = 'obj_gone'
 

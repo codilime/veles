@@ -17,6 +17,7 @@ import socket
 import msgpack
 
 from veles.proto import messages, msgpackwrap
+from veles.proto.exceptions import VelesException
 from veles.schema import nodeid
 
 
@@ -77,8 +78,8 @@ class Client:
         pkt = self.getpkt()
         if isinstance(pkt, messages.MsgGetReply) and pkt.qid == 0:
             return pkt
-        elif isinstance(pkt, messages.MsgObjGone) and pkt.qid == 0:
-            return None
+        elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
+            raise VelesException(pkt.code, pkt.msg)
         else:
             raise Exception('weird reply to get')
 
@@ -93,8 +94,8 @@ class Client:
             pkt = self.getpkt()
             if isinstance(pkt, messages.MsgGetReply) and pkt.qid == 0:
                 yield pkt
-            elif isinstance(pkt, messages.MsgObjGone) and pkt.qid == 0:
-                return
+            elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
+                raise VelesException(pkt.code, pkt.msg)
             else:
                 raise Exception('weird reply to get')
 

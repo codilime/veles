@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from veles.util.future import done_future, bad_future
 from veles.async_conn.node import AsyncNode
+from veles.proto.exceptions import ObjectGoneError
 
 
 class AsyncLocalNode(AsyncNode):
@@ -23,9 +25,32 @@ class AsyncLocalNode(AsyncNode):
         self.data_subs = {}
         self.listers = set()
 
+    # getters
+
+    def refresh(self):
+        if self.node is None:
+            return bad_future(ObjectGoneError())
+        return done_future(self)
+
+    # subscriptions
+
+    def _add_sub(self, sub):
+        self.subs.add(sub)
+        self.conn.all_subs.add(sub)
+        if self.node is not None:
+            sub.object_changed()
+        else:
+            sub.error(ObjectGoneError())
+
+    def _del_sub(self, sub):
+        self.subs.remove(sub)
+        self.conn.all_subs.remove(sub)
+
+    # misc
+
     def send_subs(self):
         for sub in self.subs:
-            sub.obj_changed(self)
+            sub.object_changed(self)
 
     def send_data_subs(self, key, data):
         for sub in self.data_subs.get(key, ()):
@@ -33,18 +58,12 @@ class AsyncLocalNode(AsyncNode):
 
     def clear_subs(self):
         for sub in self.subs:
-            sub.obj_gone()
+            sub.error(ObjectGoneError())
         for k, v in self.data_subs.items():
             for sub in v:
                 sub.obj_gone()
         for lister in self.listers:
             lister.obj_gone()
-
-    def remove_sub(self, sub):
-        self.subs.remove(sub)
-
-    def add_sub(self, sub):
-        self.subs.add(sub)
 
     def remove_data_sub(self, sub):
         self.data_subs[sub.key].remove(sub)

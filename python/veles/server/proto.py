@@ -23,28 +23,32 @@ import msgpack
 
 from veles.proto import messages, msgpackwrap
 from .conn import BaseLister
-
+from veles.async_conn.subscriber import (
+    BaseSubscriber,
+)
 
 class ProtocolError(Exception):
     pass
 
 
-class GetSub:
-    def __init__(self, proto, qid, obj):
+class Subscriber(BaseSubscriber):
+    def __init__(self, obj, proto, qid):
         self.proto = proto
         self.qid = qid
-        self.obj = obj
+        super().__init__(obj)
 
-    def kill(self):
-        self.obj.remove_sub(self)
+    def object_changed(self):
+        self.proto.send_msg(messages.MsgGetReply(
+            qid=self.qid,
+            obj=self.obj.node
+        ))
 
-    def obj_changed(self):
-        self.proto.send_obj_reply(self.qid, self.obj)
-
-    def obj_gone(self):
-        if self.qid in self.proto.subs:
-            del self.proto.subs[self.qid]
-        self.proto.send_obj_gone(self.qid)
+    def error(self, err):
+        self.proto.send_msg(messages.MsgQueryError(
+            qid=self.qid,
+            code=err.code,
+            msg=err.msg,
+        ))
 
 
 class GetDataSub:
@@ -54,7 +58,7 @@ class GetDataSub:
         self.obj = obj
         self.key = key
 
-    def kill(self):
+    def cancel(self):
         self.obj.remove_data_sub(self)
 
     def data_changed(self, data):
@@ -132,7 +136,7 @@ class ServerProto(asyncio.Protocol):
 
     def connection_lost(self, ex):
         for qid, sub in self.subs.items():
-            sub.kill()
+            sub.cancel()
         self.conn.remove_conn(self)
 
     def send_msg(self, msg):
@@ -177,20 +181,25 @@ class ServerProto(asyncio.Protocol):
             self.subs[qid] = lister
 
     async def msg_get(self, msg):
-        qid = msg.qid
-        if qid in self.subs:
+        if msg.qid in self.subs:
             raise ProtocolError('qid_in_use', 'qid already in use')
         obj = self.conn.get_node_norefresh(msg.id)
-        if obj.node is None:
-            self.send_msg(messages.MsgObjGone(
-                qid=qid,
-            ))
+        if not msg.sub:
+            try:
+                obj = await obj.refresh()
+            except VelesException as e:
+                self.send_msg(messages.MsgQueryError(
+                    qid=msg.qid,
+                    code=e.code,
+                    msg=e.msg,
+                ))
+            else:
+                self.send_msg(messages.MsgGetReply(
+                    qid=msg.qid,
+                    obj=obj.node,
+                ))
         else:
-            self.send_obj_reply(qid, obj)
-            if msg.sub:
-                sub = GetSub(self, qid, obj)
-                self.subs[qid] = sub
-                obj.add_sub(sub)
+            self.subs[msg.qid] = Subscriber(obj, self, msg.qid)
 
     async def msg_get_data(self, msg):
         obj = msg.id
@@ -219,7 +228,7 @@ class ServerProto(asyncio.Protocol):
     async def msg_unsub(self, msg):
         qid = msg.qid
         if qid in self.subs:
-            self.subs[qid].kill()
+            self.subs[qid].cancel()
             del self.subs[qid]
         self.send_msg(messages.MsgSubCancelled(
             qid=qid,

@@ -39,7 +39,7 @@ class BaseLister:
         if parent != NodeID.root_id and self.parent.node is None:
             self.obj_gone()
 
-    def kill(self):
+    def cancel(self):
         self.parent.listers.remove(self)
 
     def matches(self, obj):
@@ -63,6 +63,11 @@ class AsyncLocalConnection(AsyncConnection):
         self.conns = {}
         self.objs = weakref.WeakValueDictionary()
         self.next_cid = 0
+        # all_subs is a set of all subscriptions in existence - this exists
+        # so that all involved objects are strongly referenced (otherwise,
+        # being only reacheble through the weak dict, they could be GCd along
+        # with all their subscriptions).
+        self.all_subs = set()
         super().__init__()
 
     def new_conn(self, conn):
@@ -113,10 +118,11 @@ class AsyncLocalConnection(AsyncConnection):
         except KeyError:
             node = self.db.get(obj_id)
             if not node:
-                return AsyncLocalNode(self, obj_id, None, None)
-            parent = self.get_node_norefresh(node.parent)
-            assert parent.node is not None or parent.id == NodeID.root_id
-            res = AsyncLocalNode(self, obj_id, node, parent)
+                res = AsyncLocalNode(self, obj_id, None, None)
+            else:
+                parent = self.get_node_norefresh(node.parent)
+                assert parent.node is not None or parent.id == NodeID.root_id
+                res = AsyncLocalNode(self, obj_id, node, parent)
             self.objs[obj_id] = res
             return res
 
