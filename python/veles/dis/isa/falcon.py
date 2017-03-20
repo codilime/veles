@@ -29,64 +29,64 @@ from ..mem import MemSpace
 class FalconArch:
     # The main register file.  16 32-bit registers.
     regs_r = [
-        Register("r{}".format(x), 32)
+        Register(name="r{}".format(x), width=32)
         for x in range(16)
     ]
     # The low 16-bit halves of the registers.  Used by 16-bit operations.
     # If written, the high 16 bits are unmodified.
     regs_rh = [
-        SubRegister("r{}h".format(x), reg, 0, 16)
+        SubRegister(name="r{}h".format(x), parent=reg, start=0, width=16)
         for x, reg in enumerate(regs_r)
     ]
     # The low 8-bit parts of the registers.  Used by 8-bit operations.
     # If written, the high 24 bits are unmodified.
     regs_rb = [
-        SubRegister("r{}b".format(x), reg, 0, 8)
+        SubRegister(name="r{}b".format(x), parent=reg, start=0, width=8)
         for x, reg in enumerate(regs_r)
     ]
 
     # The 8 single-bit predicate registers (really part of the $flags
     # register).
     regs_pred = [
-        Register("p{}".format(x), 1)
+        Register(name="p{}".format(x), width=1)
         for x in range(8)
     ]
     # The other bits of the $flags register (treated as separate registers
     # here).
     regs_flag = regs_pred + [
         # 8-11: operation result flags (carry, overflow, sign, zero).
-        Register("ccc", 1),
-        Register("cco", 1),
-        Register("ccs", 1),
-        Register("ccz", 1),
+        Register(name="ccc", width=1),
+        Register(name="cco", width=1),
+        Register(name="ccs", width=1),
+        Register(name="ccz", width=1),
         # 12-15
         None, None, None, None,
         # 16-19: interrupt enables.
-        RegisterSpecial("ie0", 1),
-        RegisterSpecial("ie1", 1),
+        RegisterSpecial(name="ie0", width=1),
+        RegisterSpecial(name="ie1", width=1),
         # if somebody knows what #2 is for, please let me know.
-        RegisterSpecial("ie2", 1),
+        RegisterSpecial(name="ie2", width=1),
         None,
         # 20-23: saved interrupt enables.
-        RegisterSpecial("sie0", 1),
-        RegisterSpecial("sie1", 1),
-        RegisterSpecial("sie2", 1),
+        RegisterSpecial(name="sie0", width=1),
+        RegisterSpecial(name="sie1", width=1),
+        RegisterSpecial(name="sie2", width=1),
         None,
         # 24-25
         # Trap active flag (if you get a trap while this is set, it's
         # a double trap and you're toast).
-        RegisterSpecial("ta", 1),
+        RegisterSpecial(name="ta", width=1),
         None,
         # 26-31: NFI.
-        RegisterSpecial("unk26", 1),
-        RegisterSpecial("unk27", 1),
-        RegisterSpecial("unk28", 1),
-        RegisterSpecial("unk29", 1),
-        RegisterSpecial("unk30", 1),
-        RegisterSpecial("unk31", 1),
+        RegisterSpecial(name="unk26", width=1),
+        RegisterSpecial(name="unk27", width=1),
+        RegisterSpecial(name="unk28", width=1),
+        RegisterSpecial(name="unk29", width=1),
+        RegisterSpecial(name="unk30", width=1),
+        RegisterSpecial(name="unk31", width=1),
     ]
     # The assembled flags register.
-    reg_flags = RegisterSplit("flags", 32, [
+    reg_flags = RegisterSplit(name="flags", width=32, parts=[
         (x, 1, reg)
         for x, reg in enumerate(regs_flag)
         if reg is not None
@@ -95,33 +95,33 @@ class FalconArch:
     # The stack pointer.  Not truly a 32-bit register, but let's pretend so.
     # In reality, the low 2 bits are forced to 0 (it's always word-aligned),
     # and only as many bits are implemented as necessary to cover the data RAM.
-    reg_sp = RegisterSP("sp", 32)
+    reg_sp = RegisterSP(name="sp", width=32)
     # The program counter.  Again, fewer bits may actually be implemented.
-    reg_pc = RegisterPC("pc", 32)
+    reg_pc = RegisterPC(name="pc", width=32)
     # The special registers file in all its glory.
     regs_special = [
         # The interrupt vectors.  Only as many bits implemented as in the PC.
-        RegisterSpecial("iv0", 32),
-        RegisterSpecial("iv1", 32),
+        RegisterSpecial(name="iv0", width=32),
+        RegisterSpecial(name="iv1", width=32),
         None,
         # The trap vector.  Likewise with implemented bits.
-        RegisterSpecial("tv", 32),
+        RegisterSpecial(name="tv", width=32),
         # SP & PC also accessible here.
         reg_sp,
         reg_pc,
         # The code and data transfer base registers (full 32-bit).
-        RegisterSpecial("xcbase", 32),
-        RegisterSpecial("xdbase", 32),
+        RegisterSpecial(name="xcbase", width=32),
+        RegisterSpecial(name="xdbase", width=32),
         # Good old flags.
         reg_flags,
         # The crypto transfer override register (really 8-bit?).
-        RegisterSpecial("cx", 32),
+        RegisterSpecial(name="cx", width=32),
         # The crypto auth mode register.  Here there be dragons.
-        RegisterSpecial("cauth", 32),
+        RegisterSpecial(name="cauth", width=32),
         # The transfer ports register.  Only has 3×3-bit fields.
-        RegisterSpecial("xports", 32),
+        RegisterSpecial(name="xports", width=32),
         # Trap status register.  Also split into fields...
-        RegisterSpecial("tstat", 32),
+        RegisterSpecial(name="tstat", width=32),
         None,
         None,
         None,
@@ -133,11 +133,11 @@ class FalconArch:
     # as well be treated as 16-bit, but let's ignore it for now.
     # On v4+ with the UAS option, all bits of a data address are important
     # (to match the UAS window address).
-    mem_d = MemSpace("D", 8, 32)
+    mem_d = MemSpace(name="D", width=8, addr_width=32)
     # The I/O register space.  32-bit addressing, 8-bit bytes.
     # Again not exactly true.  Only bits 2-17 matter on most Falcons (and
     # high 8 bits probably don't matter on any Falcon).
-    mem_io = MemSpace("I", 8, 32)
+    mem_io = MemSpace(name="I", width=8, addr_width=32)
 
 
 class FalconFields:

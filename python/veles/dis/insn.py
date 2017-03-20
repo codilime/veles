@@ -46,7 +46,7 @@ class Insn(BaseInsn):
         mods = []
         for mod in self.mods:
             mods += mod.parse(state)
-        return IsaSTInsn(self.name, args, mods)
+        return IsaSTInsn(name=self.name, args=args, mods=mods)
 
 
 class InsnSwitch(BaseInsn, IsaSwitch):
@@ -59,5 +59,5 @@ class InsnSwitch(BaseInsn, IsaSwitch):
             i = self.find(state)
         except MatchError as e:
             state.errors.append(e)
-            return IsaSTInsn(None)
+            return IsaSTInsn()
         return i.parse(state)

@@ -12,8 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from veles.messages import fields
+from veles.schema import model
+from . import mem
+from . import reg
 
-class IsaSTInsn:
+
+class IsaSTArg(model.PolymorphicModel):
+    """
+    A base class of syntax tree argument nodes.
+    """
+
+
+class IsaSTInsn(model.Model):
     """
     A syntax tree node representing a single instruction.  Fields:
 
@@ -21,10 +32,11 @@ class IsaSTInsn:
     - args: list of IsaSTArg
     """
 
-    def __init__(self, name, args=[], mods=[]):
-        self.name = name
-        self.args = tuple(args)
-        self.mods = tuple(mods)
+    name = fields.String(optional=True)
+    args = fields.Array(
+        elements_types=[fields.Object(local_type=IsaSTArg)],
+        local_type=tuple, optional=True)
+    mods = fields.Array(local_type=tuple, optional=True)
 
     def __str__(self):
         name = self.name or "???"
@@ -37,17 +49,13 @@ class IsaSTInsn:
         return "IsaSTInsn<{}>".format(self)
 
 
-class IsaSTArg:
-    """
-    A base class of syntax tree argument nodes.
-    """
-
-
 class IsaSTUnkArg(IsaSTArg):
     """
     A syntax tree node representing an unknown argument (ie. disassembly
     failure).
     """
+
+    object_type = 'IsaSTUnkArg'
 
     def __str__(self):
         return "???"
@@ -66,10 +74,11 @@ class IsaSTImm(IsaSTArg):
     """
     # XXX: define what exactly is a base
 
-    def __init__(self, width, val, base=None):
-        self.width = width
-        self.val = val
-        self.base = base
+    object_type = 'IsaSTImm'
+
+    width = fields.Integer(minimum=1)
+    base = fields.Integer(optional=True, minimum=2)
+    val = fields.Integer()
 
     def __str__(self):
         if self.base is not None:
@@ -88,8 +97,9 @@ class IsaSTReg(IsaSTArg):
     """
     # XXX: needs a change to make it serializable
 
-    def __init__(self, reg):
-        self.reg = reg
+    object_type = 'IsaSTReg'
+
+    reg = fields.Object(local_type=reg.BaseRegister)
 
     def __str__(self):
         return "${}".format(self.reg.name)
@@ -108,10 +118,11 @@ class IsaSTMem(IsaSTArg):
     """
     # XXX: needs a change to make it serializable
 
-    def __init__(self, space, expr, seg=None):
-        self.space = space
-        self.expr = expr
-        self.seg = seg
+    object_type = 'IsaSTMem'
+
+    space = fields.Object(local_type=mem.MemSpace)
+    expr = fields.Object(local_type=IsaSTArg)
+    seg = fields.Object(local_type=IsaSTArg, optional=True)
 
     def __str__(self):
         res = "{}[{}]".format(self.space.name, self.expr)
@@ -125,35 +136,37 @@ class IsaSTMem(IsaSTArg):
 
 # XXX: integrate the following two into IsaSTMem?
 
-class IsaSTAdd:
-    """
-    A syntax tree node representing an addition (for addresses in mem
-    references).  e1 and e2 are IsaSTArg or IsaSTMul instances.
-    """
-
-    def __init__(self, e1, e2):
-        self.e1 = e1
-        self.e2 = e2
-
-    def __str__(self):
-        return "{}+{}".format(self.e1, self.e2)
-
-    def __repr__(self):
-        return "IsaSTAdd<{}>".format(self)
-
-
-class IsaSTMul:
+class IsaSTMul(IsaSTArg):
     """
     A syntax tree node representing a multiplication (for addresses in mem
     references).  e1 and e2 are IsaSTArg instances.
     """
 
-    def __init__(self, e1, e2):
-        self.e1 = e1
-        self.e2 = e2
+    object_type = 'IsaSTMul'
+
+    e1 = fields.Object(local_type=IsaSTArg)
+    e2 = fields.Object(local_type=IsaSTArg)
 
     def __str__(self):
         return "{}*{}".format(self.e1, self.e2)
 
     def __repr__(self):
         return "IsaSTMul<{}>".format(self)
+
+
+class IsaSTAdd(IsaSTArg):
+    """
+    A syntax tree node representing an addition (for addresses in mem
+    references).  e1 and e2 are IsaSTArg or IsaSTMul instances.
+    """
+
+    object_type = 'IsaSTAdd'
+
+    e1 = fields.Object(local_type=IsaSTArg)
+    e2 = fields.Object(local_type=IsaSTArg)
+
+    def __str__(self):
+        return "{}+{}".format(self.e1, self.e2)
+
+    def __repr__(self):
+        return "IsaSTAdd<{}>".format(self)

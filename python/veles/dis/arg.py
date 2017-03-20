@@ -43,7 +43,7 @@ class ArgConst(BaseArg):
         self.val = val
 
     def parse(self, dstate):
-        return IsaSTImm(self.width, self.val)
+        return IsaSTImm(width=self.width, val=self.val)
 
 
 class ArgImm(BaseArg):
@@ -80,7 +80,7 @@ class ArgImm(BaseArg):
             if v & (1 << (self.field.width - 1)):
                 v |= (1 << (self.width - self.shift)) - (1 << self.field.width)
         v <<= self.shift
-        return IsaSTImm(self.width, v)
+        return IsaSTImm(width=self.width, val=v)
 
 
 class ArgPCRel(BaseArg):
@@ -109,7 +109,7 @@ class ArgPCRel(BaseArg):
                 v |= (1 << (self.width - self.shift)) - (1 << self.field.width)
         v <<= self.shift
         v += dstate.anchors[self.anchor]
-        return IsaSTImm(self.width, v, dstate.base)
+        return IsaSTImm(width=self.width, val=v, base=dstate.base)
 
 
 class ArgConstReg(BaseArg):
@@ -121,7 +121,7 @@ class ArgConstReg(BaseArg):
         self.reg = reg
 
     def parse(self, dstate):
-        return IsaSTReg(self.reg)
+        return IsaSTReg(reg=self.reg)
 
 
 # XXX: redundant with ArgConstReg + ArgSwitch - perhaps reimplement using
@@ -146,7 +146,7 @@ class ArgReg(BaseArg):
         if reg is None:
             dstate.errors.append(MatchError('unknown register'))
             return IsaSTUnkArg()
-        return IsaSTReg(reg)
+        return IsaSTReg(reg=reg)
 
 
 # XXX: ArgMem* should be generalized + merged some day.
@@ -168,7 +168,7 @@ class ArgMem(BaseArg):
             seg = None
         else:
             seg = self.arg_seg.parse(dstate)
-        return IsaSTMem(self.space, base, seg)
+        return IsaSTMem(space=self.space, expr=base, seg=seg)
 
 
 class ArgMemRI(BaseArg):
@@ -190,12 +190,12 @@ class ArgMemRI(BaseArg):
         if isinstance(idx, IsaSTImm) and idx.val == 0:
             expr = base
         else:
-            expr = IsaSTAdd(base, idx)
+            expr = IsaSTAdd(e1=base, e2=idx)
         if self.arg_seg is None:
             seg = None
         else:
             seg = self.arg_seg.parse(dstate)
-        return IsaSTMem(self.space, expr, seg)
+        return IsaSTMem(space=self.space, expr=expr, seg=seg)
 
 
 class ArgMemRRS(BaseArg):
@@ -216,13 +216,15 @@ class ArgMemRRS(BaseArg):
         base = self.arg_base.parse(dstate)
         idx = self.arg_idx.parse(dstate)
         if self.scale != 1:
-            idx = IsaSTMul(idx, IsaSTImm(self.space.addr_width, self.scale))
-        expr = IsaSTAdd(base, idx)
+            idx = IsaSTMul(
+                e1=idx,
+                e2=IsaSTImm(width=self.space.addr_width, val=self.scale))
+        expr = IsaSTAdd(e1=base, e2=idx)
         if self.arg_seg is None:
             seg = None
         else:
             seg = self.arg_seg.parse(dstate)
-        return IsaSTMem(self.space, expr, seg)
+        return IsaSTMem(space=self.space, expr=expr, seg=seg)
 
 
 class ArgSwitch(IsaSwitch):
