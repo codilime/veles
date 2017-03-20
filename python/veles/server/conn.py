@@ -27,34 +27,6 @@ from veles.async_conn.conn import AsyncConnection
 from .node import AsyncLocalNode
 
 
-class BaseLister:
-    def __init__(self, conn, parent, pos, tags):
-        self.conn = conn
-        self.pos = pos
-        self.tags = tags
-        self.subs = set()
-        self.objs = set()
-        self.parent = conn.get_node_norefresh(parent)
-        if parent != NodeID.root_id and self.parent.node is None:
-            self.obj_gone()
-
-    def cancel(self):
-        self.parent.listers.remove(self)
-
-    def matches(self, obj):
-        if not self.pos.matches(obj):
-            return False
-        if not self.tags <= obj.tags:
-            return False
-        return True
-
-    def list_changed(self):
-        raise NotImplementedError
-
-    def obj_gone(self):
-        raise NotImplementedError
-
-
 class AsyncLocalConnection(AsyncConnection):
     def __init__(self, loop, path):
         self.loop = loop
@@ -93,17 +65,6 @@ class AsyncLocalConnection(AsyncConnection):
                 res = AsyncLocalNode(self, obj_id, node, parent)
             self.objs[obj_id] = res
             return res
-
-    def get_data(self, obj, key):
-        return self.db.get_data(obj.node.id, key)
-
-    def run_lister(self, lister, sub=False):
-        obj_ids = self.db.list(lister.parent.id, lister.tags, lister.pos)
-        objs = [self.get_node_norefresh(x) for x in obj_ids]
-        lister.list_changed(objs, [])
-        if sub:
-            lister.objs = set(objs)
-            lister.parent.listers.add(lister)
 
     def add_local_plugin(self, plugin):
         # XXX

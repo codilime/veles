@@ -22,10 +22,10 @@ import asyncio
 import msgpack
 
 from veles.proto import messages, msgpackwrap
-from .conn import BaseLister
 from veles.async_conn.subscriber import (
     BaseSubscriber,
     BaseSubscriberData,
+    BaseSubscriberList,
 )
 from veles.proto.exceptions import VelesException
 
@@ -74,19 +74,25 @@ class SubscriberData(BaseSubscriberData):
         ))
 
 
-class Lister(BaseLister):
-    def __init__(self, proto, qid, conn, obj, pos, tags):
+class SubscriberList(BaseSubscriberList):
+    def __init__(self, obj, tags, pos_filter, proto, qid):
         self.proto = proto
         self.qid = qid
-        super().__init__(conn, obj, pos, tags)
+        super().__init__(obj, tags, pos_filter)
 
-    def list_changed(self, new, gone):
-        self.proto.send_list_reply(self.qid, new, gone)
+    def list_changed(self, changed, gone):
+        self.proto.send_msg(messages.MsgGetListReply(
+            objs=[obj.node for obj in changed],
+            qid=self.qid,
+            gone=gone
+        ))
 
-    def obj_gone(self):
-        if self.qid in self.proto.subs:
-            del self.proto.subs[self.qid]
-        self.proto.send_obj_gone(self.qid)
+    def error(self, err):
+        self.proto.send_msg(messages.MsgQueryError(
+            qid=self.qid,
+            code=err.code,
+            msg=err.msg,
+        ))
 
 
 class ServerProto(asyncio.Protocol):
@@ -116,10 +122,10 @@ class ServerProto(asyncio.Protocol):
             'create': self.msg_create,
             'delete': self.msg_delete,
             'set_data': self.msg_set_data,
-            'list': self.msg_list,
             'get': self.msg_get,
             'get_data': self.msg_get_data,
             'get_bin': self.msg_get_bin,
+            'get_list': self.msg_get_list,
             'mthd_run': self.msg_mthd_run,
             'unsub': self.msg_unsub,
             'mthd_done': self.msg_mthd_done,
@@ -198,16 +204,6 @@ class ServerProto(asyncio.Protocol):
                 rid=msg.rid,
             ))
 
-    async def msg_list(self, msg):
-        qid = msg.qid
-        if qid in self.subs:
-            raise ProtocolError('qid_in_use', 'qid already in use')
-        lister = Lister(self, qid, self.conn, msg.parent,
-                        msg.pos_filter, msg.tags)
-        self.conn.run_lister(lister, msg.sub)
-        if msg.sub:
-            self.subs[qid] = lister
-
     async def msg_get(self, msg):
         if msg.qid in self.subs:
             raise ProtocolError('qid_in_use', 'qid already in use')
@@ -254,6 +250,28 @@ class ServerProto(asyncio.Protocol):
         # XXX
         raise NotImplementedError
 
+    async def msg_get_list(self, msg):
+        if msg.qid in self.subs:
+            raise ProtocolError('qid_in_use', 'qid already in use')
+        parent = self.conn.get_node_norefresh(msg.parent)
+        if not msg.sub:
+            try:
+                objs = await parent.get_list(msg.tags, msg.pos_filter)
+            except VelesException as e:
+                self.send_msg(messages.MsgQueryError(
+                    qid=msg.qid,
+                    code=e.code,
+                    msg=e.msg,
+                ))
+            else:
+                self.send_msg(messages.MsgGetListReply(
+                    qid=msg.qid,
+                    objs=[obj.node for obj in objs]
+                ))
+        else:
+            self.subs[msg.qid] = SubscriberList(
+                parent, msg.tags, msg.pos_filter, self, msg.qid)
+
     async def msg_unsub(self, msg):
         qid = msg.qid
         if qid in self.subs:
@@ -282,18 +300,6 @@ class ServerProto(asyncio.Protocol):
     async def msg_proc_reg(self, msg):
         # XXX
         raise NotImplementedError
-
-    def send_list_reply(self, qid, new, gone):
-        self.send_msg(messages.MsgListReply(
-            objs=[obj.node for obj in new],
-            qid=qid,
-            gone=gone
-        ))
-
-    def send_obj_gone(self, qid):
-        self.send_msg(messages.MsgObjGone(
-            qid=qid,
-        ))
 
 
 async def create_unix_server(conn, path):

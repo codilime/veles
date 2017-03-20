@@ -117,19 +117,28 @@ class BaseSubscriberQuery:
 
 
 class BaseSubscriberList:
-    def __init__(self, srv, parent, tags=frozenset(),
-                 pos_filter=PosFilter()):
-        self.srv = srv
+    def __init__(self, parent, tags=frozenset(), pos_filter=PosFilter()):
         self.parent = parent
         self.tags = tags
         self.pos_filter = pos_filter
         self.alive = True
-        self.srv._add_sub_list(self)
+        self.parent._add_sub_list(self)
 
     def cancel(self):
         if self.alive:
             self.alive = False
-            self.srv._del_sub_list(self)
+            self.parent._del_sub_list(self)
+
+    def matches(self, node):
+        if node is None:
+            return False
+        if node.parent != self.parent.id:
+            return False
+        if not self.tags <= node.tags:
+            return False
+        if not self.pos_filter.matches(node):
+            return False
+        return True
 
     def list_changed(self, changed, gone):
         raise NotImplementedError

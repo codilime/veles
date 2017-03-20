@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from veles.schema.nodeid import NodeID
-from veles.proto.node import PosFilter
 
 
 class AsyncConnection:
@@ -41,14 +40,6 @@ class AsyncConnection:
         """
         return self.get_node_norefresh(id).refresh()
 
-    def get_list(self, parent, tags=frozenset(), pos_filter=PosFilter()):
-        """
-        Fetches a list of nodes with the given parent, containing given
-        tags, and with pos_start/pos_end in the given ranges.
-        Returns an awaitable of list of AsyncNodes.
-        """
-        raise NotImplementedError
-
     def create(self, id=None, parent=None, pos=(None, None), tags=frozenset(),
                attr={}, data={}, bindata={}):
         """
@@ -62,11 +53,3 @@ class AsyncConnection:
             id = NodeID()
         obj = self.get_node_norefresh(id)
         return obj, obj._create(parent, pos, tags, attr, data, bindata)
-
-    # subscriptions - only to be used by BaseSubscriberList
-
-    def _add_sub_list(self, sub):
-        raise NotImplementedError
-
-    def _del_sub_list(self, sub):
-        raise NotImplementedError

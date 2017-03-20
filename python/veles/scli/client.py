@@ -147,8 +147,23 @@ class Client:
             else:
                 raise Exception('weird reply to get_data')
 
+    def list(self, obj):
+        msg = messages.MsgGetList(
+            qid=0,
+            parent=obj,
+        )
+        self.send_msg(msg)
+        pkt = self.getpkt()
+        if isinstance(pkt, messages.MsgGetListReply) and pkt.qid == 0:
+            return pkt.objs
+        elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
+            raise VelesException(pkt.code, pkt.msg)
+        else:
+            print(pkt)
+            raise Exception('weird reply to list')
+
     def list_sub(self, obj):
-        msg = messages.MsgList(
+        msg = messages.MsgGetList(
             qid=0,
             parent=obj,
             sub=True
@@ -156,10 +171,10 @@ class Client:
         self.send_msg(msg)
         while True:
             pkt = self.getpkt()
-            if isinstance(pkt, messages.MsgListReply) and pkt.qid == 0:
+            if isinstance(pkt, messages.MsgGetListReply) and pkt.qid == 0:
                 yield pkt
-            elif isinstance(pkt, messages.MsgObjGone) and pkt.qid == 0:
-                return
+            elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
+                raise VelesException(pkt.code, pkt.msg)
             else:
                 print(pkt)
                 raise Exception('weird reply to list')

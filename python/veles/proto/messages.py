@@ -64,15 +64,6 @@ class MsgRegisterTrigger(MsgpackMsg):
 
 # queries and subscriptions
 
-class MsgList(MsgpackMsg):
-    object_type = 'list'
-
-    parent = fields.NodeID(default=NodeID.root_id)
-    tags = fields.Set(fields.String())
-    qid = fields.SmallUnsignedInteger()
-    sub = fields.Boolean(default=False)
-    pos_filter = fields.Object(PosFilter, default=PosFilter())
-
 
 class MsgCancelSub(MsgpackMsg):
     object_type = 'cancel_sub'
@@ -92,21 +83,6 @@ class MsgQueryError(MsgpackMsg):
     qid = fields.SmallUnsignedInteger()
     code = fields.String()
     msg = fields.String()
-
-
-# XXX nuke this
-class MsgObjGone(MsgpackMsg):
-    object_type = 'obj_gone'
-
-    qid = fields.SmallUnsignedInteger()
-
-
-class MsgListReply(MsgpackMsg):
-    object_type = 'list_reply'
-
-    objs = fields.List(fields.Object(Node))
-    gone = fields.List(fields.NodeID())
-    qid = fields.SmallUnsignedInteger()
 
 
 class MsgGet(MsgpackMsg):
@@ -146,6 +122,24 @@ class MsgGetBindata(MsgpackMsg):
 
 class MsgGetBindataReply(MsgpackMsg):
     object_type = 'get_bindata_reply'
+
+
+class MsgGetList(MsgpackMsg):
+    object_type = 'get_list'
+
+    parent = fields.NodeID(default=NodeID.root_id)
+    tags = fields.Set(fields.String())
+    qid = fields.SmallUnsignedInteger()
+    sub = fields.Boolean(default=False)
+    pos_filter = fields.Object(PosFilter, default=PosFilter())
+
+
+class MsgGetListReply(MsgpackMsg):
+    object_type = 'get_list_reply'
+
+    objs = fields.List(fields.Object(Node))
+    gone = fields.List(fields.NodeID())
+    qid = fields.SmallUnsignedInteger()
 
 
 class MsgListConnections(MsgpackMsg):

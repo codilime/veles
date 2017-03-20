@@ -13,6 +13,9 @@
 # limitations under the License.
 
 
+from veles.proto.node import PosFilter
+
+
 class AsyncNode:
     """
     A proxy class for a node available via an asynchronous connection.
@@ -58,6 +61,14 @@ class AsyncNode:
         """
         raise NotImplementedError
 
+    def get_list(self, tags=frozenset(), pos_filter=PosFilter()):
+        """
+        Fetches a list of children of this node, containing given
+        tags, and with pos_start/pos_end in the given ranges.
+        Returns an awaitable of list of AsyncNodes.
+        """
+        raise NotImplementedError
+
     def get_query(self, name, params, tracer=None):
         """
         Runs a query, returns an awaitable of the result.  ``tracer`` should
@@ -83,6 +94,12 @@ class AsyncNode:
         raise NotImplementedError
 
     def _del_sub_bindata(self, sub):
+        raise NotImplementedError
+
+    def _add_sub_list(self, sub):
+        raise NotImplementedError
+
+    def _del_sub_list(self, sub):
         raise NotImplementedError
 
     def _add_sub_query(self, sub):

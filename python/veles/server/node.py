@@ -15,7 +15,7 @@
 from veles.util.future import done_future, bad_future
 from veles.async_conn.node import AsyncNode
 from veles.proto.exceptions import ObjectGoneError, ObjectExistsError
-from veles.proto.node import Node
+from veles.proto.node import Node, PosFilter
 from veles.schema.nodeid import NodeID
 
 
@@ -34,7 +34,7 @@ class AsyncLocalNode(AsyncNode):
         self.parent = parent
         self.subs = set()
         self.data_subs = {}
-        self.listers = set()
+        self.list_subs = {}
 
     # getters
 
@@ -47,6 +47,13 @@ class AsyncLocalNode(AsyncNode):
         if self.node is None:
             return bad_future(ObjectGoneError())
         return done_future(self.conn.db.get_data(self.id, key))
+
+    def get_list(self, tags=frozenset(), pos_filter=PosFilter()):
+        if self.node is None and self != self.conn.root:
+            return bad_future(ObjectGoneError())
+        obj_ids = self.conn.db.list(self.id, tags, pos_filter)
+        objs = [self.conn.get_node_norefresh(x) for x in obj_ids]
+        return done_future(objs)
 
     # subscriptions
 
@@ -65,9 +72,35 @@ class AsyncLocalNode(AsyncNode):
         else:
             sub.error(ObjectGoneError())
 
+    def _send_subs_unparent(self):
+        if self.parent is not None:
+            for sub, objs in self.parent.list_subs.items():
+                if self in objs:
+                    objs.remove(self)
+                    sub.list_changed([], [self.id])
+
     def _send_subs(self):
         for sub in self.subs:
             self._send_sub(sub)
+        if self.parent is not None:
+            for sub, objs in self.parent.list_subs.items():
+                if sub.matches(self.node):
+                    objs.add(self)
+                    sub.list_changed([self], [])
+                elif self in objs:
+                    objs.remove(self)
+                    sub.list_changed([], [self.id])
+
+    def _add_sub_list(self, sub):
+        obj_ids = self.conn.db.list(self.id, sub.tags, sub.pos_filter)
+        objs = {self.conn.get_node_norefresh(x) for x in obj_ids}
+        self.list_subs[sub] = objs
+        self.conn.all_subs.add(sub)
+        sub.list_changed(objs, [])
+
+    def _del_sub_list(self, sub):
+        del self.list_subs[sub]
+        self.conn.all_subs.remove(sub)
 
     # data sub
 
@@ -102,7 +135,6 @@ class AsyncLocalNode(AsyncNode):
             return bad_future(ObjectExistsError())
         parent_id, parent = _resolve_obj(self.conn, parent)
         if parent.node is None and parent != self.conn.root:
-            print(parent, parent.node, self.conn.root)
             return bad_future(ObjectGoneError())
         node = Node(id=self.id, parent=parent_id, pos_start=pos[0],
                     pos_end=pos[1], tags=tags, attr=attr, data=set(data),
@@ -116,33 +148,28 @@ class AsyncLocalNode(AsyncNode):
             self.conn.db.set_bindata(node.id, key, start=0, data=val,
                                      truncate=False)
         self._send_subs()
+        for sub in self.list_subs:
+            sub.list_changed([], [])
         for key, subs in self.data_subs.items():
             data = self.conn.db.get_data(self.id, key)
             for sub in subs:
                 sub.data_changed(data)
-        for lister in self.parent.listers:
-            if lister.matches(self.node):
-                lister.list_changed([self], [])
-                lister.objs.add(self)
         return done_future(self)
 
     def delete(self):
         if self.node is not None:
             for oid in self.conn.db.list(self.id):
                 self.conn.get_node_norefresh(oid).delete()
-            self.db.delete(self.id)
+            self.conn.db.delete(self.id)
             self.node = None
+            self._send_subs_unparent()
             self.parent = None
             self._send_subs()
             for key, subs in self.data_subs.items():
                 for sub in subs:
                     sub.error(ObjectGoneError())
-            for lister in self.listers:
-                lister.obj_gone()
-            for lister in self.parent.listers:
-                if self in lister.objs:
-                    lister.list_changed([], [self.id])
-                    lister.objs.remove(self)
+            for sub in self.list_subs:
+                sub.error(ObjectGoneError())
         return done_future(None)
 
     def set_data(self, key, value):
