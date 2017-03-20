@@ -171,10 +171,16 @@ class ServerProto(asyncio.Protocol):
         raise NotImplementedError
 
     async def msg_delete(self, msg):
-        objs = msg.ids
-        for obj in objs:
-            self.conn.delete(obj)
-        if msg.rid is not None:
+        obj = self.conn.get_node_norefresh(msg.id)
+        try:
+            await obj.delete()
+        except VelesException as e:
+            self.send_msg(messages.MsgRequestError(
+                rid=msg.rid,
+                code=e.code,
+                msg=e.msg,
+            ))
+        else:
             self.send_msg(messages.MsgRequestAck(
                 rid=msg.rid,
             ))

@@ -62,9 +62,9 @@ class Client:
             print(pkt)
             raise Exception('weird reply to create')
 
-    def delete(self, objs):
+    def delete(self, obj):
         msg = messages.MsgDelete(
-            ids=objs,
+            id=obj,
             rid=0
         )
         self.sock.sendall(self.packer.pack(msg.dump()))

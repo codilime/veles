@@ -80,20 +80,6 @@ class AsyncLocalConnection(AsyncConnection):
         print("Conn {} gone.".format(conn.cid))
         self.conns[conn.cid] = None
 
-    def delete(self, obj_id):
-        obj = self.get_node_norefresh(obj_id)
-        if obj.node is None:
-            return
-        for oid in self.db.list(obj_id):
-            self.delete(oid)
-        self.db.delete(obj_id)
-        obj.clear_subs()
-        for lister in obj.parent.listers:
-            if obj in lister.objs:
-                lister.list_changed([], [obj_id])
-                lister.objs.remove(obj)
-        del self.objs[obj.node.id]
-
     def get_node_norefresh(self, obj_id):
         try:
             return self.objs[obj_id]

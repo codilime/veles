@@ -92,19 +92,30 @@ class AsyncLocalNode(AsyncNode):
                 lister.objs.add(self)
         return done_future(self)
 
+    def delete(self):
+        if self.node is not None:
+            for oid in self.conn.db.list(self.id):
+                self.conn.get_node_norefresh(oid).delete()
+            self.db.delete(self.id)
+            self.node = None
+            self.parent = None
+            self._send_subs()
+            for k, v in self.data_subs.items():
+                for sub in v:
+                    sub.obj_gone()
+            for lister in self.listers:
+                lister.obj_gone()
+            for lister in self.parent.listers:
+                if self in lister.objs:
+                    lister.list_changed([], [self.id])
+                    lister.objs.remove(self)
+        return done_future(None)
+
     # misc
 
     def send_data_subs(self, key, data):
         for sub in self.data_subs.get(key, ()):
             sub.data_changed(self, data)
-
-    def clear_subs(self):
-        self._send_subs()
-        for k, v in self.data_subs.items():
-            for sub in v:
-                sub.obj_gone()
-        for lister in self.listers:
-            lister.obj_gone()
 
     def remove_data_sub(self, sub):
         self.data_subs[sub.key].remove(sub)
