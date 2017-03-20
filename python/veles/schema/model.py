@@ -189,6 +189,7 @@ class {0} {{\\
 {1}  }}\\
   std::string object_type;\\
   {0}(std::string object_type) : object_type(object_type) {{}}\\
+  virtual ~{0}() {{}}\\
   virtual void msgpack_unpack(msgpack::object const& o) = 0;\\
   virtual void serialize(msgpack::packer<msgpack::sbuffer>& pac) = 0;\\
 }};\\
