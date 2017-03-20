@@ -127,6 +127,17 @@ class Client:
         )
         self.request(msg)
 
+    def set_bindata(self, obj, key, start, data, truncate=False):
+        msg = messages.MsgSetBinData(
+            id=obj,
+            rid=0,
+            key=key,
+            start=start,
+            data=data,
+            truncate=truncate,
+        )
+        self.request(msg)
+
     def get(self, obj):
         msg = messages.MsgGet(
             id=obj,
@@ -188,6 +199,42 @@ class Client:
                 raise VelesException(pkt.code, pkt.msg)
             else:
                 raise Exception('weird reply to get_data')
+
+    def get_bindata(self, obj, key, start=0, end=None):
+        msg = messages.MsgGetBinData(
+            id=obj,
+            qid=0,
+            key=key,
+            start=start,
+            end=end,
+        )
+        self.send_msg(msg)
+        pkt = self.getpkt()
+        if isinstance(pkt, messages.MsgGetBinDataReply) and pkt.qid == 0:
+            return pkt.data
+        elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
+            raise VelesException(pkt.code, pkt.msg)
+        else:
+            raise Exception('weird reply to get_bindata')
+
+    def get_bindata_sub(self, obj, key, start=0, end=None):
+        msg = messages.MsgGetBinData(
+            id=obj,
+            qid=0,
+            key=key,
+            start=start,
+            end=end,
+            sub=True,
+        )
+        self.send_msg(msg)
+        while True:
+            pkt = self.getpkt()
+            if isinstance(pkt, messages.MsgGetBinDataReply) and pkt.qid == 0:
+                yield pkt.data
+            elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
+                raise VelesException(pkt.code, pkt.msg)
+            else:
+                raise Exception('weird reply to get_bindata')
 
     def list(self, obj):
         msg = messages.MsgGetList(

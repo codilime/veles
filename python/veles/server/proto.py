@@ -25,6 +25,7 @@ from veles.proto import messages, msgpackwrap
 from veles.async_conn.subscriber import (
     BaseSubscriber,
     BaseSubscriberData,
+    BaseSubscriberBinData,
     BaseSubscriberList,
 )
 from veles.proto.exceptions import VelesException
@@ -62,6 +63,26 @@ class SubscriberData(BaseSubscriberData):
 
     def data_changed(self, data):
         self.proto.send_msg(messages.MsgGetDataReply(
+            qid=self.qid,
+            data=data
+        ))
+
+    def error(self, err):
+        self.proto.send_msg(messages.MsgQueryError(
+            qid=self.qid,
+            code=err.code,
+            msg=err.msg,
+        ))
+
+
+class SubscriberBinData(BaseSubscriberBinData):
+    def __init__(self, obj, key, start, end, proto, qid):
+        self.proto = proto
+        self.qid = qid
+        super().__init__(obj, key, start, end)
+
+    def bindata_changed(self, data):
+        self.proto.send_msg(messages.MsgGetBinDataReply(
             qid=self.qid,
             data=data
         ))
@@ -127,9 +148,10 @@ class ServerProto(asyncio.Protocol):
             'del_tag': self.msg_del_tag,
             'set_attr': self.msg_set_attr,
             'set_data': self.msg_set_data,
+            'set_bindata': self.msg_set_bindata,
             'get': self.msg_get,
             'get_data': self.msg_get_data,
-            'get_bin': self.msg_get_bin,
+            'get_bindata': self.msg_get_bindata,
             'get_list': self.msg_get_list,
             'mthd_run': self.msg_mthd_run,
             'unsub': self.msg_unsub,
@@ -210,6 +232,11 @@ class ServerProto(asyncio.Protocol):
         obj = self.conn.get_node_norefresh(msg.id)
         await self.do_request(msg, obj.set_data(msg.key, msg.data))
 
+    async def msg_set_bindata(self, msg):
+        obj = self.conn.get_node_norefresh(msg.id)
+        await self.do_request(msg, obj.set_bindata(
+            msg.key, msg.start, msg.data, msg.truncate))
+
     async def msg_get(self, msg):
         if msg.qid in self.subs:
             raise ProtocolError('qid_in_use', 'qid already in use')
@@ -251,6 +278,28 @@ class ServerProto(asyncio.Protocol):
                 ))
         else:
             self.subs[msg.qid] = SubscriberData(obj, msg.key, self, msg.qid)
+
+    async def msg_get_bindata(self, msg):
+        if msg.qid in self.subs:
+            raise ProtocolError('qid_in_use', 'qid already in use')
+        obj = self.conn.get_node_norefresh(msg.id)
+        if not msg.sub:
+            try:
+                data = await obj.get_bindata(msg.key, msg.start, msg.end)
+            except VelesException as e:
+                self.send_msg(messages.MsgQueryError(
+                    qid=msg.qid,
+                    code=e.code,
+                    msg=e.msg,
+                ))
+            else:
+                self.send_msg(messages.MsgGetBinDataReply(
+                    qid=msg.qid,
+                    data=data
+                ))
+        else:
+            self.subs[msg.qid] = SubscriberBinData(
+                obj, msg.key, msg.start, msg.end, self, msg.qid)
 
     async def msg_get_bin(self, msg):
         # XXX

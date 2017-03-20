@@ -116,12 +116,22 @@ class MsgGetDataReply(MsgpackMsg):
     data = fields.Any(optional=True)
 
 
-class MsgGetBindata(MsgpackMsg):
+class MsgGetBinData(MsgpackMsg):
     object_type = 'get_bindata'
 
+    qid = fields.SmallUnsignedInteger()
+    id = fields.NodeID()
+    sub = fields.Boolean(default=False)
+    key = fields.String()
+    start = fields.SmallUnsignedInteger()
+    end = fields.SmallUnsignedInteger(optional=True)
 
-class MsgGetBindataReply(MsgpackMsg):
+
+class MsgGetBinDataReply(MsgpackMsg):
     object_type = 'get_bindata_reply'
+
+    qid = fields.SmallUnsignedInteger()
+    data = fields.Binary()
 
 
 class MsgGetList(MsgpackMsg):
@@ -230,6 +240,17 @@ class MsgSetData(MsgpackMsg):
     id = fields.NodeID()
     key = fields.String()
     data = fields.Any(optional=True)
+
+
+class MsgSetBinData(MsgpackMsg):
+    object_type = 'set_bindata'
+
+    rid = fields.SmallUnsignedInteger()
+    id = fields.NodeID()
+    key = fields.String()
+    start = fields.SmallUnsignedInteger(default=0)
+    data = fields.Binary()
+    truncate = fields.Boolean(default=False)
 
 
 class MsgRequestAck(MsgpackMsg):

@@ -15,6 +15,7 @@
 from veles.util.future import done_future, bad_future
 from veles.async_conn.node import AsyncNode
 from veles.proto.exceptions import (
+    VelesException,
     ObjectGoneError,
     ObjectExistsError,
     ParentCycleError,
@@ -38,6 +39,7 @@ class AsyncLocalNode(AsyncNode):
         self.parent = parent
         self.subs = set()
         self.data_subs = {}
+        self.bindata_subs = {}
         self.list_subs = {}
 
     # getters
@@ -51,6 +53,11 @@ class AsyncLocalNode(AsyncNode):
         if self.node is None:
             return bad_future(ObjectGoneError())
         return done_future(self.conn.db.get_data(self.id, key))
+
+    def get_bindata(self, key, start, end):
+        if self.node is None:
+            return bad_future(ObjectGoneError())
+        return done_future(self.conn.db.get_bindata(self.id, key, start, end))
 
     def get_list(self, tags=frozenset(), pos_filter=PosFilter()):
         if self.node is None and self != self.conn.root:
@@ -131,6 +138,36 @@ class AsyncLocalNode(AsyncNode):
         for sub in self.data_subs.get(key, ()):
             sub.data_changed(data)
 
+    # bindata sub
+
+    def _add_sub_bindata(self, sub):
+        if sub.key not in self.bindata_subs:
+            self.bindata_subs[sub.key] = set()
+        self.bindata_subs[sub.key].add(sub)
+        self.conn.all_subs.add(sub)
+        self._send_sub_bindata(sub)
+
+    def _del_sub_bindata(self, sub):
+        self.bindata_subs[sub.key].remove(sub)
+        if not self.bindata_subs[sub.key]:
+            del self.bindata_subs[sub.key]
+        self.conn.all_subs.remove(sub)
+
+    def _send_sub_bindata(self, sub):
+        if self.node is None:
+            sub.error(ObjectGoneError())
+        else:
+            sub.bindata_changed(self.conn.db.get_bindata(
+                self.id, sub.key, sub.start, sub.end))
+
+    def _send_subs_bindata(self, key, start, end):
+        for sub in self.bindata_subs.get(key, ()):
+            if sub.end is not None and sub.end <= start:
+                continue
+            if end is not None and end <= sub.start:
+                continue
+            self._send_sub_bindata(sub)
+
     # mutators
 
     def _create(self, parent=None, pos=(None, None), tags=set(), attr={},
@@ -158,6 +195,9 @@ class AsyncLocalNode(AsyncNode):
             data = self.conn.db.get_data(self.id, key)
             for sub in subs:
                 sub.data_changed(data)
+        for key, subs in self.bindata_subs.items():
+            for sub in subs:
+                self._send_sub_bindata(sub)
         return done_future(self)
 
     def delete(self):
@@ -170,6 +210,9 @@ class AsyncLocalNode(AsyncNode):
             self.parent = None
             self._send_subs()
             for key, subs in self.data_subs.items():
+                for sub in subs:
+                    sub.error(ObjectGoneError())
+            for key, subs in self.bindata_subs.items():
                 for sub in subs:
                     sub.error(ObjectGoneError())
             for sub in self.list_subs:
@@ -255,5 +298,27 @@ class AsyncLocalNode(AsyncNode):
             self._send_subs()
         elif value is not None and key not in self.node.data:
             self.node.data.add(key)
+            self._send_subs()
+        return done_future(None)
+
+    def set_bindata(self, key, start, value, truncate=False):
+        if self.node is None:
+            return bad_future(ObjectGoneError())
+        try:
+            self.conn.db.set_bindata(self.id, key, start, value, truncate)
+        except VelesException as e:
+            return bad_future(e)
+        old_len = self.node.bindata.get(key, 0)
+        if truncate:
+            self._send_subs_bindata(key, start, None)
+            new_len = start + len(value)
+        else:
+            self._send_subs_bindata(key, start, start + len(value))
+            new_len = max(start + len(value), old_len)
+        if old_len != new_len:
+            if new_len:
+                self.node.bindata[key] = new_len
+            else:
+                del self.node.bindata[key]
             self._send_subs()
         return done_future(None)
