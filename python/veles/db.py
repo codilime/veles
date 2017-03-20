@@ -384,6 +384,8 @@ class Database:
             """
             args = ()
         for tag in tags:
+            if not isinstance(tag, six.text_type):
+                raise TypeError('tag is not a string')
             stmt += """ AND EXISTS (
                 SELECT 1 FROM object_tag
                 WHERE obj_id = id AND name = ?

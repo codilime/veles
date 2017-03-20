@@ -26,6 +26,11 @@ from veles.proto.node import Node
 from veles.schema.nodeid import NodeID
 from veles.proto.exceptions import WritePastEndError
 
+from veles.tests.proto.test_pos_filter import (
+    NODES as LIST_NODES,
+    CASES as LIST_CASES,
+)
+
 
 class TestDatabase(unittest.TestCase):
     def test_simple(self):
@@ -442,4 +447,40 @@ class TestDatabase(unittest.TestCase):
         with self.assertRaises(TypeError):
             db.get_bindata(node.id, 123)
 
-    # XXX list
+    def test_list_simple(self):
+        db = Database(None)
+        n1 = Node(id=NodeID(), tags={'aaa', 'bbb'})
+        n2 = Node(id=NodeID(), tags={'aaa', 'ccc'})
+        n1_1 = Node(id=NodeID(), parent=n1.id, tags={'ddd'})
+        n1_2 = Node(id=NodeID(), parent=n1.id, tags={'ddd', 'eee'})
+        for n in [n1, n2, n1_1, n1_2]:
+            db.create(n)
+        self.assertEqual(set(db.list(None)), {n1.id, n2.id})
+        self.assertEqual(set(db.list(None, {'aaa'})), {n1.id, n2.id})
+        self.assertEqual(set(db.list(None, {'bbb'})), {n1.id})
+        self.assertEqual(set(db.list(None, {'ccc'})), {n2.id})
+        self.assertEqual(set(db.list(None, {'aaa', 'ccc'})), {n2.id})
+        self.assertEqual(set(db.list(None, {'ddd'})), set())
+        self.assertEqual(set(db.list(None, {'aaa', 'ddd'})), set())
+        self.assertEqual(set(db.list(n1.id)), {n1_1.id, n1_2.id})
+        self.assertEqual(set(db.list(n1.id, {'ddd'})), {n1_1.id, n1_2.id})
+        self.assertEqual(set(db.list(n1.id, {'eee'})), {n1_2.id})
+        self.assertEqual(set(db.list(n1.id, {'ddd', 'eee'})), {n1_2.id})
+        self.assertEqual(set(db.list(n1.id, {'aaa'})), set())
+        self.assertEqual(set(db.list(n1.id, {'aaa', 'ddd'})), set())
+        self.assertEqual(set(db.list(n2.id)), set())
+        self.assertEqual(set(db.list(n2.id, {'aaa', 'ddd'})), set())
+        self.assertEqual(set(db.list(n1_1.id)), set())
+        self.assertEqual(set(db.list(n1_2.id)), set())
+
+    def test_list_pos(self):
+        db = Database(None)
+        for node in LIST_NODES:
+            db.create(node)
+        for fil, res in LIST_CASES:
+            dbres = db.list(None, pos_filter=fil)
+            for i, node in enumerate(LIST_NODES):
+                if node.id in dbres:
+                    self.assertIn(i, res)
+                else:
+                    self.assertNotIn(i, res)
