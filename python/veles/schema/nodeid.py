@@ -46,10 +46,14 @@ class NodeID(pep487.NewObject):
         return self._bytes
 
     def __str__(self):
+        if self == self.root_id:
+            return 'root'
         return binascii.b2a_hex(self.bytes).decode('ascii')
 
     def __repr__(self):
-        return 'NodeID("{}")'.format(str(self))
+        if self == self.root_id:
+            return 'NodeID.root_id'
+        return 'NodeID.from_hex("{}")'.format(str(self))
 
     def __eq__(self, other):
         if isinstance(other, NodeID):
