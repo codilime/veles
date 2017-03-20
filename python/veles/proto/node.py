@@ -17,6 +17,25 @@ from veles.schema.nodeid import NodeID
 
 
 class Node(model.Model):
+    """
+    Stores the lightweight data associated with a node, and an index of heavy
+    data (which has to be downloaded separately).  This includes:
+
+    - ``id``: self-descriptive.  The ID of a node cannot be changed.
+    - ``parent``: the node parent's ID.
+    - ``pos_start`` and ``pos_end``: for nodes where it makes sense (mostly
+      chunka), the range of positions occupied by this object.  ``pos_start``
+      is inclusive, while ``pos_end`` is exclusive.
+    - ``tags``: an unordered set of tags, which are simple strings.
+    - ``attr``: a string-keyed dict of attributes with arbitrary data.
+    - ``data``: an unordered set of keys with non-null heavyweight data.
+      The data has to be downloaded separately.
+    - ``bindata``: a dict with an index of available bindata.  The keys in
+      this dict correspond to bindata keys, and the values are size of the
+      corresponding binary data in bytes.  The actual bindata has to
+      be downloaded separately.
+    """
+
     id = fields.NodeID()
     parent = fields.NodeID(default=NodeID.root_id)
     pos_start = fields.Integer(optional=True)
