@@ -28,11 +28,12 @@ from veles.async_conn.subscriber import (
     BaseSubscriberBinData,
     BaseSubscriberList,
 )
-from veles.proto.exceptions import VelesException
-
-
-class ProtocolError(Exception):
-    pass
+from veles.proto.exceptions import (
+    VelesException,
+    UnknownSubscriptionError,
+    SubscriptionInUseError,
+    SchemaError,
+)
 
 
 class Subscriber(BaseSubscriber):
@@ -153,23 +154,22 @@ class ServerProto(asyncio.Protocol):
             'get_data': self.msg_get_data,
             'get_bindata': self.msg_get_bindata,
             'get_list': self.msg_get_list,
+            'cancel_subscription': self.msg_cancel_subscription,
             'mthd_run': self.msg_mthd_run,
-            'unsub': self.msg_unsub,
             'mthd_done': self.msg_mthd_done,
             'proc_done': self.msg_proc_done,
             'mthd_reg': self.msg_mthd_reg,
             'proc_reg': self.msg_proc_reg,
         }
         try:
+            if msg.object_type not in handlers:
+                raise SchemaError('unhandled message type')
             await handlers[msg.object_type](msg)
-        except ProtocolError as e:
-            self.protoerr(e.args[0], e.args[1])
-
-    def protoerr(self, code, msg):
-        self.send_msg(messages.MsgProtoError(
-            code=code,
-            error=msg,
-        ))
+        except VelesException as e:
+            self.send_msg(messages.MsgProtoError(
+                code=e.code,
+                msg=e.msg,
+            ))
 
     def connection_lost(self, ex):
         for qid, sub in self.subs.items():
@@ -239,7 +239,7 @@ class ServerProto(asyncio.Protocol):
 
     async def msg_get(self, msg):
         if msg.qid in self.subs:
-            raise ProtocolError('qid_in_use', 'qid already in use')
+            raise SubscriptionInUseError()
         obj = self.conn.get_node_norefresh(msg.id)
         if not msg.sub:
             try:
@@ -260,7 +260,7 @@ class ServerProto(asyncio.Protocol):
 
     async def msg_get_data(self, msg):
         if msg.qid in self.subs:
-            raise ProtocolError('qid_in_use', 'qid already in use')
+            raise SubscriptionInUseError()
         obj = self.conn.get_node_norefresh(msg.id)
         if not msg.sub:
             try:
@@ -281,7 +281,7 @@ class ServerProto(asyncio.Protocol):
 
     async def msg_get_bindata(self, msg):
         if msg.qid in self.subs:
-            raise ProtocolError('qid_in_use', 'qid already in use')
+            raise SubscriptionInUseError()
         obj = self.conn.get_node_norefresh(msg.id)
         if not msg.sub:
             try:
@@ -301,13 +301,9 @@ class ServerProto(asyncio.Protocol):
             self.subs[msg.qid] = SubscriberBinData(
                 obj, msg.key, msg.start, msg.end, self, msg.qid)
 
-    async def msg_get_bin(self, msg):
-        # XXX
-        raise NotImplementedError
-
     async def msg_get_list(self, msg):
         if msg.qid in self.subs:
-            raise ProtocolError('qid_in_use', 'qid already in use')
+            raise SubscriptionInUseError()
         parent = self.conn.get_node_norefresh(msg.parent)
         if not msg.sub:
             try:
@@ -327,14 +323,15 @@ class ServerProto(asyncio.Protocol):
             self.subs[msg.qid] = SubscriberList(
                 parent, msg.tags, msg.pos_filter, self, msg.qid)
 
-    async def msg_unsub(self, msg):
-        qid = msg.qid
-        if qid in self.subs:
-            self.subs[qid].cancel()
-            del self.subs[qid]
-        self.send_msg(messages.MsgSubCancelled(
-            qid=qid,
-        ))
+    async def msg_cancel_subscription(self, msg):
+        if msg.qid in self.subs:
+            self.subs[msg.qid].cancel()
+            del self.subs[msg.qid]
+            self.send_msg(messages.MsgSubscriptionCancelled(
+                qid=msg.qid,
+            ))
+        else:
+            raise UnknownSubscriptionError()
 
     async def msg_mthd_run(self, msg):
         # XXX

@@ -21,6 +21,7 @@ class MsgpackMsg(model.PolymorphicModel):
     pass
 
 
+# XXX NYI
 class MsgConnect(MsgpackMsg):
     object_type = 'connect'
 
@@ -32,6 +33,7 @@ class MsgConnect(MsgpackMsg):
     key = fields.String(optional=True)
 
 
+# XXX NYI
 class MsgConnected(MsgpackMsg):
     object_type = 'connected'
 
@@ -40,6 +42,7 @@ class MsgConnected(MsgpackMsg):
     server_version = fields.String()
 
 
+# XXX NYI
 class MsgConnError(MsgpackMsg):
     object_type = 'conn_error'
 
@@ -50,14 +53,16 @@ class MsgConnError(MsgpackMsg):
 class MsgProtoError(MsgpackMsg):
     object_type = 'proto_error'
 
-    code = fields.Integer()
+    code = fields.String()
     msg = fields.String()
 
 
+# XXX NYI
 class MsgRegisterMethod(MsgpackMsg):
     object_type = 'register_mthd'
 
 
+# XXX NYI
 class MsgRegisterTrigger(MsgpackMsg):
     object_type = 'register_trigger'
 
@@ -65,14 +70,14 @@ class MsgRegisterTrigger(MsgpackMsg):
 # queries and subscriptions
 
 
-class MsgCancelSub(MsgpackMsg):
-    object_type = 'cancel_sub'
+class MsgCancelSubscription(MsgpackMsg):
+    object_type = 'cancel_subscription'
 
     qid = fields.SmallUnsignedInteger()
 
 
-class MsgSubCancelled(MsgpackMsg):
-    object_type = 'sub_cancelled'
+class MsgSubscriptionCancelled(MsgpackMsg):
+    object_type = 'subscription_cancelled'
 
     qid = fields.SmallUnsignedInteger()
 
@@ -152,18 +157,22 @@ class MsgGetListReply(MsgpackMsg):
     qid = fields.SmallUnsignedInteger()
 
 
+# XXX NYI
 class MsgListConnections(MsgpackMsg):
     object_type = 'list_connections'
 
 
+# XXX NYI
 class MsgConnectionsReply(MsgpackMsg):
     object_type = 'connections_reply'
 
 
+# XXX NYI
 class MsgListRegistry(MsgpackMsg):
     object_type = 'list_registry'
 
 
+# XXX NYI
 class MsgRegistryReply(MsgpackMsg):
     object_type = 'registry_reply'
 
@@ -269,37 +278,46 @@ class MsgRequestError(MsgpackMsg):
 
 # methods & triggers
 
+# XXX NYI
 class MsgMethodRun(MsgpackMsg):
     object_type = 'mthd_run'
 
 
+# XXX NYI
 class MsgMethodRes(MsgpackMsg):
     object_type = 'mthd_res'
 
 
+# XXX NYI
 class MsgMethodError(MsgpackMsg):
     object_type = 'mthd_err'
 
 
+# XXX NYI
 class MsgPluginMethodRun(MsgpackMsg):
     object_type = 'plugin_mthd_run'
 
 
+# XXX NYI
 class MsgPluginMethodDone(MsgpackMsg):
     object_type = 'plugin_mthd_done'
 
 
+# XXX NYI
 class MsgPluginMethodError(MsgpackMsg):
     object_type = 'plugin_mthd_err'
 
 
+# XXX NYI
 class MsgPluginTriggerRun(MsgpackMsg):
     object_type = 'plugin_trigger_run'
 
 
+# XXX NYI
 class MsgPluginTriggerDone(MsgpackMsg):
     object_type = 'plugin_trigger_done'
 
 
+# XXX NYI
 class MsgPluginTriggerError(MsgpackMsg):
     object_type = 'plugin_trigger_err'

@@ -49,3 +49,13 @@ class SchemaError(VelesException):
 class ParentCycleError(VelesException):
     code = 'parent_cycle'
     msg = "Parent cycle would be created"
+
+
+class UnknownSubscriptionError(VelesException):
+    code = 'unknown_subscription'
+    msg = "Unknown subscription id used"
+
+
+class SubscriptionInUseError(VelesException):
+    code = 'subscription_in_use'
+    msg = "Subscription id already in use"
