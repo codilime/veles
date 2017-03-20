@@ -14,6 +14,7 @@
 
 import sys
 import types
+from collections import OrderedDict
 
 import six
 
@@ -50,6 +51,11 @@ if sys.version_info < (3, 6):
         @classmethod
         def __init_subclass__(cls, **kwargs):
             pass
+
+        def __prepare__(metacls, name, bases):
+            # Never, ever depend on it apart from code generation which must
+            # be run on Python3
+            return OrderedDict()
 
 else:
     NewType = type

@@ -14,9 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from veles.proto import node, messages
+import six
 
 
 def generate_cpp_code():
+    if six.PY2:
+        raise RuntimeError('C++ code can only be generated on Python 3.x')
     code = '#define MSGPACK_CLASSES_DEFS \\\n'
     classes_to_generate = [node.Node]
     poly_classes = [messages.MsgpackMsg]
