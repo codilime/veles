@@ -51,7 +51,7 @@ class Client:
             raise VelesException(pkt.code, pkt.msg)
         else:
             print(pkt)
-            raise Exception('weird reply to create')
+            raise Exception('weird reply to request')
 
     def create(self, parent, *, tags=set(), attr={}, data={}, bindata={},
                pos=(None, None)):
