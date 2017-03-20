@@ -25,6 +25,7 @@ from veles.proto import messages, msgpackwrap
 from .conn import BaseLister
 from veles.async_conn.subscriber import (
     BaseSubscriber,
+    BaseSubscriberData,
 )
 from veles.proto.exceptions import VelesException
 
@@ -53,23 +54,24 @@ class Subscriber(BaseSubscriber):
         ))
 
 
-class GetDataSub:
-    def __init__(self, proto, qid, obj, key):
+class SubscriberData(BaseSubscriberData):
+    def __init__(self, obj, key, proto, qid):
         self.proto = proto
         self.qid = qid
-        self.obj = obj
-        self.key = key
-
-    def cancel(self):
-        self.obj.remove_data_sub(self)
+        super().__init__(obj, key)
 
     def data_changed(self, data):
-        self.proto.send_obj_data_reply(self.qid, data)
+        self.proto.send_msg(messages.MsgGetDataReply(
+            qid=self.qid,
+            data=data
+        ))
 
-    def obj_gone(self):
-        if self.qid in self.proto.subs:
-            del self.proto.subs[self.qid]
-        self.proto.send_obj_gone(self.qid)
+    def error(self, err):
+        self.proto.send_msg(messages.MsgQueryError(
+            qid=self.qid,
+            code=err.code,
+            msg=err.msg,
+        ))
 
 
 class Lister(BaseLister):
@@ -112,8 +114,8 @@ class ServerProto(asyncio.Protocol):
     async def handle_msg(self, msg):
         handlers = {
             'create': self.msg_create,
-            'modify': self.msg_modify,
             'delete': self.msg_delete,
+            'set_data': self.msg_set_data,
             'list': self.msg_list,
             'get': self.msg_get,
             'get_data': self.msg_get_data,
@@ -166,14 +168,25 @@ class ServerProto(asyncio.Protocol):
                 rid=msg.rid,
             ))
 
-    async def msg_modify(self, msg):
-        # XXX
-        raise NotImplementedError
-
     async def msg_delete(self, msg):
         obj = self.conn.get_node_norefresh(msg.id)
         try:
             await obj.delete()
+        except VelesException as e:
+            self.send_msg(messages.MsgRequestError(
+                rid=msg.rid,
+                code=e.code,
+                msg=e.msg,
+            ))
+        else:
+            self.send_msg(messages.MsgRequestAck(
+                rid=msg.rid,
+            ))
+
+    async def msg_set_data(self, msg):
+        obj = self.conn.get_node_norefresh(msg.id)
+        try:
+            await obj.set_data(msg.key, msg.data)
         except VelesException as e:
             self.send_msg(messages.MsgRequestError(
                 rid=msg.rid,
@@ -217,24 +230,25 @@ class ServerProto(asyncio.Protocol):
             self.subs[msg.qid] = Subscriber(obj, self, msg.qid)
 
     async def msg_get_data(self, msg):
-        obj = msg.id
-        sub = msg.sub
-        qid = msg.qid
-        key = msg.key
-        if qid in self.subs:
+        if msg.qid in self.subs:
             raise ProtocolError('qid_in_use', 'qid already in use')
-        obj = self.conn.get_node_norefresh(obj)
-        if obj is None:
-            self.send_msg(messages.MsgObjGone(
-                qid=qid,
-            ))
+        obj = self.conn.get_node_norefresh(msg.id)
+        if not msg.sub:
+            try:
+                data = await obj.get_data(msg.key)
+            except VelesException as e:
+                self.send_msg(messages.MsgQueryError(
+                    qid=msg.qid,
+                    code=e.code,
+                    msg=e.msg,
+                ))
+            else:
+                self.send_msg(messages.MsgGetDataReply(
+                    qid=msg.qid,
+                    data=data
+                ))
         else:
-            data = self.conn.get_data(obj, key)
-            self.send_obj_data_reply(qid, data)
-            if sub:
-                sub = GetDataSub(self, qid, obj, key)
-                self.subs[qid] = sub
-                obj.add_data_sub(sub)
+            self.subs[msg.qid] = SubscriberData(obj, msg.key, self, msg.qid)
 
     async def msg_get_bin(self, msg):
         # XXX
@@ -268,15 +282,6 @@ class ServerProto(asyncio.Protocol):
     async def msg_proc_reg(self, msg):
         # XXX
         raise NotImplementedError
-
-    def send_obj_data_reply(self, qid, data):
-        self.send_msg(messages.MsgGetDataReply(qid=qid, data=data))
-
-    def send_obj_reply(self, qid, obj):
-        self.send_msg(messages.MsgGetReply(
-            qid=qid,
-            obj=obj.node,
-        ))
 
     def send_list_reply(self, qid, new, gone):
         self.send_msg(messages.MsgListReply(

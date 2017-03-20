@@ -137,7 +137,7 @@ class MsgGetDataReply(MsgpackMsg):
     object_type = 'get_data_reply'
 
     qid = fields.SmallUnsignedInteger()
-    data = fields.Any()
+    data = fields.Any(optional=True)
 
 
 class MsgGetBindata(MsgpackMsg):
@@ -180,15 +180,20 @@ class MsgCreate(MsgpackMsg):
     bindata = fields.Map(fields.String(), fields.Binary())
 
 
-class MsgModify(MsgpackMsg):
-    object_type = 'modify'
-
-
 class MsgDelete(MsgpackMsg):
     object_type = 'delete'
 
     rid = fields.SmallUnsignedInteger()
     id = fields.NodeID()
+
+
+class MsgSetData(MsgpackMsg):
+    object_type = 'set_data'
+
+    rid = fields.SmallUnsignedInteger()
+    id = fields.NodeID()
+    key = fields.String()
+    data = fields.Any(optional=True)
 
 
 class MsgRequestAck(MsgpackMsg):
