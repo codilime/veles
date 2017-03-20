@@ -14,7 +14,11 @@
 
 from veles.util.future import done_future, bad_future
 from veles.async_conn.node import AsyncNode
-from veles.proto.exceptions import ObjectGoneError, ObjectExistsError
+from veles.proto.exceptions import (
+    ObjectGoneError,
+    ObjectExistsError,
+    ParentCycleError,
+)
 from veles.proto.node import Node, PosFilter
 from veles.schema.nodeid import NodeID
 
@@ -170,6 +174,75 @@ class AsyncLocalNode(AsyncNode):
                     sub.error(ObjectGoneError())
             for sub in self.list_subs:
                 sub.error(ObjectGoneError())
+        return done_future(None)
+
+    def set_parent(self, parent):
+        if self.node is None:
+            return bad_future(ObjectGoneError())
+        parent_id, parent = _resolve_obj(self.conn, parent)
+        if parent.node is None and parent != self.conn.root:
+            return bad_future(ObjectGoneError())
+        if parent.id != self.parent.id:
+            node = parent
+            while node.id != NodeID.root_id:
+                if node.id == self.id:
+                    return bad_future(ParentCycleError())
+                node = node.parent
+            self.conn.db.set_parent(self.id, parent_id)
+            self._send_subs_unparent()
+            self.node.parent = parent_id
+            self.parent = parent
+            self._send_subs()
+        return done_future(None)
+
+    def set_pos(self, start, end):
+        if not isinstance(start, int) and start is not None:
+            raise TypeError('start must be int')
+        if not isinstance(end, int) and end is not None:
+            raise TypeError('end must be int')
+        if self.node is None:
+            return bad_future(ObjectGoneError())
+        if start != self.node.pos_start or end != self.node.pos_end:
+            self.conn.db.set_pos(self.id, start, end)
+            self.node.pos_start = start
+            self.node.pos_end = end
+            self._send_subs()
+        return done_future(None)
+
+    def add_tag(self, tag):
+        if not isinstance(tag, str):
+            raise TypeError('tag must be str')
+        if self.node is None:
+            return bad_future(ObjectGoneError())
+        if tag not in self.node.tags:
+            self.conn.db.add_tag(self.id, tag)
+            self.node.tags.add(tag)
+            self._send_subs()
+        return done_future(None)
+
+    def del_tag(self, tag):
+        if not isinstance(tag, str):
+            raise TypeError('tag must be str')
+        if self.node is None:
+            return bad_future(ObjectGoneError())
+        if tag in self.node.tags:
+            self.conn.db.del_tag(self.id, tag)
+            self.node.tags.remove(tag)
+            self._send_subs()
+        return done_future(None)
+
+    def set_attr(self, key, value):
+        if not isinstance(key, str):
+            raise TypeError('key must be str')
+        if self.node is None:
+            return bad_future(ObjectGoneError())
+        if self.node.attr.get(key) != value:
+            self.conn.db.set_attr(self.id, key, value)
+            if value is None:
+                del self.node.attr[key]
+            else:
+                self.node.attr[key] = value
+            self._send_subs()
         return done_future(None)
 
     def set_data(self, key, value):

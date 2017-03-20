@@ -44,3 +44,8 @@ class WritePastEndError(VelesException):
 class SchemaError(VelesException):
     code = 'schema_error'
     msg = "Schema violation"
+
+
+class ParentCycleError(VelesException):
+    code = 'parent_cycle'
+    msg = "Parent cycle would be created"

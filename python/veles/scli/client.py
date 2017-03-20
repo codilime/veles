@@ -76,6 +76,48 @@ class Client:
         )
         self.request(msg)
 
+    def set_parent(self, obj, parent):
+        msg = messages.MsgSetParent(
+            id=obj,
+            parent=parent,
+            rid=0
+        )
+        self.request(msg)
+
+    def set_pos(self, obj, start, end):
+        msg = messages.MsgSetPos(
+            id=obj,
+            pos_start=start,
+            pos_end=end,
+            rid=0
+        )
+        self.request(msg)
+
+    def add_tag(self, obj, tag):
+        msg = messages.MsgAddTag(
+            id=obj,
+            tag=tag,
+            rid=0
+        )
+        self.request(msg)
+
+    def del_tag(self, obj, tag):
+        msg = messages.MsgDelTag(
+            id=obj,
+            tag=tag,
+            rid=0
+        )
+        self.request(msg)
+
+    def set_attr(self, obj, key, data):
+        msg = messages.MsgSetAttr(
+            id=obj,
+            key=key,
+            data=data,
+            rid=0
+        )
+        self.request(msg)
+
     def set_data(self, obj, key, data):
         msg = messages.MsgSetData(
             id=obj,

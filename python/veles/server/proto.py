@@ -121,6 +121,11 @@ class ServerProto(asyncio.Protocol):
         handlers = {
             'create': self.msg_create,
             'delete': self.msg_delete,
+            'set_parent': self.msg_set_parent,
+            'set_pos': self.msg_set_pos,
+            'add_tag': self.msg_add_tag,
+            'del_tag': self.msg_del_tag,
+            'set_attr': self.msg_set_attr,
             'set_data': self.msg_set_data,
             'get': self.msg_get,
             'get_data': self.msg_get_data,
@@ -152,17 +157,9 @@ class ServerProto(asyncio.Protocol):
     def send_msg(self, msg):
         self.transport.write(self.packer.pack(msg.dump()))
 
-    async def msg_create(self, msg):
+    async def do_request(self, msg, req):
         try:
-            await self.conn.create(
-                msg.id,
-                msg.parent,
-                tags=msg.tags,
-                attr=msg.attr,
-                data=msg.data,
-                bindata=msg.bindata,
-                pos=(msg.pos_start, msg.pos_end),
-            )[1]
+            await req
         except VelesException as e:
             self.send_msg(messages.MsgRequestError(
                 rid=msg.rid,
@@ -173,36 +170,45 @@ class ServerProto(asyncio.Protocol):
             self.send_msg(messages.MsgRequestAck(
                 rid=msg.rid,
             ))
+
+    async def msg_create(self, msg):
+        await self.do_request(msg, self.conn.create(
+            msg.id,
+            msg.parent,
+            tags=msg.tags,
+            attr=msg.attr,
+            data=msg.data,
+            bindata=msg.bindata,
+            pos=(msg.pos_start, msg.pos_end),
+        )[1])
 
     async def msg_delete(self, msg):
         obj = self.conn.get_node_norefresh(msg.id)
-        try:
-            await obj.delete()
-        except VelesException as e:
-            self.send_msg(messages.MsgRequestError(
-                rid=msg.rid,
-                code=e.code,
-                msg=e.msg,
-            ))
-        else:
-            self.send_msg(messages.MsgRequestAck(
-                rid=msg.rid,
-            ))
+        await self.do_request(msg, obj.delete())
+
+    async def msg_set_parent(self, msg):
+        obj = self.conn.get_node_norefresh(msg.id)
+        await self.do_request(msg, obj.set_parent(msg.parent))
+
+    async def msg_set_pos(self, msg):
+        obj = self.conn.get_node_norefresh(msg.id)
+        await self.do_request(msg, obj.set_pos(msg.pos_start, msg.pos_end))
+
+    async def msg_add_tag(self, msg):
+        obj = self.conn.get_node_norefresh(msg.id)
+        await self.do_request(msg, obj.add_tag(msg.tag))
+
+    async def msg_del_tag(self, msg):
+        obj = self.conn.get_node_norefresh(msg.id)
+        await self.do_request(msg, obj.del_tag(msg.tag))
+
+    async def msg_set_attr(self, msg):
+        obj = self.conn.get_node_norefresh(msg.id)
+        await self.do_request(msg, obj.set_attr(msg.key, msg.data))
 
     async def msg_set_data(self, msg):
         obj = self.conn.get_node_norefresh(msg.id)
-        try:
-            await obj.set_data(msg.key, msg.data)
-        except VelesException as e:
-            self.send_msg(messages.MsgRequestError(
-                rid=msg.rid,
-                code=e.code,
-                msg=e.msg,
-            ))
-        else:
-            self.send_msg(messages.MsgRequestAck(
-                rid=msg.rid,
-            ))
+        await self.do_request(msg, obj.set_data(msg.key, msg.data))
 
     async def msg_get(self, msg):
         if msg.qid in self.subs:

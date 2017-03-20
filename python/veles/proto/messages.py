@@ -181,6 +181,48 @@ class MsgDelete(MsgpackMsg):
     id = fields.NodeID()
 
 
+class MsgSetParent(MsgpackMsg):
+    object_type = 'set_parent'
+
+    rid = fields.SmallUnsignedInteger()
+    id = fields.NodeID()
+    parent = fields.NodeID(default=NodeID.root_id)
+
+
+class MsgSetPos(MsgpackMsg):
+    object_type = 'set_pos'
+
+    rid = fields.SmallUnsignedInteger()
+    id = fields.NodeID()
+    pos_start = fields.Integer(optional=True)
+    pos_end = fields.Integer(optional=True)
+
+
+class MsgAddTag(MsgpackMsg):
+    object_type = 'add_tag'
+
+    rid = fields.SmallUnsignedInteger()
+    id = fields.NodeID()
+    tag = fields.String()
+
+
+class MsgDelTag(MsgpackMsg):
+    object_type = 'del_tag'
+
+    rid = fields.SmallUnsignedInteger()
+    id = fields.NodeID()
+    tag = fields.String()
+
+
+class MsgSetAttr(MsgpackMsg):
+    object_type = 'set_attr'
+
+    rid = fields.SmallUnsignedInteger()
+    id = fields.NodeID()
+    key = fields.String()
+    data = fields.Any(optional=True)
+
+
 class MsgSetData(MsgpackMsg):
     object_type = 'set_data'
 
