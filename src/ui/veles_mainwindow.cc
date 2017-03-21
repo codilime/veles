@@ -40,6 +40,56 @@ namespace veles {
 namespace ui {
 
 /*****************************************************************************/
+/* ConnectionManager */
+/*****************************************************************************/
+
+ConnectionManager::ConnectionManager(QWidget* parent)
+    : QObject(parent), server_process_(nullptr) {
+  connection_dialog_ = new ConnectionDialog(parent);
+  show_connection_dialog_action_ = new QAction("Connect...", this);
+  disconnect_action_ = new QAction("Disconnect", this);
+  kill_locally_created_server_action_ = new QAction(
+      "Kill locally created server", this);
+  kill_locally_created_server_action_->setEnabled(false);
+  disconnect_action_->setEnabled(false);
+
+  connect(show_connection_dialog_action_, &QAction::triggered,
+      connection_dialog_, &QDialog::show);
+}
+
+ConnectionManager::~ConnectionManager() {
+  connection_dialog_->deleteLater();
+}
+
+QAction* ConnectionManager::showConnectionDialogAction() {
+  return show_connection_dialog_action_;
+}
+
+QAction* ConnectionManager::disconnectAction() {
+  return disconnect_action_;
+}
+
+QAction* ConnectionManager::killLocallyCreatedServerAction() {
+  return kill_locally_created_server_action_;
+}
+
+void ConnectionManager::locallyCreatedServerStarted() {
+  kill_locally_created_server_action_->setEnabled(true);
+}
+
+void ConnectionManager::locallyCreatedServerFinished() {
+  kill_locally_created_server_action_->setEnabled(false);
+}
+
+void ConnectionManager::startLocalServer() {
+
+}
+
+void ConnectionManager::killLocalServer() {
+
+}
+
+/*****************************************************************************/
 /* VelesMainWindow - Public methods */
 /*****************************************************************************/
 
@@ -100,6 +150,7 @@ void VelesMainWindow::about() {
 /*****************************************************************************/
 
 void VelesMainWindow::init() {
+  connection_manager_ = new ConnectionManager(this);
   createActions();
   createMenus();
   createLogWindow();
@@ -116,8 +167,6 @@ void VelesMainWindow::init() {
       }
     }
   });
-
-  connection_dialog_ = new ConnectionDialog(this);
 }
 
 void VelesMainWindow::createActions() {
@@ -174,6 +223,13 @@ void VelesMainWindow::createMenus() {
   view_menu_ = menuBar()->addMenu(tr("&View"));
   view_menu_->addAction(show_database_act_);
   view_menu_->addAction(show_log_act_);
+
+  QMenu* connection_menu = menuBar()->addMenu(tr("Connection"));
+  connection_menu->addAction(
+      connection_manager_->showConnectionDialogAction());
+  connection_menu->addAction(connection_manager_->disconnectAction());
+  connection_menu->addAction(
+      connection_manager_->killLocallyCreatedServerAction());
 
   help_menu_ = menuBar()->addMenu(tr("&Help"));
   help_menu_->addAction(about_act_);
