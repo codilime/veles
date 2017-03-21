@@ -34,20 +34,76 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
 
   connect(ui_->ok_button, &QPushButton::clicked, this, &QDialog::accept);
   connect(ui_->cancel_button, &QPushButton::clicked, this, &QDialog::reject);
-  connect(ui_->localhost_button, &QPushButton::clicked, this, &ConnectionDialog::localhost);
-  connect(ui_->random_key_button, &QPushButton::clicked, this, &ConnectionDialog::randomKey);
+  connect(ui_->server_localhost_button, &QPushButton::clicked,
+      this, &ConnectionDialog::serverLocalhost);
+  connect(ui_->client_localhost_button, &QPushButton::clicked,
+        this, &ConnectionDialog::clientLocalhost);
+  connect(ui_->random_key_button, &QPushButton::clicked,
+      this, &ConnectionDialog::randomKey);
+  connect(ui_->new_server_radio_button, &QPushButton::toggled,
+      this, &ConnectionDialog::newServerToggled);
 
-  localhost();
+  file_dialog_ = new QFileDialog(this);
+  file_dialog_->setAcceptMode(QFileDialog::AcceptOpen);
+  file_dialog_->setFileMode(QFileDialog::AnyFile);
+
+  QStringList file_name_filters;
+  file_name_filters << "All files (*.*)";
+  file_dialog_->setNameFilters(file_name_filters);
+
+  connect(ui_->select_database_button, &QPushButton::clicked,
+        file_dialog_, &QFileDialog::show);
+  connect(file_dialog_, &QFileDialog::fileSelected,
+      this, &ConnectionDialog::databaseFileSelected);
+
+  serverLocalhost();
+  clientLocalhost();
   randomKey();
   userAsClientName();
+
+  ui_->database_line_edit->setText("hack-o-store.dark-matter");
+  newServerToggled(ui_->new_server_radio_button->isChecked());
 }
 
 ConnectionDialog::~ConnectionDialog() {
+  file_dialog_->deleteLater();
   delete ui_;
 }
 
-void ConnectionDialog::localhost() {
-  ui_->host_line_edit->setText("127.0.0.1");
+bool ConnectionDialog::runANewServer() {
+  return ui_->new_server_radio_button->isChecked();
+}
+
+QString ConnectionDialog::serverHost() {
+  return ui_->server_host_line_edit->text();
+}
+
+int ConnectionDialog::serverPort() {
+  return ui_->port_spin_box->value();
+}
+
+QString ConnectionDialog::clientInterface() {
+  return ui_->client_interface_line_edit->text();
+}
+
+QString ConnectionDialog::authenticationKey() {
+  return ui_->authentication_key_label->text();
+}
+
+QString ConnectionDialog::clientName() {
+  return ui_->client_name_line_edit->text();
+}
+
+QString ConnectionDialog::databaseFile() {
+  return ui_->database_line_edit->text();
+}
+
+void ConnectionDialog::serverLocalhost() {
+  ui_->server_host_line_edit->setText("127.0.0.1");
+}
+
+void ConnectionDialog::clientLocalhost() {
+  ui_->client_interface_line_edit->setText("127.0.0.1");
 }
 
 void ConnectionDialog::randomKey() {
@@ -61,7 +117,7 @@ void ConnectionDialog::randomKey() {
   }
 
   unsigned long random_key = random_int();
-  ui_->key_line_edit->setText(QString("%1").arg(qulonglong(random_key), 16, 16, QChar('0')));
+  ui_->key_line_edit->setText(QString("%1").arg(random_key, 16, 16, QChar('0')));
 }
 
 void ConnectionDialog::userAsClientName() {
@@ -79,8 +135,18 @@ void ConnectionDialog::userAsClientName() {
   ui_->client_name_line_edit->setText(client_name);
 }
 
+void ConnectionDialog::newServerToggled(bool toggled) {
+  ui_->database_label->setEnabled(toggled);
+  ui_->database_line_edit->setEnabled(toggled);
+  ui_->select_database_button->setEnabled(toggled);
+}
+
+void ConnectionDialog::databaseFileSelected(const QString& file_name) {
+  ui_->database_line_edit->setText(file_name);
+}
+
 void ConnectionDialog::showEvent(QShowEvent* event) {
-  ui_->host_line_edit->setFocus(Qt::OtherFocusReason);
+  ui_->server_host_line_edit->setFocus(Qt::OtherFocusReason);
 }
 
 }  // namespace ui

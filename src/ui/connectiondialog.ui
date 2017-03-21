@@ -3,14 +3,14 @@
  <class>ConnectionDialog</class>
  <widget class="QDialog" name="ConnectionDialog">
   <property name="windowModality">
-   <enum>Qt::ApplicationModal</enum>
+   <enum>Qt::NonModal</enum>
   </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>514</width>
-    <height>291</height>
+    <height>344</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -82,38 +82,66 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>15</height>
+       <height>8</height>
       </size>
      </property>
     </spacer>
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="host_label">
+     <item row="1" column="0">
+      <widget class="QLabel" name="port_label">
        <property name="text">
-        <string>Host:</string>
+        <string>Server port:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="client_name_label">
+       <property name="text">
+        <string>Client name:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="client_name_line_edit">
+       <property name="placeholderText">
+        <string>Client name visible for other users</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="authentication_key_label">
+       <property name="text">
+        <string>Authentication key:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="database_label">
+       <property name="text">
+        <string>Database:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="server_host_label">
+       <property name="text">
+        <string>Server host:</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="host_line_edit">
+      <widget class="QLineEdit" name="server_host_line_edit">
        <property name="placeholderText">
         <string>Host name or address</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="2">
-      <widget class="QPushButton" name="localhost_button">
+     <item row="3" column="2">
+      <widget class="QPushButton" name="random_key_button">
        <property name="text">
-        <string>localhost</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="port_label">
-       <property name="text">
-        <string>Port:</string>
+        <string>random</string>
        </property>
       </widget>
      </item>
@@ -153,38 +181,52 @@
        </item>
       </layout>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="authentication_key_label">
-       <property name="text">
-        <string>Authentication key:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
+     <item row="3" column="1">
       <widget class="QLineEdit" name="key_line_edit">
        <property name="placeholderText">
         <string>Keep it a secret</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="2">
-      <widget class="QPushButton" name="random_key_button">
+     <item row="0" column="2">
+      <widget class="QPushButton" name="server_localhost_button">
        <property name="text">
-        <string>random</string>
+        <string>localhost</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="client_name_label">
+     <item row="5" column="2">
+      <widget class="QPushButton" name="select_database_button">
        <property name="text">
-        <string>Client name:</string>
+        <string>browse...</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="client_name_line_edit">
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="database_line_edit">
        <property name="placeholderText">
-        <string>Client name visible for other users</string>
+        <string>Database file for a new server</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="client_interface_label">
+       <property name="text">
+        <string>Client interface:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="client_interface_line_edit">
+       <property name="placeholderText">
+        <string>Client network interface</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QPushButton" name="client_localhost_button">
+       <property name="text">
+        <string>localhost</string>
        </property>
       </widget>
      </item>
@@ -198,7 +240,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>15</height>
+       <height>9</height>
       </size>
      </property>
     </spacer>
@@ -255,12 +297,16 @@
  <tabstops>
   <tabstop>new_server_radio_button</tabstop>
   <tabstop>existing_server_radio_button</tabstop>
-  <tabstop>host_line_edit</tabstop>
-  <tabstop>localhost_button</tabstop>
+  <tabstop>server_host_line_edit</tabstop>
+  <tabstop>server_localhost_button</tabstop>
   <tabstop>port_spin_box</tabstop>
+  <tabstop>client_interface_line_edit</tabstop>
+  <tabstop>client_localhost_button</tabstop>
   <tabstop>key_line_edit</tabstop>
   <tabstop>random_key_button</tabstop>
   <tabstop>client_name_line_edit</tabstop>
+  <tabstop>database_line_edit</tabstop>
+  <tabstop>select_database_button</tabstop>
   <tabstop>ok_button</tabstop>
   <tabstop>cancel_button</tabstop>
  </tabstops>
