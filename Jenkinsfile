@@ -70,7 +70,7 @@ builders['mingw32'] = { node('windows') {
                 -DPROTOBUF_DLL_DIR=${tool 'protobuf'}dll_mingw -DProtobuf_INCLUDE_DIR=${tool 'protobuf'}src\
                 -DProtobuf_PROTOC_EXECUTABLE=${tool 'protobuf'}release_mingw\\protoc.exe\
                 -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -G \"MinGW Makefiles\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."
-                bat script: "cmake --build . --config ${buildConfiguration}"
+                bat script: "cmake --build . --config ${buildConfiguration} -- -j3"
                 bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-mingw -G ZIP -C ${buildConfiguration}"
               }
             }
@@ -185,7 +185,7 @@ builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
           sh """cmake -DPROTOBUF_INCLUDE_DIR=\"${tool 'protobuf'}\"/src -DPROTOBUF_PROTOC_EXECUTABLE=\"${tool 'protobuf'}\"/release/protoc\
              -DPROTOBUF_LIBRARY_DEBUG=\"${tool 'protobuf'}\"/debug/libprotobufd.so -DPROTOBUF_LIBRARY=\"${tool 'protobuf'}\"/release/libprotobuf.so\
              -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\" -DCMAKE_BUILD_TYPE=${buildConfiguration} CMakeLists.txt"""
-          sh "cmake --build . --config ${buildConfiguration} 2>&1 | tee error_and_warnings.txt"
+          sh "cmake --build . --config ${buildConfiguration} -- -j3 2>&1 | tee error_and_warnings.txt"
           sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-ubuntu1604 -G ZIP -C ${buildConfiguration}"
           junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
           step([$class: 'ArtifactArchiver', artifacts: '*.zip', fingerprint: true])
