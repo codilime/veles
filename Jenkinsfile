@@ -56,7 +56,7 @@ builders['mingw32'] = { node('windows') {
     ws(getWorkspace("")){
       timestamps {
         try {
-          stage('windows minigw') {
+          stage('windows mingw') {
             deleteDir()
             checkout scm
             def branch = getBranch()
