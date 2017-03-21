@@ -116,6 +116,8 @@ void VelesMainWindow::init() {
       }
     }
   });
+
+  connection_dialog_ = new ConnectionDialog(this);
 }
 
 void VelesMainWindow::createActions() {
