@@ -37,7 +37,7 @@
        <item>
         <widget class="QRadioButton" name="new_server_radio_button">
          <property name="text">
-          <string>Run new server and connect</string>
+          <string>Run a new server and connect</string>
          </property>
          <property name="checked">
           <bool>true</bool>
@@ -50,7 +50,7 @@
        <item>
         <widget class="QRadioButton" name="existing_server_radio_button">
          <property name="text">
-          <string>Connect to existing server</string>
+          <string>Connect to an existing server</string>
          </property>
          <attribute name="buttonGroup">
           <string notr="true">connectionButtonGroup</string>

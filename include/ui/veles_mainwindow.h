@@ -24,6 +24,7 @@
 #include <QString>
 #include <QStringList>
 #include <QIcon>
+#include <QProcess>
 
 #include "dbif/promise.h"
 #include "dbif/types.h"
@@ -34,6 +35,35 @@
 
 namespace veles {
 namespace ui {
+
+/*****************************************************************************/
+/* ConnectionManager */
+/*****************************************************************************/
+
+class ConnectionManager : public QObject {
+  Q_OBJECT
+
+ public:
+  ConnectionManager(QWidget* parent = nullptr);
+  virtual ~ConnectionManager();
+
+  QAction* showConnectionDialogAction();
+  QAction* disconnectAction();
+  QAction* killLocallyCreatedServerAction();
+
+ public slots:
+  void locallyCreatedServerStarted();
+  void locallyCreatedServerFinished();
+  void startLocalServer();
+  void killLocalServer();
+
+ private:
+  QAction* show_connection_dialog_action_;
+  QAction* disconnect_action_;
+  QAction* kill_locally_created_server_action_;
+  QProcess* server_process_;
+  ConnectionDialog* connection_dialog_;
+};
 
 /*****************************************************************************/
 /* VelesMainWindow */
@@ -91,7 +121,7 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   QPointer<DockWidget> database_dock_widget_;
   QPointer<DockWidget> log_dock_widget_;
 
-  ConnectionDialog* connection_dialog_;
+  ConnectionManager* connection_manager_;
 };
 
 }  // namespace ui
