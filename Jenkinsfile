@@ -5,8 +5,9 @@ def buildConfiguration = "Debug"
 def configurationList = """Debug
 RelWithDebInfo"""
 properties([disableConcurrentBuilds(),
-             parameters([
-               choice(choices: configurationList, name: "buildConfiguration"),
+              parameters([
+                choice(choices: configurationList, name: "buildConfiguration")
+              ])
            ])
 
 buildConfiguration = params.buildConfiguration
