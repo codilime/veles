@@ -53,7 +53,8 @@ class ConnectionManager : public QObject {
 
  public slots:
   void locallyCreatedServerStarted();
-  void locallyCreatedServerFinished();
+  void locallyCreatedServerFinished(int exit_code,
+      QProcess::ExitStatus exit_status);
   void startLocalServer();
   void killLocalServer();
 

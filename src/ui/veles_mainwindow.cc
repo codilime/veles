@@ -77,16 +77,26 @@ void ConnectionManager::locallyCreatedServerStarted() {
   kill_locally_created_server_action_->setEnabled(true);
 }
 
-void ConnectionManager::locallyCreatedServerFinished() {
+void ConnectionManager::locallyCreatedServerFinished(int exit_code,
+    QProcess::ExitStatus exit_status) {
   kill_locally_created_server_action_->setEnabled(false);
 }
 
 void ConnectionManager::startLocalServer() {
-
+  server_process_ = new QProcess(this);
+  connect(server_process_, &QProcess::started,
+      this, &ConnectionManager::locallyCreatedServerStarted);
+  connect(server_process_, static_cast<void(QProcess::*)
+      (int, QProcess::ExitStatus)>(&QProcess::finished),
+      this, &ConnectionManager::locallyCreatedServerFinished);
 }
 
 void ConnectionManager::killLocalServer() {
-
+  if(server_process_) {
+    server_process_->kill();
+    server_process_->deleteLater();
+    server_process_ = nullptr;
+  }
 }
 
 /*****************************************************************************/
@@ -167,6 +177,8 @@ void VelesMainWindow::init() {
       }
     }
   });
+
+  connection_manager_->showConnectionDialogAction()->trigger();
 }
 
 void VelesMainWindow::createActions() {

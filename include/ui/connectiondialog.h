@@ -18,6 +18,7 @@
 #define VELES_UI_CONNECTIONDIALOG_H
 
 #include <QDialog>
+#include <QFileDialog>
 
 namespace Ui {
 class ConnectionDialog;
@@ -33,16 +34,28 @@ class ConnectionDialog : public QDialog {
   ConnectionDialog(QWidget *parent = 0);
   virtual ~ConnectionDialog();
 
+  bool runANewServer();
+  QString serverHost();
+  int serverPort();
+  QString clientInterface();
+  QString authenticationKey();
+  QString clientName();
+  QString databaseFile();
+
  public slots:
-  void localhost();
+  void serverLocalhost();
+  void clientLocalhost();
   void randomKey();
   void userAsClientName();
+  void newServerToggled(bool toggled);
+  void databaseFileSelected(const QString& file_name);
 
  protected:
   void showEvent(QShowEvent* event) override;
 
  private:
   Ui::ConnectionDialog* ui_;
+  QFileDialog* file_dialog_;
 };
 
 }  // namespace ui
