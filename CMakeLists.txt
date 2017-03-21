@@ -257,6 +257,7 @@ qt5_wrap_ui(FORMS
     ${SRC_DIR}/ui/createchunkdialog.ui
     ${SRC_DIR}/ui/databaseinfo.ui
     ${SRC_DIR}/ui/logwidget.ui
+    ${SRC_DIR}/ui/connectiondialog.ui
     )
 
 if(WIN32)
@@ -299,6 +300,7 @@ add_executable(main_ui
     ${INCLUDE_DIR}/ui/databaseinfo.h
     ${INCLUDE_DIR}/ui/spinbox.h
     ${INCLUDE_DIR}/ui/spinboxvalidator.h
+    ${INCLUDE_DIR}/ui/connectiondialog.h
     ${SRC_DIR}/ui/main.cc
     ${SRC_DIR}/ui/logwidget.cc
     ${SRC_DIR}/ui/veles_mainwindow.cc
@@ -319,6 +321,7 @@ add_executable(main_ui
     ${SRC_DIR}/ui/databaseinfo.cc
     ${SRC_DIR}/ui/spinbox.cc
     ${SRC_DIR}/ui/spinboxvalidator.cc
+    ${SRC_DIR}/ui/connectiondialog.cc
     ${RESOURCES}
     ${VISUALIZATION_SHADERS}
     ${FORMS}
@@ -338,7 +341,8 @@ add_executable(main_ui
     ${CMAKE_SOURCE_DIR}/moc_hexedit.cpp
     ${CMAKE_SOURCE_DIR}/moc_searchdialog.cpp
     ${CMAKE_SOURCE_DIR}/moc_trigram.cpp
-    ${CMAKE_SOURCE_DIR}/moc_manipulator.cpp)
+    ${CMAKE_SOURCE_DIR}/moc_manipulator.cpp
+    ${CMAKE_SOURCE_DIR}/moc_connectiondialog.cpp)
 
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${GENERATED_MOC_FILES})
 

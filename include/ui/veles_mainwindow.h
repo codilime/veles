@@ -30,6 +30,7 @@
 
 #include "ui/dockwidget.h"
 #include "ui/optionsdialog.h"
+#include "ui/connectiondialog.h"
 
 namespace veles {
 namespace ui {
@@ -89,6 +90,8 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
 
   QPointer<DockWidget> database_dock_widget_;
   QPointer<DockWidget> log_dock_widget_;
+
+  ConnectionDialog* connection_dialog_;
 };
 
 }  // namespace ui
