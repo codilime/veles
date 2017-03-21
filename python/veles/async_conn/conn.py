@@ -40,7 +40,7 @@ class AsyncConnection:
         """
         return self.get_node_norefresh(id).refresh()
 
-    def create(self, id=None, parent=None, pos=(None, None), tags=frozenset(),
+    def create(self, id=None, parent=None, pos=(None, None), tags=set(),
                attr={}, data={}, bindata={}):
         """
         Creates a node with the given data.  If ``id`` is None, a random id

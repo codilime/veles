@@ -126,8 +126,8 @@ class AsyncNode:
 
     def set_parent(self, parent):
         """
-        Changes the parent of this object.  Parent may be an AsyncNode
-        or NodeID.  Returns an awaitable of None.
+        Changes the parent of this object.  Parent should be a NodeID.
+        Returns an awaitable of None.
         """
         raise NotImplementedError
 
