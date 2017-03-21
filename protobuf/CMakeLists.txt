@@ -32,8 +32,11 @@ add_library(veles_network
     ${INCLUDE_DIR}/network/server.h
     ${MSGPACK_CPP}
     ${INCLUDE_DIR}/network/msgpackwrapper.h
+    ${INCLUDE_DIR}/network/msgpackobject.h
     ${PROTO_SRCS}
     ${SRC_DIR}/network/server.cc
+    ${SRC_DIR}/network/msgpackobject.cc
+    ${SRC_DIR}/network/msgpackwrapper.cc
     ${PROTO_HDRS}
 # python file will only be build if something depends on it
     ${PROTO_PY}

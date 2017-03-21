@@ -20,30 +20,38 @@ import six
 def generate_cpp_code():
     if six.PY2:
         raise RuntimeError('C++ code can only be generated on Python 3.x')
-    code = '#define MSGPACK_CLASSES_DEFS \\\n'
+    code = '#define MSGPACK_CLASSES_HEADER \\\n'
     classes_to_generate = [node.Node]
     poly_classes = [messages.MsgpackMsg]
     for cls_type in classes_to_generate:
-        code += 'class {};\\\n'.format(cls_type.cpp_type())
+        code += 'class {};\\\n'.format(cls_type.cpp_type()[0])
     for cls_type in poly_classes:
-        code += 'class {};\\\n'.format(cls_type.cpp_type())
+        code += 'class {};\\\n'.format(cls_type.cpp_type()[0])
         for sub_class in cls_type.object_types.values():
-            code += 'class {};\\\n'.format(sub_class.cpp_type())
+            code += 'class {};\\\n'.format(sub_class.cpp_type()[0])
     for cls_type in classes_to_generate:
-        code += cls_type.generate_cpp_code()
+        code += cls_type.generate_header_code()
     for cls_type in poly_classes:
         code += cls_type.generate_base_code()
         for sub_class in cls_type.object_types.values():
-            code += sub_class.generate_cpp_code()
+            code += sub_class.generate_header_code()
 
     code += '\n'
 
     code += '''#define MSGPACK_CLASSES_INIT \\
   static void initMessages() {{\\
 {}\\
-  }}'''.format(
-        ''.join(['    {}::initObjectTypes();'.format(cls_type.cpp_type())
+  }}
+'''.format(
+        ''.join(['    {}::initObjectTypes();'.format(cls_type.cpp_type()[0])
                  for cls_type in poly_classes]))
+
+    code += '#define MSGPACK_CLASSES_SOURCE \\\n'
+    for cls_type in classes_to_generate:
+        code += cls_type.generate_source_code()
+    for cls_type in poly_classes:
+        for sub_class in cls_type.object_types.values():
+            code += sub_class.generate_source_code()
 
     return code
 

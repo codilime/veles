@@ -14,32 +14,13 @@
  * limitations under the License.
  *
  */
-
-#ifndef VELES_DATA_MSGPACK_H
-#define VELES_DATA_MSGPACK_H
-#include <sstream>
-
-#include <msgpack.hpp>
+#include "network/msgpackwrapper.h"
 
 namespace veles {
-namespace data {
+namespace messages {
 
-class NodeID {
-  static const size_t width = 24;
-  unsigned char value[width];
- public:
-  static const unsigned char NIL_VALUE[width];
+MSGPACK_CLASSES_SOURCE
 
-  NodeID();
-  NodeID(const unsigned char* data);
-  NodeID(const std::string& data);
-
-  std::string toString();
-  std::vector<uint8_t> asVector() const {
-    return std::vector<uint8_t>(value, value+width);
-  }
-};
-
-}  // namespace data
+}  // namespace messages
 }  // namespace veles
-#endif // VELES_DATA_MSGPACK_H
+
