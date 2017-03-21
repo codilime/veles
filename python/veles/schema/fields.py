@@ -86,7 +86,7 @@ class Any(Field):
     value_type = object
 
     def cpp_type(self):
-        return 'msgpack::object'
+        return 'MsgpackObject', False, 'nullptr'
 
 
 class Integer(Field):
@@ -115,7 +115,7 @@ class Integer(Field):
 
     # TODO convert to use bignums
     def cpp_type(self):
-        return 'int64_t'
+        return 'int64_t', True, '0'
 
 
 class UnsignedInteger(Integer):
@@ -130,7 +130,7 @@ class UnsignedInteger(Integer):
 
     # TODO convert to use bignums
     def cpp_type(self):
-        return 'uint64_t'
+        return 'uint64_t', True, '0'
 
 
 INT64_MIN = -2**63
@@ -153,7 +153,7 @@ class SmallInteger(Integer):
             optional, default, minimum, maximum)
 
     def cpp_type(self):
-        return 'int64_t'
+        return 'int64_t', True, '0'
 
 
 class SmallUnsignedInteger(Integer):
@@ -171,49 +171,49 @@ class SmallUnsignedInteger(Integer):
             optional, default, minimum, maximum)
 
     def cpp_type(self):
-        return 'uint64_t'
+        return 'uint64_t', True, '0'
 
 
 class Boolean(Field):
     value_type = bool
 
     def cpp_type(self):
-        return 'bool'
+        return 'bool', True, 'false'
 
 
 class Float(Field):
     value_type = float
 
     def cpp_type(self):
-        return 'double'
+        return 'double', True, '0.0'
 
 
 class String(Field):
     value_type = six.text_type
 
     def cpp_type(self):
-        return 'std::string'
+        return 'std::string', False, 'nullptr'
 
 
 class Binary(Field):
     value_type = bytes
 
     def cpp_type(self):
-        return 'std::vector<uint8_t>'
+        return 'std::vector<uint8_t>', False, 'nullptr'
 
 
 class NodeID(Field):
     value_type = nodeid.NodeID
 
     def cpp_type(self):
-        return 'veles::data::NodeID'
+        return 'veles::data::NodeID', False, 'nullptr'
 
 
 class BinData(Field):
     value_type = bindata.BinData
 
     def cpp_type(self):
-        return 'veles::data::BinData'
+        return 'veles::data::BinData', False, 'nullptr'
 
 
 class Collection(Field):
@@ -254,16 +254,22 @@ class List(Collection):
     value_type = list
 
     def cpp_type(self):
-        elem_type = self.element.cpp_type()
-        return 'std::vector<{}>'.format(elem_type)
+        elem_type = (
+            '{}' if self.element.cpp_type()[1] else
+            'std::shared_ptr<{}>').format(
+            self.element.cpp_type()[0])
+        return 'std::vector<{}>'.format(elem_type), False, 'nullptr'
 
 
 class Set(Collection):
     value_type = set
 
     def cpp_type(self):
-        elem_type = self.element.cpp_type()
-        return 'std::unordered_set<{}>'.format(elem_type)
+        elem_type = (
+            '{}' if self.element.cpp_type()[1] else
+            'std::shared_ptr<{}>').format(
+            self.element.cpp_type()[0])
+        return 'std::unordered_set<{}>'.format(elem_type), False, 'nullptr'
 
 
 class Map(Field):
@@ -286,9 +292,13 @@ class Map(Field):
             self.value.validate(v)
 
     def cpp_type(self):
-        key_type = self.key.cpp_type()
-        value_type = self.value.cpp_type()
-        return 'std::unordered_map<{},{}>'.format(key_type, value_type)
+        key_type = self.key.cpp_type()[0]
+        value_type = (
+            '{}' if self.value.cpp_type()[1] else
+            'std::shared_ptr<{}>').format(
+            self.value.cpp_type()[0])
+        return 'std::unordered_map<{},{}>'.format(
+            key_type, value_type), False, 'nullptr'
 
     def _load(self, value):
         if not isinstance(value, dict):
@@ -318,7 +328,7 @@ class Object(Field):
         return value.dump()
 
     def cpp_type(self):
-        return self.value_type.cpp_type()
+        return self.value_type.cpp_type()[0], False, 'nullptr'
 
 
 class Enum(Field):

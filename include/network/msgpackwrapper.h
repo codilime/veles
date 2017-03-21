@@ -21,34 +21,34 @@
 #include <msgpack.hpp>
 #include <QtNetwork/QTcpSocket>
 
-#include "data/msgobject.h"
+#include "network/msgpackobject.h"
 #include "messages.h"
 
 namespace veles {
 namespace messages {
 
-MSGPACK_CLASSES_DEFS
+MSGPACK_CLASSES_HEADER
 
 class MsgpackWrapper {
   msgpack::unpacker unp;
   static const int read_size = 1024;
 
  public:
-  static MsgpackMsg* parseMessage(msgpack::object_handle *handle) {
-    std::map<std::string, MsgpackMsg*(*)()> types = MsgpackMsg::object_types();
+  static std::shared_ptr<MsgpackMsg> parseMessage(msgpack::object_handle *handle) {
+    std::map<std::string, std::shared_ptr<MsgpackMsg>(*)(const std::shared_ptr<MsgpackObject>)> types = MsgpackMsg::object_types();
     msgpack::object obj = handle->get();
-    std::map<std::string, msgpack::object> tmp;
-    obj.convert(tmp);
-    if (types.find(tmp["object_type"].as<std::string>()) ==  types.end()) {
-      // TODO log error, return nullptr, or also throw exception?
-      return nullptr;
+    auto loc_obj = std::make_shared<MsgpackObject>(obj);
+    if (loc_obj->type() != ObjectType::MAP) {
+      throw msgpack::type_error();
     }
-    MsgpackMsg *msg = types[tmp["object_type"].as<std::string>()]();
-    obj.convert(*msg);
+    if (types.find(*(*loc_obj->getMap())["object_type"]->getString()) ==  types.end()) {
+      throw msgpack::type_error();
+    }
+    std::shared_ptr<MsgpackMsg> msg = types[*(*loc_obj->getMap())["object_type"]->getString()](loc_obj);
     return msg;
   }
 
-  MsgpackMsg* loadMessage(QTcpSocket *connection) {
+  std::shared_ptr<MsgpackMsg> loadMessage(QTcpSocket *connection) {
     // This method can throw msgpack::type_error when malformed message is read
     msgpack::object_handle handle;
     if (unp.next(handle)) {

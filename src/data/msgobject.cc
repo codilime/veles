@@ -18,20 +18,6 @@ NodeID::NodeID(const std::string &data) {
   memcpy(value, data.data(), width);
 }
 
-void NodeID::msgpack_unpack(const msgpack::v2::object &o) {
-  if (o.type == msgpack::type::NIL) {
-    memcpy(value, NIL_VALUE, width);
-    return;
-  }
-  if (o.type != msgpack::type::EXT) {
-    throw msgpack::type_error();
-  }
-  if (o.via.ext.type() != 0 || o.via.ext.size != width) {
-    throw msgpack::type_error();
-  }
-  memcpy(value, o.via.ext.data(), width);
-}
-
 std::string NodeID::toString() {
   std::stringstream ss;
   ss << std::hex << std::setfill('0');
