@@ -34,11 +34,13 @@ def post_build_finished(job,url){
 
 def test_python(){ node ('ubuntu-16.04'){
     timestamps {
-      try{
-        sh "cp protobuf/network_pb2.py python/veles/"
-        dir('python') {
-          sh "./run_tests.sh"
-          junit allowEmptyResults: true, keepLongStdio: true, testResults: 'res**.xml'
+      try {
+        stage('python tests - Linux ubuntu 16.04') {
+          sh "cp protobuf/network_pb2.py python/veles/"
+          dir('python') {
+            sh "./run_tests.sh"
+            junit allowEmptyResults: true, keepLongStdio: true, testResults: 'res**.xml'
+          }
         }
       } catch (error) {
         post_stage_failure(env.JOB_NAME, "python-ubuntu1604",error,env.BUILD_URL)
@@ -231,9 +233,7 @@ builders['macosx'] = { node ('macosx'){
 
 parallel(builders)
 test_python()
-stage('Build finished') {
-	node(){
-  	post_build_finished(env.JOB_NAME, env.BUILD_URL)
-  }
+node(){
+	post_build_finished(env.JOB_NAME, env.BUILD_URL)
 }
 
