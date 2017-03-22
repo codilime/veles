@@ -23,8 +23,8 @@
   
 ### Minor features and changes:
 
-  * Major improvement in visualisation performance.
-  * Added camera manipulators in visualisation.
+  * Major improvement in visualization performance.
+  * Added camera manipulators in visualization.
   * Added reference frames and captions in visualization.
   * Added ability to parse file starting from selected location.
   * Added ability to choose which parser to use.
@@ -37,8 +37,8 @@
   
 ### Bugfixes:
 
-  * Multiple bugfixes related to visualisation sampling.
+  * Multiple bugfixes related to visualization sampling.
   * Multiple bugfixes related to chunk deletion.
-  * Fixed visualisation scaling.
+  * Fixed visualization scaling.
   * Show error message if OpenGL doesn’t work instead of crashing.
   * Added warning on failure when opening file instead of silent failure.
