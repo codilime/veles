@@ -26,7 +26,8 @@ from veles.util.bigint import bigint_encode, bigint_decode
 
 
 DB_APP_ID = int('veles', 36)
-DB_VERSION = 1
+DB_VERSION = 2
+DB_BINDATA_PAGE_SIZE = 0x10000
 
 DB_SCHEMA = [
     'pragma application_id = {}'.format(DB_APP_ID),
@@ -65,8 +66,9 @@ DB_SCHEMA = [
         CREATE TABLE node_bindata(
             id BLOB NOT NULL REFERENCES node(id),
             name VARCHAR NOT NULL,
+            page INTEGER NOT NULL,
             data BLOB NOT NULL,
-            PRIMARY KEY (id, name)
+            PRIMARY KEY (id, name, page)
         )
     """
 ]
@@ -76,7 +78,6 @@ DB_SCHEMA = [
 #
 # - link support
 # - xref support
-# - paged BinData
 # - trigger model
 
 if six.PY3:
@@ -158,10 +159,20 @@ class Database:
             SELECT name FROM node_data WHERE id = ?
         """, (raw_id,))
         data = {x for x, in c.fetchall()}
+        # ATTENTION: sqlite dependency here - length(data) will be evaluated
+        # for the max page for a given key (see
+        # https://www.sqlite.org/lang_select.html#bareagg).
+        assert isinstance(c, sqlite3.Cursor)
         c.execute("""
-            SELECT name, length(data) FROM node_bindata WHERE id = ?
+            SELECT name, MAX(page), length(data)
+            FROM node_bindata
+            WHERE id = ?
+            GROUP BY name
         """, (raw_id,))
-        bindata = {x: y for x, y in c.fetchall()}
+        bindata = {
+            key: page * DB_BINDATA_PAGE_SIZE + lastlen
+            for key, page, lastlen in c.fetchall()
+        }
         return Node(id=id, parent=parent,
                     pos_start=db_bigint_decode(pos_start),
                     pos_end=db_bigint_decode(pos_end), tags=tags, attr=attr,
@@ -317,8 +328,6 @@ class Database:
             """, (raw_id, key, buffer(self.packer.pack(data))))
         self.db.commit()
 
-    # XXX: refactor these two to use paging
-
     def get_bindata(self, id, key, start=0, end=None):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
@@ -331,14 +340,29 @@ class Database:
             raise ValueError('end must be >= start')
         if not isinstance(key, six.text_type):
             raise TypeError('key is not a string')
-        c = self.db.cursor()
-        c.execute("""
-            SELECT data FROM node_bindata WHERE id = ? AND name = ?
-        """, (buffer(id.bytes), key))
-        rows = c.fetchall()
-        if not rows:
+        if start == end:
             return b''
-        (data,), = rows
+        page_first = start // DB_BINDATA_PAGE_SIZE
+        offset = page_first * DB_BINDATA_PAGE_SIZE
+        start -= offset
+        c = self.db.cursor()
+        if end is None:
+            c.execute("""
+                SELECT data
+                FROM node_bindata
+                WHERE id = ? AND name = ? AND page >= ?
+                ORDER BY page
+            """, (buffer(id.bytes), key, page_first))
+        else:
+            page_last = (end - 1) // DB_BINDATA_PAGE_SIZE
+            c.execute("""
+                SELECT data
+                FROM node_bindata
+                WHERE id = ? AND name = ? AND page BETWEEN ? AND ?
+                ORDER BY page
+            """, (buffer(id.bytes), key, page_first, page_last))
+            end -= offset
+        data = b''.join(bytes(x) for x, in c.fetchall())
         return data[start:end]
 
     def set_bindata(self, id, key, start, data, truncate=False):
@@ -351,24 +375,79 @@ class Database:
             raise TypeError('key is not a string')
         if not isinstance(truncate, bool):
             raise TypeError('truncate is not a bool')
-        cur = self.get_bindata(id, key)
+        if not isinstance(data, bytes):
+            raise TypeError('data must be bytes')
         raw_id = buffer(id.bytes)
-        new_data = bytearray(cur)
-        if len(new_data) < start:
-            raise WritePastEndError()
-        new_data[start:start+len(data)] = data
-        if truncate:
-            del new_data[start+len(data):]
-        new_data = bytes(new_data)
+
+        # First, determine current length.
         c = self.db.cursor()
+        # ATTENTION: sqlite dependency here - length(data) will be evaluated
+        # for the max page (see
+        # https://www.sqlite.org/lang_select.html#bareagg).
+        assert isinstance(c, sqlite3.Cursor)
         c.execute("""
-            DELETE FROM node_bindata WHERE id = ? AND name = ?
+            SELECT MAX(page), length(data)
+            FROM node_bindata
+            WHERE id = ? AND name = ?
         """, (raw_id, key))
-        if new_data:
+        (page, lastlen), = c.fetchall()
+        if page is not None:
+            cur_len = page * DB_BINDATA_PAGE_SIZE + lastlen
+        else:
+            cur_len = 0
+        if start > cur_len:
+            raise WritePastEndError()
+
+        # Some calculations.
+        end = start + len(data)
+        page_first = start // DB_BINDATA_PAGE_SIZE
+        page_end = (end + DB_BINDATA_PAGE_SIZE - 1) // DB_BINDATA_PAGE_SIZE
+        offset = page_first * DB_BINDATA_PAGE_SIZE
+        real_end = page_end * DB_BINDATA_PAGE_SIZE
+
+        # Fetch partial first page.
+        if start != offset:
+            assert offset < start
+            data = self.get_bindata(id, key, offset, start) + data
+            start = offset
+
+        # Fetch partial last page.
+        if end != real_end and not truncate:
+            assert end < real_end
+            data = data + self.get_bindata(id, key, end, real_end)
+            end = real_end
+
+        # Remove pages that will be overwritten or truncated.
+        if truncate:
             c.execute("""
-                INSERT INTO node_bindata (id, name, data)
-                VALUES (?, ?, ?)
-            """, (raw_id, key, buffer(new_data)))
+                DELETE FROM node_bindata
+                WHERE id = ? AND name = ? AND page >= ?
+            """, (raw_id, key, page_first))
+        elif page_first == page_end:
+            # Nothing to do.
+            assert len(data) == 0
+            return
+        else:
+            c.execute("""
+                DELETE FROM node_bindata
+                WHERE id = ? AND name = ? AND page BETWEEN ? AND ?
+            """, (raw_id, key, page_first, page_end - 1))
+
+        # Write new pages.
+        c.executemany("""
+            INSERT INTO node_bindata (id, name, page, data)
+            VALUES (?, ?, ?, ?)
+        """, [
+            (
+                raw_id, key, page,
+                buffer(data[
+                    (page - page_first) * DB_BINDATA_PAGE_SIZE:
+                    (page - page_first + 1) * DB_BINDATA_PAGE_SIZE
+                ])
+            ) for page in six.moves.range(page_first, page_end)
+        ])
+
+        # We're done here.
         self.db.commit()
 
     def delete(self, id):
