@@ -55,8 +55,11 @@ class ConnectionManager : public QObject {
   void locallyCreatedServerStarted();
   void locallyCreatedServerFinished(int exit_code,
       QProcess::ExitStatus exit_status);
+  void connectionDialogAccepted();
   void startLocalServer();
   void killLocalServer();
+  void disconnect();
+  void  serverProcessReadyRead();
 
  private:
   QAction* show_connection_dialog_action_;

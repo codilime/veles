@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>514</width>
-    <height>344</height>
+    <width>611</width>
+    <height>371</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -124,6 +124,13 @@
        </property>
       </widget>
      </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="server_host_line_edit">
+       <property name="placeholderText">
+        <string>Host name or address</string>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="0">
       <widget class="QLabel" name="server_host_label">
        <property name="text">
@@ -131,10 +138,10 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="server_host_line_edit">
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="key_line_edit">
        <property name="placeholderText">
-        <string>Host name or address</string>
+        <string>Keep it a secret</string>
        </property>
       </widget>
      </item>
@@ -181,10 +188,10 @@
        </item>
       </layout>
      </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="key_line_edit">
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="database_line_edit">
        <property name="placeholderText">
-        <string>Keep it a secret</string>
+        <string>Database file for a new server</string>
        </property>
       </widget>
      </item>
@@ -202,10 +209,10 @@
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
-      <widget class="QLineEdit" name="database_line_edit">
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="client_interface_line_edit">
        <property name="placeholderText">
-        <string>Database file for a new server</string>
+        <string>Client network interface</string>
        </property>
       </widget>
      </item>
@@ -216,17 +223,31 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="client_interface_line_edit">
-       <property name="placeholderText">
-        <string>Client network interface</string>
-       </property>
-      </widget>
-     </item>
      <item row="2" column="2">
       <widget class="QPushButton" name="client_localhost_button">
        <property name="text">
         <string>localhost</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLineEdit" name="server_executable_line_edit">
+       <property name="placeholderText">
+        <string>Server Python script</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="server_executable_label">
+       <property name="text">
+        <string>Server script:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="2">
+      <widget class="QPushButton" name="select_server_executable_button">
+       <property name="text">
+        <string>browse...</string>
        </property>
       </widget>
      </item>
@@ -307,6 +328,8 @@
   <tabstop>client_name_line_edit</tabstop>
   <tabstop>database_line_edit</tabstop>
   <tabstop>select_database_button</tabstop>
+  <tabstop>server_executable_line_edit</tabstop>
+  <tabstop>select_server_executable_button</tabstop>
   <tabstop>ok_button</tabstop>
   <tabstop>cancel_button</tabstop>
  </tabstops>

@@ -43,18 +43,27 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
   connect(ui_->new_server_radio_button, &QPushButton::toggled,
       this, &ConnectionDialog::newServerToggled);
 
-  file_dialog_ = new QFileDialog(this);
-  file_dialog_->setAcceptMode(QFileDialog::AcceptOpen);
-  file_dialog_->setFileMode(QFileDialog::AnyFile);
+  db_file_dialog_ = new QFileDialog(this);
+  db_file_dialog_->setAcceptMode(QFileDialog::AcceptOpen);
+  db_file_dialog_->setFileMode(QFileDialog::AnyFile);
 
   QStringList file_name_filters;
   file_name_filters << "All files (*.*)";
-  file_dialog_->setNameFilters(file_name_filters);
+  db_file_dialog_->setNameFilters(file_name_filters);
 
   connect(ui_->select_database_button, &QPushButton::clicked,
-        file_dialog_, &QFileDialog::show);
-  connect(file_dialog_, &QFileDialog::fileSelected,
+        db_file_dialog_, &QFileDialog::show);
+  connect(db_file_dialog_, &QFileDialog::fileSelected,
       this, &ConnectionDialog::databaseFileSelected);
+
+  server_file_dialog_ = new QFileDialog(this);
+  server_file_dialog_->setAcceptMode(QFileDialog::AcceptOpen);
+  server_file_dialog_->setFileMode(QFileDialog::ExistingFile);
+
+  connect(ui_->select_server_executable_button, &QPushButton::clicked,
+      server_file_dialog_, &QFileDialog::show);
+  connect(server_file_dialog_, &QFileDialog::fileSelected,
+      this, &ConnectionDialog::serverFileSelected);
 
   serverLocalhost();
   clientLocalhost();
@@ -66,7 +75,7 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
 }
 
 ConnectionDialog::~ConnectionDialog() {
-  file_dialog_->deleteLater();
+  db_file_dialog_->deleteLater();
   delete ui_;
 }
 
@@ -96,6 +105,10 @@ QString ConnectionDialog::clientName() {
 
 QString ConnectionDialog::databaseFile() {
   return ui_->database_line_edit->text();
+}
+
+QString ConnectionDialog::serverScript() {
+  return ui_->server_executable_line_edit->text();
 }
 
 void ConnectionDialog::serverLocalhost() {
@@ -139,10 +152,18 @@ void ConnectionDialog::newServerToggled(bool toggled) {
   ui_->database_label->setEnabled(toggled);
   ui_->database_line_edit->setEnabled(toggled);
   ui_->select_database_button->setEnabled(toggled);
+
+  ui_->server_executable_label->setEnabled(toggled);
+  ui_->server_executable_line_edit->setEnabled(toggled);
+  ui_->select_server_executable_button->setEnabled(toggled);
 }
 
 void ConnectionDialog::databaseFileSelected(const QString& file_name) {
   ui_->database_line_edit->setText(file_name);
+}
+
+void ConnectionDialog::serverFileSelected(const QString& file_name) {
+  ui_->server_executable_line_edit->setText(file_name);
 }
 
 void ConnectionDialog::showEvent(QShowEvent* event) {
