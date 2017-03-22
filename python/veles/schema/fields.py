@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import enum
 import six
 
 from veles.compatibility import pep487
@@ -264,3 +265,21 @@ class Object(Field):
 
     def _dump(self, value):
         return value.dump()
+
+
+class Enum(Field):
+    def __init__(self, value_type, optional=False, default=None):
+        if not issubclass(value_type, enum.Enum):
+            raise TypeError('Enum field value_type has to be an enum.')
+        self.value_type = value_type
+        super(Enum, self).__init__(optional, default)
+
+    def _load(self, value):
+        if not isinstance(value, six.text_type):
+            raise SchemaError('serialized enum value has to be a string')
+        if value not in self.value_type.__members__:
+            raise SchemaError('unrecognized enum value {}'.format(value))
+        return self.value_type[value]
+
+    def _dump(self, value):
+        return six.text_type(value.name)

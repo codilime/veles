@@ -15,6 +15,8 @@
 from __future__ import unicode_literals
 
 import unittest
+import enum
+import six
 
 from veles.data.bindata import BinData
 from veles.schema.nodeid import NodeID
@@ -54,6 +56,12 @@ class Zlew(object):
 
     def __hash__(self):
         return 13
+
+
+class ZlewType(enum.Enum):
+    ZLEW = 'zlewzlewzlew'
+    TURBOZLEW = b'turbo'
+    DWUZLEW = 2
 
 
 class TestFields(unittest.TestCase):
@@ -420,3 +428,22 @@ class TestFields(unittest.TestCase):
         self.assertEqual(a.dump({}), {})
         self.assertEqual(a.dump({Piwo(): Zlew()}), {'piwo': 'zlew'})
         fields.Map(fields.Integer(), fields.String(), default={1: 'a'})
+
+    def test_enum(self):
+        a = fields.Enum(ZlewType)
+        a.validate(ZlewType.ZLEW)
+        with self.assertRaises(SchemaError):
+            a.validate('ZLEW')
+        with self.assertRaises(SchemaError):
+            a.validate('zlewzlewzlew')
+        self.assertEqual(a.dump(ZlewType.ZLEW), 'ZLEW')
+        self.assertIsInstance(a.dump(ZlewType.ZLEW), six.text_type)
+        self.assertIs(a.load('TURBOZLEW'), ZlewType.TURBOZLEW)
+        with self.assertRaises(SchemaError):
+            a.load(2)
+        with self.assertRaises(SchemaError):
+            a.load('zlewzlewzlew')
+        with self.assertRaises(SchemaError):
+            a.load('PIETROZLEW')
+        with self.assertRaises(TypeError):
+            fields.Enum(int)
