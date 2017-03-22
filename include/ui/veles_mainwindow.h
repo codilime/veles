@@ -25,6 +25,7 @@
 #include <QStringList>
 #include <QIcon>
 #include <QProcess>
+#include <QLabel>
 
 #include "dbif/promise.h"
 #include "dbif/types.h"
@@ -44,6 +45,8 @@ class ConnectionManager : public QObject {
   Q_OBJECT
 
  public:
+  enum class ConnectionState {NotConnected, Connecting, Connected};
+
   ConnectionManager(QWidget* parent = nullptr);
   virtual ~ConnectionManager();
 
@@ -59,7 +62,10 @@ class ConnectionManager : public QObject {
   void startLocalServer();
   void killLocalServer();
   void disconnect();
-  void  serverProcessReadyRead();
+  void serverProcessReadyRead();
+
+ signals:
+  void connectionStateChanged(ConnectionState connection_state);
 
  private:
   QAction* show_connection_dialog_action_;
@@ -67,6 +73,22 @@ class ConnectionManager : public QObject {
   QAction* kill_locally_created_server_action_;
   QProcess* server_process_;
   ConnectionDialog* connection_dialog_;
+};
+
+/*****************************************************************************/
+/* ConnectionNotificationWidget */
+/*****************************************************************************/
+
+class ConnectionNotificationWidget : public QLabel {
+  Q_OBJECT
+
+ public:
+  ConnectionNotificationWidget(QWidget* parent = nullptr);
+  virtual ~ConnectionNotificationWidget();
+
+ public slots:
+  void updateConnectionState(
+      ConnectionManager::ConnectionState connection_state);
 };
 
 /*****************************************************************************/
@@ -126,6 +148,9 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   QPointer<DockWidget> log_dock_widget_;
 
   ConnectionManager* connection_manager_;
+  ConnectionNotificationWidget* connection_notification_widget_;
+
+  QToolBar* tool_bar_;
 };
 
 }  // namespace ui

@@ -80,11 +80,15 @@ QAction* ConnectionManager::killLocallyCreatedServerAction() {
 }
 
 void ConnectionManager::locallyCreatedServerStarted() {
+  QTextStream out(veles::ui::LogWidget::output());
+  out << "Process of locally created server started." << endl;
   kill_locally_created_server_action_->setEnabled(true);
 }
 
 void ConnectionManager::locallyCreatedServerFinished(int exit_code,
     QProcess::ExitStatus exit_status) {
+  QTextStream out(veles::ui::LogWidget::output());
+  out << "Process of locally created server finished." << endl;
   kill_locally_created_server_action_->setEnabled(false);
   server_process_->deleteLater();
   server_process_ = nullptr;
@@ -126,6 +130,18 @@ void ConnectionManager::startLocalServer() {
       << connection_dialog_->databaseFile()
       << QString("%1:%2").arg(connection_dialog_->serverHost())
       .arg(connection_dialog_->serverPort());
+
+  QTextStream out(veles::ui::LogWidget::output());
+  out
+      << "Trying to start a new server..." << endl
+      << "    working directory: " << directory_path << endl
+      << "    python script name: " << server_file_name << endl
+      << "    arguments:" << endl;
+  for (auto arg : arguments) {
+    out << "        " << arg << endl;
+  }
+  out << endl;
+
   server_process_->start("python3", arguments);
 }
 
@@ -147,6 +163,32 @@ void ConnectionManager::serverProcessReadyRead() {
     if(len > 0) {
       LogWidget::output()->write(buf, len);
     }
+  }
+}
+
+/*****************************************************************************/
+/* ConnectionNotificationWidget */
+/*****************************************************************************/
+
+ConnectionNotificationWidget::ConnectionNotificationWidget(QWidget* parent)
+    : QLabel(parent) {
+  setText("Not connected");
+}
+
+ConnectionNotificationWidget::~ConnectionNotificationWidget() {}
+
+void ConnectionNotificationWidget::updateConnectionState(
+    ConnectionManager::ConnectionState connection_state) {
+  switch (connection_state) {
+  case ConnectionManager::ConnectionState::NotConnected:
+    setText("Not connected");
+    break;
+  case ConnectionManager::ConnectionState::Connecting:
+    setText("Connecting");
+    break;
+  case ConnectionManager::ConnectionState::Connected:
+    setText("Connected");
+    break;
   }
 }
 
@@ -228,6 +270,13 @@ void VelesMainWindow::init() {
       }
     }
   });
+
+  tool_bar_ = addToolBar("Connection");
+  connection_notification_widget_ = new ConnectionNotificationWidget(this);
+  connect(connection_manager_, &ConnectionManager::connectionStateChanged,
+      connection_notification_widget_,
+      &ConnectionNotificationWidget::updateConnectionState);
+  tool_bar_->addWidget(connection_notification_widget_);
 
   connection_manager_->showConnectionDialogAction()->trigger();
 }
