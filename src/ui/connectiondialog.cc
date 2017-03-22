@@ -14,15 +14,16 @@
  * limitations under the License.
  *
  */
-#include <random>
-#include <functional>
-#include <ctime>
-#include <climits>
-
-#include <QtGlobal>
-
 #include "ui/connectiondialog.h"
 #include "ui_connectiondialog.h"
+
+#include <climits>
+#include <cstdint>
+#include <ctime>
+#include <limits>
+#include <random>
+
+#include <QtGlobal>
 
 namespace veles {
 namespace ui {
@@ -120,17 +121,16 @@ void ConnectionDialog::clientLocalhost() {
 }
 
 void ConnectionDialog::randomKey() {
-  static std::function<unsigned long ()> random_int = nullptr;
-
-  if(random_int == nullptr) {
-    std::default_random_engine random_engine;
-    random_engine.seed(time(nullptr));
-    std::uniform_int_distribution<unsigned long> uniform_distribution(0, ULONG_MAX);
-    random_int = std::bind(uniform_distribution, random_engine);
-  }
-
-  unsigned long random_key = random_int();
-  ui_->key_line_edit->setText(QString("%1").arg(random_key, 16, 16, QChar('0')));
+  // TODO: This is cryptographically-secure on all modern OS-es, but this isn't
+  // explicitely guarateed by the standard. We should fix it someday.
+  std::random_device rd;
+  std::uniform_int_distribution<uint32_t> uniform;
+  auto gen_key_part = [&rd, &uniform](){
+    return QString("%1").arg(uniform(rd), 8 /* width */, 16 /* base */,
+                             QChar('0'));
+  };
+  ui_->key_line_edit->setText(gen_key_part() + gen_key_part() + gen_key_part()
+                              + gen_key_part());
 }
 
 void ConnectionDialog::userAsClientName() {
