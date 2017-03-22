@@ -33,63 +33,10 @@
 #include "ui/dockwidget.h"
 #include "ui/optionsdialog.h"
 #include "ui/connectiondialog.h"
+#include "ui/connectionmanager.h"
 
 namespace veles {
 namespace ui {
-
-/*****************************************************************************/
-/* ConnectionManager */
-/*****************************************************************************/
-
-class ConnectionManager : public QObject {
-  Q_OBJECT
-
- public:
-  enum class ConnectionState {NotConnected, Connecting, Connected};
-
-  ConnectionManager(QWidget* parent = nullptr);
-  virtual ~ConnectionManager();
-
-  QAction* showConnectionDialogAction();
-  QAction* disconnectAction();
-  QAction* killLocallyCreatedServerAction();
-
- public slots:
-  void locallyCreatedServerStarted();
-  void locallyCreatedServerFinished(int exit_code,
-      QProcess::ExitStatus exit_status);
-  void connectionDialogAccepted();
-  void startLocalServer();
-  void killLocalServer();
-  void disconnect();
-  void serverProcessReadyRead();
-
- signals:
-  void connectionStateChanged(ConnectionState connection_state);
-
- private:
-  QAction* show_connection_dialog_action_;
-  QAction* disconnect_action_;
-  QAction* kill_locally_created_server_action_;
-  QProcess* server_process_;
-  ConnectionDialog* connection_dialog_;
-};
-
-/*****************************************************************************/
-/* ConnectionNotificationWidget */
-/*****************************************************************************/
-
-class ConnectionNotificationWidget : public QLabel {
-  Q_OBJECT
-
- public:
-  ConnectionNotificationWidget(QWidget* parent = nullptr);
-  virtual ~ConnectionNotificationWidget();
-
- public slots:
-  void updateConnectionState(
-      ConnectionManager::ConnectionState connection_state);
-};
 
 /*****************************************************************************/
 /* VelesMainWindow */
