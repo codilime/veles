@@ -41,6 +41,7 @@ class ConnectionDialog : public QDialog {
   QString authenticationKey();
   QString clientName();
   QString databaseFile();
+  QString serverScript();
 
  public slots:
   void serverLocalhost();
@@ -49,13 +50,15 @@ class ConnectionDialog : public QDialog {
   void userAsClientName();
   void newServerToggled(bool toggled);
   void databaseFileSelected(const QString& file_name);
+  void serverFileSelected(const QString& file_name);
 
  protected:
   void showEvent(QShowEvent* event) override;
 
  private:
   Ui::ConnectionDialog* ui_;
-  QFileDialog* file_dialog_;
+  QFileDialog* db_file_dialog_;
+  QFileDialog* server_file_dialog_;
 };
 
 }  // namespace ui
