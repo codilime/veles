@@ -24,6 +24,9 @@ try:
 except ImportError:
     from fractions import gcd
 
+from veles.schema.model import Model
+from veles.schema import fields
+
 
 class Endian(Enum):
     """
@@ -33,7 +36,7 @@ class Endian(Enum):
     BIG = 'big'
 
 
-class Repacker(object):
+class Repacker(Model):
     """
     Repacks binary data to a different element width.  Repacking conceptually
     works as follows:
@@ -56,18 +59,19 @@ class Repacker(object):
     elements than that are available in the source.
     """
 
-    def __init__(self, endian, from_width, to_width, high_pad=0, low_pad=0):
-        if not isinstance(endian, Endian):
-            raise TypeError('invalid endianness given')
-        self.endian = endian
-        self.from_width = operator.index(from_width)
-        self.to_width = operator.index(to_width)
-        self.high_pad = operator.index(high_pad)
-        self.low_pad = operator.index(low_pad)
-        if self.from_width <= 0 or self.to_width <= 0:
-            raise ValueError('width has to be positive')
-        if self.high_pad < 0 or self.low_pad < 0:
-            raise ValueError('padding cannot be negative')
+    endian = fields.Enum(Endian)
+    from_width = fields.SmallUnsignedInteger(minimum=1)
+    to_width = fields.SmallUnsignedInteger(minimum=1)
+    high_pad = fields.SmallUnsignedInteger(default=0)
+    low_pad = fields.SmallUnsignedInteger(default=0)
+
+    def __init__(self, endian, from_width, to_width, **kwargs):
+        super(Repacker, self).__init__(
+            endian=endian,
+            from_width=from_width,
+            to_width=to_width,
+            **kwargs
+        )
 
     @property
     def padded_width(self):
