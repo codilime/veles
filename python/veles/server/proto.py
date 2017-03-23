@@ -51,8 +51,7 @@ class Subscriber(BaseSubscriber):
     def error(self, err):
         self.proto.send_msg(messages.MsgQueryError(
             qid=self.qid,
-            code=err.code,
-            msg=err.msg,
+            err=err,
         ))
 
 
@@ -71,8 +70,7 @@ class SubscriberData(BaseSubscriberData):
     def error(self, err):
         self.proto.send_msg(messages.MsgQueryError(
             qid=self.qid,
-            code=err.code,
-            msg=err.msg,
+            err=err,
         ))
 
 
@@ -91,8 +89,7 @@ class SubscriberBinData(BaseSubscriberBinData):
     def error(self, err):
         self.proto.send_msg(messages.MsgQueryError(
             qid=self.qid,
-            code=err.code,
-            msg=err.msg,
+            err=err,
         ))
 
 
@@ -112,8 +109,7 @@ class SubscriberList(BaseSubscriberList):
     def error(self, err):
         self.proto.send_msg(messages.MsgQueryError(
             qid=self.qid,
-            code=err.code,
-            msg=err.msg,
+            err=err,
         ))
 
 
@@ -165,10 +161,9 @@ class ServerProto(asyncio.Protocol):
             if msg.object_type not in handlers:
                 raise SchemaError('unhandled message type')
             await handlers[msg.object_type](msg)
-        except VelesException as e:
+        except VelesException as err:
             self.send_msg(messages.MsgProtoError(
-                code=e.code,
-                msg=e.msg,
+                err=err,
             ))
 
     def connection_lost(self, ex):
@@ -182,11 +177,10 @@ class ServerProto(asyncio.Protocol):
     async def do_request(self, msg, req):
         try:
             await req
-        except VelesException as e:
+        except VelesException as err:
             self.send_msg(messages.MsgRequestError(
                 rid=msg.rid,
-                code=e.code,
-                msg=e.msg,
+                err=err,
             ))
         else:
             self.send_msg(messages.MsgRequestAck(
@@ -244,11 +238,10 @@ class ServerProto(asyncio.Protocol):
         if not msg.sub:
             try:
                 obj = await obj.refresh()
-            except VelesException as e:
+            except VelesException as err:
                 self.send_msg(messages.MsgQueryError(
                     qid=msg.qid,
-                    code=e.code,
-                    msg=e.msg,
+                    err=err,
                 ))
             else:
                 self.send_msg(messages.MsgGetReply(
@@ -265,11 +258,10 @@ class ServerProto(asyncio.Protocol):
         if not msg.sub:
             try:
                 data = await obj.get_data(msg.key)
-            except VelesException as e:
+            except VelesException as err:
                 self.send_msg(messages.MsgQueryError(
                     qid=msg.qid,
-                    code=e.code,
-                    msg=e.msg,
+                    err=err,
                 ))
             else:
                 self.send_msg(messages.MsgGetDataReply(
@@ -286,11 +278,10 @@ class ServerProto(asyncio.Protocol):
         if not msg.sub:
             try:
                 data = await obj.get_bindata(msg.key, msg.start, msg.end)
-            except VelesException as e:
+            except VelesException as err:
                 self.send_msg(messages.MsgQueryError(
                     qid=msg.qid,
-                    code=e.code,
-                    msg=e.msg,
+                    err=err,
                 ))
             else:
                 self.send_msg(messages.MsgGetBinDataReply(
@@ -308,11 +299,10 @@ class ServerProto(asyncio.Protocol):
         if not msg.sub:
             try:
                 objs = await parent.get_list(msg.tags, msg.pos_filter)
-            except VelesException as e:
+            except VelesException as err:
                 self.send_msg(messages.MsgQueryError(
                     qid=msg.qid,
-                    code=e.code,
-                    msg=e.msg,
+                    err=err,
                 ))
             else:
                 self.send_msg(messages.MsgGetListReply(

@@ -15,6 +15,7 @@
 from __future__ import unicode_literals
 
 from veles.proto.node import Node, PosFilter
+from veles.proto.exceptions import VelesException
 from veles.schema import model, fields
 from veles.schema.nodeid import NodeID
 
@@ -61,8 +62,7 @@ class MsgConnectionError(MsgpackMsg):
 
     object_type = 'connection_error'
 
-    code = fields.String()
-    msg = fields.String()
+    err = fields.Object(VelesException)
 
 
 class MsgProtoError(MsgpackMsg):
@@ -72,8 +72,7 @@ class MsgProtoError(MsgpackMsg):
 
     object_type = 'proto_error'
 
-    code = fields.String()
-    msg = fields.String()
+    err = fields.Object(VelesException)
 
 
 # XXX NYI
@@ -248,8 +247,7 @@ class MsgQueryError(MsgpackMsg):
     object_type = 'query_error'
 
     qid = fields.SmallUnsignedInteger()
-    code = fields.String()
-    msg = fields.String()
+    err = fields.Object(VelesException)
 
 
 class MsgCancelSubscription(MsgpackMsg):
@@ -440,8 +438,7 @@ class MsgRequestError(MsgpackMsg):
     object_type = 'request_error'
 
     rid = fields.SmallUnsignedInteger()
-    code = fields.String()
-    msg = fields.String()
+    err = fields.Object(VelesException)
 
 
 # methods & triggers

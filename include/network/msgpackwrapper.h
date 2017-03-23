@@ -22,6 +22,7 @@
 #include <QtNetwork/QTcpSocket>
 
 #include "network/msgpackobject.h"
+#include "proto/exceptions.h"
 #include "messages.h"
 
 namespace veles {

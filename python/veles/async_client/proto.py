@@ -22,10 +22,7 @@ import asyncio
 import msgpack
 
 from veles.proto import messages, msgpackwrap
-from veles.proto.exceptions import (
-    VelesException,
-    SchemaError,
-)
+from veles.proto.exceptions import SchemaError
 
 
 class ClientProto(asyncio.Protocol):
@@ -76,7 +73,7 @@ class ClientProto(asyncio.Protocol):
         self.qids[msg.qid].handle_reply(msg)
 
     async def msg_query_error(self, msg):
-        self.qids[msg.qid].handle_error(VelesException(msg.code, msg.msg))
+        self.qids[msg.qid].handle_error(msg.err)
 
     async def msg_subscription_cancelled(self, msg):
         del self.qids[msg.qid]
@@ -85,10 +82,10 @@ class ClientProto(asyncio.Protocol):
         self.rids[msg.rid].handle_ack()
 
     async def msg_request_error(self, msg):
-        self.rids[msg.rid].handle_error(VelesException(msg.code, msg.msg))
+        self.rids[msg.rid].handle_error(msg.err)
 
     async def msg_proto_error(self, msg):
-        raise VelesException(msg.code, msg.msg)
+        raise msg.err
 
 
 async def create_unix_client(loop, path):

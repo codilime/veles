@@ -21,7 +21,7 @@ import six
 from veles.data.bindata import BinData
 from veles.schema.nodeid import NodeID
 from veles.schema import fields
-from veles.proto.exceptions import SchemaError
+from veles.proto.exceptions import VelesException, SchemaError
 
 
 class Piwo(object):
@@ -447,3 +447,52 @@ class TestFields(unittest.TestCase):
             a.load('PIETROZLEW')
         with self.assertRaises(TypeError):
             fields.Enum(int)
+
+    def test_exception(self):
+        a = fields.Object(VelesException)
+        a.validate(VelesException('abc', 'def'))
+        a.validate(SchemaError())
+        with self.assertRaises(SchemaError):
+            a.validate('zlew')
+        with self.assertRaises(SchemaError):
+            a.validate(Exception())
+        de = a.dump(VelesException('abc', 'def'))
+        self.assertEqual(de, {
+            'type': 'abc',
+            'message': 'def',
+        })
+        for k, v in de.items():
+            self.assertIsInstance(k, six.text_type)
+            self.assertIsInstance(v, six.text_type)
+        de = a.dump(SchemaError())
+        self.assertEqual(de, {
+            'type': 'schema_error',
+            'message': SchemaError.msg,
+        })
+        for k, v in de.items():
+            self.assertIsInstance(k, six.text_type)
+            self.assertIsInstance(v, six.text_type)
+        exc = a.load({
+            'type': 'abc',
+            'message': 'def',
+        })
+        self.assertIs(type(exc), VelesException)
+        self.assertEqual(exc.code, 'abc')
+        self.assertEqual(exc.msg, 'def')
+        exc = a.load({
+            'type': 'schema_error',
+            'message': 'ghi',
+        })
+        self.assertIs(type(exc), SchemaError)
+        self.assertEqual(exc.code, 'schema_error')
+        self.assertEqual(exc.msg, 'ghi')
+        with self.assertRaises(SchemaError):
+            a.load([])
+        with self.assertRaises(SchemaError):
+            a.load({})
+        with self.assertRaises(SchemaError):
+            a.load({'type': 'abc', 'message': 'def', 'hgw': 'zlew'})
+        with self.assertRaises(SchemaError):
+            a.load({'type': b'zlew', 'message': 'def'})
+        with self.assertRaises(SchemaError):
+            a.load({'type': 'zlew', 'message': b'def'})

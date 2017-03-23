@@ -1,3 +1,19 @@
+# Copyright 2017 CodiLime
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import six
+
 from veles.compatibility.pep487 import NewObject
 
 
@@ -24,6 +40,36 @@ class VelesException(Exception, NewObject):
     def __init_subclass__(cls, **kwargs):
         super(VelesException, cls).__init_subclass__(**kwargs)
         VelesException.types[cls.code] = cls
+
+    @classmethod
+    def load(cls, value):
+        if not isinstance(value, dict):
+            raise SchemaError('serialized exception must be a dict')
+        if set(value) != {'type', 'message'}:
+            raise SchemaError('wrong set of keys in serialized exception')
+        if not isinstance(value['type'], six.text_type):
+            raise SchemaError('exception type must be a string')
+        if not isinstance(value['message'], six.text_type):
+            raise SchemaError('exception message must be a string')
+        return VelesException(value['type'], value['message'])
+
+    def dump(self):
+        return {
+            u'type': six.text_type(self.code),
+            u'message': six.text_type(self.msg),
+        }
+
+    @classmethod
+    def cpp_type(cls):
+        return 'veles::proto::VelesException', None
+
+    def __eq__(self, other):
+        return (isinstance(other, VelesException)
+                and self.code == other.code
+                and self.msg == other.msg)
+
+    def __hash__(self):
+        return hash((self.code, self.msg))
 
 
 class ObjectGoneError(VelesException):

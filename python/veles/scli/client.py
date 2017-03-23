@@ -17,7 +17,6 @@ import socket
 import msgpack
 
 from veles.proto import messages, msgpackwrap
-from veles.proto.exceptions import VelesException
 from veles.schema import nodeid
 
 
@@ -48,7 +47,7 @@ class Client(object):
         if isinstance(pkt, messages.MsgRequestAck) and pkt.rid == 0:
             return msg.id
         elif isinstance(pkt, messages.MsgRequestError) and pkt.rid == 0:
-            raise VelesException(pkt.code, pkt.msg)
+            raise pkt.err
         else:
             print(pkt)
             raise Exception('weird reply to request')
@@ -148,7 +147,7 @@ class Client(object):
         if isinstance(pkt, messages.MsgGetReply) and pkt.qid == 0:
             return pkt.obj
         elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
-            raise VelesException(pkt.code, pkt.msg)
+            raise pkt.err
         else:
             raise Exception('weird reply to get')
 
@@ -164,7 +163,7 @@ class Client(object):
             if isinstance(pkt, messages.MsgGetReply) and pkt.qid == 0:
                 yield pkt.obj
             elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
-                raise VelesException(pkt.code, pkt.msg)
+                raise pkt.err
             else:
                 raise Exception('weird reply to get')
 
@@ -179,7 +178,7 @@ class Client(object):
         if isinstance(pkt, messages.MsgGetDataReply) and pkt.qid == 0:
             return pkt.data
         elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
-            raise VelesException(pkt.code, pkt.msg)
+            raise pkt.err
         else:
             raise Exception('weird reply to get_data')
 
@@ -196,7 +195,7 @@ class Client(object):
             if isinstance(pkt, messages.MsgGetDataReply) and pkt.qid == 0:
                 yield pkt.data
             elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
-                raise VelesException(pkt.code, pkt.msg)
+                raise pkt.err
             else:
                 raise Exception('weird reply to get_data')
 
@@ -213,7 +212,7 @@ class Client(object):
         if isinstance(pkt, messages.MsgGetBinDataReply) and pkt.qid == 0:
             return pkt.data
         elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
-            raise VelesException(pkt.code, pkt.msg)
+            raise pkt.err
         else:
             raise Exception('weird reply to get_bindata')
 
@@ -232,7 +231,7 @@ class Client(object):
             if isinstance(pkt, messages.MsgGetBinDataReply) and pkt.qid == 0:
                 yield pkt.data
             elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
-                raise VelesException(pkt.code, pkt.msg)
+                raise pkt.err
             else:
                 raise Exception('weird reply to get_bindata')
 
@@ -246,7 +245,7 @@ class Client(object):
         if isinstance(pkt, messages.MsgGetListReply) and pkt.qid == 0:
             return pkt.objs
         elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
-            raise VelesException(pkt.code, pkt.msg)
+            raise pkt.err
         else:
             print(pkt)
             raise Exception('weird reply to list')
@@ -263,7 +262,7 @@ class Client(object):
             if isinstance(pkt, messages.MsgGetListReply) and pkt.qid == 0:
                 yield pkt
             elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
-                raise VelesException(pkt.code, pkt.msg)
+                raise pkt.err
             else:
                 print(pkt)
                 raise Exception('weird reply to list')

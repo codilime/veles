@@ -21,6 +21,7 @@
 #include <msgpack.hpp>
 
 #include "data/nodeid.h"
+#include "proto/exceptions.h"
 
 namespace veles {
 namespace messages {
@@ -188,6 +189,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const double val);
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const data::NodeID& val);
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::NodeID> val);
+std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<proto::VelesException> val);
 
 template <class T>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::unordered_set<T>& val) {
@@ -316,6 +318,7 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, int64_t& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, uint64_t& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, double& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<data::NodeID>& out);
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<proto::VelesException>& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<MsgpackObject>& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<std::string>& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<std::vector<uint8_t>>& out);

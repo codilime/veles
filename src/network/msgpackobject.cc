@@ -278,6 +278,15 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::NodeI
   return std::make_shared<MsgpackObject>(0, val->asVector());
 }
 
+std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<proto::VelesException> val) {
+  if (val == nullptr) return nullptr;
+  std::map<std::string, std::shared_ptr<MsgpackObject>> m {
+    {"type", toMsgpackObject(val->code)},
+    {"message", toMsgpackObject(val->msg)},
+  };
+  return std::make_shared<MsgpackObject>(m);
+}
+
 std::shared_ptr<MsgpackObject> toMsgpackObject(const double val) {
   return std::make_shared<MsgpackObject>(val);
 }
@@ -289,6 +298,35 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr
     out = std::make_shared<data::NodeID>(data::NodeID::NIL_VALUE);
   } else {
     out = std::make_shared<data::NodeID>(obj->getExt().second->data());
+  }
+}
+
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<proto::VelesException>& out) {
+  if (obj == nullptr) {
+    out = nullptr;
+  } else if (obj->type() == ObjectType::NIL) {
+    out = nullptr;
+  } else {
+    std::string type;
+    std::string message;
+    bool type_set = false;
+    bool message_set = false;
+    for (auto el : *obj->getMap()) {
+      if (el.first == "type") {
+        type = *el.second->getString();
+        type_set = true;
+      } else if (el.first == "message") {
+        message = *el.second->getString();
+        message_set = true;
+      } else {
+        throw proto::SchemaError("unknown field in exception");
+      }
+    }
+    if (!type_set)
+      throw proto::SchemaError("exception type missing");
+    if (!message_set)
+      throw proto::SchemaError("exception message missing");
+    out = std::make_shared<proto::VelesException>(type, message);
   }
 }
 
