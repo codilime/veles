@@ -109,6 +109,10 @@ void ConnectionManager::startLocalServer() {
   QString server_file_name = server_file.fileName();
 
   server_process_->setWorkingDirectory(directory_path);
+  QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+  env.insert("PYTHONUNBUFFERED", "1");
+  server_process_->setProcessEnvironment(env);
+
   QStringList arguments;
   arguments
       << server_file_name
@@ -116,18 +120,22 @@ void ConnectionManager::startLocalServer() {
       << QString("%1:%2").arg(connection_dialog_->serverHost())
       .arg(connection_dialog_->serverPort());
 
+  QString python_interpreter_executable("python3");
+
   QTextStream out(veles::ui::LogWidget::output());
   out
       << "Trying to start a new server..." << endl
       << "    working directory: " << directory_path << endl
       << "    python script name: " << server_file_name << endl
+      << "    python interpreter executable: "
+      << python_interpreter_executable << endl
       << "    arguments:" << endl;
-  for (auto arg : arguments) {
+  for (const auto& arg : arguments) {
     out << "        " << arg << endl;
   }
   out << endl;
 
-  server_process_->start("python3", arguments);
+  server_process_->start(python_interpreter_executable, arguments);
 }
 
 void ConnectionManager::killLocalServer() {
@@ -142,9 +150,10 @@ void ConnectionManager::disconnect() {
 }
 
 void ConnectionManager::serverProcessReadyRead() {
-  char buf[1024];
-  if(server_process_) {
-    qint64 len = server_process_->read(buf, sizeof(buf));
+  char buf[10240];
+  if(server_process_ && (server_process_->canReadLine()
+      || server_process_->bytesAvailable() > (qint64)sizeof(buf))) {
+    qint64 len = server_process_->readLine(buf, sizeof(buf));
     if(len > 0) {
       LogWidget::output()->write(buf, len);
     }

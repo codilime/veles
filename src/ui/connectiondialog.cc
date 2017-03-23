@@ -28,7 +28,7 @@
 namespace veles {
 namespace ui {
 
-ConnectionDialog::ConnectionDialog(QWidget *parent)
+ConnectionDialog::ConnectionDialog(QWidget* parent)
     : QDialog(parent),
       ui_(new Ui::ConnectionDialog) {
   ui_->setupUi(this);
@@ -47,10 +47,7 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
   db_file_dialog_ = new QFileDialog(this);
   db_file_dialog_->setAcceptMode(QFileDialog::AcceptOpen);
   db_file_dialog_->setFileMode(QFileDialog::AnyFile);
-
-  QStringList file_name_filters;
-  file_name_filters << "All files (*.*)";
-  db_file_dialog_->setNameFilters(file_name_filters);
+  db_file_dialog_->setNameFilters({"All files (*.*)"});
 
   connect(ui_->select_database_button, &QPushButton::clicked,
         db_file_dialog_, &QFileDialog::show);
@@ -60,6 +57,7 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
   server_file_dialog_ = new QFileDialog(this);
   server_file_dialog_->setAcceptMode(QFileDialog::AcceptOpen);
   server_file_dialog_->setFileMode(QFileDialog::ExistingFile);
+  server_file_dialog_->setNameFilters({"Python scripts (*.py)"});
 
   connect(ui_->select_server_executable_button, &QPushButton::clicked,
       server_file_dialog_, &QFileDialog::show);
@@ -71,7 +69,7 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
   randomKey();
   userAsClientName();
 
-  ui_->database_line_edit->setText("hack-o-store.dark-matter");
+  ui_->database_line_edit->setText("hack-o-store.veles");
   newServerToggled(ui_->new_server_radio_button->isChecked());
 }
 
@@ -137,8 +135,10 @@ void ConnectionDialog::userAsClientName() {
   QString client_name;
 #if defined(Q_OS_LINUX) || defined(Q_OS_MAC)
   client_name = qgetenv("USER");
-#else // Windows
+#elif defined(Q_OS_WINDOWS)
   client_name = qgetenv("USERNAME");
+#else
+  client_name = "Veles UI";
 #endif
 
   if(client_name.length() == 0) {
@@ -156,6 +156,8 @@ void ConnectionDialog::newServerToggled(bool toggled) {
   ui_->server_executable_label->setEnabled(toggled);
   ui_->server_executable_line_edit->setEnabled(toggled);
   ui_->select_server_executable_button->setEnabled(toggled);
+
+  ui_->random_key_button->setEnabled(toggled);
 }
 
 void ConnectionDialog::databaseFileSelected(const QString& file_name) {

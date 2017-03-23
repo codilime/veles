@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Connect...</string>
+   <string>Connect</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
