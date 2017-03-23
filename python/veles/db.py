@@ -178,7 +178,7 @@ class Database:
                     pos_end=db_bigint_decode(pos_end), tags=tags, attr=attr,
                     data=data, bindata=bindata)
 
-    def create(self, node):
+    def create(self, node, commit=True):
         if not isinstance(node, Node):
             raise TypeError('node has wrong type')
         if node.id == NodeID.root_id:
@@ -209,9 +209,10 @@ class Database:
             (raw_id, key, buffer(self.packer.pack(val)))
             for key, val in node.attr.items()
         ])
-        self.db.commit()
+        if commit:
+            self.commit()
 
-    def set_pos(self, id, pos_start, pos_end):
+    def set_pos(self, id, pos_start, pos_end, commit=True):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if (not isinstance(pos_start, six.integer_types)
@@ -231,9 +232,10 @@ class Database:
             db_bigint_encode(pos_end),
             raw_id
         ))
-        self.db.commit()
+        if commit:
+            self.commit()
 
-    def set_parent(self, id, parent_id):
+    def set_parent(self, id, parent_id, commit=True):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if not isinstance(parent_id, NodeID):
@@ -249,9 +251,10 @@ class Database:
             SET parent = ?
             WHERE id = ?
         """, (raw_parent, raw_id))
-        self.db.commit()
+        if commit:
+            self.commit()
 
-    def add_tag(self, id, tag):
+    def add_tag(self, id, tag, commit=True):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if not isinstance(tag, six.text_type):
@@ -265,9 +268,10 @@ class Database:
         c.execute("""
             INSERT INTO node_tag (id, name) VALUES (?, ?)
         """, (raw_id, tag))
-        self.db.commit()
+        if commit:
+            self.commit()
 
-    def del_tag(self, id, tag):
+    def del_tag(self, id, tag, commit=True):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if not isinstance(tag, six.text_type):
@@ -278,9 +282,10 @@ class Database:
             DELETE FROM node_tag
             WHERE id = ? AND name = ?
         """, (raw_id, tag))
-        self.db.commit()
+        if commit:
+            self.commit()
 
-    def set_attr(self, id, key, val):
+    def set_attr(self, id, key, val, commit=True):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if not isinstance(key, six.text_type):
@@ -294,7 +299,8 @@ class Database:
             c.execute("""
                 INSERT INTO node_attr (id, name, data) VALUES (?, ?, ?)
             """, (raw_id, key, buffer(self.packer.pack(val))))
-        self.db.commit()
+        if commit:
+            self.commit()
 
     def get_data(self, id, key):
         if not isinstance(id, NodeID):
@@ -312,7 +318,7 @@ class Database:
         (data,), = rows
         return self._load(data)
 
-    def set_data(self, id, key, data):
+    def set_data(self, id, key, data, commit=True):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if not isinstance(key, six.text_type):
@@ -326,7 +332,8 @@ class Database:
             c.execute("""
                 INSERT INTO node_data (id, name, data) VALUES (?, ?, ?)
             """, (raw_id, key, buffer(self.packer.pack(data))))
-        self.db.commit()
+        if commit:
+            self.commit()
 
     def get_bindata(self, id, key, start=0, end=None):
         if not isinstance(id, NodeID):
@@ -365,7 +372,7 @@ class Database:
         data = b''.join(bytes(x) for x, in c.fetchall())
         return data[start:end]
 
-    def set_bindata(self, id, key, start, data, truncate=False):
+    def set_bindata(self, id, key, start, data, truncate=False, commit=True):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         start = operator.index(start)
@@ -448,9 +455,10 @@ class Database:
         ])
 
         # We're done here.
-        self.db.commit()
+        if commit:
+            self.commit()
 
-    def delete(self, id):
+    def delete(self, id, commit=True):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         raw_id = buffer(id.bytes)
@@ -470,7 +478,8 @@ class Database:
         c.execute("""
             DELETE FROM node WHERE id = ?
         """, (raw_id,))
-        self.db.commit()
+        if commit:
+            self.commit()
 
     def list(self, parent, tags=frozenset(), pos_filter=PosFilter()):
         if not isinstance(parent, NodeID):
@@ -512,6 +521,15 @@ class Database:
         c = self.db.cursor()
         c.execute(stmt, args)
         return {NodeID(bytes(x)) for x, in c.fetchall()}
+
+    def begin(self):
+        assert not self.db.in_transaction
+
+    def commit(self):
+        self.db.commit()
+
+    def rollback(self):
+        self.db.rollback()
 
     def close(self):
         self.db.close()

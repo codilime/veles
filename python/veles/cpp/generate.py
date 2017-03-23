@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from veles.proto import node, messages
+from veles.proto import node, messages, check, operation
 import six
 
 
@@ -22,7 +22,7 @@ def generate_cpp_code():
         raise RuntimeError('C++ code can only be generated on Python 3.x')
     code = '#define MSGPACK_CLASSES_HEADER \\\n'
     classes_to_generate = [node.Node, node.PosFilter]
-    poly_classes = [messages.MsgpackMsg]
+    poly_classes = [messages.MsgpackMsg, check.Check, operation.Operation]
     for cls_type in classes_to_generate:
         code += 'class {};\\\n'.format(cls_type.cpp_type())
     for cls_type in poly_classes:

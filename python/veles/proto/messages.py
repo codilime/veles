@@ -16,6 +16,8 @@ from __future__ import unicode_literals
 
 from veles.proto.node import Node, PosFilter
 from veles.proto.exceptions import VelesException
+from veles.proto.check import Check
+from veles.proto.operation import Operation
 from veles.schema import model, fields
 from veles.schema.nodeid import NodeID
 
@@ -215,6 +217,25 @@ class MsgGetListReply(MsgpackMsg):
     qid = fields.SmallUnsignedInteger()
     objs = fields.List(fields.Object(Node))
     gone = fields.List(fields.NodeID())
+
+
+class MsgGetQuery(MsgpackMsg):
+    object_type = 'get_query'
+
+    qid = fields.SmallUnsignedInteger()
+    node = fields.NodeID()
+    query = fields.String()
+    params = fields.Any(optional=True)
+    trace = fields.Boolean(default=False)
+    sub = fields.Boolean(default=False)
+
+
+class MsgGetQueryReply(MsgpackMsg):
+    object_type = 'get_query_reply'
+
+    qid = fields.SmallUnsignedInteger()
+    result = fields.Any(optional=True)
+    checks = fields.List(fields.Object(Check))
 
 
 # XXX NYI
@@ -418,6 +439,20 @@ class MsgSetBinData(MsgpackMsg):
     start = fields.SmallUnsignedInteger(default=0)
     data = fields.Binary()
     truncate = fields.Boolean(default=False)
+
+
+class MsgTransaction(MsgpackMsg):
+    """
+    Sent by the client to request a list of database-modifying operations.
+    The operations are executed atomically, and only if the attached checks
+    are still valid.
+    """
+
+    object_type = 'transaction'
+
+    rid = fields.SmallUnsignedInteger()
+    checks = fields.List(fields.Object(Check))
+    operations = fields.List(fields.Object(Operation))
 
 
 class MsgRequestAck(MsgpackMsg):

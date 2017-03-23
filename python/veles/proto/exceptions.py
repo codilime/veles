@@ -105,3 +105,8 @@ class UnknownSubscriptionError(VelesException):
 class SubscriptionInUseError(VelesException):
     code = 'subscription_in_use'
     msg = "Subscription id already in use"
+
+
+class PreconditionFailedError(VelesException):
+    code = 'precondition_failed'
+    msg = "Transaction precondition failed"

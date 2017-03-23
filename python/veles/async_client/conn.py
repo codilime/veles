@@ -14,8 +14,9 @@
 
 import weakref
 
+from veles.proto import messages
 from veles.async_conn.conn import AsyncConnection
-from .node import AsyncRemoteNode
+from .node import AsyncRemoteNode, Request
 
 
 class AsyncRemoteConnection(AsyncConnection):
@@ -45,3 +46,12 @@ class AsyncRemoteConnection(AsyncConnection):
     def remove_conn(self, conn):
         print("Conn {} gone.".format(conn.cid))
         self.conns[conn.cid] = None
+
+    def transaction(self, checks, operations):
+        req = Request(self.proto, None)
+        self.proto.send_msg(messages.MsgTransaction(
+            rid=id(req),
+            checks=checks,
+            operations=operations,
+        ))
+        return req.future

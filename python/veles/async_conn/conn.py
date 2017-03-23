@@ -53,3 +53,6 @@ class AsyncConnection:
             id = NodeID()
         obj = self.get_node_norefresh(id)
         return obj, obj._create(parent, pos, tags, attr, data, bindata)
+
+    def transaction(self, checks, operations):
+        raise NotImplementedError

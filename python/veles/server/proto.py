@@ -146,6 +146,7 @@ class ServerProto(asyncio.Protocol):
             'set_attr': self.msg_set_attr,
             'set_data': self.msg_set_data,
             'set_bindata': self.msg_set_bindata,
+            'transaction': self.msg_transaction,
             'get': self.msg_get,
             'get_data': self.msg_get_data,
             'get_bindata': self.msg_get_bindata,
@@ -230,6 +231,10 @@ class ServerProto(asyncio.Protocol):
         obj = self.conn.get_node_norefresh(msg.id)
         await self.do_request(msg, obj.set_bindata(
             msg.key, msg.start, msg.data, msg.truncate))
+
+    async def msg_transaction(self, msg):
+        await self.do_request(msg, self.conn.transaction(
+            msg.checks, msg.operations))
 
     async def msg_get(self, msg):
         if msg.qid in self.subs:
