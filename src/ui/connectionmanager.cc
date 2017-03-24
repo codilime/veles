@@ -175,24 +175,62 @@ void ConnectionManager::serverProcessReadyRead() {
 /*****************************************************************************/
 
 ConnectionNotificationWidget::ConnectionNotificationWidget(QWidget* parent)
-    : QLabel(parent) {
-  setText("Not connected");
+    : QWidget(parent),
+      connection_state_(ConnectionManager::ConnectionState::NotConnected),
+    frame_(0), last_status_change_(-10) {
+  ui_ = new Ui::ConnectionNotificationWidget;
+  ui_->setupUi(this);
+
+  icon_connected_ = QPixmap(":/images/connection_connected.png");
+  icon_not_connected_ = QPixmap(":/images/connection_not_connected.png");
+  icon_alarm_ = QPixmap(":/images/connection_alarm.png");
+
+  updateConnectionState(connection_state_);
+  startTimer(500);
 }
 
 ConnectionNotificationWidget::~ConnectionNotificationWidget() {}
 
 void ConnectionNotificationWidget::updateConnectionState(
     ConnectionManager::ConnectionState connection_state) {
+  if (connection_state != connection_state_) {
+    last_status_change_ = frame_;
+  }
+
   switch (connection_state) {
   case ConnectionManager::ConnectionState::NotConnected:
-    setText("Not connected");
+    ui_->connection_status_text_label->setText("Not connected");
+    ui_->connection_status_icon_label->setPixmap(icon_not_connected_);
     break;
   case ConnectionManager::ConnectionState::Connecting:
-    setText("Connecting");
+    ui_->connection_status_text_label->setText("Connecting");
+    ui_->connection_status_icon_label->setPixmap(icon_not_connected_);
     break;
   case ConnectionManager::ConnectionState::Connected:
-    setText("Connected");
+    ui_->connection_status_text_label->setText("Connected");
+    ui_->connection_status_icon_label->setPixmap(icon_connected_);
     break;
+  }
+
+  connection_state_ = connection_state;
+
+}
+
+void ConnectionNotificationWidget::timerEvent(QTimerEvent* event) {
+  ++frame_;
+
+  if (connection_state_ == ConnectionManager::ConnectionState::Connecting) {
+    ui_->connection_status_icon_label->setPixmap(
+        frame_ % 2 ? icon_connected_ : icon_not_connected_);
+  } else if (connection_state_
+      == ConnectionManager::ConnectionState::NotConnected) {
+    if(frame_ - last_status_change_ < 10) {
+      ui_->connection_status_icon_label->setPixmap(
+          frame_ % 2 ? icon_alarm_ : icon_not_connected_);
+    } else {
+      ui_->connection_status_icon_label->setPixmap(
+          icon_not_connected_);
+    }
   }
 }
 
