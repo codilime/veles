@@ -67,6 +67,7 @@ class ConnectionManager : public QObject {
   QAction* kill_locally_created_server_action_;
   QProcess* server_process_;
   ConnectionDialog* connection_dialog_;
+  bool shut_down_server_on_close_;
 };
 
 /*****************************************************************************/

@@ -49,6 +49,10 @@ ConnectionManager::ConnectionManager(QWidget* parent)
 }
 
 ConnectionManager::~ConnectionManager() {
+  if (server_process_ && shut_down_server_on_close_) {
+    server_process_->terminate();
+  }
+
   connection_dialog_->deleteLater();
 }
 
@@ -84,6 +88,7 @@ void ConnectionManager::locallyCreatedServerFinished(int exit_code,
 
 void ConnectionManager::connectionDialogAccepted() {
   if(connection_dialog_->runANewServer()) {
+    shut_down_server_on_close_ = connection_dialog_->shutDownServerOnClose();
     startLocalServer();
   }
 
