@@ -22,8 +22,11 @@
 #include <QStringList>
 #include <QProcess>
 #include <QLabel>
+#include <QPixmap>
+#include <QHBoxLayout>
 
 #include "ui/connectiondialog.h"
+#include "ui_connectionnotificationwidget.h"
 
 namespace veles {
 namespace ui {
@@ -70,7 +73,7 @@ class ConnectionManager : public QObject {
 /* ConnectionNotificationWidget */
 /*****************************************************************************/
 
-class ConnectionNotificationWidget : public QLabel {
+class ConnectionNotificationWidget : public QWidget {
   Q_OBJECT
 
  public:
@@ -80,6 +83,21 @@ class ConnectionNotificationWidget : public QLabel {
  public slots:
   void updateConnectionState(
       ConnectionManager::ConnectionState connection_state);
+
+ protected:
+  void timerEvent(QTimerEvent* event);
+
+ private:
+  ConnectionManager::ConnectionState connection_state_;
+
+  int frame_;
+  int last_status_change_;
+
+  QPixmap icon_connected_;
+  QPixmap icon_not_connected_;
+  QPixmap icon_alarm_;
+
+  Ui::ConnectionNotificationWidget* ui_;
 };
 
 }  // namespace ui

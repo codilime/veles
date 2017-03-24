@@ -42,5 +42,8 @@
         <file>images/split_vertically.png</file>
         <file>images/brightness.png</file>
         <file>images/more.png</file>
+        <file>images/connection_connected.png</file>
+        <file>images/connection_not_connected.png</file>
+        <file>images/connection_alarm.png</file>
     </qresource>
 </RCC>

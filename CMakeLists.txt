@@ -258,6 +258,7 @@ qt5_wrap_ui(FORMS
     ${SRC_DIR}/ui/databaseinfo.ui
     ${SRC_DIR}/ui/logwidget.ui
     ${SRC_DIR}/ui/connectiondialog.ui
+    ${SRC_DIR}/ui/connectionnotificationwidget.ui
     )
 
 if(WIN32)
