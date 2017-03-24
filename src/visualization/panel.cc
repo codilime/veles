@@ -255,6 +255,7 @@ void VisualizationPanel::initLayout() {
   minimap_dock_->setContextMenuPolicy(Qt::PreventContextMenu);
   minimap_dock_->setAllowedAreas(
       Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+  addDockWidget(Qt::LeftDockWidgetArea, minimap_dock_);
   ui::MainWindowWithDetachableDockWidgets::splitDockWidget2(this,
       node_tree_dock_, minimap_dock_, Qt::Horizontal);
 
