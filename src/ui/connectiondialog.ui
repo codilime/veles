@@ -124,6 +124,13 @@
        </property>
       </widget>
      </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="key_line_edit">
+       <property name="placeholderText">
+        <string>Keep it a secret</string>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="1">
       <widget class="QLineEdit" name="server_host_line_edit">
        <property name="placeholderText">
@@ -138,10 +145,10 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="key_line_edit">
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="database_line_edit">
        <property name="placeholderText">
-        <string>Keep it a secret</string>
+        <string>Database file for a new server</string>
        </property>
       </widget>
      </item>
@@ -188,10 +195,10 @@
        </item>
       </layout>
      </item>
-     <item row="5" column="1">
-      <widget class="QLineEdit" name="database_line_edit">
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="client_interface_line_edit">
        <property name="placeholderText">
-        <string>Database file for a new server</string>
+        <string>Client network interface</string>
        </property>
       </widget>
      </item>
@@ -209,10 +216,10 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="client_interface_line_edit">
+     <item row="6" column="1">
+      <widget class="QLineEdit" name="server_executable_line_edit">
        <property name="placeholderText">
-        <string>Client network interface</string>
+        <string>Server Python script</string>
        </property>
       </widget>
      </item>
@@ -230,13 +237,6 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="1">
-      <widget class="QLineEdit" name="server_executable_line_edit">
-       <property name="placeholderText">
-        <string>Server Python script</string>
-       </property>
-      </widget>
-     </item>
      <item row="6" column="0">
       <widget class="QLabel" name="server_executable_label">
        <property name="text">
@@ -248,6 +248,16 @@
       <widget class="QPushButton" name="select_server_executable_button">
        <property name="text">
         <string>browse...</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0" colspan="3">
+      <widget class="QCheckBox" name="shut_down_server_check_box">
+       <property name="text">
+        <string>Shut down the server on application termination</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
