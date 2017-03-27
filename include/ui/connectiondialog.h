@@ -43,6 +43,7 @@ class ConnectionDialog : public QDialog {
   QString databaseFile();
   QString serverScript();
   bool shutDownServerOnClose();
+  QString userName();
 
  public slots:
   void serverLocalhost();
@@ -52,6 +53,11 @@ class ConnectionDialog : public QDialog {
   void newServerToggled(bool toggled);
   void databaseFileSelected(const QString& file_name);
   void serverFileSelected(const QString& file_name);
+  void loadDefaultValues();
+  void loadSettings();
+  void saveSettings();
+  void saveSettingsToggled(bool toggled);
+  void dialogAccepted();
 
  protected:
   void showEvent(QShowEvent* event) override;

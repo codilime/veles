@@ -24,6 +24,7 @@
 #include <random>
 
 #include <QtGlobal>
+#include <QSettings>
 
 namespace veles {
 namespace ui {
@@ -63,13 +64,13 @@ ConnectionDialog::ConnectionDialog(QWidget* parent)
       server_file_dialog_, &QFileDialog::show);
   connect(server_file_dialog_, &QFileDialog::fileSelected,
       this, &ConnectionDialog::serverFileSelected);
+  connect(ui_->save_settings_check_box, &QCheckBox::toggled,
+      this, &ConnectionDialog::saveSettingsToggled);
+  connect(ui_->load_defaults_button, &QPushButton::clicked,
+      this, &ConnectionDialog::loadDefaultValues);
+  connect(this, &QDialog::accepted, this, &ConnectionDialog::dialogAccepted);
 
-  serverLocalhost();
-  clientLocalhost();
-  randomKey();
-  userAsClientName();
-
-  ui_->database_line_edit->setText("hack-o-store.veles");
+  ui_->save_settings_check_box->setChecked(false);
   newServerToggled(ui_->new_server_radio_button->isChecked());
 }
 
@@ -114,6 +115,23 @@ bool ConnectionDialog::shutDownServerOnClose() {
   return ui_->shut_down_server_check_box->isChecked();
 }
 
+QString ConnectionDialog::userName() {
+  QString user_name;
+#if defined(Q_OS_LINUX) || defined(Q_OS_MAC)
+    user_name = qgetenv("USER");
+#elif defined(Q_OS_WIN)
+    user_name = qgetenv("USERNAME");
+#else
+    user_name = "Veles UI";
+#endif
+
+  if(user_name.length() == 0) {
+    user_name = "Veles UI";
+  }
+
+  return user_name;
+}
+
 void ConnectionDialog::serverLocalhost() {
   ui_->server_host_line_edit->setText("127.0.0.1");
 }
@@ -136,20 +154,7 @@ void ConnectionDialog::randomKey() {
 }
 
 void ConnectionDialog::userAsClientName() {
-  QString client_name;
-#if defined(Q_OS_LINUX) || defined(Q_OS_MAC)
-  client_name = qgetenv("USER");
-#elif defined(Q_OS_WIN)
-  client_name = qgetenv("USERNAME");
-#else
-  client_name = "Veles UI";
-#endif
-
-  if(client_name.isEmpty()) {
-    client_name = "Veles UI";
-  }
-
-  ui_->client_name_line_edit->setText(client_name);
+  ui_->client_name_line_edit->setText(userName());
 }
 
 void ConnectionDialog::newServerToggled(bool toggled) {
@@ -173,7 +178,87 @@ void ConnectionDialog::serverFileSelected(const QString& file_name) {
   ui_->server_executable_line_edit->setText(file_name);
 }
 
+QString localhost("127.0.0.1");
+QString default_database("veles.vdb");
+int default_port = 1905;
+bool default_shut_down_server = true;
+QString settings_true("yes, please");
+QString settings_false("no, thanks");
+
+void ConnectionDialog::loadDefaultValues() {
+  ui_->new_server_radio_button->setChecked(true);
+  serverLocalhost();
+  ui_->port_spin_box->setValue(default_port);
+  ui_->key_line_edit->setText("");
+  clientLocalhost();
+  userAsClientName();
+  ui_->database_line_edit->setText(default_database);
+  ui_->server_executable_line_edit->setText("");
+  ui_->shut_down_server_check_box->setChecked(default_shut_down_server);
+}
+
+void ConnectionDialog::loadSettings() {
+  QSettings settings;
+
+  (settings.value("conection.run_server", settings_true).toString()
+      == settings_true ? ui_->new_server_radio_button
+      : ui_->existing_server_radio_button)->setChecked(true);
+  ui_->server_host_line_edit->setText(
+      settings.value("conection.server", localhost).toString());
+  ui_->port_spin_box->setValue(
+      settings.value("conection.server_port", default_port).toInt());
+  ui_->key_line_edit->setText(
+      settings.value("conection.key").toString());
+  ui_->client_interface_line_edit->setText(
+      settings.value("conection.client_interface", localhost).toString());
+  ui_->client_name_line_edit->setText(
+      settings.value("conection.client_name", userName()).toString());
+  ui_->database_line_edit->setText(
+      settings.value("conection.database", default_database).toString());
+  ui_->server_executable_line_edit->setText(
+      settings.value("connection.server_script", "").toString());
+  ui_->shut_down_server_check_box->setChecked(
+      settings.value("connection.shut_down_server_on_quit",
+      default_shut_down_server ? settings_true : settings_false).toString()
+      == settings_true);
+}
+
+void ConnectionDialog::saveSettings() {
+  QSettings settings;
+
+  settings.setValue("conection.run_server",
+      ui_->new_server_radio_button->isChecked() ?
+      settings_true : settings_false);
+  settings.setValue("conection.server",
+      ui_->server_host_line_edit->text());
+  settings.setValue("conection.server_port",
+      ui_->port_spin_box->value());
+  settings.setValue("conection.client_interface",
+      ui_->client_interface_line_edit->text());
+  settings.setValue("conection.client_name",
+      ui_->client_name_line_edit->text());
+  settings.setValue("conection.key",
+      ui_->save_key_check_box->isChecked() ?
+      ui_->key_line_edit->text() : "");
+  settings.setValue("conection.database",
+      ui_->database_line_edit->text());
+  settings.setValue("connection.server_script",
+      ui_->server_executable_line_edit->text());
+  settings.setValue("connection.shut_down_server_on_quit",
+      ui_->shut_down_server_check_box->isChecked() ?
+          settings_true : settings_false);
+}
+
+void ConnectionDialog::saveSettingsToggled(bool toggled) {
+  ui_->save_key_check_box->setEnabled(toggled);
+}
+
+void ConnectionDialog::dialogAccepted() {
+  saveSettings();
+}
+
 void ConnectionDialog::showEvent(QShowEvent* event) {
+  loadSettings();
   ui_->server_host_line_edit->setFocus(Qt::OtherFocusReason);
 }
 
