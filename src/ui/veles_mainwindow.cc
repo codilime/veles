@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CodiLime
+ * Copyright 2016-2017 CodiLime
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ void VelesMainWindow::about() {
          "Report bugs to contact@veles.io\n"
          "https://veles.io/\n"
          "\n"
-         "Copyright 2017 CodiLime\n"
+         "Copyright 2016-2017 CodiLime\n"
          "Licensed under the Apache License, Version 2.0\n"
       ).arg(util::version::string));
 }
