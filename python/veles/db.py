@@ -22,11 +22,54 @@ from veles.proto import msgpackwrap
 from veles.schema.nodeid import NodeID
 from veles.proto.node import Node, PosFilter
 from veles.proto.exceptions import WritePastEndError
-from veles.compatibility.int_bytes import int_from_bytes
 from veles.util.bigint import bigint_encode, bigint_decode
 
 
-APP_ID = int_from_bytes(b'mln0', 'big')
+DB_APP_ID = int('veles', 36)
+DB_VERSION = 1
+
+DB_SCHEMA = [
+    'pragma application_id = {}'.format(DB_APP_ID),
+    'pragma user_version = {}'.format(DB_VERSION),
+    """
+        CREATE TABLE node(
+            id BLOB NOT NULL PRIMARY KEY,
+            parent REFERENCES node(id),
+            pos_start BLOB,
+            pos_end BLOB
+        )
+    """, """
+        CREATE INDEX node_list
+        ON node(parent, pos_start)
+    """, """
+        CREATE TABLE node_tag(
+            id BLOB NOT NULL REFERENCES node(id),
+            name VARCHAR NOT NULL,
+            PRIMARY KEY (id, name)
+        )
+    """, """
+        CREATE TABLE node_attr(
+            id BLOB NOT NULL REFERENCES node(id),
+            name VARCHAR NOT NULL,
+            data BLOB NOT NULL,
+            PRIMARY KEY (id, name)
+        )
+    """, """
+        CREATE TABLE node_data(
+            id BLOB NOT NULL REFERENCES node(id),
+            name VARCHAR NOT NULL,
+            data BLOB NOT NULL,
+            PRIMARY KEY (id, name)
+        )
+    """, """
+        CREATE TABLE node_bindata(
+            id BLOB NOT NULL REFERENCES node(id),
+            name VARCHAR NOT NULL,
+            data BLOB NOT NULL,
+            PRIMARY KEY (id, name)
+        )
+    """
+]
 
 
 # TODO:
@@ -56,13 +99,30 @@ class Database:
         elif path.startswith(':'):
             path = './' + path
         self.db = sqlite3.connect(path)
-        appid = self.db.cursor().execute('pragma application_id').fetchone()[0]
+        appid = self.db.execute('pragma application_id').fetchone()[0]
         if appid == 0:
-            self.new_db()
-        elif appid != APP_ID:
+            # No application ID set - either we've just created a new database
+            # (and need to init it), or we've opened an existing non-Veles
+            # sqlite database.  Let's just check if it's empty.
+            tables = self.db.execute("""
+                SELECT * FROM sqlite_master
+            """).fetchall()
+            if tables:
+                raise ValueError('non-Veles database found')
+            # It's empty, let's initialize it.
+            c = self.db.cursor()
+            for x in DB_SCHEMA:
+                c.execute(x)
+            self.db.commit()
+        elif appid == DB_APP_ID:
+            # This is a Veles database, but is it the right version?
+            version = self.db.execute('pragma user_version').fetchone()[0]
+            if version != DB_VERSION:
+                raise ValueError('unknown database schema version')
+        else:
             raise ValueError('invalid application ID')
-        self.db.cursor().execute('pragma foreign_keys = on')
-        fk = self.db.cursor().execute('pragma foreign_keys').fetchone()[0]
+        self.db.execute('pragma foreign_keys = on')
+        fk = self.db.execute('pragma foreign_keys').fetchone()[0]
         if not fk:
             raise ValueError('foreign keys not supported by sqlite')
         wrapper = msgpackwrap.MsgpackWrapper()
@@ -73,80 +133,36 @@ class Database:
         self.unpacker.feed(data)
         return self.unpacker.unpack()
 
-    def new_db(self):
-        c = self.db.cursor()
-        c.execute('pragma application_id = {}'.format(APP_ID))
-        c.execute("""
-            CREATE TABLE object(
-                id BLOB PRIMARY KEY,
-                parent REFERENCES object(id),
-                pos_start BLOB,
-                pos_end BLOB
-            )
-        """)
-        c.execute("""
-            CREATE TABLE object_tag(
-                obj_id BLOB REFERENCES object(id),
-                name VARCHAR,
-                PRIMARY KEY (obj_id, name)
-            )
-        """)
-        c.execute("""
-            CREATE TABLE object_attr(
-                obj_id BLOB REFERENCES object(id),
-                name VARCHAR,
-                data BLOB,
-                PRIMARY KEY (obj_id, name)
-            )
-        """)
-        c.execute("""
-            CREATE TABLE object_data(
-                obj_id BLOB REFERENCES object(id),
-                name VARCHAR,
-                data BLOB,
-                PRIMARY KEY (obj_id, name)
-            )
-        """)
-        c.execute("""
-            CREATE TABLE object_bindata(
-                obj_id BLOB REFERENCES object(id),
-                name VARCHAR,
-                data BLOB,
-                PRIMARY KEY (obj_id, name)
-            )
-        """)
-        self.db.commit()
-
-    def get(self, obj_id):
-        if not isinstance(obj_id, NodeID):
+    def get(self, id):
+        if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
-        raw_obj_id = buffer(obj_id.bytes)
+        raw_id = buffer(id.bytes)
         c = self.db.cursor()
         c.execute("""
-            SELECT parent, pos_start, pos_end FROM object WHERE id = ?
-        """, (raw_obj_id,))
+            SELECT parent, pos_start, pos_end FROM node WHERE id = ?
+        """, (raw_id,))
         rows = c.fetchall()
         if not rows:
             return None
         (raw_parent, pos_start, pos_end), = rows
         parent = NodeID(bytes(raw_parent)) if raw_parent else NodeID.root_id
         c.execute("""
-            SELECT name FROM object_tag WHERE obj_id = ?
-        """, (raw_obj_id,))
+            SELECT name FROM node_tag WHERE id = ?
+        """, (raw_id,))
         tags = {x for x, in c.fetchall()}
         c.execute("""
-            SELECT name, data FROM object_attr WHERE obj_id = ?
-        """, (raw_obj_id,))
+            SELECT name, data FROM node_attr WHERE id = ?
+        """, (raw_id,))
         attr = {k: self._load(v) for k, v in c.fetchall()}
         c.execute("""
-            SELECT name FROM object_data WHERE obj_id = ?
-        """, (raw_obj_id,))
+            SELECT name FROM node_data WHERE id = ?
+        """, (raw_id,))
         data = {x for x, in c.fetchall()}
         c.execute("""
-            SELECT name, length(data) FROM object_bindata WHERE obj_id = ?
-        """, (raw_obj_id,))
+            SELECT name, length(data) FROM node_bindata WHERE id = ?
+        """, (raw_id,))
         bindata = {x: y for x, y in c.fetchall()}
-        return Node(id=obj_id, parent=parent,
+        return Node(id=id, parent=parent,
                     pos_start=db_bigint_decode(pos_start),
                     pos_end=db_bigint_decode(pos_end), tags=tags, attr=attr,
                     data=data, bindata=bindata)
@@ -156,32 +172,36 @@ class Database:
             raise TypeError('node has wrong type')
         if node.id == NodeID.root_id:
             raise ValueError('cannot create root')
-        raw_obj_id = buffer(node.id.bytes)
+        raw_id = buffer(node.id.bytes)
         if node.parent == NodeID.root_id:
             raw_parent = None
         else:
             raw_parent = buffer(node.parent.bytes)
         c = self.db.cursor()
         c.execute("""
-            INSERT INTO object (id, parent, pos_start, pos_end)
+            INSERT INTO node (id, parent, pos_start, pos_end)
             VALUES (?, ?, ?, ?)
         """, (
-            raw_obj_id, raw_parent,
+            raw_id, raw_parent,
             db_bigint_encode(node.pos_start),
             db_bigint_encode(node.pos_end)
         ))
-        for tag in node.tags:
-            c.execute("""
-                INSERT INTO object_tag (obj_id, name) VALUES (?, ?)
-            """, (raw_obj_id, tag))
-        for key, val in node.attr.items():
-            c.execute("""
-                INSERT INTO object_attr (obj_id, name, data) VALUES (?, ?, ?)
-            """, (raw_obj_id, key, buffer(self.packer.pack(val))))
+        c.executemany("""
+            INSERT INTO node_tag (id, name) VALUES (?, ?)
+        """, [
+            (raw_id, tag)
+            for tag in node.tags
+        ])
+        c.executemany("""
+            INSERT INTO node_attr (id, name, data) VALUES (?, ?, ?)
+        """, [
+            (raw_id, key, buffer(self.packer.pack(val)))
+            for key, val in node.attr.items()
+        ])
         self.db.commit()
 
-    def set_pos(self, obj_id, pos_start, pos_end):
-        if not isinstance(obj_id, NodeID):
+    def set_pos(self, id, pos_start, pos_end):
+        if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if (not isinstance(pos_start, six.integer_types)
                 and pos_start is not None):
@@ -189,118 +209,118 @@ class Database:
         if (not isinstance(pos_end, six.integer_types)
                 and pos_end is not None):
             raise TypeError('pos_end has to be an int')
-        raw_obj_id = buffer(obj_id.bytes)
+        raw_id = buffer(id.bytes)
         c = self.db.cursor()
         c.execute("""
-            UPDATE object
+            UPDATE node
             SET pos_start = ?, pos_end = ?
             WHERE id = ?
         """, (
             db_bigint_encode(pos_start),
             db_bigint_encode(pos_end),
-            raw_obj_id
+            raw_id
         ))
         self.db.commit()
 
-    def set_parent(self, obj_id, parent_id):
-        if not isinstance(obj_id, NodeID):
+    def set_parent(self, id, parent_id):
+        if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if not isinstance(parent_id, NodeID):
             raise TypeError('parent id has wrong type')
-        raw_obj_id = buffer(obj_id.bytes)
+        raw_id = buffer(id.bytes)
         if parent_id == NodeID.root_id:
             raw_parent = None
         else:
             raw_parent = buffer(parent_id.bytes)
         c = self.db.cursor()
         c.execute("""
-            UPDATE object
+            UPDATE node
             SET parent = ?
             WHERE id = ?
-        """, (raw_parent, raw_obj_id))
+        """, (raw_parent, raw_id))
         self.db.commit()
 
-    def add_tag(self, obj_id, tag):
-        if not isinstance(obj_id, NodeID):
+    def add_tag(self, id, tag):
+        if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if not isinstance(tag, six.text_type):
             raise TypeError('tag is not a string')
-        raw_obj_id = buffer(obj_id.bytes)
+        raw_id = buffer(id.bytes)
         c = self.db.cursor()
         c.execute("""
-            DELETE FROM object_tag
-            WHERE obj_id = ? AND name = ?
-        """, (raw_obj_id, tag))
+            DELETE FROM node_tag
+            WHERE id = ? AND name = ?
+        """, (raw_id, tag))
         c.execute("""
-            INSERT INTO object_tag (obj_id, name) VALUES (?, ?)
-        """, (raw_obj_id, tag))
+            INSERT INTO node_tag (id, name) VALUES (?, ?)
+        """, (raw_id, tag))
         self.db.commit()
 
-    def del_tag(self, obj_id, tag):
-        if not isinstance(obj_id, NodeID):
+    def del_tag(self, id, tag):
+        if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if not isinstance(tag, six.text_type):
             raise TypeError('tag is not a string')
-        raw_obj_id = buffer(obj_id.bytes)
+        raw_id = buffer(id.bytes)
         c = self.db.cursor()
         c.execute("""
-            DELETE FROM object_tag
-            WHERE obj_id = ? AND name = ?
-        """, (raw_obj_id, tag))
+            DELETE FROM node_tag
+            WHERE id = ? AND name = ?
+        """, (raw_id, tag))
         self.db.commit()
 
-    def set_attr(self, obj_id, key, val):
-        if not isinstance(obj_id, NodeID):
+    def set_attr(self, id, key, val):
+        if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if not isinstance(key, six.text_type):
             raise TypeError('key is not a string')
-        raw_obj_id = buffer(obj_id.bytes)
+        raw_id = buffer(id.bytes)
         c = self.db.cursor()
         c.execute("""
-            DELETE FROM object_attr WHERE obj_id = ? AND name = ?
-        """, (raw_obj_id, key))
+            DELETE FROM node_attr WHERE id = ? AND name = ?
+        """, (raw_id, key))
         if val is not None:
             c.execute("""
-                INSERT INTO object_attr (obj_id, name, data) VALUES (?, ?, ?)
-            """, (raw_obj_id, key, buffer(self.packer.pack(val))))
+                INSERT INTO node_attr (id, name, data) VALUES (?, ?, ?)
+            """, (raw_id, key, buffer(self.packer.pack(val))))
         self.db.commit()
 
-    def get_data(self, obj_id, key):
-        if not isinstance(obj_id, NodeID):
+    def get_data(self, id, key):
+        if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if not isinstance(key, six.text_type):
             raise TypeError('key is not a string')
-        raw_obj_id = buffer(obj_id.bytes)
+        raw_id = buffer(id.bytes)
         c = self.db.cursor()
         c.execute("""
-            SELECT data FROM object_data WHERE obj_id = ? AND name = ?
-        """, (raw_obj_id, key))
+            SELECT data FROM node_data WHERE id = ? AND name = ?
+        """, (raw_id, key))
         rows = c.fetchall()
         if not rows:
             return None
         (data,), = rows
         return self._load(data)
 
-    def set_data(self, obj_id, key, data):
-        if not isinstance(obj_id, NodeID):
+    def set_data(self, id, key, data):
+        if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if not isinstance(key, six.text_type):
             raise TypeError('key is not a string')
-        raw_obj_id = buffer(obj_id.bytes)
+        raw_id = buffer(id.bytes)
         c = self.db.cursor()
         c.execute("""
-            DELETE FROM object_data WHERE obj_id = ? AND name = ?
-        """, (raw_obj_id, key))
+            DELETE FROM node_data WHERE id = ? AND name = ?
+        """, (raw_id, key))
         if data is not None:
             c.execute("""
-                INSERT INTO object_data (obj_id, name, data) VALUES (?, ?, ?)
-            """, (raw_obj_id, key, buffer(self.packer.pack(data))))
+                INSERT INTO node_data (id, name, data) VALUES (?, ?, ?)
+            """, (raw_id, key, buffer(self.packer.pack(data))))
         self.db.commit()
 
     # XXX: refactor these two to use paging
 
-    def get_bindata(self, obj_id, key, start=0, end=None):
-        if not isinstance(obj_id, NodeID):
+    def get_bindata(self, id, key, start=0, end=None):
+        if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         start = operator.index(start)
         if end is not None:
@@ -313,16 +333,16 @@ class Database:
             raise TypeError('key is not a string')
         c = self.db.cursor()
         c.execute("""
-            SELECT data FROM object_bindata WHERE obj_id = ? AND name = ?
-        """, (buffer(obj_id.bytes), key))
+            SELECT data FROM node_bindata WHERE id = ? AND name = ?
+        """, (buffer(id.bytes), key))
         rows = c.fetchall()
         if not rows:
             return b''
         (data,), = rows
         return data[start:end]
 
-    def set_bindata(self, obj_id, key, start, data, truncate=False):
-        if not isinstance(obj_id, NodeID):
+    def set_bindata(self, id, key, start, data, truncate=False):
+        if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         start = operator.index(start)
         if start < 0:
@@ -331,8 +351,8 @@ class Database:
             raise TypeError('key is not a string')
         if not isinstance(truncate, bool):
             raise TypeError('truncate is not a bool')
-        cur = self.get_bindata(obj_id, key)
-        raw_obj_id = buffer(obj_id.bytes)
+        cur = self.get_bindata(id, key)
+        raw_id = buffer(id.bytes)
         new_data = bytearray(cur)
         if len(new_data) < start:
             raise WritePastEndError()
@@ -342,35 +362,35 @@ class Database:
         new_data = bytes(new_data)
         c = self.db.cursor()
         c.execute("""
-            DELETE FROM object_bindata WHERE obj_id = ? AND name = ?
-        """, (raw_obj_id, key))
+            DELETE FROM node_bindata WHERE id = ? AND name = ?
+        """, (raw_id, key))
         if new_data:
             c.execute("""
-                INSERT INTO object_bindata (obj_id, name, data)
+                INSERT INTO node_bindata (id, name, data)
                 VALUES (?, ?, ?)
-            """, (raw_obj_id, key, buffer(new_data)))
+            """, (raw_id, key, buffer(new_data)))
         self.db.commit()
 
-    def delete(self, obj_id):
-        if not isinstance(obj_id, NodeID):
+    def delete(self, id):
+        if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
-        raw_obj_id = buffer(obj_id.bytes)
+        raw_id = buffer(id.bytes)
         c = self.db.cursor()
         c.execute("""
-            DELETE FROM object_tag WHERE obj_id = ?
-        """, (raw_obj_id,))
+            DELETE FROM node_tag WHERE id = ?
+        """, (raw_id,))
         c.execute("""
-            DELETE FROM object_attr WHERE obj_id = ?
-        """, (raw_obj_id,))
+            DELETE FROM node_attr WHERE id = ?
+        """, (raw_id,))
         c.execute("""
-            DELETE FROM object_data WHERE obj_id = ?
-        """, (raw_obj_id,))
+            DELETE FROM node_data WHERE id = ?
+        """, (raw_id,))
         c.execute("""
-            DELETE FROM object_bindata WHERE obj_id = ?
-        """, (raw_obj_id,))
+            DELETE FROM node_bindata WHERE id = ?
+        """, (raw_id,))
         c.execute("""
-            DELETE FROM object WHERE id = ?
-        """, (raw_obj_id,))
+            DELETE FROM node WHERE id = ?
+        """, (raw_id,))
         self.db.commit()
 
     def list(self, parent, tags=frozenset(), pos_filter=PosFilter()):
@@ -382,20 +402,20 @@ class Database:
             raise TypeError('pos_filter must be a PosFilter')
         if parent == NodeID.root_id:
             stmt = """
-                SELECT id FROM object WHERE parent IS NULL
+                SELECT id FROM node WHERE parent IS NULL
             """
             args = ()
         else:
             stmt = """
-                SELECT id FROM object WHERE parent = ?
+                SELECT id FROM node WHERE parent = ?
             """
             args = (buffer(parent.bytes), )
         for tag in tags:
             if not isinstance(tag, six.text_type):
                 raise TypeError('tag is not a string')
             stmt += """ AND EXISTS (
-                SELECT 1 FROM object_tag
-                WHERE obj_id = id AND name = ?
+                SELECT 1 FROM node_tag
+                WHERE node_tag.id = node.id AND name = ?
             )"""
             args += (tag,)
         if pos_filter.start_from is not None:
