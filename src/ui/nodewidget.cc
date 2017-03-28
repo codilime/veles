@@ -52,7 +52,8 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
     QSharedPointer<FileBlobModel>& data_model,
     QSharedPointer<QItemSelectionModel>& selection_model)
     : View("Hex editor", ":/images/show_hex_edit.png"),
-      main_window_(main_window), data_model_(data_model),
+      main_window_(main_window), minimap_(nullptr),
+      minimap_dock_(nullptr), data_model_(data_model),
       selection_model_(selection_model), sampler_(nullptr) {
   hex_edit_widget_ = new HexEditWidget(
       main_window, data_model, selection_model);
@@ -70,6 +71,7 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
   setDockNestingEnabled(true);
   addDockWidget(Qt::LeftDockWidgetArea, node_tree_dock_);
 
+#if 0 // We do not use minimap for NodeWidget yet,
   minimap_dock_ = new QDockWidget;
   new DockWidgetVisibilityGuard(minimap_dock_);
   minimap_dock_->setWindowTitle("Minimap");
@@ -88,20 +90,24 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
   minimap_dock_->setContextMenuPolicy(Qt::PreventContextMenu);
   minimap_dock_->setAllowedAreas(
       Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+  addDockWidget(Qt::LeftDockWidgetArea, minimap_dock_);
   MainWindowWithDetachableDockWidgets::splitDockWidget2(this, node_tree_dock_,
       minimap_dock_, Qt::Horizontal);
-  minimap_dock_->hide();
+#endif
 
   connect(hex_edit_widget_, &HexEditWidget::showNodeTree,
       node_tree_dock_, &QDockWidget::setVisible);
+  connect(node_tree_dock_, &QDockWidget::visibilityChanged,
+        hex_edit_widget_, &HexEditWidget::nodeTreeVisibilityChanged);
+
+#if 0 // We do not use minimap for NodeWidget yet,
   connect(hex_edit_widget_, &HexEditWidget::showMinimap,
         minimap_dock_, &QDockWidget::setVisible);
   connect(data_model_.data(), &FileBlobModel::newBinData,
       this, &NodeWidget::loadBinDataToMinimap);
-  connect(node_tree_dock_, &QDockWidget::visibilityChanged,
-      hex_edit_widget_, &HexEditWidget::nodeTreeVisibilityChanged);
   connect(minimap_dock_, &QDockWidget::visibilityChanged,
       hex_edit_widget_, &HexEditWidget::minimapVisibilityChanged);
+#endif
 }
 
 NodeWidget::~NodeWidget() {
