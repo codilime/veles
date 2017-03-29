@@ -18,7 +18,7 @@
 namespace veles {
 namespace messages {
 
-void MsgpackObject::fromAnother(const MsgpackObject &other)
+void MsgpackObject::fromAnother(const MsgpackObject& other)
 {
   obj_type = other.type();
   switch(obj_type) {
@@ -54,11 +54,11 @@ void MsgpackObject::fromAnother(const MsgpackObject &other)
   }
 }
 
-MsgpackObject::MsgpackObject(const msgpack::v2::object &obj) {
+MsgpackObject::MsgpackObject(const msgpack::v2::object& obj) {
   fromMsgpack(obj);
 }
 
-MsgpackObject::MsgpackObject(const MsgpackObject &other) {
+MsgpackObject::MsgpackObject(const MsgpackObject& other) {
   fromAnother(other);
 }
 
@@ -235,7 +235,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::vector<uint8_t>& val) 
 
 template<>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::vector<uint8_t>> val) {
-  if (val == nullptr) throw std::bad_cast();
+  if (val == nullptr) return nullptr;
   return std::make_shared<MsgpackObject>(val);
 }
 
@@ -244,7 +244,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const MsgpackObject& obj) {
 }
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<MsgpackObject> obj) {
-  if (obj == nullptr) throw std::bad_cast();
+  if (obj == nullptr) return nullptr;
   return obj;
 }
 
@@ -265,7 +265,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::string& val) {
 }
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::string> val) {
-  if (val == nullptr) throw std::bad_cast();
+  if (val == nullptr) return nullptr;
   return std::make_shared<MsgpackObject>(val);
 }
 
@@ -274,7 +274,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const data::NodeID& val) {
 }
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::NodeID> val) {
-  if (val == nullptr) throw std::bad_cast();
+  if (val == nullptr) return nullptr;
   return std::make_shared<MsgpackObject>(0, val->asVector());
 }
 

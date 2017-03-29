@@ -21,7 +21,7 @@ def generate_cpp_code():
     if six.PY2:
         raise RuntimeError('C++ code can only be generated on Python 3.x')
     code = '#define MSGPACK_CLASSES_HEADER \\\n'
-    classes_to_generate = [node.Node]
+    classes_to_generate = [node.Node, node.PosFilter]
     poly_classes = [messages.MsgpackMsg]
     for cls_type in classes_to_generate:
         code += 'class {};\\\n'.format(cls_type.cpp_type()[0])

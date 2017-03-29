@@ -20,7 +20,7 @@
 
 #include <msgpack.hpp>
 
-#include "data/msgobject.h"
+#include "data/nodeid.h"
 
 namespace veles {
 namespace messages {
