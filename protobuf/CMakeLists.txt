@@ -21,6 +21,7 @@ add_custom_command(OUTPUT ${MSGPACK_TMP_CPP}
   COMMAND ${PYEXE} -m veles.cpp.generate > ${MSGPACK_TMP_CPP}
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python
   COMMENT "Generating msgpack C++ code from Python"
+  DEPENDS cpp_python_gen
   VERBATIM)
 
 # H4X make sure that messages.h is generated everytime no matter what
