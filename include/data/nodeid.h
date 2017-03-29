@@ -26,15 +26,17 @@ namespace data {
 
 class NodeID {
   static const size_t width = 24;
-  unsigned char value[width];
+  uint8_t value[width];
  public:
-  static const unsigned char NIL_VALUE[width];
+  static const uint8_t NIL_VALUE[width];
+  // TODO singleton
+  static const uint8_t ROOT_VALUE[width];
 
   NodeID();
-  NodeID(const unsigned char* data);
+  NodeID(const uint8_t* data);
   NodeID(const std::string& data);
 
-  std::string toString();
+  std::string toHexString();
   std::vector<uint8_t> asVector() const {
     return std::vector<uint8_t>(value, value+width);
   }
