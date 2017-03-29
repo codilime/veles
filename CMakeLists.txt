@@ -141,10 +141,10 @@ add_library(veles_data
     ${INCLUDE_DIR}/data/bindata.h
     ${INCLUDE_DIR}/data/repack.h
     ${INCLUDE_DIR}/data/field.h
-    ${INCLUDE_DIR}/data/msgobject.h
+    ${INCLUDE_DIR}/data/nodeid.h
     ${SRC_DIR}/data/bindata.cc
     ${SRC_DIR}/data/repack.cc
-    ${SRC_DIR}/data/msgobject.cc
+    ${SRC_DIR}/data/nodeid.cc
 )
 
 add_dependencies(veles_data msgpack-c)
