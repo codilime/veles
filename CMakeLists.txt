@@ -29,6 +29,7 @@ include("cmake/qt.cmake")
 include("cmake/zlib.cmake")
 include("cmake/protobuf.cmake")
 include("cmake/msgpack.cmake")
+include("cmake/cppgen.cmake")
 # Compiler flags
 set(CMAKE_CXX_STANDARD_REQUIRED 11) # Use c++11
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
