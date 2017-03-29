@@ -135,7 +135,7 @@ void ConnectionDialog::userAsClientName() {
   QString client_name;
 #if defined(Q_OS_LINUX) || defined(Q_OS_MAC)
   client_name = qgetenv("USER");
-#elif defined(Q_OS_WINDOWS)
+#elif defined(Q_OS_WIN)
   client_name = qgetenv("USERNAME");
 #else
   client_name = "Veles UI";

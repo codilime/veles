@@ -72,8 +72,17 @@ void ConnectionManager::locallyCreatedServerStarted() {
 
 void ConnectionManager::locallyCreatedServerFinished(int exit_code,
     QProcess::ExitStatus exit_status) {
-  QTextStream out(veles::ui::LogWidget::output());
-  out << "Process of locally created server finished." << endl;
+  char buf[10240];
+  if(server_process_ && server_process_->bytesAvailable() > 0) {
+    qint64 len = server_process_->read(buf, sizeof(buf));
+    if(len > 0) {
+      LogWidget::output()->write(buf, len);
+    }
+  }
+
+  QTextStream out(LogWidget::output());
+  out << "Process of locally created server finished. Exit code: "
+      << exit_code << "." << endl;
   kill_locally_created_server_action_->setEnabled(false);
   server_process_->deleteLater();
   server_process_ = nullptr;
@@ -120,7 +129,13 @@ void ConnectionManager::startLocalServer() {
       << QString("%1:%2").arg(connection_dialog_->serverHost())
       .arg(connection_dialog_->serverPort());
 
+#if defined(Q_OS_LINUX)
   QString python_interpreter_executable("python3");
+#elif defined(Q_OS_WIN)
+  QString python_interpreter_executable("py.exe");
+#else
+  QString python_interpreter_executable("python");
+#endif
 
   QTextStream out(veles::ui::LogWidget::output());
   out
