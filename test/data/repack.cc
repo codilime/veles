@@ -22,10 +22,10 @@ namespace data {
 
 TEST(Repack, SimpleCopy) {
   BinData a(8, {1, 2, 3, 4});
-  RepackFormat format{RepackEndian::LITTLE, 8};
-  EXPECT_EQ(repackUnit(a.width(), format), 8);
-  EXPECT_EQ(repackSize(a.width(), format, 2), 2);
-  BinData b = repack(a, format, 1, 2);
+  Repacker format{Endian::LITTLE, 8, 8};
+  EXPECT_EQ(format.repackUnit(), 8);
+  EXPECT_EQ(format.repackSize(2), 2);
+  BinData b = format.repack(a, 1, 2);
   EXPECT_EQ(b.size(), 2);
   EXPECT_EQ(b.width(), 8);
   EXPECT_EQ(b.element64(0), 2);
@@ -34,10 +34,10 @@ TEST(Repack, SimpleCopy) {
 
 TEST(Repack, Gather8To16Little) {
   BinData a(8, {1, 2, 3, 4, 5, 6});
-  RepackFormat format{RepackEndian::LITTLE, 16};
-  EXPECT_EQ(repackUnit(a.width(), format), 16);
-  EXPECT_EQ(repackSize(a.width(), format, 2), 4);
-  BinData b = repack(a, format, 1, 2);
+  Repacker format{Endian::LITTLE, 8, 16};
+  EXPECT_EQ(format.repackUnit(), 16);
+  EXPECT_EQ(format.repackSize(2), 4);
+  BinData b = format.repack(a, 1, 2);
   EXPECT_EQ(b.size(), 2);
   EXPECT_EQ(b.width(), 16);
   EXPECT_EQ(b.element64(0), 0x302);
@@ -46,10 +46,10 @@ TEST(Repack, Gather8To16Little) {
 
 TEST(Repack, Gather8To16Big) {
   BinData a(8, {1, 2, 3, 4, 5, 6});
-  RepackFormat format{RepackEndian::BIG, 16};
-  EXPECT_EQ(repackUnit(a.width(), format), 16);
-  EXPECT_EQ(repackSize(a.width(), format, 2), 4);
-  BinData b = repack(a, format, 1, 2);
+  Repacker format{Endian::BIG, 8, 16};
+  EXPECT_EQ(format.repackUnit(), 16);
+  EXPECT_EQ(format.repackSize(2), 4);
+  BinData b = format.repack(a, 1, 2);
   EXPECT_EQ(b.size(), 2);
   EXPECT_EQ(b.width(), 16);
   EXPECT_EQ(b.element64(0), 0x203);
@@ -58,10 +58,10 @@ TEST(Repack, Gather8To16Big) {
 
 TEST(Repack, Mash8To12Little) {
   BinData a(8, {0x12, 0x34, 0x56, 0x78, 0x9a});
-  RepackFormat format{RepackEndian::LITTLE, 12};
-  EXPECT_EQ(repackUnit(a.width(), format), 24);
-  EXPECT_EQ(repackSize(a.width(), format, 2), 3);
-  BinData b = repack(a, format, 1, 2);
+  Repacker format{Endian::LITTLE, 8, 12};
+  EXPECT_EQ(format.repackUnit(), 24);
+  EXPECT_EQ(format.repackSize(2), 3);
+  BinData b = format.repack(a, 1, 2);
   EXPECT_EQ(b.size(), 2);
   EXPECT_EQ(b.width(), 12);
   EXPECT_EQ(b.element64(0), 0x634);
@@ -70,10 +70,10 @@ TEST(Repack, Mash8To12Little) {
 
 TEST(Repack, Mash8To12Big) {
   BinData a(8, {0x12, 0x34, 0x56, 0x78, 0x9a});
-  RepackFormat format{RepackEndian::BIG, 12};
-  EXPECT_EQ(repackUnit(a.width(), format), 24);
-  EXPECT_EQ(repackSize(a.width(), format, 2), 3);
-  BinData b = repack(a, format, 1, 2);
+  Repacker format{Endian::BIG, 8, 12};
+  EXPECT_EQ(format.repackUnit(), 24);
+  EXPECT_EQ(format.repackSize(2), 3);
+  BinData b = format.repack(a, 1, 2);
   EXPECT_EQ(b.size(), 2);
   EXPECT_EQ(b.width(), 12);
   EXPECT_EQ(b.element64(0), 0x345);
@@ -82,10 +82,10 @@ TEST(Repack, Mash8To12Big) {
 
 TEST(Repack, Ugly8To12Little) {
   BinData a(8, {0x12, 0x34, 0x56});
-  RepackFormat format{RepackEndian::LITTLE, 12};
-  EXPECT_EQ(repackUnit(a.width(), format), 24);
-  EXPECT_EQ(repackSize(a.width(), format, 1), 2);
-  BinData b = repack(a, format, 1, 1);
+  Repacker format{Endian::LITTLE, 8, 12};
+  EXPECT_EQ(format.repackUnit(), 24);
+  EXPECT_EQ(format.repackSize(1), 2);
+  BinData b = format.repack(a, 1, 1);
   EXPECT_EQ(b.size(), 1);
   EXPECT_EQ(b.width(), 12);
   EXPECT_EQ(b.element64(), 0x634);
@@ -93,10 +93,10 @@ TEST(Repack, Ugly8To12Little) {
 
 TEST(Repack, Ugly8To12Big) {
   BinData a(8, {0x12, 0x34, 0x56});
-  RepackFormat format{RepackEndian::BIG, 12};
-  EXPECT_EQ(repackUnit(a.width(), format), 24);
-  EXPECT_EQ(repackSize(a.width(), format, 1), 2);
-  BinData b = repack(a, format, 1, 1);
+  Repacker format{Endian::BIG, 8, 12};
+  EXPECT_EQ(format.repackUnit(), 24);
+  EXPECT_EQ(format.repackSize(1), 2);
+  BinData b = format.repack(a, 1, 1);
   EXPECT_EQ(b.size(), 1);
   EXPECT_EQ(b.width(), 12);
   EXPECT_EQ(b.element64(), 0x345);
@@ -104,10 +104,10 @@ TEST(Repack, Ugly8To12Big) {
 
 TEST(Repack, Split8To1Little) {
   BinData a(8, {0x12, 0x34, 0x56});
-  RepackFormat format{RepackEndian::LITTLE, 1};
-  EXPECT_EQ(repackUnit(a.width(), format), 8);
-  EXPECT_EQ(repackSize(a.width(), format, 12), 2);
-  BinData b = repack(a, format, 1, 12);
+  Repacker format{Endian::LITTLE, 8, 1};
+  EXPECT_EQ(format.repackUnit(), 8);
+  EXPECT_EQ(format.repackSize(12), 2);
+  BinData b = format.repack(a, 1, 12);
   EXPECT_EQ(b.size(), 12);
   EXPECT_EQ(b.width(), 1);
   for (int i = 0; i < 12; i++)
@@ -116,10 +116,10 @@ TEST(Repack, Split8To1Little) {
 
 TEST(Repack, Split8To1Big) {
   BinData a(8, {0x12, 0x34, 0x56});
-  RepackFormat format{RepackEndian::BIG, 1};
-  EXPECT_EQ(repackUnit(a.width(), format), 8);
-  EXPECT_EQ(repackSize(a.width(), format, 12), 2);
-  BinData b = repack(a, format, 1, 12);
+  Repacker format{Endian::BIG, 8, 1};
+  EXPECT_EQ(format.repackUnit(), 8);
+  EXPECT_EQ(format.repackSize(12), 2);
+  BinData b = format.repack(a, 1, 12);
   EXPECT_EQ(b.size(), 12);
   EXPECT_EQ(b.width(), 1);
   for (int i = 0; i < 12; i++)
@@ -128,10 +128,10 @@ TEST(Repack, Split8To1Big) {
 
 TEST(Repack, Split60To20Little) {
   BinData a(60, {0xfedcba987654321ull});
-  RepackFormat format{RepackEndian::LITTLE, 20};
-  EXPECT_EQ(repackUnit(a.width(), format), 60);
-  EXPECT_EQ(repackSize(a.width(), format, 3), 1);
-  BinData b = repack(a, format, 0, 3);
+  Repacker format{Endian::LITTLE, 60, 20};
+  EXPECT_EQ(format.repackUnit(), 60);
+  EXPECT_EQ(format.repackSize(3), 1);
+  BinData b = format.repack(a, 0, 3);
   EXPECT_EQ(b.size(), 3);
   EXPECT_EQ(b.width(), 20);
   EXPECT_EQ(b.element64(0), 0x54321);
@@ -141,10 +141,10 @@ TEST(Repack, Split60To20Little) {
 
 TEST(Repack, Split60To20Big) {
   BinData a(60, {0xfedcba987654321ull});
-  RepackFormat format{RepackEndian::BIG, 20};
-  EXPECT_EQ(repackUnit(a.width(), format), 60);
-  EXPECT_EQ(repackSize(a.width(), format, 3), 1);
-  BinData b = repack(a, format, 0, 3);
+  Repacker format{Endian::BIG, 60, 20};
+  EXPECT_EQ(format.repackUnit(), 60);
+  EXPECT_EQ(format.repackSize(3), 1);
+  BinData b = format.repack(a, 0, 3);
   EXPECT_EQ(b.size(), 3);
   EXPECT_EQ(b.width(), 20);
   EXPECT_EQ(b.element64(0), 0xfedcb);
@@ -154,10 +154,10 @@ TEST(Repack, Split60To20Big) {
 
 TEST(Repack, Split16To8Little) {
   BinData a(16, {0x1234, 0x5678, 0x9abc});
-  RepackFormat format{RepackEndian::LITTLE, 8};
-  EXPECT_EQ(repackUnit(a.width(), format), 16);
-  EXPECT_EQ(repackSize(a.width(), format, 3), 2);
-  BinData b = repack(a, format, 1, 3);
+  Repacker format{Endian::LITTLE, 16, 8};
+  EXPECT_EQ(format.repackUnit(), 16);
+  EXPECT_EQ(format.repackSize(3), 2);
+  BinData b = format.repack(a, 1, 3);
   EXPECT_EQ(b.size(), 3);
   EXPECT_EQ(b.width(), 8);
   EXPECT_EQ(b.element64(0), 0x78);
@@ -167,10 +167,10 @@ TEST(Repack, Split16To8Little) {
 
 TEST(Repack, Split16To8Big) {
   BinData a(16, {0x1234, 0x5678, 0x9abc});
-  RepackFormat format{RepackEndian::BIG, 8};
-  EXPECT_EQ(repackUnit(a.width(), format), 16);
-  EXPECT_EQ(repackSize(a.width(), format, 3), 2);
-  BinData b = repack(a, format, 1, 3);
+  Repacker format{Endian::BIG, 16, 8};
+  EXPECT_EQ(format.repackUnit(), 16);
+  EXPECT_EQ(format.repackSize(3), 2);
+  BinData b = format.repack(a, 1, 3);
   EXPECT_EQ(b.size(), 3);
   EXPECT_EQ(b.width(), 8);
   EXPECT_EQ(b.element64(0), 0x56);
@@ -180,10 +180,10 @@ TEST(Repack, Split16To8Big) {
 
 TEST(Repack, Padded8to23LeftLittle) {
   BinData a(8, {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa});
-  RepackFormat format{RepackEndian::LITTLE, 23, 9, 0};
-  EXPECT_EQ(repackUnit(a.width(), format), 32);
-  EXPECT_EQ(repackSize(a.width(), format, 2), 8);
-  BinData b = repack(a, format, 1, 2);
+  Repacker format{Endian::LITTLE, 8, 23, 9, 0};
+  EXPECT_EQ(format.repackUnit(), 32);
+  EXPECT_EQ(format.repackSize(2), 8);
+  BinData b = format.repack(a, 1, 2);
   EXPECT_EQ(b.size(), 2);
   EXPECT_EQ(b.width(), 23);
   EXPECT_EQ(b.element64(0), 0x443322);
@@ -192,10 +192,10 @@ TEST(Repack, Padded8to23LeftLittle) {
 
 TEST(Repack, Padded8to23RightLittle) {
   BinData a(8, {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa});
-  RepackFormat format{RepackEndian::LITTLE, 23, 0, 9};
-  EXPECT_EQ(repackUnit(a.width(), format), 32);
-  EXPECT_EQ(repackSize(a.width(), format, 2), 8);
-  BinData b = repack(a, format, 1, 2);
+  Repacker format{Endian::LITTLE, 8, 23, 0, 9};
+  EXPECT_EQ(format.repackUnit(), 32);
+  EXPECT_EQ(format.repackSize(2), 8);
+  BinData b = format.repack(a, 1, 2);
   EXPECT_EQ(b.size(), 2);
   EXPECT_EQ(b.width(), 23);
   EXPECT_EQ(b.element64(0), 0x2aa219);
@@ -204,10 +204,10 @@ TEST(Repack, Padded8to23RightLittle) {
 
 TEST(Repack, Padded8to23MixedLittle) {
   BinData a(8, {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa});
-  RepackFormat format{RepackEndian::LITTLE, 23, 1, 8};
-  EXPECT_EQ(repackUnit(a.width(), format), 32);
-  EXPECT_EQ(repackSize(a.width(), format, 2), 8);
-  BinData b = repack(a, format, 1, 2);
+  Repacker format{Endian::LITTLE, 8, 23, 1, 8};
+  EXPECT_EQ(format.repackUnit(), 32);
+  EXPECT_EQ(format.repackSize(2), 8);
+  BinData b = format.repack(a, 1, 2);
   EXPECT_EQ(b.size(), 2);
   EXPECT_EQ(b.width(), 23);
   EXPECT_EQ(b.element64(0), 0x554433);
@@ -216,10 +216,10 @@ TEST(Repack, Padded8to23MixedLittle) {
 
 TEST(Repack, Padded8to23LeftBig) {
   BinData a(8, {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa});
-  RepackFormat format{RepackEndian::BIG, 23, 9, 0};
-  EXPECT_EQ(repackUnit(a.width(), format), 32);
-  EXPECT_EQ(repackSize(a.width(), format, 2), 8);
-  BinData b = repack(a, format, 1, 2);
+  Repacker format{Endian::BIG, 8, 23, 9, 0};
+  EXPECT_EQ(format.repackUnit(), 32);
+  EXPECT_EQ(format.repackSize(2), 8);
+  BinData b = format.repack(a, 1, 2);
   EXPECT_EQ(b.size(), 2);
   EXPECT_EQ(b.width(), 23);
   EXPECT_EQ(b.element64(0), 0x334455);
@@ -228,10 +228,10 @@ TEST(Repack, Padded8to23LeftBig) {
 
 TEST(Repack, Padded8to23RightBig) {
   BinData a(8, {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa});
-  RepackFormat format{RepackEndian::BIG, 23, 0, 9};
-  EXPECT_EQ(repackUnit(a.width(), format), 32);
-  EXPECT_EQ(repackSize(a.width(), format, 2), 8);
-  BinData b = repack(a, format, 1, 2);
+  Repacker format{Endian::BIG, 8, 23, 0, 9};
+  EXPECT_EQ(format.repackUnit(), 32);
+  EXPECT_EQ(format.repackSize(2), 8);
+  BinData b = format.repack(a, 1, 2);
   EXPECT_EQ(b.size(), 2);
   EXPECT_EQ(b.width(), 23);
   EXPECT_EQ(b.element64(0), 0x1119a2);
@@ -240,10 +240,10 @@ TEST(Repack, Padded8to23RightBig) {
 
 TEST(Repack, Padded8to23MixedBig) {
   BinData a(8, {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa});
-  RepackFormat format{RepackEndian::BIG, 23, 1, 8};
-  EXPECT_EQ(repackUnit(a.width(), format), 32);
-  EXPECT_EQ(repackSize(a.width(), format, 2), 8);
-  BinData b = repack(a, format, 1, 2);
+  Repacker format{Endian::BIG, 8, 23, 1, 8};
+  EXPECT_EQ(format.repackUnit(), 32);
+  EXPECT_EQ(format.repackSize(2), 8);
+  BinData b = format.repack(a, 1, 2);
   EXPECT_EQ(b.size(), 2);
   EXPECT_EQ(b.width(), 23);
   EXPECT_EQ(b.element64(0), 0x223344);

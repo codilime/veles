@@ -78,15 +78,15 @@ class StreamParser {
 
   data::BinData getData(
       const QString &name,
-      const data::RepackFormat &repack,
+      const data::Repacker &repack,
       size_t num_elements,
       const data::FieldHighType &high_type) {
-    size_t src_sz = data::repackSize(width_, repack, num_elements);
+    size_t src_sz = repack.repackSize(num_elements);
     if (pos_ >= blob_size_)
       return data::BinData();
     auto data = blob_->syncGetInfo<veles::dbif::BlobDataRequest>(pos_, pos_+src_sz);
     pos_ += src_sz;
-    data::BinData res = data::repack(data->data, repack, 0, num_elements);
+    data::BinData res = repack.repack(data->data, 0, num_elements);
     stack_.back().items.push_back(data::ChunkDataItem::field(
       pos_ - src_sz, pos_, name,
       repack, num_elements, high_type, res
@@ -95,14 +95,14 @@ class StreamParser {
   }
 
   data::BinData getDataUntil(const QString &name,
-                             const data::RepackFormat &repack,
+                             const data::Repacker &repack,
                              data::BinData termination,
                              const data::FieldHighType &high_type,
                              bool include_termination = true) {
     assert(termination.size() == 1);
-    data::BinData res(repack.width, 0);
+    data::BinData res(repack.to_width, 0);
     size_t num_elements = 1;
-    size_t src_size = data::repackSize(width_, repack, num_elements);
+    size_t src_size = repack.repackSize(num_elements);
     size_t bytes_read = 0;
     bool found = false;
     while (!found && pos_ + bytes_read < blob_size_) {
@@ -114,7 +114,7 @@ class StreamParser {
                           pos_ + bytes_read, pos_ + bytes_read + src_size)
                       ->data;
 
-      data = data::repack(data, repack, 0, num_elements);
+      data = repack.repack(data, 0, num_elements);
 
       for (size_t dataIndex = 0; dataIndex < data.size(); ++dataIndex) {
         if (data[dataIndex] == termination) {
@@ -129,8 +129,8 @@ class StreamParser {
 
       res = res + data;
       num_elements *= 2;
-      bytes_read += data::repackSize(width_, repack, data.size());
-      src_size = data::repackSize(width_, repack, num_elements);
+      bytes_read += repack.repackSize(data.size());
+      src_size = repack.repackSize(num_elements);
     }
 
     pos_ += bytes_read;
@@ -139,9 +139,9 @@ class StreamParser {
     return res;
   }
 
-  float getFloat32(const QString &name, data::RepackEndian endian) {
+  float getFloat32(const QString &name, data::Endian endian) {
     auto data = getData(
-        name, data::RepackFormat{endian, 32}, 1,
+        name, data::Repacker{endian, 8, 32}, 1,
         data::FieldHighType::floating(data::FieldHighType::IEEE754_SINGLE));
     if (!data.size()) return 0.0;
 
@@ -153,16 +153,16 @@ class StreamParser {
   }
 
   float getFloat32Le(const QString &name) {
-    return getFloat32(name, data::RepackEndian::LITTLE);
+    return getFloat32(name, data::Endian::LITTLE);
   }
 
   float getFloat32Be(const QString &name) {
-    return getFloat32(name, data::RepackEndian::BIG);
+    return getFloat32(name, data::Endian::BIG);
   }
 
-  double getFloat64(const QString &name, data::RepackEndian endian) {
+  double getFloat64(const QString &name, data::Endian endian) {
     auto data = getData(
-        name, data::RepackFormat{endian, 64}, 1,
+        name, data::Repacker{endian, 8, 64}, 1,
         data::FieldHighType::floating(data::FieldHighType::IEEE754_DOUBLE));
 
     if (!data.size()) return 0.0;
@@ -174,17 +174,17 @@ class StreamParser {
   }
 
   double getFloat64Le(const QString &name) {
-    return getFloat64(name, data::RepackEndian::LITTLE);
+    return getFloat64(name, data::Endian::LITTLE);
   }
 
   double getFloat64Be(const QString &name) {
-    return getFloat64(name, data::RepackEndian::BIG);
+    return getFloat64(name, data::Endian::BIG);
   }
 
   uint32_t get32(const QString &name,
                  data::FieldHighType::FieldSignMode sign_mode,
-                 data::RepackEndian endian) {
-    auto data = getData(name, data::RepackFormat{endian, 32}, 1,
+                 data::Endian endian) {
+    auto data = getData(name, data::Repacker{endian, 8, 32}, 1,
                         data::FieldHighType::fixed(sign_mode));
     if (!data.size()) return 0;
     return data.element64();
@@ -193,19 +193,19 @@ class StreamParser {
   uint32_t getLe32(const QString &name,
                    data::FieldHighType::FieldSignMode sign_mode =
                        data::FieldHighType::UNSIGNED) {
-    return get32(name, sign_mode, data::RepackEndian::LITTLE);
+    return get32(name, sign_mode, data::Endian::LITTLE);
   }
 
   uint32_t getBe32(const QString &name,
                    data::FieldHighType::FieldSignMode sign_mode =
                        data::FieldHighType::UNSIGNED) {
-    return get32(name, sign_mode, data::RepackEndian::BIG);
+    return get32(name, sign_mode, data::Endian::BIG);
   }
 
   uint64_t get64(const QString &name,
                  data::FieldHighType::FieldSignMode sign_mode,
-                 data::RepackEndian endian) {
-    auto data = getData(name, data::RepackFormat{endian, 64}, 1,
+                 data::Endian endian) {
+    auto data = getData(name, data::Repacker{endian, 8, 64}, 1,
                         data::FieldHighType::fixed(sign_mode));
     if (!data.size()) return 0;
     return data.element64();
@@ -214,18 +214,18 @@ class StreamParser {
   uint64_t getLe64(const QString &name,
                    data::FieldHighType::FieldSignMode sign_mode =
                        data::FieldHighType::UNSIGNED) {
-    return get64(name, sign_mode, data::RepackEndian::LITTLE);
+    return get64(name, sign_mode, data::Endian::LITTLE);
   }
 
   uint64_t getBe64(const QString &name,
                    data::FieldHighType::FieldSignMode sign_mode =
                        data::FieldHighType::UNSIGNED) {
-    return get64(name, sign_mode, data::RepackEndian::BIG);
+    return get64(name, sign_mode, data::Endian::BIG);
   }
 
   std::vector<uint8_t> getBytes(const QString &name, uint64_t len) {
     auto data = getData(
-      name, data::RepackFormat{data::RepackEndian::LITTLE, 8}, len,
+      name, data::Repacker{data::Endian::LITTLE, 8, 8}, len,
       data::FieldHighType());
     std::vector<uint8_t> res;
     for (size_t i = 0; i < data.size(); i++) {
@@ -237,7 +237,7 @@ class StreamParser {
   std::vector<uint8_t> getBytesUntil(const QString &name, uint8_t termination,
                                      bool include_termination = true) {
     auto data =
-        getDataUntil(name, data::RepackFormat{data::RepackEndian::LITTLE, 8},
+        getDataUntil(name, data::Repacker{data::Endian::LITTLE, 8, 8},
                      data::BinData::fromRawData(8, {termination}),
                      data::FieldHighType(), include_termination);
     std::vector<uint8_t> res;
@@ -249,7 +249,7 @@ class StreamParser {
 
   uint8_t getByte(const QString &name) {
     auto data = getData(
-      name, data::RepackFormat{data::RepackEndian::LITTLE, 8}, 1,
+      name, data::Repacker{data::Endian::LITTLE, 8, 8}, 1,
       data::FieldHighType());
     if (!data.size())
       return 0;
@@ -257,9 +257,9 @@ class StreamParser {
   }
 
   std::vector<uint16_t> get16(const QString &name, uint64_t num,
-                              data::RepackEndian endian) {
+                              data::Endian endian) {
     std::vector<uint16_t> res;
-    auto data = getData(name, data::RepackFormat{endian, 16}, num,
+    auto data = getData(name, data::Repacker{endian, 8, 16}, num,
                         data::FieldHighType());
     for (size_t i = 0; i < data.size(); i++) {
       res.push_back(static_cast<uint16_t>(data.element64(i)));
@@ -268,11 +268,11 @@ class StreamParser {
   }
 
   std::vector<uint16_t> getLe16(const QString &name, uint64_t num) {
-    return get16(name, num, data::RepackEndian::LITTLE);
+    return get16(name, num, data::Endian::LITTLE);
   }
 
   std::vector<uint16_t> getBe16(const QString &name, uint64_t num) {
-    return get16(name, num, data::RepackEndian::BIG);
+    return get16(name, num, data::Endian::BIG);
   }
 
   bool eof() { return pos_ >= blob_size_; }

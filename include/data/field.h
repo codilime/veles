@@ -115,7 +115,7 @@ struct ChunkDataItem {
   // Not for PAD, redundant for SUBCHUNK.
   QString name;
   // Only for FIELD.
-  RepackFormat repack;
+  Repacker repack;
   uint64_t num_elements;
   // For COMPUTED, FIELD, BITFIELD.
   FieldHighType high_type;
@@ -151,7 +151,7 @@ struct ChunkDataItem {
 
   static ChunkDataItem field(
       uint64_t start, uint64_t end,
-      const QString &name, const RepackFormat &repack, uint64_t num_elements,
+      const QString &name, const Repacker &repack, uint64_t num_elements,
       const FieldHighType &high_type, const BinData &raw_value,
       const std::vector<ObjectHandle> &ref = {}) {
     ChunkDataItem res;
