@@ -41,7 +41,7 @@ else:
 print('Ready.')
 try:
     loop.add_signal_handler(signal.SIGINT, loop.stop)
-except AttributeError:
+except NotImplementedError:
     pass
 loop.run_forever()
 print('Goodbye.')
