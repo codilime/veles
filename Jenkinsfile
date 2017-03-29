@@ -1,14 +1,27 @@
 #!/usr/bin/env groovy
 // To get a more sensible workspace directory name
 
+def getBranch = {
+    env.BRANCH_NAME.tokenize("/").last()
+}
+
 def buildConfiguration = "Debug"
 def configurationList = """Debug
 RelWithDebInfo"""
-properties([disableConcurrentBuilds(),
-              parameters([
-                choice(choices: configurationList, name: "buildConfiguration")
-              ])
-           ])
+def buildsToKeep = getBranch() == 'master' ? "30" : "5"
+
+properties([
+  disableConcurrentBuilds(),
+  parameters([
+    choice(choices: configurationList, name: "buildConfiguration")
+  ]),
+  [$class: 'jenkins.model.BuildDiscarderProperty',
+    strategy: [$class: 'LogRotator',
+      numToKeepStr: buildsToKeep,
+      artifactNumToKeepStr: buildsToKeep
+    ]
+  ]
+])
 
 buildConfiguration = params.buildConfiguration
 
@@ -17,10 +30,6 @@ def getWorkspace = { buildType ->
   def directory_name = pwd().tokenize("\\").last()
 
   pwd().replace("%2F", "_") + buildType
-}
-
-def getBranch = {
-    env.BRANCH_NAME.tokenize("/").last()
 }
 
 @NonCPS
