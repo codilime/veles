@@ -129,13 +129,25 @@ void MsgpackObject::fromMsgpack(const msgpack::v2::object &obj) {
     break;
   case msgpack::type::ARRAY:
     obj_type = ObjectType::ARRAY;
-    new (&value.array) std::shared_ptr<std::vector<MsgpackObject>>;
+    new (&value.array) std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>>;
     obj.convert(value.array);
+    // convert nullptr that got created from nils to MsgpackObject holding nil
+    for (auto& val : *value.array) {
+      if (val == nullptr) {
+        val = std::make_shared<MsgpackObject>();
+      }
+    }
     break;
   case msgpack::type::MAP:
     obj_type = ObjectType::MAP;
-    new (&value.map) std::shared_ptr<std::map<std::string, MsgpackObject>>;
+    new (&value.map) std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>>;
     obj.convert(value.map);
+    // convert nullptr that got created from nils to MsgpackObject holding nil
+    for (auto& it : *value.map) {
+      if (it.second == nullptr) {
+        it.second = std::make_shared<MsgpackObject>();
+      }
+    }
     break;
   case msgpack::type::EXT:
     obj_type = ObjectType::EXT;
@@ -157,74 +169,92 @@ ObjectType MsgpackObject::type() const {
 }
 
 bool& MsgpackObject::getBool() {
+  if (obj_type != ObjectType::BOOLEAN) throw ConversionException("Wrong MsgpackObject type when trying to get bool");
   return value.boolean;
 }
 
-bool MsgpackObject::getBool() const{
+bool MsgpackObject::getBool() const {
+  if (obj_type != ObjectType::BOOLEAN) throw ConversionException("Wrong MsgpackObject type when trying to get bool");
   return value.boolean;
 }
 
 uint64_t& MsgpackObject::getUnsignedInt() {
+  if (obj_type != ObjectType::UNSIGNED_INTEGER) throw ConversionException("Wrong MsgpackObject type when trying to get unsigned int");
   return value.uint;
 }
 
-uint64_t MsgpackObject::getUnsignedInt() const{
+uint64_t MsgpackObject::getUnsignedInt() const {
+  if (obj_type != ObjectType::UNSIGNED_INTEGER) throw ConversionException("Wrong MsgpackObject type when trying to get unsigned int");
   return value.uint;
 }
 
 int64_t& MsgpackObject::getSignedInt() {
+  if (obj_type != ObjectType::SIGNED_INTEGER) throw ConversionException("Wrong MsgpackObject type when trying to get signed int");
   return value.sint;
 }
 
-int64_t MsgpackObject::getSignedInt() const{
+int64_t MsgpackObject::getSignedInt() const {
+  if (obj_type != ObjectType::SIGNED_INTEGER) throw ConversionException("Wrong MsgpackObject type when trying to get signed int");
   return value.sint;
 }
 
 double& MsgpackObject::getDouble() {
+  if (obj_type != ObjectType::DOUBLE) throw ConversionException("Wrong MsgpackObject type when trying to get double");
   return value.dbl;
 }
 
-double MsgpackObject::getDouble() const{
+double MsgpackObject::getDouble() const {
+  if (obj_type != ObjectType::DOUBLE) throw ConversionException("Wrong MsgpackObject type when trying to get double");
   return value.dbl;
 }
 
 std::shared_ptr<std::string> MsgpackObject::getString() {
+  if (obj_type != ObjectType::STR) throw ConversionException("Wrong MsgpackObject type when trying to get string");
   return value.str;
 }
 
-const std::shared_ptr<std::string> MsgpackObject::getString() const{
+const std::shared_ptr<std::string> MsgpackObject::getString() const {
+  if (obj_type != ObjectType::STR) throw ConversionException("Wrong MsgpackObject type when trying to get string");
   return value.str;
 }
 
-std::shared_ptr<std::vector<uint8_t> > MsgpackObject::getBin() {
+std::shared_ptr<std::vector<uint8_t>> MsgpackObject::getBin() {
+  if (obj_type != ObjectType::BIN) throw ConversionException("Wrong MsgpackObject type when trying to get binary data");
   return value.bin;
 }
 
-const std::shared_ptr<std::vector<uint8_t> > MsgpackObject::getBin() const{
+const std::shared_ptr<std::vector<uint8_t>> MsgpackObject::getBin() const {
+  if (obj_type != ObjectType::BIN) throw ConversionException("Wrong MsgpackObject type when trying to get binary data");
   return value.bin;
 }
 
-std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject> > > MsgpackObject::getArray() {
+std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>> MsgpackObject::getArray() {
+  if (obj_type != ObjectType::ARRAY) throw ConversionException("Wrong MsgpackObject type when trying to get array");
   return value.array;
 }
 
-const std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject> > > MsgpackObject::getArray() const{
+const std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>> MsgpackObject::getArray() const {
+  if (obj_type != ObjectType::ARRAY) throw ConversionException("Wrong MsgpackObject type when trying to get array");
   return value.array;
 }
 
-std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject> > > MsgpackObject::getMap() {
+std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>> MsgpackObject::getMap() {
+  if (obj_type != ObjectType::MAP) throw ConversionException("Wrong MsgpackObject type when trying to get map");
   return value.map;
 }
 
-const std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject> > > MsgpackObject::getMap() const{
+const std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>> MsgpackObject::getMap() const {
+  if (obj_type != ObjectType::MAP) throw ConversionException("Wrong MsgpackObject type when trying to get map");
   return value.map;
 }
 
-std::pair<int, std::shared_ptr<std::vector<uint8_t> > > MsgpackObject::getExt() {
+std::pair<int, std::shared_ptr<std::vector<uint8_t>>> MsgpackObject::getExt() {
+  if (obj_type != ObjectType::EXT) throw ConversionException("Wrong MsgpackObject type when trying to get ext");
   return value.ext;
 }
 
-const std::pair<int, std::shared_ptr<std::vector<uint8_t> > > MsgpackObject::getExt() const{
+const std::pair<int, std::shared_ptr<std::vector<uint8_t>>> MsgpackObject::getExt() const {
+  if (obj_type != ObjectType::EXT) throw ConversionException("Wrong MsgpackObject type when trying to get ext");
   return value.ext;
 }
 
@@ -235,7 +265,6 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::vector<uint8_t>& val) 
 
 template<>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::vector<uint8_t>> val) {
-  if (val == nullptr) return nullptr;
   return std::make_shared<MsgpackObject>(val);
 }
 
@@ -244,7 +273,6 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const MsgpackObject& obj) {
 }
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<MsgpackObject> obj) {
-  if (obj == nullptr) return nullptr;
   return obj;
 }
 
@@ -265,7 +293,6 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::string& val) {
 }
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::string> val) {
-  if (val == nullptr) return nullptr;
   return std::make_shared<MsgpackObject>(val);
 }
 
@@ -274,7 +301,6 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const data::NodeID& val) {
 }
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::NodeID> val) {
-  if (val == nullptr) return nullptr;
   return std::make_shared<MsgpackObject>(0, val->asVector());
 }
 
@@ -292,9 +318,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const double val) {
 }
 
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<data::NodeID>& out) {
-  if (obj == nullptr) {
-    out = nullptr;
-  } else if (obj->type() == ObjectType::NIL) {
+  if (obj->type() == ObjectType::NIL) {
     out = std::make_shared<data::NodeID>(data::NodeID::NIL_VALUE);
   } else {
     out = std::make_shared<data::NodeID>(obj->getExt().second->data());
@@ -335,52 +359,27 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr
 }
 
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<std::string>& out) {
-  if (obj == nullptr) {
-    out = nullptr;
-  } else {
-    out = obj->getString();
-  }
+  out = obj->getString();
 }
 
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<std::vector<uint8_t> >& out) {
-  if (obj == nullptr) {
-    out = nullptr;
-  } else {
-    out = obj->getBin();
-  }
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<std::vector<uint8_t>>& out) {
+  out = obj->getBin();
 }
 
-// TODO what to do if obj is nullptr ?
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, uint64_t& out) {
-  if (obj == nullptr) {
-    out = 0;
-  } else {
-    out = obj->getUnsignedInt();
-  }
+  out = obj->getUnsignedInt();
 }
 
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, int64_t& out) {
-  if (obj == nullptr) {
-    out = 0;
-  } else {
-    out = obj->getSignedInt();
-  }
+  out = obj->getSignedInt();
 }
 
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, bool& out) {
-  if (obj == nullptr) {
-    out = false;
-  } else {
-    out = obj->getBool();
-  }
+  out = obj->getBool();
 }
 
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, double& out) {
-  if (obj == nullptr) {
-    out = 0.0;
-  } else {
-    out = obj->getDouble();
-  }
+  out = obj->getDouble();
 }
 
 }  // namespace messages

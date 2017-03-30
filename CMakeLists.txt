@@ -190,20 +190,19 @@ qt5_use_modules(parser Core)
 add_dependencies(parser zlib)
 target_link_libraries(parser veles_db veles_dbif ${ZLIB_LIBRARIES})
 
-set(MSGPACK_TMP_CPP ${CMAKE_CURRENT_BINARY_DIR}/messages-h4x.h)
 set(MSGPACK_CPP "${CMAKE_CURRENT_BINARY_DIR}/messages.h")
+set(PYTHON_DIR ${CMAKE_SOURCE_DIR}/python)
 
-add_custom_command(OUTPUT ${MSGPACK_TMP_CPP}
-  COMMAND ${PYEXE} -m veles.cpp.generate > ${MSGPACK_TMP_CPP}
+add_custom_command(OUTPUT ${MSGPACK_CPP}
+  COMMAND ${PYEXE} -m veles.cpp.generate > ${MSGPACK_CPP}
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python
   COMMENT "Generating msgpack C++ code from Python"
   DEPENDS cpp_python_gen
+    ${PYTHON_DIR}/veles/cpp/generate.py
+    ${PYTHON_DIR}/veles/proto/node.py
+    ${PYTHON_DIR}/veles/schema/model.py
+    ${PYTHON_DIR}/veles/schema/fields.py
   VERBATIM)
-
-# H4X make sure that messages.h is generated everytime no matter what
-add_custom_command(OUTPUT ${MSGPACK_CPP}
-  COMMAND ${CMAKE_COMMAND} -E rename ${MSGPACK_TMP_CPP} ${MSGPACK_CPP}
-  DEPENDS ${MSGPACK_TMP_CPP})
 
 add_library(veles_network
     ${MSGPACK_CPP}

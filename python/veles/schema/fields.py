@@ -79,6 +79,13 @@ class Field(pep487.NewObject):
         return value
 
     def cpp_type(self):
+        """this function should return tuple containing three elements
+
+        first - C++ type name corresponding to this field
+        second - True if this type is POD or False if it should be wrapped
+         in smart pointer
+        third - default value
+        """
         raise NotImplementedError()
 
 
@@ -122,7 +129,8 @@ class Integer(Field):
 
     # TODO convert to use bignums
     def cpp_type(self):
-        return 'int64_t', True, '0'
+        return ('int64_t', True,
+                self.default if self.default is not None else '0')
 
 
 class UnsignedInteger(Integer):
@@ -137,7 +145,8 @@ class UnsignedInteger(Integer):
 
     # TODO convert to use bignums
     def cpp_type(self):
-        return 'uint64_t', True, '0'
+        return ('uint64_t', True,
+                self.default if self.default is not None else '0')
 
 
 INT64_MIN = -2**63
@@ -160,7 +169,8 @@ class SmallInteger(Integer):
             optional, default, minimum, maximum)
 
     def cpp_type(self):
-        return 'int64_t', True, '0'
+        return ('int64_t', True,
+                self.default if self.default is not None else '0')
 
 
 class SmallUnsignedInteger(Integer):
@@ -178,27 +188,34 @@ class SmallUnsignedInteger(Integer):
             optional, default, minimum, maximum)
 
     def cpp_type(self):
-        return 'uint64_t', True, '0'
+        return ('uint64_t', True,
+                self.default if self.default is not None else '0')
 
 
 class Boolean(Field):
     value_type = bool
 
     def cpp_type(self):
-        return 'bool', True, 'false'
+        if self.default is None:
+            default = 'false'
+        else:
+            default = 'true' if self.default else 'false'
+        return 'bool', True, default
 
 
 class Float(Field):
     value_type = float
 
     def cpp_type(self):
-        return 'double', True, '0.0'
+        return ('double', True,
+                self.default if self.default is not None else '0.0')
 
 
 class String(Field):
     value_type = six.text_type
 
     def cpp_type(self):
+        # TODO default value from self.default
         return 'std::string', False, 'nullptr'
 
 
@@ -206,6 +223,7 @@ class Binary(Field):
     value_type = bytes
 
     def cpp_type(self):
+        # TODO default value from self.default
         return 'std::vector<uint8_t>', False, 'nullptr'
 
 
@@ -213,6 +231,7 @@ class NodeID(Field):
     value_type = nodeid.NodeID
 
     def cpp_type(self):
+        # TODO default value from self.default
         return 'veles::data::NodeID', False, 'nullptr'
 
 
@@ -220,6 +239,7 @@ class BinData(Field):
     value_type = bindata.BinData
 
     def cpp_type(self):
+        # TODO default value from self.default
         return 'veles::data::BinData', False, 'nullptr'
 
 
@@ -261,6 +281,7 @@ class List(Collection):
     value_type = list
 
     def cpp_type(self):
+        # TODO default value from self.default
         elem_type = (
             '{}' if self.element.cpp_type()[1] else
             'std::shared_ptr<{}>').format(
@@ -272,6 +293,7 @@ class Set(Collection):
     value_type = set
 
     def cpp_type(self):
+        # TODO default value from self.default
         elem_type = (
             '{}' if self.element.cpp_type()[1] else
             'std::shared_ptr<{}>').format(
@@ -299,6 +321,7 @@ class Map(Field):
             self.value.validate(v)
 
     def cpp_type(self):
+        # TODO default value from self.default
         key_type = self.key.cpp_type()[0]
         value_type = (
             '{}' if self.value.cpp_type()[1] else
@@ -335,7 +358,8 @@ class Object(Field):
         return value.dump()
 
     def cpp_type(self):
-        return self.value_type.cpp_type()[0], False, 'nullptr'
+        # TODO default value from self.default
+        return self.value_type.cpp_type(), False, 'nullptr'
 
 
 class Enum(Field):

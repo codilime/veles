@@ -24,11 +24,11 @@ def generate_cpp_code():
     classes_to_generate = [node.Node, node.PosFilter]
     poly_classes = [messages.MsgpackMsg]
     for cls_type in classes_to_generate:
-        code += 'class {};\\\n'.format(cls_type.cpp_type()[0])
+        code += 'class {};\\\n'.format(cls_type.cpp_type())
     for cls_type in poly_classes:
-        code += 'class {};\\\n'.format(cls_type.cpp_type()[0])
+        code += 'class {};\\\n'.format(cls_type.cpp_type())
         for sub_class in cls_type.object_types.values():
-            code += 'class {};\\\n'.format(sub_class.cpp_type()[0])
+            code += 'class {};\\\n'.format(sub_class.cpp_type())
     for cls_type in classes_to_generate:
         code += cls_type.generate_header_code()
     for cls_type in poly_classes:
@@ -37,14 +37,6 @@ def generate_cpp_code():
             code += sub_class.generate_header_code()
 
     code += '\n'
-
-    code += '''#define MSGPACK_CLASSES_INIT \\
-  static void initMessages() {{\\
-{}\\
-  }}
-'''.format(
-        ''.join(['    {}::initObjectTypes();'.format(cls_type.cpp_type()[0])
-                 for cls_type in poly_classes]))
 
     code += '#define MSGPACK_CLASSES_SOURCE \\\n'
     for cls_type in classes_to_generate:

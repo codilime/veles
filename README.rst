@@ -27,7 +27,7 @@ corresponding to the dependencies above.
 
 On Ubuntu it can be done like this::
 
-    apt-get install cmake zlib1g-dev qtbase5-dev python3 python3-virtualenv
+    apt-get install cmake zlib1g-dev qtbase5-dev python3 python3-venv
 
 To build ::
 
