@@ -24,7 +24,7 @@ namespace data {
 
 /** Represents endianness used for repacking data.  */
 enum class RepackEndian {
-  LITTLE, BIG,
+  LITTLE, BIG, GUARD,
 };
 
 /** Represents data repacking format.  */

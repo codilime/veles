@@ -4,6 +4,7 @@ import struct
 import six
 
 import veles.veles_api as vapi
+from veles.objects import chunk_data_item
 
 
 class BmpParser(object):
@@ -25,84 +26,86 @@ class BmpParser(object):
             return
         file_size = struct.unpack('<I', file[2:6])[0]
         dib_size = struct.unpack('<I', file[14:18])[0]
-        pix_start = struct.unpack('<I', file[10:14])[0]
 
         bitmap = file.create_chunk('bitmap', size=file_size)
 
         bitmap_header = bitmap.create_chunk('Bitmap file header', size=14)
         bitmap_header.create_chunk('FileType', size=2)
-        bitmap_header.create_chunk('FileSize', size=4)
+        bitmap_header.create_chunk_item('FileSize', bit_width=32)
         bitmap_header.create_chunk(
             'Reserved1', size=2,
             comment='value depends on the application that creates the image')
         bitmap_header.create_chunk(
             'Reserved2', size=2,
             comment='value depends on the application that creates the image')
-        bitmap_header.create_chunk('BitmapOffset', size=4)
+        pix_start = bitmap_header.create_chunk_item(
+            'BitmapOffset', bit_width=32).values[0]
 
         dib_header = bitmap.create_chunk('DIB header', size=dib_size)
-        dib_header.create_chunk('Size', size=4)
+        dib_header.create_chunk_item('Size', bit_width=32)
         image_size = 0
         if dib_size == 12:
-            width_chunk = dib_header.create_chunk('Width', size=2)
-            width = struct.unpack('<H', width_chunk[0:2])[0]
-            height_chunk = dib_header.create_chunk('Height', size=2)
-            height = struct.unpack('<H', height_chunk[0:2])[0]
-            dib_header.create_chunk('NumPlanes', size=2)
-            bpp = dib_header.create_chunk('BitsPerPixel', size=2)
-            bits_per_pix = struct.unpack('<H', bpp[0:2])[0]
+            width = dib_header.create_chunk_item(
+                'Width', bit_width=16).values[0]
+            height = dib_header.create_chunk_item(
+                'Height', bit_width=16).values[0]
+            dib_header.create_chunk_item('NumPlanes', bit_width=16)
+            bits_per_pix = dib_header.create_chunk_item(
+                'BitsPerPixel', bit_width=16).values[0]
 
         else:
-            width_chunk = dib_header.create_chunk('Width', size=4)
-            width = abs(struct.unpack('<i', width_chunk[0:4])[0])
-            height_chunk = dib_header.create_chunk('Height', size=4)
-            height = abs(struct.unpack('<i', height_chunk[0:4])[0])
-            dib_header.create_chunk('NumPlanes', size=2)
-            bpp = dib_header.create_chunk('BitsPerPixel', size=2)
-            bits_per_pix = struct.unpack('<H', bpp[0:2])[0]
+            width = abs(dib_header.create_chunk_item(
+                'Width', bit_width=32,
+                sign_mode=chunk_data_item.FieldSignMode.SIGNED).values[0])
+            height = abs(dib_header.create_chunk_item(
+                'Height', bit_width=32,
+                sign_mode=chunk_data_item.FieldSignMode.SIGNED).values[0])
+            dib_header.create_chunk_item('NumPlanes', bit_width=16)
+            bits_per_pix = dib_header.create_chunk_item(
+                'BitsPerPixel', bit_width=16).values[0]
             if dib_size > 16:
-                compr_chunk = dib_header.create_chunk('Compression', size=4)
-                compression = struct.unpack('<I', compr_chunk[0:4])[0]
-                isize_chunk = dib_header.create_chunk('ImageDataSize', size=4)
-                image_size = struct.unpack('<I', isize_chunk[0:4])[0]
-                dib_header.create_chunk('XResolution', size=4)
-                dib_header.create_chunk('YResolution', size=4)
-                col_used_chunk = dib_header.create_chunk('ColorsUsed', size=4)
-                colors_used = struct.unpack('<I', col_used_chunk[0:4])[0]
-                dib_header.create_chunk('ColorsImportant', size=4)
+                compression = dib_header.create_chunk_item(
+                    'Compression', bit_width=32).values[0]
+                image_size = dib_header.create_chunk_item(
+                    'ImageDataSize', bit_width=32).values[0]
+                dib_header.create_chunk_item('XResolution', bit_width=32)
+                dib_header.create_chunk_item('YResolution', bit_width=32)
+                colors_used = dib_header.create_chunk_item(
+                    'ColorsUsed', bit_width=32).values[0]
+                dib_header.create_chunk_item('ColorsImportant', bit_width=32)
             if dib_size == 64:
-                dib_header.create_chunk('Units', size=2)
-                dib_header.create_chunk('Reserved', size=2)
-                dib_header.create_chunk('Recording', size=2)
-                dib_header.create_chunk('Rendering', size=2)
-                dib_header.create_chunk('Size1', size=4)
-                dib_header.create_chunk('Size2', size=4)
-                dib_header.create_chunk('ColorEncoding', size=4)
-                dib_header.create_chunk('Identifier', size=4)
+                dib_header.create_chunk_item('Units', bit_width=16)
+                dib_header.create_chunk_item('Reserved', bit_width=16)
+                dib_header.create_chunk_item('Recording', bit_width=16)
+                dib_header.create_chunk_item('Rendering', bit_width=16)
+                dib_header.create_chunk_item('Size1', bit_width=32)
+                dib_header.create_chunk_item('Size2', bit_width=32)
+                dib_header.create_chunk_item('ColorEncoding', bit_width=32)
+                dib_header.create_chunk_item('Identifier', bit_width=32)
             if dib_size >= 108:
-                dib_header.create_chunk('RedMask', size=4)
-                dib_header.create_chunk('GreenMask', size=4)
-                dib_header.create_chunk('BlueMask', size=4)
-                dib_header.create_chunk('AlphaMask', size=4)
-                dib_header.create_chunk('CSType', size=4)
+                dib_header.create_chunk_item('RedMask', bit_width=32)
+                dib_header.create_chunk_item('GreenMask', bit_width=32)
+                dib_header.create_chunk_item('BlueMask', bit_width=32)
+                dib_header.create_chunk_item('AlphaMask', bit_width=32)
+                dib_header.create_chunk_item('CSType', bit_width=32)
                 endpoints = dib_header.create_chunk('Endpoints', size=36)
-                endpoints.create_chunk('ciexyzRed', size=12)
-                endpoints.create_chunk('ciexyzGreen', size=12)
-                endpoints.create_chunk('ciexyzBlue', size=12)
-                dib_header.create_chunk('GammaRed', size=4)
-                dib_header.create_chunk('GammaGreen', size=4)
-                dib_header.create_chunk('GammaBlue', size=4)
+                endpoints.create_chunk_item('ciexyzRed', bit_width=96)
+                endpoints.create_chunk_item('ciexyzGreen', bit_width=96)
+                endpoints.create_chunk_item('ciexyzBlue', bit_width=96)
+                dib_header.create_chunk_item('GammaRed', bit_width=32)
+                dib_header.create_chunk_item('GammaGreen', bit_width=32)
+                dib_header.create_chunk_item('GammaBlue', bit_width=32)
                 if dib_size == 124:
-                    dib_header.create_chunk('Intent', size=4)
-                    dib_header.create_chunk('ProfileData', size=4)
-                    dib_header.create_chunk('ProfileSize', size=4)
-                    dib_header.create_chunk('Reserved', size=4)
+                    dib_header.create_chunk_item('Intent', bit_width=32)
+                    dib_header.create_chunk_item('ProfileData', bit_width=32)
+                    dib_header.create_chunk_item('ProfileSize', bit_width=32)
+                    dib_header.create_chunk_item('Reserved', bit_width=32)
 
         if dib_size == 40:
             if compression == 3:
-                bitmap.create_chunk('Extra bit masks', size=12)
+                bitmap.create_chunk_item('Extra bit masks', bit_width=96)
             if compression == 4:
-                bitmap.create_chunk('Extra bit masks', size=16)
+                bitmap.create_chunk_item('Extra bit masks', bit_width=128)
 
         if bits_per_pix <= 8:
             color_size = 3 if dib_size == 12 else 4
@@ -113,10 +116,10 @@ class BmpParser(object):
             for i in six.moves.range(colors):
                 color = color_table.create_chunk(
                     'Color {}'.format(i), size=color_size)
-                color.create_chunk('Red', size=1)
-                color.create_chunk('Green', size=1)
-                color.create_chunk('Blue', size=1)
-                color.create_chunk('Alpha', size=1)
+                color.create_chunk_item('Red', bit_width=8)
+                color.create_chunk_item('Green', bit_width=8)
+                color.create_chunk_item('Blue', bit_width=8)
+                color.create_chunk_item('Alpha', bit_width=8)
 
         if bitmap._cursor < pix_start:
             bitmap.create_chunk('Gap1', end=pix_start)

@@ -20,6 +20,7 @@
 
 #include <QtNetwork/QTcpServer>
 
+#include "db/object.h"
 #include "db/types.h"
 #include "network.pb.h"
 
@@ -55,6 +56,9 @@ private:
   void deleteObject(PLocalObject target_object, network::Response &resp);
   void getBlobData(PLocalObject target_object, QTcpSocket *client_connection,
                    network::Response &resp);
+  void addChunkItem(PLocalObject blob, network::Response &resp,
+                    PLocalObject object,
+                    const network::ChunkDataItem &req_item);
 };
 
 }  // namespace db

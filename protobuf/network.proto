@@ -21,10 +21,37 @@ package veles.network;
 // This is very "hackish" temporary protobuf definiton, for schema before refactoring
 
 message ChunkDataItem {
-    uint64 start = 1;
-    uint64 end = 2;
-    string name = 3;
-    // Add more properties ?
+    message RepackFormat {
+      uint32 endian = 1;
+      uint32 width = 2;
+      uint32 high_pad = 3;
+      uint32 low_pad = 4;
+    }
+
+    message FieldHighType {
+      uint32 mode = 1;
+      int32 shift = 2;
+      uint32 sign_mode = 3;
+      uint32 float_mode = 4;
+      bool float_complex = 5;
+      uint32 string_mode = 6;
+      uint32 string_encoding = 7;
+      string type_name = 8;
+    }
+
+    message BinData {
+      uint32 width = 1;
+      uint64 size = 2;
+      bytes data = 3;
+    }
+    uint32 type = 1;
+    uint64 start = 2;
+    uint64 end = 3;
+    string name = 4;
+    RepackFormat repack = 5;
+    uint64 num_elements = 6;
+    FieldHighType high_type = 7;
+    BinData raw_value = 8;
 }
 
 message LocalObject {
@@ -49,6 +76,7 @@ message Request {
       ADD_CHILD_CHUNK = 2;
       DELETE_OBJECT = 3;
       GET_BLOB_DATA = 4;
+      ADD_CHUNK_ITEM = 5;
     }
     Operation type = 1;
     // full path to object we want to operate on
@@ -56,13 +84,10 @@ message Request {
     // this is just a temporary hack to enable semi efficent state-less comunication
     // w/o random access to objects on server side
     repeated uint64 id = 2;
-
-    string name = 101;
-    string comment = 102;
-
-    uint64 chunk_start = 201;
-    uint64 chunk_end = 202;
-    string chunk_type = 203;
+    oneof request_body {
+      LocalObject object = 101;
+      ChunkDataItem chunk_item = 102;
+    }
 }
 
 message Response {

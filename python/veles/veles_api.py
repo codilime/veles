@@ -127,11 +127,11 @@ class VelesClient(object):
         req.type = network_pb2.Request.ADD_CHILD_CHUNK
         req.id.extend(parent._id_path)
 
-        req.name = name
-        req.comment = comment
-        req.chunk_start = start
-        req.chunk_end = end
-        req.chunk_type = chunk_type
+        req.object.name = name
+        req.object.comment = comment
+        req.object.chunk_start = start
+        req.object.chunk_end = end
+        req.object.chunk_type = chunk_type
         results = self._send_req(req)
         new_chunk = results[0]
         parent.children.append(new_chunk)

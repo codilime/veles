@@ -36,6 +36,7 @@ struct FieldHighType {
     STRING,
     POINTER,
     ENUM,
+    MODE_GUARD,
   } mode;
   // For FIXED and POINTER, positive means the raw value is scaled up by
   // a PoT, negative is for FIXED only and means a fractional value.
@@ -44,11 +45,13 @@ struct FieldHighType {
   enum FieldSignMode {
     UNSIGNED,
     SIGNED,
+    SIGN_GUARD,
   } sign_mode;
   // For FLOAT.
   enum FieldFloatMode {
     IEEE754_SINGLE,
     IEEE754_DOUBLE,
+    FLOAT_GUARD,
   } float_mode;
   // For FLOAT.  If true, this field should be made of an even number of
   // elements - even ones are real parts, odd ones are imaginary.
@@ -62,12 +65,14 @@ struct FieldHighType {
     // Size is determined by the position of the first zero byte, which is
     // trimmed.
     STRING_ZERO_TERMINATED,
+    STRING_GUARD,
   } string_mode;
   enum FieldStringEncoding {
     // Use directly as Unicode codepoint (ie. ISO-8859-1, UCS-2, UCS-4).
     ENC_RAW,
     ENC_UTF8,
     ENC_UTF16,
+    ENC_GUARD,
   } string_encoding;
   // For ENUM: names the enum type; for POINTER: names the pointed-to type.
   QString type_name;
