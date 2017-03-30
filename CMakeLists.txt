@@ -27,7 +27,6 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VELES hex editor")
 include("cmake/googletest.cmake")
 include("cmake/qt.cmake")
 include("cmake/zlib.cmake")
-include("cmake/protobuf.cmake")
 include("cmake/msgpack.cmake")
 include("cmake/cppgen.cmake")
 # Compiler flags
@@ -52,7 +51,6 @@ set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(TEST_DIR ${CMAKE_SOURCE_DIR}/test)
 
 include_directories(${INCLUDE_DIR})
-include_directories(${CMAKE_BINARY_DIR}/protobuf)
 
 # VELES build rules
 # LIB: veles_base
@@ -64,7 +62,6 @@ add_library(veles_base
     ${INCLUDE_DIR}/util/sampling/fake_sampler.h
     ${INCLUDE_DIR}/util/settings/theme.h
     ${INCLUDE_DIR}/util/settings/hexedit.h
-    ${INCLUDE_DIR}/util/settings/network.h
 
     ${INCLUDE_DIR}/util/encoders/base64_encoder.h
     ${INCLUDE_DIR}/util/encoders/c_data_encoder.h
@@ -86,7 +83,6 @@ add_library(veles_base
     ${SRC_DIR}/util/sampling/fake_sampler.cc
     ${SRC_DIR}/util/settings/theme.cc
     ${SRC_DIR}/util/settings/hexedit.cc
-    ${SRC_DIR}/util/settings/network.cc
 
     ${SRC_DIR}/util/encoders/base64_encoder.cc
     ${SRC_DIR}/util/encoders/c_data_encoder.cc
@@ -192,8 +188,32 @@ qt5_use_modules(parser Core)
 add_dependencies(parser zlib)
 target_link_libraries(parser veles_db veles_dbif ${ZLIB_LIBRARIES})
 
-# generate protobuf files
-add_subdirectory(protobuf)
+set(MSGPACK_TMP_CPP ${CMAKE_CURRENT_BINARY_DIR}/messages-h4x.h)
+set(MSGPACK_CPP "${CMAKE_CURRENT_BINARY_DIR}/messages.h")
+
+add_custom_command(OUTPUT ${MSGPACK_TMP_CPP}
+  COMMAND ${PYEXE} -m veles.cpp.generate > ${MSGPACK_TMP_CPP}
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python
+  COMMENT "Generating msgpack C++ code from Python"
+  DEPENDS cpp_python_gen
+  VERBATIM)
+
+# H4X make sure that messages.h is generated everytime no matter what
+add_custom_command(OUTPUT ${MSGPACK_CPP}
+  COMMAND ${CMAKE_COMMAND} -E rename ${MSGPACK_TMP_CPP} ${MSGPACK_CPP}
+  DEPENDS ${MSGPACK_TMP_CPP})
+
+add_library(veles_network
+    ${MSGPACK_CPP}
+    ${INCLUDE_DIR}/network/msgpackwrapper.h
+    ${INCLUDE_DIR}/network/msgpackobject.h
+    ${SRC_DIR}/network/msgpackobject.cc
+    ${SRC_DIR}/network/msgpackwrapper.cc
+)
+
+add_dependencies(veles_network msgpack-c)
+qt5_use_modules(veles_network Core Network Widgets)
+
 
 # LIB: veles_db
 add_library(veles_db
@@ -368,14 +388,6 @@ endif(WIN32 AND NOT MSVC)
 
 # Post-build packaging
 
-#Unix paths
-if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
-  # Load shared objects located in the same location as executable
-  # Install targets
-  install(TARGETS main_ui RUNTIME DESTINATION bin)
-  install(FILES $<$<CONFIG:Debug>:${PROTOBUF_LIBRARY_DEBUG}> $<$<NOT:$<CONFIG:Debug>>:${PROTOBUF_LIBRARY}> DESTINATION bin)
-endif(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
-
 # Windows
 if(WIN32)
   set_target_properties(main_ui PROPERTIES WIN32 TRUE)
@@ -386,24 +398,14 @@ if(WIN32)
     COMMAND ${WINDEPLOYQT_EXECUTABLE} ${WINDEPLOYQT_ARGS} $<TARGET_FILE:main_ui>
     DEPENDS $<TARGET_FILE:main_ui>)
   install(DIRECTORY $<TARGET_FILE_DIR:main_ui> DESTINATION "bin")
-  if(MSVC)
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libprotobuf$<$<CONFIG:Debug>:d>.dll" DESTINATION "bin/$<CONFIG>/")
-    set(DLL_RUN_DIR ${CMAKE_CURRENT_BINARY_DIR})
-  else(MSVC)
-    install(FILES "${PROTOBUF_DLL_DIR}/libprotobuf$<$<CONFIG:Debug>:d>.dll" DESTINATION "bin/bin/")
+  if(NOT MSVC)
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/prefix/bin/libzlib.dll" DESTINATION "bin/bin/")
-    set(DLL_RUN_DIR "${CMAKE_CURRENT_BINARY_DIR}/bin")
     add_custom_command(TARGET zlib POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
       "${CMAKE_CURRENT_BINARY_DIR}/prefix/bin/libzlib.dll"
-      ${DLL_RUN_DIR}
+      "${CMAKE_CURRENT_BINARY_DIR}/bin"
       COMMENT "Copying zlib dll")
-  endif(MSVC)
-  add_custom_command(TARGET protobuf POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${PROTOBUF_DLL_DIR}/libprotobuf$<$<CONFIG:Debug>:d>.dll"
-    ${DLL_RUN_DIR}
-    COMMENT "Copying protobuf dll")
+  endif(NOT MSVC)
   set(CPACK_PACKAGE_EXECUTABLES "veles.exe" "VELES")
 endif(WIN32)
 
@@ -422,17 +424,6 @@ if(APPLE)
     DEPENDS $<TARGET_FILE:main_ui>)
   set_target_properties(main_ui PROPERTIES MACOSX_BUNDLE TRUE)
   install(TARGETS main_ui BUNDLE DESTINATION "veles")
-  set(new_dynlib_target "@executable_path/../Frameworks/libprotobuf$<$<CONFIG:Debug>:d>.dylib")
-  add_custom_command(TARGET protobuf POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    $<$<CONFIG:Debug>:${PROTOBUF_LIBRARY_DEBUG}> $<$<NOT:$<CONFIG:Debug>>:${PROTOBUF_LIBRARY}>
-    ${CMAKE_CURRENT_BINARY_DIR})
-  add_custom_command(TARGET main_ui POST_BUILD
-    COMMENT "Ensuring correct protobuf dylib name"
-    COMMAND install_name_tool -id ${new_dynlib_target} "${CMAKE_CURRENT_BINARY_DIR}/libprotobuf$<$<CONFIG:Debug>:d>.dylib"
-    COMMAND install_name_tool -change "libprotobuf$<$<CONFIG:Debug>:d>.dylib" ${new_dynlib_target} $<TARGET_FILE:main_ui>
-    DEPENDS $<TARGET_FILE:main_ui>)
-  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libprotobuf$<$<CONFIG:Debug>:d>.dylib" DESTINATION "veles/$<TARGET_PROPERTY:main_ui,OUTPUT_NAME>.app/Contents/Frameworks/")
   set(CPACK_PACKAGE_EXECUTABLES "veles.app" "VELES")
 endif(APPLE)
 
