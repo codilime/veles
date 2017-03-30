@@ -233,6 +233,21 @@ class Request:
         del self.proto.rids[id(self)]
 
 
+class MethodRunner:
+    def __init__(self, proto):
+        self.proto = proto
+        self.future = asyncio.Future()
+        self.proto.mids[id(self)] = self
+
+    def handle_result(self, result):
+        self.future.set_result(result)
+        del self.proto.mids[id(self)]
+
+    def handle_error(self, exc):
+        self.future.set_exception(exc)
+        del self.proto.mids[id(self)]
+
+
 class AsyncRemoteNode(AsyncNode):
     def __init__(self, conn, id, node):
         super().__init__(conn, id, node)
@@ -377,3 +392,13 @@ class AsyncRemoteNode(AsyncNode):
             truncate=truncate,
         ))
         return req.future
+
+    def run_method_raw(self, method, params):
+        mr = MethodRunner(self.proto)
+        self.proto.send_msg(messages.MsgMethodRun(
+            mid=id(mr),
+            node=self.id,
+            method=method,
+            params=params,
+        ))
+        return mr.future

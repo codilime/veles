@@ -110,3 +110,18 @@ class SubscriptionInUseError(VelesException):
 class PreconditionFailedError(VelesException):
     code = 'precondition_failed'
     msg = "Transaction precondition failed"
+
+
+class RegistryNoMatchError(VelesException):
+    code = 'registry_no_match'
+    msg = "Plugin function not found in registry"
+
+
+class RegistryMultiMatchError(VelesException):
+    code = 'registry_multi_match'
+    msg = "Multiple matching plugin functions found in registry"
+
+
+class ConnectionLostError(VelesException):
+    code = 'connection_lost'
+    msg = "Connection lost"

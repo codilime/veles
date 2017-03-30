@@ -19,6 +19,8 @@
 
 import weakref
 
+from collections import defaultdict
+
 from veles.util.future import done_future, bad_future
 from veles.schema.nodeid import NodeID
 from veles.db import Database
@@ -29,13 +31,41 @@ from veles.proto.exceptions import (
     ObjectGoneError,
     ObjectExistsError,
     ParentCycleError,
-    PreconditionFailedError
+    PreconditionFailedError,
+    RegistryNoMatchError,
+    RegistryMultiMatchError,
 )
-
+from veles.async_conn.plugin import MethodHandler
 from veles.async_conn.conn import AsyncConnection
 
 from .node import AsyncLocalNode
 from .transaction import Transaction
+
+
+class NameTagsRegistry:
+    def __init__(self):
+        self.items = defaultdict(set)
+
+    def register(self, name, tags, item):
+        self.items[name].add((frozenset(tags), item))
+
+    def unregister(self, name, tags, item):
+        self.items[name].remove((frozenset(tags), item))
+
+    def find(self, name, tags):
+        res = None
+        best = -1
+        for itags, item in self.items[name]:
+            if itags <= tags and len(itags) >= best:
+                if len(itags) > best:
+                    best = len(itags)
+                    res = []
+                res.append(item)
+        if res is None:
+            raise RegistryNoMatchError()
+        if len(res) != 1:
+            raise RegistryMultiMatchError()
+        return res[0]
 
 
 class AsyncLocalConnection(AsyncConnection):
@@ -50,6 +80,7 @@ class AsyncLocalConnection(AsyncConnection):
         # being only reacheble through the weak dict, they could be GCd along
         # with all their subscriptions).
         self.all_subs = set()
+        self.methods = NameTagsRegistry()
         super().__init__()
 
     def new_conn(self, conn):
@@ -301,6 +332,14 @@ class AsyncLocalConnection(AsyncConnection):
         else:
             return done_future(None)
 
-    def add_local_plugin(self, plugin):
-        # XXX
-        pass
+    def register_plugin_handler(self, handler):
+        if isinstance(handler, MethodHandler):
+            self.methods.register(handler.method, handler.tags, handler)
+        else:
+            raise TypeError('unknown type of plugin handler')
+
+    def unregister_plugin_handler(self, handler):
+        if isinstance(handler, MethodHandler):
+            self.methods.unregister(handler.method, handler.tags, handler)
+        else:
+            raise TypeError('unknown type of plugin handler')

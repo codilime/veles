@@ -22,7 +22,7 @@ import asyncio
 import msgpack
 
 from veles.proto import messages, msgpackwrap
-from veles.proto.exceptions import SchemaError
+from veles.proto.exceptions import VelesException, SchemaError
 
 
 class ClientProto(asyncio.Protocol):
@@ -31,7 +31,9 @@ class ClientProto(asyncio.Protocol):
         self.unpacker = wrapper.unpacker
         self.packer = wrapper.packer
         self.qids = {}
+        self.mids = {}
         self.rids = {}
+        self.handlers = {}
 
     def connection_made(self, transport):
         self.transport = transport
@@ -57,6 +59,11 @@ class ClientProto(asyncio.Protocol):
             'proto_error': self.msg_proto_error,
             'request_ack': self.msg_request_ack,
             'request_error': self.msg_request_error,
+            'method_result': self.msg_method_result,
+            'method_error': self.msg_method_error,
+            'plugin_method_run': self.msg_plugin_method_run,
+            'plugin_handler_unregistered':
+                self.msg_plugin_handler_unregistered,
         }
         if msg.object_type not in handlers:
             raise SchemaError('unhandled message type: {}'.format(
@@ -84,8 +91,33 @@ class ClientProto(asyncio.Protocol):
     async def msg_request_error(self, msg):
         self.rids[msg.rid].handle_error(msg.err)
 
+    async def msg_method_result(self, msg):
+        self.mids[msg.mid].handle_result(msg.result)
+
+    async def msg_method_error(self, msg):
+        self.mids[msg.mid].handle_error(msg.err)
+
     async def msg_proto_error(self, msg):
         raise msg.err
+
+    async def msg_plugin_method_run(self, msg):
+        handler = self.handlers[msg.phid]
+        aresult = handler.run_method(self.conn, msg.node, msg.params)
+        try:
+            result = await aresult
+        except VelesException as e:
+            self.send_msg(messages.MsgPluginMethodError(
+                pmid=msg.pmid,
+                err=e,
+            ))
+        else:
+            self.send_msg(messages.MsgPluginMethodResult(
+                pmid=msg.pmid,
+                result=result
+            ))
+
+    async def msg_plugin_handler_unregistered(self, msg):
+        del self.handlers[msg.phid]
 
 
 async def create_unix_client(loop, path):

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
 
 from veles.proto.node import PosFilter
 
@@ -172,8 +173,22 @@ class AsyncNode:
         """
         raise NotImplementedError
 
-    def run_mthd(self, name, params):
+    def run_method_raw(self, method, params):
         """
         Runs a method on the object.  Returns an awaitable of the result.
         """
         raise NotImplementedError
+
+    def run_method(self, sig, params):
+        """
+        Runs a method on the object, translating its params and result
+        according to the given signature.  Returns an awaitable of the result.
+        """
+        params = sig.params.dump(params)
+        aresult = self.run_method_raw(sig.method, params)
+
+        async def get_result():
+            result = await aresult
+            return sig.result.load(result)
+
+        return asyncio.create_task(get_result())

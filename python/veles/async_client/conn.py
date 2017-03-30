@@ -16,6 +16,7 @@ import weakref
 
 from veles.proto import messages
 from veles.async_conn.conn import AsyncConnection
+from veles.async_conn.plugin import MethodHandler
 from .node import AsyncRemoteNode, Request
 
 
@@ -26,6 +27,7 @@ class AsyncRemoteConnection(AsyncConnection):
         self.objs = weakref.WeakValueDictionary()
         self.conns = {}
         self.next_cid = 0
+        self.proto.conn = self
         super().__init__()
 
     def get_node_norefresh(self, obj_id):
@@ -55,3 +57,19 @@ class AsyncRemoteConnection(AsyncConnection):
             operations=operations,
         ))
         return req.future
+
+    def register_plugin_handler(self, handler):
+        if isinstance(handler, MethodHandler):
+            self.proto.send_msg(messages.MsgPluginMethodRegister(
+                phid=id(handler),
+                name=handler.method,
+                tags=handler.tags,
+            ))
+        else:
+            raise TypeError("unknown type of plugin handler")
+        self.proto.handlers[id(handler)] = handler
+
+    def unregister_plugin_handler(self, handler):
+        self.proto.send_msg(messages.MsgPluginHandlerUnregister(
+            phid=id(handler),
+        ))

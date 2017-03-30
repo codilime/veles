@@ -267,6 +267,24 @@ class Client(object):
                 print(pkt)
                 raise Exception('weird reply to list')
 
+    def run_method(self, obj, sig, params):
+        params = sig.params.dump(params)
+        msg = messages.MsgMethodRun(
+            mid=0,
+            node=obj,
+            method=sig.name,
+            params=params
+        )
+        self.send_msg(msg)
+        pkt = self.getpkt()
+        if isinstance(pkt, messages.MsgMethodResult) and pkt.mid == 0:
+            return sig.result.load(pkt.result)
+        elif isinstance(pkt, messages.MsgMethodError) and pkt.mid == 0:
+            raise pkt.err
+        else:
+            print(pkt)
+            raise Exception('weird reply to run_method')
+
 
 class UnixClient(Client):
     def __init__(self, path):

@@ -28,10 +28,12 @@ from veles.async_conn.subscriber import (
     BaseSubscriberBinData,
     BaseSubscriberList,
 )
+from veles.async_conn.plugin import MethodHandler
 from veles.proto.exceptions import (
     VelesException,
     UnknownSubscriptionError,
     SubscriptionInUseError,
+    ConnectionLostError,
     SchemaError,
 )
 
@@ -113,10 +115,35 @@ class SubscriberList(BaseSubscriberList):
         ))
 
 
+class RemoteMethodRunner:
+    def __init__(self):
+        self.future = asyncio.Future()
+
+
+class RemoteMethodHandler(MethodHandler):
+    def __init__(self, method, tags, proto, phid):
+        self.proto = proto
+        self.phid = phid
+        super().__init__(method, tags)
+
+    def run_method(self, conn, node, params):
+        runner = RemoteMethodRunner()
+        self.proto.pmids[id(runner)] = runner
+        self.proto.send_msg(messages.MsgPluginMethodRun(
+            pmid=id(runner),
+            phid=self.phid,
+            node=node,
+            params=params,
+        ))
+        return runner.future
+
+
 class ServerProto(asyncio.Protocol):
     def __init__(self, conn):
         self.conn = conn
         self.subs = {}
+        self.phids = {}
+        self.pmids = {}
 
     def connection_made(self, transport):
         self.transport = transport
@@ -147,16 +174,16 @@ class ServerProto(asyncio.Protocol):
             'set_data': self.msg_set_data,
             'set_bindata': self.msg_set_bindata,
             'transaction': self.msg_transaction,
+            'method_run': self.msg_method_run,
             'get': self.msg_get,
             'get_data': self.msg_get_data,
             'get_bindata': self.msg_get_bindata,
             'get_list': self.msg_get_list,
             'cancel_subscription': self.msg_cancel_subscription,
-            'mthd_run': self.msg_mthd_run,
-            'mthd_done': self.msg_mthd_done,
-            'proc_done': self.msg_proc_done,
-            'mthd_reg': self.msg_mthd_reg,
-            'proc_reg': self.msg_proc_reg,
+            'plugin_method_register': self.msg_plugin_method_register,
+            'plugin_method_result': self.msg_plugin_method_result,
+            'plugin_method_error': self.msg_plugin_method_error,
+            'plugin_handler_unregister': self.msg_plugin_handler_unregister,
         }
         try:
             if msg.object_type not in handlers:
@@ -170,6 +197,10 @@ class ServerProto(asyncio.Protocol):
     def connection_lost(self, ex):
         for qid, sub in self.subs.items():
             sub.cancel()
+        for handler in self.phids.values():
+            self.conn.unregister_plugin_handler(handler)
+        for runner in self.pmids.values():
+            runner.future.set_exception(ConnectionLostError())
         self.conn.remove_conn(self)
 
     def send_msg(self, msg):
@@ -235,6 +266,21 @@ class ServerProto(asyncio.Protocol):
     async def msg_transaction(self, msg):
         await self.do_request(msg, self.conn.transaction(
             msg.checks, msg.operations))
+
+    async def msg_method_run(self, msg):
+        try:
+            anode = self.conn.get_node_norefresh(msg.node)
+            result = await anode.run_method_raw(msg.method, msg.params)
+        except VelesException as err:
+            self.send_msg(messages.MsgMethodError(
+                mid=msg.mid,
+                err=err,
+            ))
+        else:
+            self.send_msg(messages.MsgMethodResult(
+                mid=msg.mid,
+                result=result,
+            ))
 
     async def msg_get(self, msg):
         if msg.qid in self.subs:
@@ -328,25 +374,31 @@ class ServerProto(asyncio.Protocol):
         else:
             raise UnknownSubscriptionError()
 
-    async def msg_mthd_run(self, msg):
-        # XXX
-        raise NotImplementedError
+    async def msg_plugin_method_register(self, msg):
+        if msg.phid in self.phids:
+            raise SubscriptionInUseError()
+        handler = RemoteMethodHandler(msg.name, msg.tags, self, msg.phid)
+        self.phids[msg.phid] = handler
+        self.conn.register_plugin_handler(handler)
 
-    async def msg_mthd_done(self, msg):
-        # XXX
-        raise NotImplementedError
+    async def msg_plugin_method_result(self, msg):
+        if msg.pmid not in self.pmids:
+            raise UnknownSubscriptionError()
+        self.pmids[msg.pmid].future.set_result(msg.result)
+        del self.pmids[msg.pmid]
 
-    async def msg_proc_done(self, msg):
-        # XXX
-        raise NotImplementedError
+    async def msg_plugin_method_error(self, msg):
+        if msg.pmid not in self.pmids:
+            raise UnknownSubscriptionError()
+        self.pmids[msg.pmid].future.set_exception(msg.err)
+        del self.pmids[msg.pmid]
 
-    async def msg_mthd_reg(self, msg):
-        # XXX
-        raise NotImplementedError
-
-    async def msg_proc_reg(self, msg):
-        # XXX
-        raise NotImplementedError
+    async def msg_plugin_handler_unregister(self, msg):
+        if msg.phid not in self.phids:
+            raise UnknownSubscriptionError()
+        self.conn.unregister_plugin_handler(self.phids[msg.phid])
+        del self.phids[msg.phid]
+        self.send_msg(messages.MsgPluginHandlerUnregistered(phid=msg.phid))
 
 
 async def create_unix_server(conn, path):

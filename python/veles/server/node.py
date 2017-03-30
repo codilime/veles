@@ -322,3 +322,12 @@ class AsyncLocalNode(AsyncNode):
                 del self.node.bindata[key]
             self._send_subs()
         return done_future(None)
+
+    def run_method_raw(self, method, params):
+        if self.node is None:
+            return bad_future(ObjectGoneError())
+        try:
+            handler = self.conn.methods.find(method, self.node.tags)
+        except VelesException as e:
+            return bad_future(e)
+        return handler.run_method(self.conn, self.node, params)

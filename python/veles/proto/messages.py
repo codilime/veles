@@ -77,16 +77,6 @@ class MsgProtoError(MsgpackMsg):
     err = fields.Object(VelesException)
 
 
-# XXX NYI
-class MsgRegisterMethod(MsgpackMsg):
-    object_type = 'register_mthd'
-
-
-# XXX NYI
-class MsgRegisterTrigger(MsgpackMsg):
-    object_type = 'register_trigger'
-
-
 # queries and subscriptions
 
 
@@ -478,34 +468,98 @@ class MsgRequestError(MsgpackMsg):
 
 # methods & triggers
 
-# XXX NYI
 class MsgMethodRun(MsgpackMsg):
-    object_type = 'mthd_run'
+    """
+    Sent by the client to request running a given method on a given object.
+    ``mid`` is an arbitrary number selected by the client to associate
+    replies to this request.
+    """
+
+    object_type = 'method_run'
+
+    mid = fields.SmallUnsignedInteger()
+    node = fields.NodeID()
+    method = fields.String()
+    params = fields.Any(optional=True)
 
 
-# XXX NYI
-class MsgMethodRes(MsgpackMsg):
-    object_type = 'mthd_res'
+class MsgMethodResult(MsgpackMsg):
+    """
+    Sent by the server in reply to MsgMethodRun.
+    """
+
+    object_type = 'method_result'
+
+    mid = fields.SmallUnsignedInteger()
+    result = fields.Any(optional=True)
 
 
-# XXX NYI
 class MsgMethodError(MsgpackMsg):
-    object_type = 'mthd_err'
+    """
+    Sent by the server in reply to MsgMethodRun.
+    """
+
+    object_type = 'method_error'
+
+    mid = fields.SmallUnsignedInteger()
+    err = fields.Object(VelesException)
 
 
-# XXX NYI
+class MsgPluginMethodRegister(MsgpackMsg):
+    """
+    Sent by the client to register a method handler.  Has no reply.
+    ``phid`` is an arbitrary number chosen by the client to identify this
+    method handler.
+    """
+
+    object_type = 'plugin_method_register'
+
+    phid = fields.SmallUnsignedInteger()
+    name = fields.String()
+    tags = fields.Set(fields.String())
+
+
 class MsgPluginMethodRun(MsgpackMsg):
-    object_type = 'plugin_mthd_run'
+    """
+    Sent by the server to a plugin client to request running a method.
+    ``pmid`` is chosen arbitrarily by the server to match replies to
+    requests, ``phid`` is the id of the method handler registered by the client
+    earlier.
+    """
+
+    object_type = 'plugin_method_run'
+
+    pmid = fields.SmallUnsignedInteger()
+    phid = fields.SmallUnsignedInteger()
+    node = fields.Object(Node)
+    params = fields.Any(optional=True)
 
 
-# XXX NYI
-class MsgPluginMethodDone(MsgpackMsg):
-    object_type = 'plugin_mthd_done'
+class MsgPluginMethodResult(MsgpackMsg):
+    """
+    Sent by the client in reply to MsgPluginMethodRun.
+    """
+
+    object_type = 'plugin_method_result'
+
+    pmid = fields.SmallUnsignedInteger()
+    result = fields.Any(optional=True)
 
 
-# XXX NYI
 class MsgPluginMethodError(MsgpackMsg):
-    object_type = 'plugin_mthd_err'
+    """
+    Sent by the client in reply to MsgPluginMethodRun.
+    """
+
+    object_type = 'plugin_method_error'
+
+    pmid = fields.SmallUnsignedInteger()
+    err = fields.Object(VelesException)
+
+
+# XXX NYI
+class MsgRegisterTrigger(MsgpackMsg):
+    object_type = 'register_trigger'
 
 
 # XXX NYI
@@ -521,3 +575,24 @@ class MsgPluginTriggerDone(MsgpackMsg):
 # XXX NYI
 class MsgPluginTriggerError(MsgpackMsg):
     object_type = 'plugin_trigger_err'
+
+
+class MsgPluginHandlerUnregister(MsgpackMsg):
+    """
+    Sent by the client to unregister a handler.  Server replies with
+    MsgPluginHandlerUnregistered.
+    """
+
+    object_type = 'plugin_handler_unregister'
+
+    phid = fields.SmallUnsignedInteger()
+
+
+class MsgPluginHandlerUnregistered(MsgpackMsg):
+    """
+    Sent by the server to confirm MsgPluginHandlerUnregister.
+    """
+
+    object_type = 'plugin_handler_unregistered'
+
+    phid = fields.SmallUnsignedInteger()
