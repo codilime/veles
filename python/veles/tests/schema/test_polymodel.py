@@ -86,6 +86,19 @@ class TestModel(unittest.TestCase):
         self.assertEqual(set(BaseZlew.object_types), {
             'zlew', 'turbozlew', 'dwuzlew', 'pietrozlew',
         })
+        for x in BaseZlew.object_types:
+            self.assertIsInstance(x, six.text_type)
+
+        class BaseAbc(PolymorphicModel):
+            pass
+
+        with self.assertRaises(TypeError):
+            class Abc(BaseAbc):
+                object_type = b'abc'
+
+        with self.assertRaises(TypeError):
+            class Def(BaseAbc):
+                object_type = 1234
 
     def test_init(self):
         a = Zlew(odplyw='o')

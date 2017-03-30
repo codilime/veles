@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
+
 from veles.proto.node import Node, PosFilter
 from veles.schema import model, fields
 from veles.schema.nodeid import NodeID
