@@ -26,6 +26,11 @@
 namespace veles {
 namespace messages {
 
+class ConversionException : public std::runtime_error {
+ public:
+  ConversionException(const std::string& msg) : std::runtime_error(msg) {}
+};
+
 enum class ObjectType {
   NIL,
   BOOLEAN,
@@ -75,6 +80,8 @@ class MsgpackObject {
     ~ObjectValue() {}
   } value;
 
+  void fromMsgpack(const msgpack::object& obj);
+
  public:
 
   MsgpackObject() : obj_type(ObjectType::NIL) {}
@@ -100,7 +107,6 @@ class MsgpackObject {
   MsgpackObject& operator=(const MsgpackObject& other);
 
   void destroyValue();
-  void fromMsgpack(const msgpack::object& obj);
 
   void msgpack_unpack(msgpack::object const& obj);
 

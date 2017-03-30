@@ -36,18 +36,14 @@ class MsgpackWrapper {
 
  public:
   static std::shared_ptr<MsgpackMsg> parseMessage(msgpack::object_handle *handle) {
-    std::map<std::string, std::shared_ptr<MsgpackMsg>(*)(const std::shared_ptr<MsgpackObject>)> types = MsgpackMsg::object_types();
     msgpack::object obj = handle->get();
-    // TODO generate code below for every model
-    auto loc_obj = std::make_shared<MsgpackObject>(obj);
-    if (loc_obj->type() != ObjectType::MAP) {
-      throw msgpack::type_error();
-    }
-    if (types.find(*(*loc_obj->getMap())["object_type"]->getString()) ==  types.end()) {
-      throw msgpack::type_error();
-    }
-    std::shared_ptr<MsgpackMsg> msg = types[*(*loc_obj->getMap())["object_type"]->getString()](loc_obj);
-    return msg;
+    return MsgpackMsg::polymorphicLoad(obj);
+  }
+
+  template <class Packer, class T>
+  static void dumpObject(Packer& pk, std::shared_ptr<T> ptr) {
+    auto mss = toMsgpackObject(ptr);
+    pk.pack(mss);
   }
 
   std::shared_ptr<MsgpackMsg> loadMessage(QTcpSocket *connection) {
@@ -68,8 +64,6 @@ class MsgpackWrapper {
       return nullptr;
     }
   }
-
-  MSGPACK_CLASSES_INIT
 };
 
 }  // namespace messages
