@@ -23,8 +23,6 @@
 #include "db/object.h"
 #include "db/getter.h"
 #include "db/db.h"
-#include "network/server.h"
-#include "util/settings/network.h"
 
 #include "parser/utils.h"
 
@@ -57,13 +55,6 @@ dbif::ObjectHandle create_db() {
   QObject::connect(parser_worker, &ParserWorker::newParser, [root] {
     root.dynamicCast<RootLocalObject>()->parsers_list_updated();
   });
-  if (util::settings::network::enabled()) {
-    NetworkServer *network = new NetworkServer(root);
-    DbThread *network_thr = new DbThread;
-    network->moveToThread(network_thr);
-    QObject::connect(network, &QObject::destroyed, network_thr, &QThread::quit);
-    network_thr->start();
-  }
   thr->start();
   parser_thr->start();
 

@@ -26,7 +26,6 @@
 #include "visualization/base.h"
 #include "visualization/digram.h"
 #include "visualization/trigram.h"
-#include "util/settings/network.h"
 #include "util/settings/theme.h"
 #include "util/concurrency/threadpool.h"
 #include "util/version.h"
@@ -63,43 +62,7 @@ int main(int argc, char *argv[]) {
   QCommandLineParser parser;
   parser.addHelpOption();
   parser.addVersionOption();
-  parser.addOptions({
-      {"network", "Enable network server\n"
-       "Exclusive with no-network\n"
-       "Value specified will be persistent"},
-      {"no-network", "Disable  network server\n"
-       "Exclusive with network\n"
-       "Value specified will be persistent"},
-      {"ip", "IP address the server will listen on.\n"
-       "Value specified will be persistent.", "ip"},
-      {{"p", "port"}, "Port the server will listen on.\n"
-       "Value specified will be persistent.", "port"}
-  });
   parser.process(app);
-
-  if (parser.isSet("network") || parser.isSet("no-network")) {
-    bool networkEnabled = parser.isSet("network") && !parser.isSet("no-network");
-    veles::util::settings::network::setEnabled(networkEnabled);
-  }
-
-  if (parser.isSet("port")) {
-    QString port = parser.value("port");
-    bool ok;
-    uint32_t port_val = port.toUInt(&ok);
-    if (ok && 1 <= port_val && port_val <= 65535) {
-      veles::util::settings::network::setPort(port_val);
-    } else {
-      std::cerr << "Bad port value provided - ignoring." << std::endl;
-    }
-  }
-  if (parser.isSet("ip")) {
-    QHostAddress addr;
-    if (addr.setAddress(parser.value("ip"))) {
-      veles::util::settings::network::setIpAddress(parser.value("ip"));
-    } else {
-      std::cerr << "Bad ip value provided - ignoring." << std::endl;
-    }
-  }
 
   veles::ui::VelesMainWindow *mainWin = new veles::ui::VelesMainWindow;
   mainWin->showMaximized();
