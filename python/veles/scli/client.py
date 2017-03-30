@@ -21,7 +21,7 @@ from veles.proto.exceptions import VelesException
 from veles.schema import nodeid
 
 
-class Client:
+class Client(object):
     def __init__(self, sock):
         self.sock = sock
         wrapper = msgpackwrap.MsgpackWrapper()
@@ -53,7 +53,7 @@ class Client:
             print(pkt)
             raise Exception('weird reply to request')
 
-    def create(self, parent, *, tags=set(), attr={}, data={}, bindata={},
+    def create(self, parent, tags=set(), attr={}, data={}, bindata={},
                pos=(None, None)):
         msg = messages.MsgCreate(
             id=nodeid.NodeID(),
@@ -273,13 +273,13 @@ class UnixClient(Client):
     def __init__(self, path):
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         sock.connect(path)
-        super().__init__(sock)
+        super(UnixClient, self).__init__(sock)
 
 
 class TcpClient(Client):
     def __init__(self, ip, port):
         sock = socket.create_connection((ip, port))
-        super().__init__(sock)
+        super(TcpClient, self).__init__(sock)
 
 
 def create_client(addr):
