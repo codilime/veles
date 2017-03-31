@@ -191,6 +191,17 @@ class Float(Field):
 class String(Field):
     value_type = six.text_type
 
+    def __set__(self, instance, value):
+        if isinstance(value, str):
+            value = six.text_type(value)
+        super(String, self).__set__(instance, value)
+
+    def _dump(self, value):
+        return six.text_type(value)
+
+    def _validate(self, value):
+        return isinstance(value, str) or isinstance(value, self.value_type)
+
     def cpp_type(self):
         return 'std::string', False, 'nullptr'
 

@@ -246,6 +246,7 @@ class PolymorphicModel(Model):
         if not hasattr(cls, 'object_types'):
             cls.object_types = {}
         elif cls.object_type is not None:
+            cls.object_type = six.text_type(cls.object_type)
             if cls.object_type in cls.object_types:
                 raise TypeError(
                     'object_type {} already used'.format(cls.object_type))
