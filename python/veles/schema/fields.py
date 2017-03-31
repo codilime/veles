@@ -89,6 +89,13 @@ class Any(Field):
         return 'MsgpackObject', False, 'nullptr'
 
 
+class Empty(Field):
+    value_type = type(None)
+
+    def __init__(self):
+        super(Empty, self).__init__(optional=True)
+
+
 class Integer(Field):
     def __init__(self, optional=False, default=None,
                  minimum=None, maximum=None):

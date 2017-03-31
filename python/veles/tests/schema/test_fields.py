@@ -87,6 +87,21 @@ class TestFields(unittest.TestCase):
         with self.assertRaises(ValueError):
             a = fields.Any(optional=True, default='zlew')
 
+    def test_empty(self):
+        with self.assertRaises(TypeError):
+            fields.Empty(default='zlew')
+        with self.assertRaises(TypeError):
+            fields.Empty(optional=False)
+
+        a = fields.Empty()
+        a.validate(None)
+        self.assertEqual(a.dump(None), None)
+        self.assertEqual(a.load(None), None)
+        with self.assertRaises(SchemaError):
+            a.validate(1)
+        with self.assertRaises(SchemaError):
+            a.load(1)
+
     def test_boolean(self):
         with self.assertRaises(SchemaError):
             fields.Boolean(default='zlew')
