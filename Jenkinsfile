@@ -41,23 +41,6 @@ def post_build_finished(job,url){
   slackSend channel:"eax-builds", color: "good", message: "Build ${job} finished successfully: see <${url}|result>"
 }
 
-def test_python(){ node ('ubuntu-16.04'){
-    timestamps {
-      try {
-        stage('python tests - Linux ubuntu 16.04') {
-          dir('python') {
-            sh "./run_tests.sh"
-            junit allowEmptyResults: true, keepLongStdio: true, testResults: 'res**.xml'
-          }
-        }
-      } catch (error) {
-        post_stage_failure(env.JOB_NAME, "python-ubuntu1604",error,env.BUILD_URL)
-        throw error
-      }
-    }
-  }
-}
-
 def builders = [:]
 
 builders['mingw32'] = { node('windows') {
@@ -222,11 +205,62 @@ builders['macosx'] = { node ('macosx'){
   }
 }
 
+builders['python-windows'] = { node ('windows'){    timestamps {
+      try {
+        stage('python tests - Windows 10') {
+          checkout scm
+          dir('python') {
+            bat "run_tests.bat"
+            junit allowEmptyResults: true, keepLongStdio: true, testResults: 'res**.xml'
+          }
+        }
+      } catch (error) {
+        post_stage_failure(env.JOB_NAME, "python-windows",error,env.BUILD_URL)
+        throw error
+      }
+    }
+  }
+}
+
+builders['python-ubuntu'] = { node ('ubuntu-16.04'){
+    timestamps {
+      try {
+        stage('python tests - Linux ubuntu 16.04') {
+          checkout scm
+          dir('python') {
+            sh "./run_tests.sh"
+            junit allowEmptyResults: true, keepLongStdio: true, testResults: 'res**.xml'
+          }
+        }
+      } catch (error) {
+        post_stage_failure(env.JOB_NAME, "python-ubuntu1604",error,env.BUILD_URL)
+        throw error
+      }
+    }
+  }
+}
+
+builders['python-macosx'] = { node ('macosx'){
+    timestamps {
+      try {
+        stage('python tests - macOS 10.12') {
+          checkout scm
+          dir('python') {
+            sh "./run_tests.sh"
+            junit allowEmptyResults: true, keepLongStdio: true, testResults: 'res**.xml'
+          }
+        }
+      } catch (error) {
+        post_stage_failure(env.JOB_NAME, "python-macosx",error,env.BUILD_URL)
+        throw error
+      }
+    }
+  }
+}
 //parallel builders
 
 
 parallel(builders)
-test_python()
 node(){
 	post_build_finished(env.JOB_NAME, env.BUILD_URL)
 }
