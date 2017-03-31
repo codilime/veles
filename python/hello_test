@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+
+from __future__ import unicode_literals, print_function
+
+import sys
+from veles.scli import client
+from veles.schema.nodeid import NodeID
+from veles.proto.hello import method_hello, broadcast_hello
+
+client = client.create_client(sys.argv[1])
+
+id = client.create(NodeID.root_id, tags={'hello', 'hello_en'})
+res = client.run_method(id, method_hello, sys.argv[2])
+print(res)
+client.delete(id)
+
+id = client.create(NodeID.root_id, tags={'hello', 'hello_pl'})
+res = client.run_method(id, method_hello, sys.argv[2])
+print(res)
+client.delete(id)
+
+res = client.run_broadcast(broadcast_hello, sys.argv[2])
+print(res)
