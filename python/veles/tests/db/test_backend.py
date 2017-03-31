@@ -22,9 +22,10 @@ import six
 
 from veles.db.backend import DbBackend
 from veles.data.bindata import BinData
-from veles.proto.node import Node
+from veles.proto.node import TriggerState, Node, PosFilter
 from veles.schema.nodeid import NodeID
 from veles.proto.exceptions import WritePastEndError
+from veles.proto import check
 
 from veles.tests.proto.test_pos_filter import (
     NODES as LIST_NODES,
@@ -41,7 +42,8 @@ class TestDbBackend(unittest.TestCase):
                     pos_start=0x123,
                     pos_end=0x456789abcdef1122334456789abcdef,
                     data={'my_key'},
-                    bindata={'my_bindata': 12345})
+                    bindata={'my_bindata': 12345},
+                    triggers={'my_trigger': TriggerState.exception})
         db.create(node)
         n1 = db.get(NodeID())
         self.assertEqual(n1, None)
@@ -74,7 +76,9 @@ class TestDbBackend(unittest.TestCase):
                         pos_end=0x456,
                         data={'my_key'},
                         bindata={'my_bindata': 12345})
+            db1.begin()
             db1.create(node)
+            db1.commit()
             db1.close()
             db2 = DbBackend(path)
             n1 = db2.get(NodeID())
@@ -109,10 +113,28 @@ class TestDbBackend(unittest.TestCase):
         db.create(node)
         db.set_data(node.id, 'c', 'd')
         db.set_bindata(node.id, 'e', start=0, data=b'f', truncate=False)
+        db.add_trigger(node.id, 'g')
+        db.add_trigger(node.id, 'h')
+        db.mark_trigger(node.id, 'h', None, [
+            check.CheckGone(node=NodeID()),
+            check.CheckParent(node=NodeID(), parent=NodeID()),
+            check.CheckTags(node=NodeID(), tags={'a'}),
+            check.CheckPos(node=NodeID(), pos_start=3, pos_end=None),
+            check.CheckList(
+                parent=NodeID.root_id,
+                tags={'a', 'b'},
+                pos_filter=PosFilter(),
+                nodes=set()
+            ),
+        ])
         n2 = db.get(node.id)
         self.assertEqual(n2.tags, {'my_node'})
         self.assertEqual(db.get_data(node.id, 'c'), 'd')
         self.assertEqual(db.get_bindata(node.id, 'e'), b'f')
+        self.assertEqual(n2.triggers, {
+            'g': TriggerState.pending,
+            'h': TriggerState.done
+        })
         db.delete(node.id)
         self.assertEqual(db.get(node.id), None)
         self.assertEqual(db.get_data(node.id, 'c'), None)
