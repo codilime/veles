@@ -388,6 +388,11 @@ endif(WIN32 AND NOT MSVC)
 
 # Post-build packaging
 
+#Unix paths
+if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
+  install(TARGETS main_ui RUNTIME DESTINATION bin)
+endif(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
+
 # Windows
 if(WIN32)
   set_target_properties(main_ui PROPERTIES WIN32 TRUE)
