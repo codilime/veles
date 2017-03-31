@@ -12,7 +12,7 @@ Dependencies:
 - ``cmake`` >= 3.1.0
 - ``zlib``
 - ``qt`` >= 5.5
-- ``Python3``
+- ``Python3.5+``
     - ``virtualenv``
 
 Caveats:
@@ -27,7 +27,7 @@ corresponding to the dependencies above.
 
 On Ubuntu it can be done like this::
 
-    apt-get install cmake zlib1g-dev qtbase5-dev
+    apt-get install cmake zlib1g-dev qtbase5-dev python3 python3-virtualenv
 
 To build ::
 
@@ -44,3 +44,16 @@ If you want to install to a non-default directory, you'll also need to pass
 it as an option to cmake before building, eg.::
 
     $ cmake -D CMAKE_INSTALL_PREFIX:PATH=/usr/local ..
+
+Python tests dependencies:
+
+- ``git``
+- ``Python2.7``
+- Python packages:
+    - ``pip``
+    - ``tox>=2.4.0``
+
+On Ubuntu it can be done like this::
+
+    apt-get install git python2.7 python3-pip
+    pip3 install tox>=2.4.0
