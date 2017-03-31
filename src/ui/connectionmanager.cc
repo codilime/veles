@@ -72,13 +72,7 @@ void ConnectionManager::locallyCreatedServerStarted() {
 
 void ConnectionManager::locallyCreatedServerFinished(int exit_code,
     QProcess::ExitStatus exit_status) {
-  char buf[10240];
-  if(server_process_ && server_process_->bytesAvailable() > 0) {
-    qint64 len = server_process_->read(buf, sizeof(buf));
-    if(len > 0) {
-      LogWidget::output()->write(buf, len);
-    }
-  }
+  serverProcessReadyRead();
 
   QTextStream out(LogWidget::output());
   out << "Process of locally created server finished. Exit code: "
@@ -120,6 +114,7 @@ void ConnectionManager::startLocalServer() {
   server_process_->setWorkingDirectory(directory_path);
   QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
   env.insert("PYTHONUNBUFFERED", "1");
+  env.insert("PYTHONIOENCODING", "UTF-8");
   server_process_->setProcessEnvironment(env);
 
   QStringList arguments;
@@ -150,7 +145,8 @@ void ConnectionManager::startLocalServer() {
   }
   out << endl;
 
-  server_process_->start(python_interpreter_executable, arguments);
+  server_process_->start(python_interpreter_executable, arguments,
+      QIODevice::ReadWrite | QIODevice::Text);
 }
 
 void ConnectionManager::killLocalServer() {
@@ -166,9 +162,8 @@ void ConnectionManager::disconnect() {
 
 void ConnectionManager::serverProcessReadyRead() {
   char buf[10240];
-  if(server_process_ && (server_process_->canReadLine()
-      || server_process_->bytesAvailable() > (qint64)sizeof(buf))) {
-    qint64 len = server_process_->readLine(buf, sizeof(buf));
+  if(server_process_ && server_process_->bytesAvailable() > 0) {
+    qint64 len = server_process_->read(buf, sizeof(buf));
     if(len > 0) {
       LogWidget::output()->write(buf, len);
     }

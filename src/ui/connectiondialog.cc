@@ -141,7 +141,7 @@ void ConnectionDialog::userAsClientName() {
   client_name = "Veles UI";
 #endif
 
-  if(client_name.length() == 0) {
+  if(client_name.isEmpty()) {
     client_name = "Veles UI";
   }
 
