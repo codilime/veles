@@ -14,7 +14,8 @@
 
 import asyncio
 
-from veles.schema.plugin import MethodSignature
+from veles.schema.plugin import MethodSignature, QuerySignature
+from .tracer import AsyncTracer
 
 
 class MethodHandler:
@@ -53,11 +54,57 @@ class LocalMethodHandler(MethodHandler):
         loop = asyncio.get_event_loop()
         return loop.create_task(self._run_method(conn, node, params))
 
-    def __call__(self, params):
-        return self.func(params)
+
+class QueryHandler:
+    def __init__(self, query, tags):
+        if not isinstance(query, str):
+            raise TypeError("query must be str")
+        if not isinstance(tags, set):
+            raise TypeError("tags must be a set")
+        if any(not isinstance(tag, str) for tag in tags):
+            raise TypeError("tag must be str")
+        self.query = query
+        self.tags = tags
+
+    def get_query(self, conn, anode, params, checks):
+        """
+        Returns an awaitable of result.
+        """
+        raise NotImplementedError
+
+
+class LocalQueryHandler(QueryHandler):
+    def __init__(self, sig, tags, func):
+        if not isinstance(sig, QuerySignature):
+            raise TypeError("sig must be QuerySignature")
+        super().__init__(sig.name, tags)
+        self.sig = sig
+        self.func = func
+
+    async def _get_query(self, conn, anode, params, checks):
+        params = self.sig.params.load(params)
+        tracer = AsyncTracer(conn)
+        tracer._inject_node(anode)
+        try:
+            result = await self.func(conn, anode, params, tracer)
+        finally:
+            if checks is not None:
+                checks += tracer.checks
+        result = self.sig.result.dump(result)
+        return result
+
+    def get_query(self, conn, anode, params, checks):
+        loop = asyncio.get_event_loop()
+        return loop.create_task(self._get_query(conn, anode, params, checks))
 
 
 def method(sig, tags):
     def inner(func):
         return LocalMethodHandler(sig, tags, func)
+    return inner
+
+
+def query(sig, tags):
+    def inner(func):
+        return LocalQueryHandler(sig, tags, func)
     return inner

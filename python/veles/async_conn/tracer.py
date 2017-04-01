@@ -194,3 +194,7 @@ class AsyncTracer:
         ares = anode.get_list(tags, pos_filter)
         loop = asyncio.get_event_loop()
         return loop.create_task(self._get_list(parent, tags, pos_filter, ares))
+
+    def get_query(self, id, sig, params):
+        anode = self.conn.get_node_norefresh(id)
+        return anode.get_query(sig, params, self.checks)

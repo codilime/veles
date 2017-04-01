@@ -16,7 +16,10 @@ import weakref
 
 from veles.proto import messages
 from veles.async_conn.conn import AsyncConnection
-from veles.async_conn.plugin import MethodHandler
+from veles.async_conn.plugin import (
+    MethodHandler,
+    QueryHandler,
+)
 from .node import AsyncRemoteNode, Request
 
 
@@ -63,6 +66,12 @@ class AsyncRemoteConnection(AsyncConnection):
             self.proto.send_msg(messages.MsgPluginMethodRegister(
                 phid=id(handler),
                 name=handler.method,
+                tags=handler.tags,
+            ))
+        elif isinstance(handler, QueryHandler):
+            self.proto.send_msg(messages.MsgPluginQueryRegister(
+                phid=id(handler),
+                name=handler.query,
                 tags=handler.tags,
             ))
         else:

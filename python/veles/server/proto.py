@@ -27,8 +27,9 @@ from veles.async_conn.subscriber import (
     BaseSubscriberData,
     BaseSubscriberBinData,
     BaseSubscriberList,
+    BaseSubscriberQueryRaw,
 )
-from veles.async_conn.plugin import MethodHandler
+from veles.async_conn.plugin import MethodHandler, QueryHandler
 from veles.proto.exceptions import (
     VelesException,
     UnknownSubscriptionError,
@@ -115,8 +116,35 @@ class SubscriberList(BaseSubscriberList):
         ))
 
 
+class SubscriberQuery(BaseSubscriberQueryRaw):
+    def __init__(self, obj, name, params, trace, proto, qid):
+        self.proto = proto
+        self.qid = qid
+        super().__init__(obj, name, params, trace)
+
+    def raw_result_changed(self, result, checks):
+        self.proto.send_msg(messages.MsgGetQueryReply(
+            qid=self.qid,
+            result=result,
+            checks=checks
+        ))
+
+    def error(self, err, checks):
+        self.proto.send_msg(messages.MsgQueryError(
+            qid=self.qid,
+            err=err,
+            checks=checks,
+        ))
+
+
 class RemoteMethodRunner:
     def __init__(self):
+        self.future = asyncio.Future()
+
+
+class RemoteQueryRunner:
+    def __init__(self, checks):
+        self.checks = checks
         self.future = asyncio.Future()
 
 
@@ -138,12 +166,31 @@ class RemoteMethodHandler(MethodHandler):
         return runner.future
 
 
+class RemoteQueryHandler(QueryHandler):
+    def __init__(self, query, tags, proto, phid):
+        self.proto = proto
+        self.phid = phid
+        super().__init__(query, tags)
+
+    def get_query(self, conn, anode, params, checks):
+        runner = RemoteQueryRunner(checks)
+        self.proto.pqids[id(runner)] = runner
+        self.proto.send_msg(messages.MsgPluginQueryGet(
+            pqid=id(runner),
+            phid=self.phid,
+            node=anode.node,
+            params=params,
+        ))
+        return runner.future
+
+
 class ServerProto(asyncio.Protocol):
     def __init__(self, conn):
         self.conn = conn
         self.subs = {}
         self.phids = {}
         self.pmids = {}
+        self.pqids = {}
 
     def connection_made(self, transport):
         self.transport = transport
@@ -179,10 +226,14 @@ class ServerProto(asyncio.Protocol):
             'get_data': self.msg_get_data,
             'get_bindata': self.msg_get_bindata,
             'get_list': self.msg_get_list,
+            'get_query': self.msg_get_query,
             'cancel_subscription': self.msg_cancel_subscription,
             'plugin_method_register': self.msg_plugin_method_register,
             'plugin_method_result': self.msg_plugin_method_result,
             'plugin_method_error': self.msg_plugin_method_error,
+            'plugin_query_register': self.msg_plugin_query_register,
+            'plugin_query_result': self.msg_plugin_query_result,
+            'plugin_query_error': self.msg_plugin_query_error,
             'plugin_handler_unregister': self.msg_plugin_handler_unregister,
         }
         try:
@@ -200,6 +251,8 @@ class ServerProto(asyncio.Protocol):
         for handler in self.phids.values():
             self.conn.unregister_plugin_handler(handler)
         for runner in self.pmids.values():
+            runner.future.set_exception(ConnectionLostError())
+        for runner in self.pqids.values():
             runner.future.set_exception(ConnectionLostError())
         self.conn.remove_conn(self)
 
@@ -364,6 +417,30 @@ class ServerProto(asyncio.Protocol):
             self.subs[msg.qid] = SubscriberList(
                 parent, msg.tags, msg.pos_filter, self, msg.qid)
 
+    async def msg_get_query(self, msg):
+        if msg.qid in self.subs:
+            raise SubscriptionInUseError()
+        obj = self.conn.get_node_norefresh(msg.node)
+        if not msg.sub:
+            checks = [] if msg.trace else None
+            try:
+                result = await obj.get_query_raw(msg.query, msg.params, checks)
+            except VelesException as err:
+                self.send_msg(messages.MsgQueryError(
+                    qid=msg.qid,
+                    err=err,
+                    checks=checks or [],
+                ))
+            else:
+                self.send_msg(messages.MsgGetQueryReply(
+                    qid=msg.qid,
+                    result=result,
+                    checks=checks or [],
+                ))
+        else:
+            self.subs[msg.qid] = SubscriberQuery(
+                obj, msg.query, msg.params, msg.trace, self, msg.qid)
+
     async def msg_cancel_subscription(self, msg):
         if msg.qid in self.subs:
             self.subs[msg.qid].cancel()
@@ -392,6 +469,29 @@ class ServerProto(asyncio.Protocol):
             raise UnknownSubscriptionError()
         self.pmids[msg.pmid].future.set_exception(msg.err)
         del self.pmids[msg.pmid]
+
+    async def msg_plugin_query_register(self, msg):
+        if msg.phid in self.phids:
+            raise SubscriptionInUseError()
+        handler = RemoteQueryHandler(msg.name, msg.tags, self, msg.phid)
+        self.phids[msg.phid] = handler
+        self.conn.register_plugin_handler(handler)
+
+    async def msg_plugin_query_result(self, msg):
+        if msg.pqid not in self.pqids:
+            raise UnknownSubscriptionError()
+        runner = self.pqids[msg.pqid]
+        runner.checks += msg.checks
+        runner.future.set_result(msg.result)
+        del self.pqids[msg.pqid]
+
+    async def msg_plugin_query_error(self, msg):
+        if msg.pqid not in self.pqids:
+            raise UnknownSubscriptionError()
+        runner = self.pqids[msg.pqid]
+        runner.checks += msg.checks
+        runner.future.set_exception(msg.err)
+        del self.pqids[msg.pqid]
 
     async def msg_plugin_handler_unregister(self, msg):
         if msg.phid not in self.phids:

@@ -70,12 +70,27 @@ class AsyncNode:
         """
         raise NotImplementedError
 
-    def get_query(self, name, params, tracer=None):
+    def get_query_raw(self, name, params, checks=None):
         """
-        Runs a query, returns an awaitable of the result.  ``tracer`` should
-        be a Tracer instance that will record the data used, or None.
+        Runs a query, returns an awaitable of the result.  If checks is not
+        None, it should be a list that query's checks will be appended to.
         """
         raise NotImplementedError
+
+    def get_query(self, sig, params, checks=None):
+        """
+        Runs a query, translating its params and result according
+        to the given signature.  Returns an awaitable of the result.
+        """
+        params = sig.params.dump(params)
+        aresult = self.get_query_raw(sig.query, params, checks)
+
+        async def get_result():
+            result = await aresult
+            return sig.result.load(result)
+
+        loop = asyncio.get_event_loop()
+        return loop.create_task(get_result())
 
     # subscriptions - only to be used by BaseSubscriber*.
 
@@ -191,4 +206,5 @@ class AsyncNode:
             result = await aresult
             return sig.result.load(result)
 
-        return asyncio.create_task(get_result())
+        loop = asyncio.get_event_loop()
+        return loop.create_task(get_result())

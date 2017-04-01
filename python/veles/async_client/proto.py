@@ -54,6 +54,7 @@ class ClientProto(asyncio.Protocol):
             'get_data_reply': self.msg_get_reply,
             'get_bindata_reply': self.msg_get_reply,
             'get_list_reply': self.msg_get_reply,
+            'get_query_reply': self.msg_get_reply,
             'query_error': self.msg_query_error,
             'subscription_cancelled': self.msg_subscription_cancelled,
             'proto_error': self.msg_proto_error,
@@ -62,6 +63,7 @@ class ClientProto(asyncio.Protocol):
             'method_result': self.msg_method_result,
             'method_error': self.msg_method_error,
             'plugin_method_run': self.msg_plugin_method_run,
+            'plugin_query_get': self.msg_plugin_query_get,
             'plugin_handler_unregistered':
                 self.msg_plugin_handler_unregistered,
         }
@@ -80,7 +82,7 @@ class ClientProto(asyncio.Protocol):
         self.qids[msg.qid].handle_reply(msg)
 
     async def msg_query_error(self, msg):
-        self.qids[msg.qid].handle_error(msg.err)
+        self.qids[msg.qid].handle_error(msg.err, msg.checks)
 
     async def msg_subscription_cancelled(self, msg):
         del self.qids[msg.qid]
@@ -114,6 +116,27 @@ class ClientProto(asyncio.Protocol):
             self.send_msg(messages.MsgPluginMethodResult(
                 pmid=msg.pmid,
                 result=result
+            ))
+
+    async def msg_plugin_query_get(self, msg):
+        handler = self.handlers[msg.phid]
+        checks = []
+        anode = self.conn.get_node_norefresh(msg.node.id)
+        anode.node = msg.node
+        aresult = handler.get_query(self.conn, anode, msg.params, checks)
+        try:
+            result = await aresult
+        except VelesException as e:
+            self.send_msg(messages.MsgPluginQueryError(
+                pqid=msg.pqid,
+                err=e,
+                checks=checks,
+            ))
+        else:
+            self.send_msg(messages.MsgPluginQueryResult(
+                pqid=msg.pqid,
+                result=result,
+                checks=checks,
             ))
 
     async def msg_plugin_handler_unregistered(self, msg):

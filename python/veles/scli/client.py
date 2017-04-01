@@ -267,6 +267,54 @@ class Client(object):
                 print(pkt)
                 raise Exception('weird reply to list')
 
+    def query(self, obj, sig, params, checks=None):
+        params = sig.params.dump(params)
+        msg = messages.MsgGetQuery(
+            qid=0,
+            node=obj,
+            query=sig.name,
+            params=params,
+            trace=checks is not None
+        )
+        self.send_msg(msg)
+        pkt = self.getpkt()
+        if isinstance(pkt, messages.MsgGetQueryReply) and pkt.qid == 0:
+            if checks is not None:
+                checks += pkt.checks
+            return sig.result.load(pkt.result)
+        elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
+            if checks is not None:
+                checks += pkt.checks
+            raise pkt.err
+        else:
+            print(pkt)
+            raise Exception('weird reply to get_query')
+
+    def query_sub(self, obj, sig, params, checks=None):
+        params = sig.params.dump(params)
+        msg = messages.MsgGetQuery(
+            qid=0,
+            node=obj,
+            query=sig.name,
+            params=params,
+            trace=checks is not None,
+            sub=True
+        )
+        self.send_msg(msg)
+        while True:
+            pkt = self.getpkt()
+            if isinstance(pkt, messages.MsgGetQueryReply) and pkt.qid == 0:
+                if checks is not None:
+                    checks += pkt.checks
+                yield sig.result.load(pkt.result)
+            elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
+                if checks is not None:
+                    checks += pkt.checks
+                raise pkt.err
+            else:
+                print(pkt)
+                raise Exception('weird reply to get_query')
+
     def run_method(self, obj, sig, params):
         params = sig.params.dump(params)
         msg = messages.MsgMethodRun(

@@ -40,7 +40,7 @@ class Getter:
         self.future.set_result(self.node)
         del self.proto.qids[id(self)]
 
-    def handle_error(self, exc):
+    def handle_error(self, exc, checks):
         self.future.set_exception(exc)
         del self.proto.qids[id(self)]
 
@@ -62,7 +62,7 @@ class DataGetter:
         self.future.set_result(msg.data)
         del self.proto.qids[id(self)]
 
-    def handle_error(self, exc):
+    def handle_error(self, exc, checks):
         self.future.set_exception(exc)
         del self.proto.qids[id(self)]
 
@@ -86,7 +86,7 @@ class BinDataGetter:
         self.future.set_result(msg.data)
         del self.proto.qids[id(self)]
 
-    def handle_error(self, exc):
+    def handle_error(self, exc, checks):
         self.future.set_exception(exc)
         del self.proto.qids[id(self)]
 
@@ -115,7 +115,36 @@ class ListGetter:
         self.future.set_result(res)
         del self.proto.qids[id(self)]
 
-    def handle_error(self, exc):
+    def handle_error(self, exc, checks):
+        self.future.set_exception(exc)
+        del self.proto.qids[id(self)]
+
+
+class QueryGetter:
+    def __init__(self, node, query, params, checks):
+        self.proto = node.proto
+        self.checks = checks
+        self.future = asyncio.Future()
+        self.proto.qids[id(self)] = self
+        self.proto.send_msg(messages.MsgGetQuery(
+            qid=id(self),
+            node=node.id,
+            query=query,
+            params=params,
+            trace=checks is not None,
+        ))
+
+    def handle_reply(self, msg):
+        if not isinstance(msg, messages.MsgGetQueryReply):
+            raise SchemaError('weird reply to get_query')
+        if self.checks is not None:
+            self.checks += msg.checks
+        self.future.set_result(msg.result)
+        del self.proto.qids[id(self)]
+
+    def handle_error(self, exc, checks):
+        if self.checks is not None:
+            self.checks += checks
         self.future.set_exception(exc)
         del self.proto.qids[id(self)]
 
@@ -138,10 +167,13 @@ class BaseSub:
             return
         self._handle_reply(msg)
 
-    def handle_error(self, exc):
+    def _handle_error(self, exc, checks):
+        self.sub.error(exc)
+
+    def handle_error(self, exc, checks):
         if not self.alive:
             return
-        self.sub.error(exc)
+        self._handle_error(exc, checks)
 
 
 class GetterSub(BaseSub):
@@ -217,6 +249,28 @@ class ListSub(BaseSub):
         self.sub.list_changed(res, msg.gone)
 
 
+class QuerySub(BaseSub):
+    def __init__(self, sub):
+        self.conn = sub.obj.conn
+        super().__init__(sub, sub.obj.proto)
+        self.proto.send_msg(messages.MsgGetQuery(
+            qid=id(self),
+            node=sub.obj.id,
+            query=sub.name,
+            params=sub.params,
+            trace=sub.trace,
+            sub=True
+        ))
+
+    def _handle_reply(self, msg):
+        if not isinstance(msg, messages.MsgGetQueryReply):
+            raise SchemaError('weird reply to get_query')
+        self.sub.raw_result_changed(msg.result, msg.checks)
+
+    def _handle_error(self, exc, checks):
+        self.sub.error(exc, checks)
+
+
 class Request:
     def __init__(self, proto, result):
         self.proto = proto
@@ -268,6 +322,9 @@ class AsyncRemoteNode(AsyncNode):
     def get_list(self, tags=frozenset(), pos_filter=PosFilter()):
         return ListGetter(self, set(tags), pos_filter).future
 
+    def get_query_raw(self, name, params, checks=None):
+        return QueryGetter(self, name, params, checks).future
+
     # subscriptions
 
     def _add_sub(self, sub):
@@ -295,6 +352,13 @@ class AsyncRemoteNode(AsyncNode):
         self.subs[sub] = ListSub(sub)
 
     def _del_sub_list(self, sub):
+        self.subs[sub].cancel()
+        del self.subs[sub]
+
+    def _add_sub_query(self, sub):
+        self.subs[sub] = QuerySub(sub)
+
+    def _del_sub_query(self, sub):
         self.subs[sub].cancel()
         del self.subs[sub]
 

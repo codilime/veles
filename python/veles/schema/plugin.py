@@ -28,3 +28,16 @@ class MethodSignature:
         self.name = name
         self.params = params
         self.result = result
+
+
+class QuerySignature:
+    def __init__(self, name, params, result):
+        if not isinstance(name, six.text_type):
+            raise TypeError("name must be str")
+        if not isinstance(params, fields.Field):
+            raise TypeError("params must be a field")
+        if not isinstance(result, fields.Field):
+            raise TypeError("result must be a field")
+        self.name = name
+        self.params = params
+        self.result = result

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
+
 from veles.util.future import done_future, bad_future
 from veles.async_conn.node import AsyncNode
 from veles.proto.exceptions import (
@@ -20,8 +22,11 @@ from veles.proto.exceptions import (
     ObjectExistsError,
     ParentCycleError,
 )
+from veles.proto.check import CheckGone, CheckTags
 from veles.proto.node import Node, PosFilter
 from veles.schema.nodeid import NodeID
+
+from .query import QueryManager
 
 
 def _resolve_obj(conn, obj):
@@ -41,6 +46,7 @@ class AsyncLocalNode(AsyncNode):
         self.data_subs = {}
         self.bindata_subs = {}
         self.list_subs = {}
+        self.query_subs = {}
 
     # getters
 
@@ -66,6 +72,37 @@ class AsyncLocalNode(AsyncNode):
         objs = [self.conn.get_node_norefresh(x) for x in obj_ids]
         return done_future(objs)
 
+    async def _get_query_raw(self, name, params, checks):
+        while True:
+            if self.node is None:
+                if checks is not None:
+                    checks.append(CheckGone(
+                        node=self.id
+                    ))
+                raise ObjectGoneError()
+            cur_checks = [CheckTags(
+                node=self.id,
+                tags=self.node.tags,
+            )]
+            try:
+                handler = self.conn.queries.find(name, self.node.tags)
+                result = await handler.get_query(
+                    self.conn, self, params, cur_checks)
+            except VelesException:
+                if self.conn._checks_ok(cur_checks):
+                    if checks is not None:
+                        checks += cur_checks
+                    raise
+            else:
+                if self.conn._checks_ok(cur_checks):
+                    if checks is not None:
+                        checks += cur_checks
+                    return result
+
+    def get_query_raw(self, name, params, checks=None):
+        loop = asyncio.get_event_loop()
+        return loop.create_task(self._get_query_raw(name, params, checks))
+
     # subscriptions
 
     def _add_sub(self, sub):
@@ -85,16 +122,16 @@ class AsyncLocalNode(AsyncNode):
 
     def _send_subs_unparent(self):
         if self.parent is not None:
-            for sub, objs in self.parent.list_subs.items():
+            for sub, objs in list(self.parent.list_subs.items()):
                 if self in objs:
                     objs.remove(self)
                     sub.list_changed([], [self.id])
 
     def _send_subs(self):
-        for sub in self.subs:
+        for sub in list(self.subs):
             self._send_sub(sub)
         if self.parent is not None:
-            for sub, objs in self.parent.list_subs.items():
+            for sub, objs in list(self.parent.list_subs.items()):
                 if sub.matches(self.node):
                     objs.add(self)
                     sub.list_changed([self], [])
@@ -135,7 +172,7 @@ class AsyncLocalNode(AsyncNode):
             sub.data_changed(self.conn.db.get_data(self.id, sub.key))
 
     def _send_subs_data(self, key, data):
-        for sub in self.data_subs.get(key, ()):
+        for sub in list(self.data_subs.get(key, ())):
             sub.data_changed(data)
 
     # bindata sub
@@ -161,12 +198,21 @@ class AsyncLocalNode(AsyncNode):
                 self.id, sub.key, sub.start, sub.end))
 
     def _send_subs_bindata(self, key, start, end):
-        for sub in self.bindata_subs.get(key, ()):
+        for sub in list(self.bindata_subs.get(key, ())):
             if sub.end is not None and sub.end <= start:
                 continue
             if end is not None and end <= sub.start:
                 continue
             self._send_sub_bindata(sub)
+
+    def _add_sub_query(self, sub):
+        self.query_subs[sub] = QueryManager(sub)
+        self.conn.all_subs.add(sub)
+
+    def _del_sub_query(self, sub):
+        self.query_subs[sub].cancel()
+        del self.query_subs[sub]
+        self.conn.all_subs.remove(sub)
 
     # mutators
 
@@ -189,14 +235,14 @@ class AsyncLocalNode(AsyncNode):
             self.conn.db.set_bindata(node.id, key, start=0, data=val,
                                      truncate=False)
         self._send_subs()
-        for sub in self.list_subs:
+        for sub in list(self.list_subs):
             sub.list_changed([], [])
-        for key, subs in self.data_subs.items():
+        for key, subs in list(self.data_subs.items()):
             data = self.conn.db.get_data(self.id, key)
-            for sub in subs:
+            for sub in list(subs):
                 sub.data_changed(data)
-        for key, subs in self.bindata_subs.items():
-            for sub in subs:
+        for key, subs in list(self.bindata_subs.items()):
+            for sub in list(subs):
                 self._send_sub_bindata(sub)
         return done_future(self)
 
@@ -209,13 +255,13 @@ class AsyncLocalNode(AsyncNode):
             self._send_subs_unparent()
             self.parent = None
             self._send_subs()
-            for key, subs in self.data_subs.items():
-                for sub in subs:
+            for key, subs in list(self.data_subs.items()):
+                for sub in list(subs):
                     sub.error(ObjectGoneError())
-            for key, subs in self.bindata_subs.items():
-                for sub in subs:
+            for key, subs in list(self.bindata_subs.items()):
+                for sub in list(subs):
                     sub.error(ObjectGoneError())
-            for sub in self.list_subs:
+            for sub in list(self.list_subs):
                 sub.error(ObjectGoneError())
         return done_future(None)
 

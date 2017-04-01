@@ -259,6 +259,7 @@ class MsgQueryError(MsgpackMsg):
 
     qid = fields.SmallUnsignedInteger()
     err = fields.Object(VelesException)
+    checks = fields.List(fields.Object(Check))
 
 
 class MsgCancelSubscription(MsgpackMsg):
@@ -555,6 +556,60 @@ class MsgPluginMethodError(MsgpackMsg):
 
     pmid = fields.SmallUnsignedInteger()
     err = fields.Object(VelesException)
+
+
+class MsgPluginQueryRegister(MsgpackMsg):
+    """
+    Sent by the client to register a query handler.  Has no reply.
+    ``phid`` is an arbitrary number chosen by the client to identify this
+    handler.
+    """
+
+    object_type = 'plugin_query_register'
+
+    phid = fields.SmallUnsignedInteger()
+    name = fields.String()
+    tags = fields.Set(fields.String())
+
+
+class MsgPluginQueryGet(MsgpackMsg):
+    """
+    Sent by the server to a plugin client to request running a query.
+    ``pqid`` is chosen arbitrarily by the server to match replies to
+    requests, ``phid`` is the id of the handler registered by the client
+    earlier.
+    """
+
+    object_type = 'plugin_query_get'
+
+    pqid = fields.SmallUnsignedInteger()
+    phid = fields.SmallUnsignedInteger()
+    node = fields.Object(Node)
+    params = fields.Any(optional=True)
+
+
+class MsgPluginQueryResult(MsgpackMsg):
+    """
+    Sent by the client in reply to MsgPluginQueryGet.
+    """
+
+    object_type = 'plugin_query_result'
+
+    pqid = fields.SmallUnsignedInteger()
+    result = fields.Any(optional=True)
+    checks = fields.List(fields.Object(Check))
+
+
+class MsgPluginQueryError(MsgpackMsg):
+    """
+    Sent by the client in reply to MsgPluginQueryGet.
+    """
+
+    object_type = 'plugin_query_error'
+
+    pqid = fields.SmallUnsignedInteger()
+    err = fields.Object(VelesException)
+    checks = fields.List(fields.Object(Check))
 
 
 # XXX NYI

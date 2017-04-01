@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from veles.schema.nodeid import NodeID
-from .plugin import MethodHandler
+from .plugin import MethodHandler, QueryHandler
 
 
 class AsyncConnection:
@@ -66,10 +66,10 @@ class AsyncConnection:
 
     def register_plugin(self, plugin):
         for v in plugin.__dict__.values():
-            if isinstance(v, MethodHandler):
+            if isinstance(v, (MethodHandler, QueryHandler)):
                 self.register_plugin_handler(v)
 
     def unregister_plugin(self, plugin):
         for v in plugin.__dict__.values():
-            if isinstance(v, MethodHandler):
+            if isinstance(v, (MethodHandler, QueryHandler)):
                 self.unregister_plugin_handler(v)

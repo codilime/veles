@@ -35,7 +35,7 @@ from veles.proto.exceptions import (
     RegistryNoMatchError,
     RegistryMultiMatchError,
 )
-from veles.async_conn.plugin import MethodHandler
+from veles.async_conn.plugin import MethodHandler, QueryHandler
 from veles.async_conn.conn import AsyncConnection
 
 from .node import AsyncLocalNode
@@ -81,6 +81,7 @@ class AsyncLocalConnection(AsyncConnection):
         # with all their subscriptions).
         self.all_subs = set()
         self.methods = NameTagsRegistry()
+        self.queries = NameTagsRegistry()
         super().__init__()
 
     def new_conn(self, conn):
@@ -335,11 +336,15 @@ class AsyncLocalConnection(AsyncConnection):
     def register_plugin_handler(self, handler):
         if isinstance(handler, MethodHandler):
             self.methods.register(handler.method, handler.tags, handler)
+        elif isinstance(handler, QueryHandler):
+            self.queries.register(handler.query, handler.tags, handler)
         else:
             raise TypeError('unknown type of plugin handler')
 
     def unregister_plugin_handler(self, handler):
         if isinstance(handler, MethodHandler):
             self.methods.unregister(handler.method, handler.tags, handler)
+        elif isinstance(handler, QueryHandler):
+            self.queries.unregister(handler.query, handler.tags, handler)
         else:
             raise TypeError('unknown type of plugin handler')

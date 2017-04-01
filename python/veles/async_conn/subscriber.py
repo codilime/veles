@@ -14,6 +14,7 @@
 
 
 from veles.proto.node import PosFilter
+from veles.proto.exceptions import VelesException
 
 
 class BaseSubscriber:
@@ -91,16 +92,17 @@ class BaseSubscriberBinData:
         raise NotImplementedError
 
 
-class BaseSubscriberQuery:
+class BaseSubscriberQueryRaw:
     """
-    A subscriber of query results.  ``result_changed`` is called whenever
+    A subscriber of query results.  ``raw_result_changed`` is called whenever
     the result changes.
     """
 
-    def __init__(self, obj, name, params):
+    def __init__(self, obj, name, params, trace=False):
         self.obj = obj
         self.name = name
         self.params = params
+        self.trace = trace
         self.alive = True
         self.obj._add_sub_query(self)
 
@@ -109,11 +111,32 @@ class BaseSubscriberQuery:
             self.alive = False
             self.obj._del_sub_query(self)
 
-    def result_changed(self, data):
+    def raw_result_changed(self, result, checks):
         raise NotImplementedError
 
-    def error(self, err):
+    def error(self, err, checks):
         raise NotImplementedError
+
+
+class BaseSubscriberQuery(BaseSubscriberQueryRaw):
+    """
+    A subscriber of query result, with params and result translated
+    according to a query signature.  ``result_changed`` is called whenever
+    the result changes.
+    """
+
+    def __init__(self, obj, sig, params):
+        self.sig = sig
+        super().__init__(obj, sig.name, sig.params.dump(params))
+
+    def result_changed(self, result):
+        raise NotImplementedError
+
+    def raw_result_changed(self, result, checks):
+        try:
+            self.result_changed(self.sig.result.load(result))
+        except VelesException as e:
+            self.error(e, checks)
 
 
 class BaseSubscriberList:
