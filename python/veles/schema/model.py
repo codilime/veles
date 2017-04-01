@@ -38,7 +38,11 @@ class Model(pep487.NewObject):
         super(Model, cls).__init_subclass__(**kwargs)
 
         cls.fields = super(cls, cls).fields[:]
-        for attr in cls.__dict__.values():
+        if hasattr(cls, '_order'):
+            attrs = [getattr(cls, x) for x in cls._order]
+        else:
+            attrs = cls.__dict__.values()
+        for attr in attrs:
             if isinstance(attr, fields.Field):
                 cls.fields.append(attr)
 

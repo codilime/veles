@@ -52,6 +52,31 @@ class TestModel(unittest.TestCase):
         self.assertEqual(set(TurboZlew.fields), {
             Zlew.b, TurboZlew.c, TurboZlew.d, TurboZlew.e})
 
+    if six.PY3:
+        def test_ordering(self):
+            class MultiZlew(Model):
+                a = fields.Boolean()
+                b = fields.Boolean()
+                c = fields.Boolean()
+                d = fields.Boolean()
+                e = fields.Boolean()
+                f = fields.Boolean()
+                g = fields.Boolean()
+                h = fields.Boolean()
+                i = fields.Boolean()
+
+            self.assertEqual(MultiZlew.fields, [
+                MultiZlew.a,
+                MultiZlew.b,
+                MultiZlew.c,
+                MultiZlew.d,
+                MultiZlew.e,
+                MultiZlew.f,
+                MultiZlew.g,
+                MultiZlew.h,
+                MultiZlew.i,
+            ])
+
     def test_init(self):
         a = Piwo(a=True)
         b = Piwo(a=True)

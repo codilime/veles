@@ -34,6 +34,9 @@ if sys.version_info < (3, 6):
             if isinstance(init, types.FunctionType):
                 ns['__init_subclass__'] = classmethod(init)
 
+            if six.PY3:
+                ns['_order'] = list(ns)
+
             self = super(NewType, cls).__new__(cls, name, bases, ns)
 
             for k, v in self.__dict__.items():
@@ -47,15 +50,16 @@ if sys.version_info < (3, 6):
 
             return self
 
-    class NewObject(six.with_metaclass(NewType, object)):
         @classmethod
-        def __init_subclass__(cls, **kwargs):
-            pass
-
         def __prepare__(metacls, name, bases):
             # Never, ever depend on it apart from code generation which must
             # be run on Python3
             return OrderedDict()
+
+    class NewObject(six.with_metaclass(NewType, object)):
+        @classmethod
+        def __init_subclass__(cls, **kwargs):
+            pass
 
 else:
     NewType = type
