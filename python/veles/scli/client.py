@@ -333,6 +333,21 @@ class Client(object):
             print(pkt)
             raise Exception('weird reply to run_method')
 
+    def run_broadcast(self, sig, params):
+        params = sig.params.dump(params)
+        msg = messages.MsgBroadcastRun(
+            bid=0,
+            broadcast=sig.name,
+            params=params
+        )
+        self.send_msg(msg)
+        pkt = self.getpkt()
+        if isinstance(pkt, messages.MsgBroadcastResult) and pkt.bid == 0:
+            return [sig.result.load(result) for result in pkt.results]
+        else:
+            print(pkt)
+            raise Exception('weird reply to run_broadcast')
+
 
 class UnixClient(Client):
     def __init__(self, path):

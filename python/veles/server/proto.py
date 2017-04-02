@@ -29,7 +29,11 @@ from veles.async_conn.subscriber import (
     BaseSubscriberList,
     BaseSubscriberQueryRaw,
 )
-from veles.async_conn.plugin import MethodHandler, QueryHandler
+from veles.async_conn.plugin import (
+    MethodHandler,
+    QueryHandler,
+    BroadcastHandler,
+)
 from veles.proto.exceptions import (
     VelesException,
     UnknownSubscriptionError,
@@ -148,6 +152,11 @@ class RemoteQueryRunner:
         self.future = asyncio.Future()
 
 
+class RemoteBroadcastRunner:
+    def __init__(self):
+        self.future = asyncio.Future()
+
+
 class RemoteMethodHandler(MethodHandler):
     def __init__(self, method, tags, proto, phid):
         self.proto = proto
@@ -184,6 +193,23 @@ class RemoteQueryHandler(QueryHandler):
         return runner.future
 
 
+class RemoteBroadcastHandler(BroadcastHandler):
+    def __init__(self, broadcast, proto, phid):
+        self.proto = proto
+        self.phid = phid
+        super().__init__(broadcast)
+
+    def run_broadcast(self, conn, params):
+        runner = RemoteBroadcastRunner()
+        self.proto.pbids[id(runner)] = runner
+        self.proto.send_msg(messages.MsgPluginBroadcastRun(
+            pbid=id(runner),
+            phid=self.phid,
+            params=params,
+        ))
+        return runner.future
+
+
 class ServerProto(asyncio.Protocol):
     def __init__(self, conn):
         self.conn = conn
@@ -191,6 +217,7 @@ class ServerProto(asyncio.Protocol):
         self.phids = {}
         self.pmids = {}
         self.pqids = {}
+        self.pbids = {}
 
     def connection_made(self, transport):
         self.transport = transport
@@ -222,6 +249,7 @@ class ServerProto(asyncio.Protocol):
             'set_bindata': self.msg_set_bindata,
             'transaction': self.msg_transaction,
             'method_run': self.msg_method_run,
+            'broadcast_run': self.msg_broadcast_run,
             'get': self.msg_get,
             'get_data': self.msg_get_data,
             'get_bindata': self.msg_get_bindata,
@@ -234,6 +262,8 @@ class ServerProto(asyncio.Protocol):
             'plugin_query_register': self.msg_plugin_query_register,
             'plugin_query_result': self.msg_plugin_query_result,
             'plugin_query_error': self.msg_plugin_query_error,
+            'plugin_broadcast_register': self.msg_plugin_broadcast_register,
+            'plugin_broadcast_result': self.msg_plugin_broadcast_result,
             'plugin_handler_unregister': self.msg_plugin_handler_unregister,
         }
         try:
@@ -254,6 +284,8 @@ class ServerProto(asyncio.Protocol):
             runner.future.set_exception(ConnectionLostError())
         for runner in self.pqids.values():
             runner.future.set_exception(ConnectionLostError())
+        for runner in self.pbids.values():
+            runner.future.set_result([])
         self.conn.remove_conn(self)
 
     def send_msg(self, msg):
@@ -334,6 +366,13 @@ class ServerProto(asyncio.Protocol):
                 mid=msg.mid,
                 result=result,
             ))
+
+    async def msg_broadcast_run(self, msg):
+        results = await self.conn.run_broadcast_raw(msg.broadcast, msg.params)
+        self.send_msg(messages.MsgBroadcastResult(
+            bid=msg.bid,
+            results=results,
+        ))
 
     async def msg_get(self, msg):
         if msg.qid in self.subs:
@@ -492,6 +531,19 @@ class ServerProto(asyncio.Protocol):
         runner.checks += msg.checks
         runner.future.set_exception(msg.err)
         del self.pqids[msg.pqid]
+
+    async def msg_plugin_broadcast_register(self, msg):
+        if msg.phid in self.phids:
+            raise SubscriptionInUseError()
+        handler = RemoteBroadcastHandler(msg.name, self, msg.phid)
+        self.phids[msg.phid] = handler
+        self.conn.register_plugin_handler(handler)
+
+    async def msg_plugin_broadcast_result(self, msg):
+        if msg.pbid not in self.pbids:
+            raise UnknownSubscriptionError()
+        self.pbids[msg.pbid].future.set_result(msg.results)
+        del self.pbids[msg.pbid]
 
     async def msg_plugin_handler_unregister(self, msg):
         if msg.phid not in self.phids:

@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
+
 from veles.schema.nodeid import NodeID
-from .plugin import MethodHandler, QueryHandler
+from .plugin import MethodHandler, QueryHandler, BroadcastHandler
 
 
 class AsyncConnection:
@@ -58,6 +60,27 @@ class AsyncConnection:
     def transaction(self, checks, operations):
         raise NotImplementedError
 
+    def run_broadcast_raw(self, broadcast, params):
+        """
+        Runs a broadcast.  Returns an awaitable of the results.
+        """
+        raise NotImplementedError
+
+    def run_broadcast(self, sig, params):
+        """
+        Runs a broadcast, translating its params and results
+        according to the given signature.  Returns an awaitable of the results.
+        """
+        params = sig.params.dump(params)
+        aresults = self.run_broadcast_raw(sig.broadcast, params)
+
+        async def get_results():
+            results = await aresults
+            return [sig.result.load(result) for result in results]
+
+        loop = asyncio.get_event_loop()
+        return loop.create_task(get_results())
+
     def register_plugin_handler(self, handler):
         raise NotImplementedError
 
@@ -66,10 +89,10 @@ class AsyncConnection:
 
     def register_plugin(self, plugin):
         for v in plugin.__dict__.values():
-            if isinstance(v, (MethodHandler, QueryHandler)):
+            if isinstance(v, (MethodHandler, QueryHandler, BroadcastHandler)):
                 self.register_plugin_handler(v)
 
     def unregister_plugin(self, plugin):
         for v in plugin.__dict__.values():
-            if isinstance(v, (MethodHandler, QueryHandler)):
+            if isinstance(v, (MethodHandler, QueryHandler, BroadcastHandler)):
                 self.unregister_plugin_handler(v)

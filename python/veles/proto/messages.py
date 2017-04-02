@@ -467,7 +467,7 @@ class MsgRequestError(MsgpackMsg):
     err = fields.Object(VelesException)
 
 
-# methods & triggers
+# methods & broadcasts
 
 class MsgMethodRun(MsgpackMsg):
     """
@@ -505,6 +505,33 @@ class MsgMethodError(MsgpackMsg):
     mid = fields.SmallUnsignedInteger()
     err = fields.Object(VelesException)
 
+
+class MsgBroadcastRun(MsgpackMsg):
+    """
+    Sent by the client to request running a given broadcast.
+    ``bid`` is an arbitrary number selected by the client to associate
+    replies to this request.
+    """
+
+    object_type = 'broadcast_run'
+
+    bid = fields.SmallUnsignedInteger()
+    broadcast = fields.String()
+    params = fields.Any(optional=True)
+
+
+class MsgBroadcastResult(MsgpackMsg):
+    """
+    Sent by the server in reply to MsgBroadcastRun.
+    """
+
+    object_type = 'broadcast_result'
+
+    bid = fields.SmallUnsignedInteger()
+    results = fields.List(fields.Any(optional=True))
+
+
+# plugins
 
 class MsgPluginMethodRegister(MsgpackMsg):
     """
@@ -610,6 +637,45 @@ class MsgPluginQueryError(MsgpackMsg):
     pqid = fields.SmallUnsignedInteger()
     err = fields.Object(VelesException)
     checks = fields.List(fields.Object(Check))
+
+
+class MsgPluginBroadcastRegister(MsgpackMsg):
+    """
+    Sent by the client to register a broadcast handler.  Has no reply.
+    ``phid`` is an arbitrary number chosen by the client to identify this
+    broadcast handler.
+    """
+
+    object_type = 'plugin_broadcast_register'
+
+    phid = fields.SmallUnsignedInteger()
+    name = fields.String()
+
+
+class MsgPluginBroadcastRun(MsgpackMsg):
+    """
+    Sent by the server to a plugin client to request running a broadcast.
+    ``pbid`` is chosen arbitrarily by the server to match replies to
+    requests, ``phid`` is the id of the broadcast handler registered by
+    the client earlier.
+    """
+
+    object_type = 'plugin_broadcast_run'
+
+    pbid = fields.SmallUnsignedInteger()
+    phid = fields.SmallUnsignedInteger()
+    params = fields.Any(optional=True)
+
+
+class MsgPluginBroadcastResult(MsgpackMsg):
+    """
+    Sent by the client in reply to MsgPluginBroadcastRun.
+    """
+
+    object_type = 'plugin_broadcast_result'
+
+    pbid = fields.SmallUnsignedInteger()
+    results = fields.List(fields.Any(optional=True))
 
 
 # XXX NYI

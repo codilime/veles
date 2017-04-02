@@ -17,6 +17,8 @@
 # They are hidden in the mist
 # And in the silver rain
 
+import asyncio
+
 import weakref
 
 from collections import defaultdict
@@ -35,7 +37,9 @@ from veles.proto.exceptions import (
     RegistryNoMatchError,
     RegistryMultiMatchError,
 )
-from veles.async_conn.plugin import MethodHandler, QueryHandler
+from veles.async_conn.plugin import (
+    MethodHandler, QueryHandler, BroadcastHandler
+)
 from veles.async_conn.conn import AsyncConnection
 
 from .node import AsyncLocalNode
@@ -82,6 +86,7 @@ class AsyncLocalConnection(AsyncConnection):
         self.all_subs = set()
         self.methods = NameTagsRegistry()
         self.queries = NameTagsRegistry()
+        self.broadcasts = {}
         super().__init__()
 
     def new_conn(self, conn):
@@ -333,11 +338,27 @@ class AsyncLocalConnection(AsyncConnection):
         else:
             return done_future(None)
 
+    def run_broadcast_raw(self, broadcast, params):
+        aresults = []
+        for handler in self.broadcasts.get(broadcast, []):
+            aresults.append(handler.run_broadcast(self, params))
+
+        async def get_results():
+            results = []
+            for ares in aresults:
+                results += await ares
+            return results
+
+        loop = asyncio.get_event_loop()
+        return loop.create_task(get_results())
+
     def register_plugin_handler(self, handler):
         if isinstance(handler, MethodHandler):
             self.methods.register(handler.method, handler.tags, handler)
         elif isinstance(handler, QueryHandler):
             self.queries.register(handler.query, handler.tags, handler)
+        elif isinstance(handler, BroadcastHandler):
+            self.broadcasts.setdefault(handler.broadcast, set()).add(handler)
         else:
             raise TypeError('unknown type of plugin handler')
 
@@ -346,5 +367,7 @@ class AsyncLocalConnection(AsyncConnection):
             self.methods.unregister(handler.method, handler.tags, handler)
         elif isinstance(handler, QueryHandler):
             self.queries.unregister(handler.query, handler.tags, handler)
+        elif isinstance(handler, BroadcastHandler):
+            self.broadcasts[handler.broadcast].remove(handler)
         else:
             raise TypeError('unknown type of plugin handler')

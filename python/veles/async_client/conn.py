@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
+
 import weakref
 
 from veles.proto import messages
@@ -19,8 +21,20 @@ from veles.async_conn.conn import AsyncConnection
 from veles.async_conn.plugin import (
     MethodHandler,
     QueryHandler,
+    BroadcastHandler,
 )
 from .node import AsyncRemoteNode, Request
+
+
+class BroadcastRunner:
+    def __init__(self, proto):
+        self.proto = proto
+        self.future = asyncio.Future()
+        self.proto.bids[id(self)] = self
+
+    def handle_result(self, result):
+        self.future.set_result(result)
+        del self.proto.bids[id(self)]
 
 
 class AsyncRemoteConnection(AsyncConnection):
@@ -61,6 +75,15 @@ class AsyncRemoteConnection(AsyncConnection):
         ))
         return req.future
 
+    def run_broadcast_raw(self, broadcast, params):
+        br = BroadcastRunner(self.proto)
+        self.proto.send_msg(messages.MsgBroadcastRun(
+            bid=id(br),
+            broadcast=broadcast,
+            params=params,
+        ))
+        return br.future
+
     def register_plugin_handler(self, handler):
         if isinstance(handler, MethodHandler):
             self.proto.send_msg(messages.MsgPluginMethodRegister(
@@ -73,6 +96,12 @@ class AsyncRemoteConnection(AsyncConnection):
                 phid=id(handler),
                 name=handler.query,
                 tags=handler.tags,
+            ))
+        elif isinstance(handler, BroadcastHandler):
+            self.proto.handlers[id(handler)] = handler
+            self.proto.send_msg(messages.MsgPluginBroadcastRegister(
+                phid=id(handler),
+                name=handler.broadcast,
             ))
         else:
             raise TypeError("unknown type of plugin handler")

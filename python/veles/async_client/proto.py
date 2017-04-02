@@ -32,6 +32,7 @@ class ClientProto(asyncio.Protocol):
         self.packer = wrapper.packer
         self.qids = {}
         self.mids = {}
+        self.bids = {}
         self.rids = {}
         self.handlers = {}
 
@@ -62,8 +63,10 @@ class ClientProto(asyncio.Protocol):
             'request_error': self.msg_request_error,
             'method_result': self.msg_method_result,
             'method_error': self.msg_method_error,
+            'broadcast_result': self.msg_broadcast_result,
             'plugin_method_run': self.msg_plugin_method_run,
             'plugin_query_get': self.msg_plugin_query_get,
+            'plugin_broadcast_run': self.msg_plugin_broadcast_run,
             'plugin_handler_unregistered':
                 self.msg_plugin_handler_unregistered,
         }
@@ -98,6 +101,9 @@ class ClientProto(asyncio.Protocol):
 
     async def msg_method_error(self, msg):
         self.mids[msg.mid].handle_error(msg.err)
+
+    async def msg_broadcast_result(self, msg):
+        self.bids[msg.bid].handle_result(msg.results)
 
     async def msg_proto_error(self, msg):
         raise msg.err
@@ -138,6 +144,15 @@ class ClientProto(asyncio.Protocol):
                 result=result,
                 checks=checks,
             ))
+
+    async def msg_plugin_broadcast_run(self, msg):
+        handler = self.handlers[msg.phid]
+        aresults = handler.run_broadcast(self.conn, msg.params)
+        results = await aresults
+        self.send_msg(messages.MsgPluginBroadcastResult(
+            pbid=msg.pbid,
+            results=results
+        ))
 
     async def msg_plugin_handler_unregistered(self, msg):
         del self.handlers[msg.phid]

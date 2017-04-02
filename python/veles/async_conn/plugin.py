@@ -14,7 +14,12 @@
 
 import asyncio
 
-from veles.schema.plugin import MethodSignature, QuerySignature
+from veles.schema.plugin import (
+    MethodSignature,
+    QuerySignature,
+    BroadcastSignature,
+)
+from veles.proto.exceptions import VelesException
 from .tracer import AsyncTracer
 
 
@@ -98,6 +103,41 @@ class LocalQueryHandler(QueryHandler):
         return loop.create_task(self._get_query(conn, anode, params, checks))
 
 
+class BroadcastHandler:
+    def __init__(self, broadcast):
+        if not isinstance(broadcast, str):
+            raise TypeError("broadcast must be str")
+        self.broadcast = broadcast
+
+    def run_broadcast(self, conn, params):
+        """
+        Returns an awaitable of results.
+        """
+        raise NotImplementedError
+
+
+class LocalBroadcastHandler(BroadcastHandler):
+    def __init__(self, sig, func):
+        if not isinstance(sig, BroadcastSignature):
+            raise TypeError("sig must be BroadcastSignature")
+        super().__init__(sig.name)
+        self.sig = sig
+        self.func = func
+
+    async def _run_broadcast(self, conn, params):
+        try:
+            params = self.sig.params.load(params)
+            results = await self.func(conn, params)
+            results = [self.sig.result.dump(result) for result in results]
+            return results
+        except VelesException:
+            return []
+
+    def run_broadcast(self, conn, params):
+        loop = asyncio.get_event_loop()
+        return loop.create_task(self._run_broadcast(conn, params))
+
+
 def method(sig, tags):
     def inner(func):
         return LocalMethodHandler(sig, tags, func)
@@ -107,4 +147,10 @@ def method(sig, tags):
 def query(sig, tags):
     def inner(func):
         return LocalQueryHandler(sig, tags, func)
+    return inner
+
+
+def broadcast(sig):
+    def inner(func):
+        return LocalBroadcastHandler(sig, func)
     return inner
