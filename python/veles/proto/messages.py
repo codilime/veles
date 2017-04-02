@@ -681,24 +681,56 @@ class MsgPluginBroadcastResult(MsgpackMsg):
     results = fields.List(fields.Any(optional=True))
 
 
-# XXX NYI
-class MsgRegisterTrigger(MsgpackMsg):
-    object_type = 'register_trigger'
+class MsgPluginTriggerRegister(MsgpackMsg):
+    """
+    Sent by the client to register a trigger handler.  Has no reply.
+    ``phid`` is an arbitrary number chosen by the client to identify this
+    method handler.
+    """
+
+    object_type = 'plugin_trigger_register'
+
+    phid = fields.SmallUnsignedInteger()
+    name = fields.String()
+    tags = fields.Set(fields.String())
 
 
-# XXX NYI
 class MsgPluginTriggerRun(MsgpackMsg):
+    """
+    Sent by the server to a plugin client to request running a trigger.
+    ``ptid`` is chosen arbitrarily by the server to match replies to
+    requests, ``phid`` is the id of the trigger handler registered by
+    the client earlier.
+    """
+
     object_type = 'plugin_trigger_run'
 
+    ptid = fields.SmallUnsignedInteger()
+    phid = fields.SmallUnsignedInteger()
+    node = fields.Object(Node)
 
-# XXX NYI
+
 class MsgPluginTriggerDone(MsgpackMsg):
+    """
+    Sent by the client in reply to MsgPluginTriggerRun.
+    """
+
     object_type = 'plugin_trigger_done'
 
+    ptid = fields.SmallUnsignedInteger()
+    checks = fields.List(fields.Object(Check))
 
-# XXX NYI
+
 class MsgPluginTriggerError(MsgpackMsg):
-    object_type = 'plugin_trigger_err'
+    """
+    Sent by the client in reply to MsgPluginTriggerRun.
+    """
+
+    object_type = 'plugin_trigger_error'
+
+    ptid = fields.SmallUnsignedInteger()
+    err = fields.Object(VelesException)
+    checks = fields.List(fields.Object(Check))
 
 
 class MsgPluginHandlerUnregister(MsgpackMsg):

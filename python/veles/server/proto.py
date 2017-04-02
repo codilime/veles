@@ -35,6 +35,7 @@ from veles.async_conn.plugin import (
     MethodHandler,
     QueryHandler,
     BroadcastHandler,
+    TriggerHandler,
 )
 from veles.proto.exceptions import (
     VelesException,
@@ -164,6 +165,12 @@ class RemoteBroadcastRunner:
         self.future = asyncio.Future()
 
 
+class RemoteTriggerRunner:
+    def __init__(self, checks):
+        self.checks = checks
+        self.future = asyncio.Future()
+
+
 class RemoteMethodHandler(MethodHandler):
     def __init__(self, method, tags, proto, phid):
         self.proto = proto
@@ -217,6 +224,23 @@ class RemoteBroadcastHandler(BroadcastHandler):
         return runner.future
 
 
+class RemoteTriggerHandler(TriggerHandler):
+    def __init__(self, trigger, tags, proto, phid):
+        self.proto = proto
+        self.phid = phid
+        super().__init__(trigger, tags)
+
+    def run_trigger(self, conn, anode, checks):
+        runner = RemoteTriggerRunner(checks)
+        self.proto.ptids[id(runner)] = runner
+        self.proto.send_msg(messages.MsgPluginTriggerRun(
+            ptid=id(runner),
+            phid=self.phid,
+            node=anode.node,
+        ))
+        return runner.future
+
+
 class ServerProto(asyncio.Protocol):
     def __init__(self, conn, key):
         self.conn = conn
@@ -225,6 +249,7 @@ class ServerProto(asyncio.Protocol):
         self.pmids = {}
         self.pqids = {}
         self.pbids = {}
+        self.ptids = {}
         self.server_key = prepare_auth_key(key)
         self.client_key = b''
         self.authorized = False
@@ -294,6 +319,9 @@ class ServerProto(asyncio.Protocol):
                 'plugin_broadcast_register':
                     self.msg_plugin_broadcast_register,
                 'plugin_broadcast_result': self.msg_plugin_broadcast_result,
+                'plugin_trigger_register': self.msg_plugin_trigger_register,
+                'plugin_trigger_done': self.msg_plugin_trigger_done,
+                'plugin_trigger_error': self.msg_plugin_trigger_error,
                 'plugin_handler_unregister':
                     self.msg_plugin_handler_unregister,
                 'list_connections': self.msg_list_connections,
@@ -322,6 +350,8 @@ class ServerProto(asyncio.Protocol):
             runner.future.set_exception(ConnectionLostError())
         for runner in self.pbids.values():
             runner.future.set_result([])
+        for runner in self.ptids.values():
+            runner.future.set_exception(ConnectionLostError())
         self.conn.remove_conn(self)
 
     def send_msg(self, msg):
@@ -600,6 +630,29 @@ class ServerProto(asyncio.Protocol):
             raise UnknownSubscriptionError()
         self.pbids[msg.pbid].future.set_result(msg.results)
         del self.pbids[msg.pbid]
+
+    async def msg_plugin_trigger_register(self, msg):
+        if msg.phid in self.phids:
+            raise SubscriptionInUseError()
+        handler = RemoteTriggerHandler(msg.name, msg.tags, self, msg.phid)
+        self.phids[msg.phid] = handler
+        self.conn.register_trigger_handler(handler)
+
+    async def msg_plugin_trigger_done(self, msg):
+        if msg.ptid not in self.ptids:
+            raise UnknownSubscriptionError()
+        runner = self.ptids[msg.ptid]
+        runner.checks += msg.checks
+        runner.future.set_result(None)
+        del self.ptids[msg.ptid]
+
+    async def msg_plugin_trigger_error(self, msg):
+        if msg.ptid not in self.ptids:
+            raise UnknownSubscriptionError()
+        runner = self.ptids[msg.ptid]
+        runner.checks += msg.checks
+        runner.future.set_exception(msg.err)
+        del self.ptids[msg.ptid]
 
     async def msg_plugin_handler_unregister(self, msg):
         if msg.phid not in self.phids:

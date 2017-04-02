@@ -138,6 +138,42 @@ class LocalBroadcastHandler(BroadcastHandler):
         return loop.create_task(self._run_broadcast(conn, params))
 
 
+class TriggerHandler:
+    def __init__(self, trigger, tags):
+        if not isinstance(trigger, str):
+            raise TypeError("trigger must be str")
+        if not isinstance(tags, set):
+            raise TypeError("tags must be a set")
+        if any(not isinstance(tag, str) for tag in tags):
+            raise TypeError("tag must be str")
+        self.trigger = trigger
+        self.tags = tags
+
+    def run_trigger(self, conn, node, checks):
+        """
+        Returns an awaitable of None.
+        """
+        raise NotImplementedError
+
+
+class LocalTriggerHandler(TriggerHandler):
+    def __init__(self, trigger, tags, func):
+        super().__init__(trigger, tags)
+        self.func = func
+
+    async def _run_trigger(self, conn, node, checks):
+        tracer = AsyncTracer(conn)
+        tracer._inject_node(node)
+        try:
+            await self.func(conn, node.id, tracer)
+        finally:
+            checks += tracer.checks
+
+    def run_trigger(self, conn, node, checks):
+        loop = asyncio.get_event_loop()
+        return loop.create_task(self._run_trigger(conn, node, checks))
+
+
 def method(sig, tags):
     def inner(func):
         return LocalMethodHandler(sig, tags, func)
@@ -153,4 +189,10 @@ def query(sig, tags):
 def broadcast(sig):
     def inner(func):
         return LocalBroadcastHandler(sig, func)
+    return inner
+
+
+def trigger(name, tags):
+    def inner(func):
+        return LocalTriggerHandler(name, tags, func)
     return inner

@@ -18,8 +18,13 @@ import asyncio
 
 from veles.proto.node import PosFilter
 from veles.schema.nodeid import NodeID
-from .plugin import MethodHandler, QueryHandler, BroadcastHandler
 from .node import AsyncNode
+from .plugin import (
+    MethodHandler,
+    QueryHandler,
+    BroadcastHandler,
+    TriggerHandler
+)
 
 
 class AsyncConnection:
@@ -177,10 +182,14 @@ class AsyncConnection:
 
     def register_plugin(self, plugin):
         for v in plugin.__dict__.values():
-            if isinstance(v, (MethodHandler, QueryHandler, BroadcastHandler)):
+            if isinstance(v, (
+                MethodHandler, QueryHandler, BroadcastHandler, TriggerHandler
+            )):
                 self.register_plugin_handler(v)
 
     def unregister_plugin(self, plugin):
         for v in plugin.__dict__.values():
-            if isinstance(v, (MethodHandler, QueryHandler, BroadcastHandler)):
+            if isinstance(v, (
+                MethodHandler, QueryHandler, BroadcastHandler, TriggerHandler
+            )):
                 self.unregister_plugin_handler(v)

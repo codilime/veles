@@ -88,6 +88,7 @@ class ClientProto(asyncio.Protocol):
             'plugin_method_run': self.msg_plugin_method_run,
             'plugin_query_get': self.msg_plugin_query_get,
             'plugin_broadcast_run': self.msg_plugin_broadcast_run,
+            'plugin_trigger_run': self.msg_plugin_trigger_run,
             'plugin_handler_unregistered':
                 self.msg_plugin_handler_unregistered,
         }
@@ -178,6 +179,24 @@ class ClientProto(asyncio.Protocol):
             pbid=msg.pbid,
             results=results
         ))
+
+    async def msg_plugin_trigger_run(self, msg):
+        handler = self.handlers[msg.phid]
+        checks = []
+        aresult = handler.run_trigger(self.conn, msg.node, checks)
+        try:
+            await aresult
+        except VelesException as e:
+            self.send_msg(messages.MsgPluginTriggerError(
+                ptid=msg.ptid,
+                err=e,
+                checks=checks,
+            ))
+        else:
+            self.send_msg(messages.MsgPluginTriggerDone(
+                ptid=msg.ptid,
+                checks=checks,
+            ))
 
     async def msg_plugin_handler_unregistered(self, msg):
         del self.handlers[msg.phid]

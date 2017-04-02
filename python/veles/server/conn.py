@@ -31,7 +31,7 @@ from veles.proto.exceptions import (
     RegistryMultiMatchError,
 )
 from veles.async_conn.plugin import (
-    MethodHandler, QueryHandler, BroadcastHandler
+    MethodHandler, QueryHandler, BroadcastHandler, TriggerHandler
 )
 from veles.async_conn.subscriber import BaseSubscriberQuery
 from veles.async_conn.conn import AsyncConnection
@@ -75,6 +75,7 @@ class AsyncLocalConnection(AsyncConnection):
         self.next_cid = 0
         self.methods = NameTagsRegistry()
         self.queries = NameTagsRegistry()
+        self.triggers = NameTagsRegistry()
         self.broadcasts = {}
         self.query_subs = {}
         super().__init__()
@@ -186,6 +187,8 @@ class AsyncLocalConnection(AsyncConnection):
             self.queries.register(handler.query, handler.tags, handler)
         elif isinstance(handler, BroadcastHandler):
             self.broadcasts.setdefault(handler.broadcast, set()).add(handler)
+        elif isinstance(handler, TriggerHandler):
+            self.triggers.register(handler.trigger, handler.tags, handler)
         else:
             raise TypeError('unknown type of plugin handler')
 
@@ -196,6 +199,8 @@ class AsyncLocalConnection(AsyncConnection):
             self.queries.unregister(handler.query, handler.tags, handler)
         elif isinstance(handler, BroadcastHandler):
             self.broadcasts[handler.broadcast].remove(handler)
+        elif isinstance(handler, TriggerHandler):
+            self.triggers.unregister(handler.trigger, handler.tags, handler)
         else:
             raise TypeError('unknown type of plugin handler')
 

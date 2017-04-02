@@ -19,6 +19,7 @@ from veles.async_conn.plugin import (
     MethodHandler,
     QueryHandler,
     BroadcastHandler,
+    TriggerHandler,
 )
 from veles.db.subscriber import (
     BaseSubscriberNode,
@@ -130,10 +131,15 @@ class AsyncRemoteConnection(AsyncConnection):
                 tags=handler.tags,
             ))
         elif isinstance(handler, BroadcastHandler):
-            self.proto.handlers[id(handler)] = handler
             self.proto.send_msg(messages.MsgPluginBroadcastRegister(
                 phid=id(handler),
                 name=handler.broadcast,
+            ))
+        elif isinstance(handler, TriggerHandler):
+            self.proto.send_msg(messages.MsgPluginTriggerRegister(
+                phid=id(handler),
+                name=handler.trigger,
+                tags=handler.tags,
             ))
         else:
             raise TypeError("unknown type of plugin handler")
