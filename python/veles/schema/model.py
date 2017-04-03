@@ -182,13 +182,13 @@ if (it_{0} != obj->getMap()->end()'''.format(field.name)
   {2}\\
   b.set_{0}(obj_{0});\\
 }} else {{\\
-  throw ConversionException("Nonoptional field \
+  throw proto::SchemaError("Nonoptional field \
 {0} not found when unpacking");\\
 }}'''.format(field.name, arg_type, conv_func)
                 pack_code = ''
                 if not field.cpp_type()[1]:
                     pack_code += '''if (val->{0} == nullptr) {{\\
-  throw ConversionException("Nonoptional field {0} not set when packing");\\
+  throw proto::SchemaError("Nonoptional field {0} not set when packing");\\
 }}\\
 '''.format(field.name)
                 pack_code += '''msg["{0}"] = toMsgpackObject(val->{0});\\
@@ -317,7 +317,7 @@ createInstance(const std::shared_ptr<MsgpackObject> obj) {{\\
     auto loc_obj = std::make_shared<MsgpackObject>(obj);\\
     auto obj_type = *(*loc_obj->getMap())["object_type"]->getString();\\
     if (types.find(obj_type) ==  types.end()) {{\\
-      throw ConversionException("Unkown object_type: " + obj_type);\\
+      throw proto::SchemaError("Unkown object_type: " + obj_type);\\
     }}\\
     return types[obj_type](loc_obj);\\
   }}\\
