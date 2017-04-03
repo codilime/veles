@@ -16,6 +16,7 @@
  */
 #include "ui/connectiondialog.h"
 #include "ui_connectiondialog.h"
+#include "util/settings/connection_client.h"
 
 #include <climits>
 #include <cstdint>
@@ -115,29 +116,14 @@ bool ConnectionDialog::shutDownServerOnClose() {
   return ui_->shut_down_server_check_box->isChecked();
 }
 
-QString ConnectionDialog::userName() {
-  QString user_name;
-#if defined(Q_OS_LINUX) || defined(Q_OS_MAC)
-    user_name = qgetenv("USER");
-#elif defined(Q_OS_WIN)
-    user_name = qgetenv("USERNAME");
-#else
-    user_name = "Veles UI";
-#endif
-
-  if(user_name.length() == 0) {
-    user_name = "Veles UI";
-  }
-
-  return user_name;
-}
+QString localhost("127.0.0.1");
 
 void ConnectionDialog::serverLocalhost() {
-  ui_->server_host_line_edit->setText("127.0.0.1");
+  ui_->server_host_line_edit->setText(localhost);
 }
 
 void ConnectionDialog::clientLocalhost() {
-  ui_->client_interface_line_edit->setText("127.0.0.1");
+  ui_->client_interface_line_edit->setText(localhost);
 }
 
 void ConnectionDialog::randomKey() {
@@ -151,10 +137,6 @@ void ConnectionDialog::randomKey() {
   };
   ui_->key_line_edit->setText(gen_key_part() + gen_key_part() + gen_key_part()
                               + gen_key_part());
-}
-
-void ConnectionDialog::userAsClientName() {
-  ui_->client_name_line_edit->setText(userName());
 }
 
 void ConnectionDialog::newServerToggled(bool toggled) {
@@ -178,75 +160,70 @@ void ConnectionDialog::serverFileSelected(const QString& file_name) {
   ui_->server_executable_line_edit->setText(file_name);
 }
 
-QString localhost("127.0.0.1");
-QString default_database("veles.vdb");
-int default_port = 1905;
-bool default_shut_down_server = true;
-QString settings_true("yes, please");
-QString settings_false("no, thanks");
-
 void ConnectionDialog::loadDefaultValues() {
-  ui_->new_server_radio_button->setChecked(true);
-  serverLocalhost();
-  ui_->port_spin_box->setValue(default_port);
-  ui_->key_line_edit->setText("");
-  clientLocalhost();
-  userAsClientName();
-  ui_->database_line_edit->setText(default_database);
-  ui_->server_executable_line_edit->setText("");
-  ui_->shut_down_server_check_box->setChecked(default_shut_down_server);
+  ui_->new_server_radio_button->setChecked(
+      util::settings::connection::runServerDefault());
+  ui_->server_host_line_edit->setText(
+      util::settings::connection::serverHostDefault());
+  ui_->port_spin_box->setValue(
+      util::settings::connection::serverPortDefault());
+  ui_->key_line_edit->setText(
+      util::settings::connection::connectionKeyDefault());
+  ui_->client_interface_line_edit->setText(
+      util::settings::connection::clientInterfaceDefault());
+  ui_->client_name_line_edit->setText(
+      util::settings::connection::clientNameDefault());
+  ui_->database_line_edit->setText(
+      util::settings::connection::databaseNameDefault());
+  ui_->server_executable_line_edit->setText(
+      util::settings::connection::serverScriptDefault());
+  ui_->shut_down_server_check_box->setChecked(
+      util::settings::connection::shutDownServerOnQuitDefault());
 }
 
 void ConnectionDialog::loadSettings() {
   QSettings settings;
 
-  (settings.value("conection.run_server", settings_true).toString()
-      == settings_true ? ui_->new_server_radio_button
+  (util::settings::connection::runServer() ? ui_->new_server_radio_button
       : ui_->existing_server_radio_button)->setChecked(true);
   ui_->server_host_line_edit->setText(
-      settings.value("conection.server", localhost).toString());
-  ui_->port_spin_box->setValue(
-      settings.value("conection.server_port", default_port).toInt());
-  ui_->key_line_edit->setText(
-      settings.value("conection.key").toString());
+      util::settings::connection::serverHost());
+  ui_->port_spin_box->setValue(util::settings::connection::serverPort());
+  ui_->key_line_edit->setText(util::settings::connection::connectionKey());
   ui_->client_interface_line_edit->setText(
-      settings.value("conection.client_interface", localhost).toString());
-  ui_->client_name_line_edit->setText(
-      settings.value("conection.client_name", userName()).toString());
+      util::settings::connection::clientInterface());
+  QString client_name = util::settings::connection::clientName();
+  ui_->client_name_line_edit->setText(client_name);
   ui_->database_line_edit->setText(
-      settings.value("conection.database", default_database).toString());
+      util::settings::connection::databaseName());
   ui_->server_executable_line_edit->setText(
-      settings.value("connection.server_script", "").toString());
+      util::settings::connection::serverScript());
   ui_->shut_down_server_check_box->setChecked(
-      settings.value("connection.shut_down_server_on_quit",
-      default_shut_down_server ? settings_true : settings_false).toString()
-      == settings_true);
+      util::settings::connection::shutDownServerOnQuit());
 }
 
 void ConnectionDialog::saveSettings() {
   QSettings settings;
 
-  settings.setValue("conection.run_server",
-      ui_->new_server_radio_button->isChecked() ?
-      settings_true : settings_false);
-  settings.setValue("conection.server",
+  util::settings::connection::setRunServer(
+      ui_->new_server_radio_button->isChecked());
+  util::settings::connection::setServerHost(
       ui_->server_host_line_edit->text());
-  settings.setValue("conection.server_port",
+  util::settings::connection::setServerPort(
       ui_->port_spin_box->value());
-  settings.setValue("conection.client_interface",
+  util::settings::connection::setClientInterface(
       ui_->client_interface_line_edit->text());
-  settings.setValue("conection.client_name",
+  util::settings::connection::setClientName(
       ui_->client_name_line_edit->text());
-  settings.setValue("conection.key",
+  util::settings::connection::setConnectionKey(
       ui_->save_key_check_box->isChecked() ?
       ui_->key_line_edit->text() : "");
-  settings.setValue("conection.database",
+  util::settings::connection::setDatabaseName(
       ui_->database_line_edit->text());
-  settings.setValue("connection.server_script",
+  util::settings::connection::setServerScript(
       ui_->server_executable_line_edit->text());
-  settings.setValue("connection.shut_down_server_on_quit",
-      ui_->shut_down_server_check_box->isChecked() ?
-          settings_true : settings_false);
+  util::settings::connection::setShutDownServerOnQuit(
+      ui_->shut_down_server_check_box->isChecked());
 }
 
 void ConnectionDialog::saveSettingsToggled(bool toggled) {
@@ -254,7 +231,9 @@ void ConnectionDialog::saveSettingsToggled(bool toggled) {
 }
 
 void ConnectionDialog::dialogAccepted() {
-  saveSettings();
+  if (ui_->save_settings_check_box->isChecked()) {
+    saveSettings();
+  }
 }
 
 void ConnectionDialog::showEvent(QShowEvent* event) {
