@@ -130,7 +130,8 @@ class Integer(Field):
     # TODO convert to use bignums
     def cpp_type(self):
         return ('int64_t', True,
-                self.default if self.default is not None else '0')
+                '{}ll'.format(self.default) if self.default is not None
+                else '0ll')
 
 
 class UnsignedInteger(Integer):
@@ -146,7 +147,8 @@ class UnsignedInteger(Integer):
     # TODO convert to use bignums
     def cpp_type(self):
         return ('uint64_t', True,
-                self.default if self.default is not None else '0')
+                '{}ull'.format(self.default) if self.default is not None
+                else '0ull')
 
 
 INT64_MIN = -2**63
@@ -170,7 +172,8 @@ class SmallInteger(Integer):
 
     def cpp_type(self):
         return ('int64_t', True,
-                self.default if self.default is not None else '0')
+                '{}ll'.format(self.default) if self.default is not None
+                else '0ll')
 
 
 class SmallUnsignedInteger(Integer):
@@ -189,7 +192,8 @@ class SmallUnsignedInteger(Integer):
 
     def cpp_type(self):
         return ('uint64_t', True,
-                self.default if self.default is not None else '0')
+                '{}ull'.format(self.default) if self.default is not None
+                else '0ull')
 
 
 class Boolean(Field):

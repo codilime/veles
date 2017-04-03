@@ -200,12 +200,15 @@ add_custom_command(OUTPUT ${MSGPACK_CPP}
   DEPENDS cpp_python_gen
     ${PYTHON_DIR}/veles/cpp/generate.py
     ${PYTHON_DIR}/veles/proto/node.py
+    ${PYTHON_DIR}/veles/proto/messages.py
+    ${PYTHON_DIR}/veles/proto/exceptions.py
     ${PYTHON_DIR}/veles/schema/model.py
     ${PYTHON_DIR}/veles/schema/fields.py
   VERBATIM)
 
 add_library(veles_network
     ${MSGPACK_CPP}
+    ${INCLUDE_DIR}/proto/exceptions.h
     ${INCLUDE_DIR}/network/msgpackwrapper.h
     ${INCLUDE_DIR}/network/msgpackobject.h
     ${SRC_DIR}/network/msgpackobject.cc

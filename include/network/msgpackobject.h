@@ -26,11 +26,6 @@
 namespace veles {
 namespace messages {
 
-class ConversionException : public std::runtime_error {
- public:
-  ConversionException(const std::string& msg) : std::runtime_error(msg) {}
-};
-
 enum class ObjectType {
   NIL,
   BOOLEAN,
