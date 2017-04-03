@@ -64,6 +64,7 @@ builders['mingw32'] = { node('windows') {
             }
             junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
             step([$class: 'ArtifactArchiver', artifacts: 'build_mingw/veles-mingw.zip', fingerprint: true])
+            bat(script: "rd /s /q build_mingw", returnStatus: true)
           }
         } catch (error) {
           post_stage_failure(env.JOB_NAME, "windows-mingw32",error,env.BUILD_URL)
@@ -105,6 +106,7 @@ builders['msvc2015_64'] = { node('windows'){
               step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
                     excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
                     parserConfigurations: [[parserName: 'MSBuild', pattern: "build_${version}/error_and_warnings.txt"]], unHealthy: ''])
+              bat(script: "rd /s /q build_${version}", returnStatus: true)
             }
           }
         }  catch (error) {
@@ -143,6 +145,7 @@ builders['msvc2015'] = {node('windows'){
               }
               junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
               step([$class: 'ArtifactArchiver', artifacts: "build_${version}/veles-${version}.zip", fingerprint: true])
+              bat(script: "rd /s /q build_${version}", returnStatus: true)
             }
           }
         } catch (error) {
@@ -160,17 +163,19 @@ builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
       try {
         stage('ubuntu 16.04') {
           checkout scm
-          sh 'rm -Rf *'
-          checkout scm
-          def branch = getBranch()
-          sh """cmake -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\" -DCMAKE_BUILD_TYPE=${buildConfiguration} CMakeLists.txt"""
-          sh "cmake --build . --config ${buildConfiguration} -- -j3 2>&1 | tee error_and_warnings.txt"
-          sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-ubuntu1604 -G ZIP -C ${buildConfiguration}"
-          junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
-          step([$class: 'ArtifactArchiver', artifacts: '*.zip', fingerprint: true])
-          step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
-          excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
-          parserConfigurations: [[parserName: 'GNU Make + GNU C Compiler (gcc)', pattern: 'error_and_warnings.txt']], unHealthy: ''])
+          sh 'rm -Rf build'
+          dir ("build") {
+            def branch = getBranch()
+            sh """cmake -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."""
+            sh "cmake --build . --config ${buildConfiguration} -- -j3 2>&1 | tee error_and_warnings.txt"
+            sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-ubuntu1604 -G ZIP -C ${buildConfiguration}"
+            junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
+            step([$class: 'ArtifactArchiver', artifacts: '*.zip', fingerprint: true])
+            step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
+            excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
+            parserConfigurations: [[parserName: 'GNU Make + GNU C Compiler (gcc)', pattern: 'error_and_warnings.txt']], unHealthy: ''])
+          }
+          sh 'rm -Rf build'
         }
       } catch (error) {
         post_stage_failure(env.JOB_NAME, "ubuntu-16.04-amd64",error,env.BUILD_URL)
@@ -185,17 +190,19 @@ builders['macosx'] = { node ('macosx'){
       try{
         stage('macOS 10.12 w/ Apple Clang 8.0.0') {
           checkout scm
-          sh 'rm -Rf *'
-          checkout scm
-          def branch = getBranch()
-          sh "cmake CMakeLists.txt -G \"Xcode\" -DCMAKE_PREFIX_PATH=$QT/5.7/clang_64 -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\""
-          sh "cmake --build . --config ${buildConfiguration} 2>&1 | tee error_and_warnings.txt"
-          sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-osx -G ZIP -C ${buildConfiguration}"
-          junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
-          step([$class: 'ArtifactArchiver', artifacts: '*.zip', fingerprint: true])
-          step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
-          excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
-          parserConfigurations: [[parserName: 'Clang (LLVM based)', pattern: 'error_and_warnings.txt']], unHealthy: ''])
+          sh 'rm -Rf build'
+          dir ("build") {
+            def branch = getBranch()
+            sh "cmake .. -G \"Xcode\" -DCMAKE_PREFIX_PATH=$QT/5.7/clang_64 -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\""
+            sh "cmake --build . --config ${buildConfiguration} 2>&1 | tee error_and_warnings.txt"
+            sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-osx -G ZIP -C ${buildConfiguration}"
+            junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
+            step([$class: 'ArtifactArchiver', artifacts: '*.zip', fingerprint: true])
+            step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
+            excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
+            parserConfigurations: [[parserName: 'Clang (LLVM based)', pattern: 'error_and_warnings.txt']], unHealthy: ''])
+          }
+          sh 'rm -Rf build'
         }
       } catch (error) {
         post_stage_failure(env.JOB_NAME, "macOS-10.12",error,env.BUILD_URL)
