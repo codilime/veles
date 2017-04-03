@@ -32,7 +32,7 @@ def generate_cpp_code():
     for cls_type in classes_to_generate:
         code += cls_type.generate_header_code()
     for cls_type in poly_classes:
-        code += cls_type.generate_base_code()
+        code += cls_type.generate_base_header_code()
         for sub_class in cls_type.object_types.values():
             code += sub_class.generate_header_code()
 
@@ -42,6 +42,7 @@ def generate_cpp_code():
     for cls_type in classes_to_generate:
         code += cls_type.generate_source_code()
     for cls_type in poly_classes:
+        code += cls_type.generate_base_source_code()
         for sub_class in cls_type.object_types.values():
             code += sub_class.generate_source_code()
 
