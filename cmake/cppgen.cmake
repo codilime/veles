@@ -13,7 +13,7 @@ else(WIN32)
 endif(WIN32)
 
 add_custom_command(
-  OUTPUT ${VENV_DIR} ${PYEXE}
+  OUTPUT ${PYEXE}
   COMMAND ${BASEPYEXE} -m virtualenv ${VENV_DIR})
 
 if(WIN32)
@@ -25,7 +25,7 @@ endif(WIN32)
 add_custom_command(
   OUTPUT ${SIX_LOC}
   COMMAND ${PYEXE} -m pip install six
-  DEPENDS ${VENV_DIR} ${PYEXE})
+  DEPENDS ${PYEXE})
 
 add_custom_target(cpp_python_gen
   DEPENDS ${SIX_LOC})
