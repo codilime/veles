@@ -76,6 +76,8 @@ class MsgpackObject {
   } value;
 
   void fromMsgpack(const msgpack::object& obj);
+  void validateGetUnsignedInt() const;
+  void validateGetSignedInt() const;
 
  public:
 
