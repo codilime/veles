@@ -125,7 +125,7 @@ class Model(pep487.NewObject):
 
         if bases:
             bases_cons = ', '.join(['{}({})'.format(base[0], base[1])
-                                    for base in bases])
+                                    for base in bases if base[1] is not None])
             code += '  {}({}) : {}, {} {{}}\\\n'.format(
                 cls.cpp_type(),
                 ', '.join(constructor_args),
@@ -288,17 +288,18 @@ class PolymorphicModel(Model):
         return super(PolymorphicModel, rcls).load(val)
 
     @classmethod
-    def generate_base_code(cls):
+    def generate_base_header_code(cls):
         code = '''\\
 class {0} {{\\
   static void initObjectTypes() {{\\
 {1}  }}\\
+  virtual std::shared_ptr<MsgpackObject> serialize() = 0;\\
  public:\\
-template<typename T> static std::shared_ptr<{0}> \
-createInstance(const std::shared_ptr<MsgpackObject> obj) {{\\
-  std::shared_ptr<T> out;\\
-  fromMsgpackObject(obj, out);\\
-  return out;\\
+  template<typename T> static std::shared_ptr<{0}> \
+  createInstance(const std::shared_ptr<MsgpackObject> obj) {{\\
+    std::shared_ptr<T> out;\\
+    fromMsgpackObject(obj, out);\\
+    return out;\\
   }}\\
   static std::map<std::string, std::shared_ptr<{0}>(*)\
 (const std::shared_ptr<MsgpackObject>)>& objectTypes() {{\\
@@ -309,19 +310,22 @@ createInstance(const std::shared_ptr<MsgpackObject> obj) {{\\
   std::string object_type;\\
   {0}(std::string object_type) : object_type(object_type) {{}}\\
   virtual ~{0}() {{}}\\
+  \\
+  friend void fromMsgpackObject(const std::shared_ptr<MsgpackObject>\
+ obj, std::shared_ptr<{0}>& out);\\
+  friend std::shared_ptr<MsgpackObject> \
+toMsgpackObject(std::shared_ptr<{0}> val);\\
   static std::shared_ptr<{0}> polymorphicLoad(msgpack::object& obj) {{\\
-    auto& types = objectTypes();\\
-    if (types.size() == 0) {{\\
-      initObjectTypes();\\
-    }}\\
     auto loc_obj = std::make_shared<MsgpackObject>(obj);\\
-    auto obj_type = *(*loc_obj->getMap())["object_type"]->getString();\\
-    if (types.find(obj_type) ==  types.end()) {{\\
-      throw proto::SchemaError("Unkown object_type: " + obj_type);\\
-    }}\\
-    return types[obj_type](loc_obj);\\
+    std::shared_ptr<{0}> out;\\
+    fromMsgpackObject(loc_obj, out);\\
+    return out;\\
   }}\\
 }};\\
+\\
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>\
+ obj, std::shared_ptr<{0}>& out);\\
+std::shared_ptr<MsgpackObject> toMsgpackObject(std::shared_ptr<{0}> val);\\
 '''.format(cls.cpp_type(),
            ''.join([
                '    objectTypes()["{0}"] = &createInstance<{1}>;\\\n'.format(
@@ -331,10 +335,41 @@ createInstance(const std::shared_ptr<MsgpackObject> obj) {{\\
         return code
 
     @classmethod
+    def generate_base_source_code(cls):
+        code = '''void fromMsgpackObject(const std::shared_ptr<MsgpackObject>\
+ obj, std::shared_ptr<{0}>& out) {{\\
+  auto& types = {0}::objectTypes();\\
+  if (types.size() == 0) {{\\
+    {0}::initObjectTypes();\\
+  }}\\
+  auto obj_type = *(*obj->getMap())["object_type"]->getString();\\
+  if (types.find(obj_type) ==  types.end()) {{\\
+    throw proto::SchemaError("Unknown object_type: " + obj_type);\\
+  }}\\
+  out = types[obj_type](obj);\\
+}}\\
+\\
+std::shared_ptr<MsgpackObject> toMsgpackObject(std::shared_ptr<{0}> val) {{\\
+  return val->serialize();\\
+}}\\
+'''.format(cls.cpp_type())
+        return code
+
+    @classmethod
     def generate_header_code(cls, bases=None, extra_code=''):
+        extra_code = ''' private:\\
+  virtual std::shared_ptr<MsgpackObject> serialize() {{\\
+    return toMsgpackObject(shared_from_this());\\
+  }}\\
+ public:\\
+{0}'''.format(extra_code)
         return super(PolymorphicModel, cls).generate_header_code(
-            [(cls.__bases__[0].__name__,
-              '"{}"'.format(cls.object_type))], extra_code)
+            [
+                (cls.__bases__[0].__name__, '"{}"'.format(cls.object_type)),
+                ('std::enable_shared_from_this<{}>'.format(cls.cpp_type()),
+                 None)
+            ],
+            extra_code)
 
     @classmethod
     def generate_source_code(cls, extra_pack=None, extra_code=''):
