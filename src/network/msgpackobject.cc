@@ -159,6 +159,18 @@ void MsgpackObject::fromMsgpack(const msgpack::v2::object &obj) {
   }
 }
 
+void MsgpackObject::validateGetUnsignedInt() const {
+  if (obj_type == ObjectType::UNSIGNED_INTEGER) return;
+  if (obj_type == ObjectType::SIGNED_INTEGER && value.uint <= LLONG_MAX) return;
+  throw proto::SchemaError("Wrong MsgpackObject type when trying to get unsigned int");
+}
+
+void MsgpackObject::validateGetSignedInt() const {
+  if (obj_type == ObjectType::SIGNED_INTEGER) return;
+  if (obj_type == ObjectType::UNSIGNED_INTEGER && value.uint <= LLONG_MAX) return;
+  throw proto::SchemaError("Wrong MsgpackObject type when trying to get signed int");
+}
+
 void MsgpackObject::msgpack_unpack(const msgpack::v2::object& obj) {
   destroyValue();
   fromMsgpack(obj);
@@ -179,22 +191,22 @@ bool MsgpackObject::getBool() const {
 }
 
 uint64_t& MsgpackObject::getUnsignedInt() {
-  if (obj_type != ObjectType::UNSIGNED_INTEGER) throw proto::SchemaError("Wrong MsgpackObject type when trying to get unsigned int");
+  validateGetUnsignedInt();
   return value.uint;
 }
 
 uint64_t MsgpackObject::getUnsignedInt() const {
-  if (obj_type != ObjectType::UNSIGNED_INTEGER) throw proto::SchemaError("Wrong MsgpackObject type when trying to get unsigned int");
+  validateGetUnsignedInt();
   return value.uint;
 }
 
 int64_t& MsgpackObject::getSignedInt() {
-  if (obj_type != ObjectType::SIGNED_INTEGER) throw proto::SchemaError("Wrong MsgpackObject type when trying to get signed int");
+  validateGetSignedInt();
   return value.sint;
 }
 
 int64_t MsgpackObject::getSignedInt() const {
-  if (obj_type != ObjectType::SIGNED_INTEGER) throw proto::SchemaError("Wrong MsgpackObject type when trying to get signed int");
+  validateGetSignedInt();
   return value.sint;
 }
 
