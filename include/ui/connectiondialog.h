@@ -43,13 +43,11 @@ class ConnectionDialog : public QDialog {
   QString databaseFile();
   QString serverScript();
   bool shutDownServerOnClose();
-  QString userName();
 
  public slots:
   void serverLocalhost();
   void clientLocalhost();
   void randomKey();
-  void userAsClientName();
   void newServerToggled(bool toggled);
   void databaseFileSelected(const QString& file_name);
   void serverFileSelected(const QString& file_name);

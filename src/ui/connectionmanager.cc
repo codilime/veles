@@ -50,7 +50,7 @@ ConnectionManager::ConnectionManager(QWidget* parent)
 
 ConnectionManager::~ConnectionManager() {
   if (server_process_ && shut_down_server_on_close_) {
-    server_process_->terminate();
+    killLocalServer();
   }
 
   connection_dialog_->deleteLater();
@@ -156,7 +156,11 @@ void ConnectionManager::startLocalServer() {
 
 void ConnectionManager::killLocalServer() {
   if(server_process_) {
+#ifdef Q_OS_WIN
+    server_process_->kill();
+#else
     server_process_->terminate();
+#endif
   }
 }
 
