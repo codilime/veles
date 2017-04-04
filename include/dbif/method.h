@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_DBIF_METHOD_H
-#define VELES_DBIF_METHOD_H
+#pragma once
 
 #include <stdint.h>
 #include <vector>
@@ -127,7 +126,7 @@ struct BlobParseRequest : MethodRequest {
   ObjectHandle parent_chunk;
   BlobParseRequest(QString parser_id = "", uint64_t start = 0,
                    ObjectHandle parent_chunk = ObjectHandle())
-      : parser_id(parser_id), start(start), parent_chunk(parent_chunk){};
+      : parser_id(parser_id), start(start), parent_chunk(parent_chunk){}
   typedef NullReply ReplyType;
 };
 
@@ -147,7 +146,5 @@ struct CreatedReply : MethodReply {
   explicit CreatedReply(ObjectHandle object) : object(object) {}
 };
 
-};
-};
-
-#endif
+}  // namespace dbif
+}  // namespace veles

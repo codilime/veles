@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UTIL_ENCODERS_FACTORY_H
-#define VELES_UTIL_ENCODERS_FACTORY_H
+#pragma once
 
 #include "util/encoders/iencoder.h"
 
@@ -35,5 +34,3 @@ class EncodersFactory {
 }  // namespace encoders
 }  // namespace util
 }  // namespace veles
-
-#endif  // VELES_UTIL_ENCODERS_FACTORY_H

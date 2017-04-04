@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef SLICE_H
-#define SLICE_H
+#pragma once
 
 #include <stdint.h>
 
@@ -40,5 +39,3 @@ class SliceStorage {};
 
 }  // namespace ui
 }  // namespace veles
-
-#endif  // SLICE_H

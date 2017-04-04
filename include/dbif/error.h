@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_DBIF_ERROR
-#define VELES_DBIF_ERROR
+#pragma once
 
 #include <stdint.h>
 #include <vector>
@@ -39,7 +38,5 @@ struct BlobDataInvalidRangeError : Error {};
 struct BlobDataInvalidWidthError : Error {};
 struct InvalidTypeError : Error {};
 
-};
-};
-
-#endif
+}  // namespace dbif
+}  // namespace veles

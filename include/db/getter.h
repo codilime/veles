@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_DB_GETTER_H
-#define VELES_DB_GETTER_H
+#pragma once
 
 #include <QObject>
 #include "db/types.h"
@@ -63,7 +62,5 @@ class MethodRunner : public QObject {
   MethodRunner *forwarder(QThread *thread);
 };
 
-};
-};
-
-#endif
+}  // namespace db
+}  // namespace veles

@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UTIL_ENCODERS_HEX_ENCODER_H
-#define VELES_UTIL_ENCODERS_HEX_ENCODER_H
+#pragma once
 
 #include "util/encoders/idecoder.h"
 #include "util/encoders/iencoder.h"
@@ -38,5 +37,3 @@ class HexEncoder : public IEncoder, public IDecoder {
 }  // namespace encoders
 }  // namespace util
 }  // namespace veles
-
-#endif  // VELES_UTIL_ENCODERS_HEX_ENCODER_H

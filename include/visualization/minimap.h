@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_VISUALIZATION_MINIMAP_H
-#define VELES_VISUALIZATION_MINIMAP_H
+#pragma once
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_3_2_Core>
@@ -159,5 +158,3 @@ class VisualizationMinimap : public QOpenGLWidget,
 
 }  //  namespace visualization
 }  //  namespace veles
-
-#endif  // VELES_VISUALIZATION_MINIMAP_H

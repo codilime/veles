@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_PARSER_UNPYC_H
-#define VELES_PARSER_UNPYC_H
+#pragma once
 
 #include "data/bindata.h"
 #include "dbif/types.h"
@@ -42,5 +41,3 @@ class PycParser : public Parser {
 
 }  // namespace parser
 }  // namespace veles
-
-#endif

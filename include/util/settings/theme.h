@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef THEME_H
-#define THEME_H
+#pragma once
 
 #include <QColor>
 #include <QPalette>
@@ -41,6 +40,3 @@ QFont font();
 }  // namespace settings
 }  // namespace util
 }  // namespace veles
-
-
-#endif

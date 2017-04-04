@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UI_LOGWIDGET_H
-#define VELES_UI_LOGWIDGET_H
+#pragma once
 
 #include <QMainWindow>
 #include <QIODevice>
@@ -92,5 +91,3 @@ class LogWidget : public QMainWindow {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif //VELES_UI_LOGWIDGET_H

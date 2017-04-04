@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UI_CONNECTIONMANAGER_H
-#define VELES_UI_CONNECTIONMANAGER_H
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -103,5 +102,3 @@ class ConnectionNotificationWidget : public QWidget {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif // VELES_UI_CONNECTIONMANAGER_H

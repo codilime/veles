@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_DATA_TYPES
-#define VELES_DATA_TYPES
+#pragma once
 
 #include <QSharedPointer>
 
@@ -31,5 +30,3 @@ using dbif::ObjectHandle;
 }  // namespace data
 
 }  // namespace veles
-
-#endif  // VELES_DATA_TYPES

@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UTIL_MATH_H
-#define VELES_UTIL_MATH_H
+#pragma once
 
 #include <type_traits>
 
@@ -37,5 +36,3 @@ typename std::common_type<T1, T2>::type gcd(T1 a, T2 b) {
 }  // namespace math
 }  // namespace util
 }  // namespace veles
-
-#endif  // VELES_UTIL_MATH_H

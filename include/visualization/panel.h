@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_VISUALIZATION_PANEL_H
-#define VELES_VISUALIZATION_PANEL_H
+#pragma once
 
 #include <QWidget>
 #include <QBoxLayout>
@@ -114,5 +113,3 @@ class VisualizationPanel : public ui::View {
 
 }  //  namespace visualization
 }  //  namespace veles
-
-#endif  //  VELES_VISUALIZATION_PANEL_H

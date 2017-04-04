@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef ISAMPLER_H
-#define ISAMPLER_H
+#pragma once
 
 #include <atomic>
 #include <functional>
@@ -362,5 +361,3 @@ class ISampler {
 
 }  // namespace util
 }  // namespace veles
-
-#endif

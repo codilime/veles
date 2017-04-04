@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef DIGRAM_H
-#define DIGRAM_H
+#pragma once
 
 #include "visualization/digram.h"
 
@@ -65,5 +64,3 @@ class DigramWidget : public VisualizationWidget {
 
 }  // namespace visualization
 }  // namespace veles
-
-#endif

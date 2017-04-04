@@ -14,9 +14,7 @@
  * limitations under the License.
  *
  */
-
-#ifndef VELES_MSGPACK_H
-#define VELES_MSGPACK_H
+#pragma once
 
 #include <msgpack.hpp>
 #include <QtNetwork/QTcpSocket>
@@ -68,5 +66,3 @@ class MsgpackWrapper {
 
 }  // namespace messages
 }  // namespace veles
-
-#endif // VELES_MSGPACK_H

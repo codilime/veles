@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef DATABASEINFO_H
-#define DATABASEINFO_H
+#pragma once
 
 #include <QMap>
 #include <QStandardItemModel>
@@ -62,5 +61,3 @@ class DatabaseInfo : public QWidget {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif  // DATABASEINFO_H

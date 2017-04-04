@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UI_GOTOADDRESSDIALOG_H
-#define VELES_UI_GOTOADDRESSDIALOG_H
+#pragma once
 
 #include <QDialog>
 
@@ -46,5 +45,3 @@ class GoToAddressDialog : public QDialog {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif  // VELES_UI_GOTOADDRESSDIALOG_H

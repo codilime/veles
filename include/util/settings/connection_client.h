@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UTIL_SETTINGS_CONNECTION_H
-#define VELES_UTIL_SETTINGS_CONNECTION_H
+#pragma once
 
 #include <QString>
 
@@ -59,10 +58,8 @@ void setServerScript(QString server_script);
 bool shutDownServerOnQuitDefault();
 bool shutDownServerOnQuit();
 void setShutDownServerOnQuit(bool shut_down_server);
+
 }  // namespace connection
 }  // namespace settings
 }  // namespace util
 }  // namespace veles
-
-
-#endif //VELES_UTIL_SETTINGS_CONNECTION_H

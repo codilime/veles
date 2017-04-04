@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef UNIFORM_SAMPLER_H
-#define UNIFORM_SAMPLER_H
+#pragma once
 
 #include <vector>
 #include "util/sampling/isampler.h"
@@ -55,5 +54,3 @@ class UniformSampler : public ISampler {
 
 }  // namespace util
 }  // namespace veles
-
-#endif

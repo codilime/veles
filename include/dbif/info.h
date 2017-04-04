@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_DBIF_INFO_H
-#define VELES_DBIF_INFO_H
+#pragma once
 
 #include <stdint.h>
 #include <vector>
@@ -149,7 +148,5 @@ struct ChunkDataReply : InfoReply {
     items(items) {}
 };
 
-};
-};
-
-#endif
+}  // namespace dbif
+}  // namespace veles

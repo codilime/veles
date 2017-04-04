@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef UI_SPINBOX_H
-#define UI_SPINBOX_H
+#pragma once
 
 #include <QAbstractSpinBox>
 
@@ -57,5 +56,3 @@ class SpinBox : public QAbstractSpinBox {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif // UI_SPINBOX_H

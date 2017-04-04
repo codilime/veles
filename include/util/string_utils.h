@@ -14,8 +14,8 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UTIL_STRINGUTILS_H
-#define VELES_UTIL_STRINGUTILS_H
+#pragma once
+
 #include <functional>
 #include <QChar>
 #include <QString>
@@ -33,5 +33,3 @@ QString stripSpaces(QString src);
 }  // namespace string
 }  // namespace util
 }  // namespace veles
-
-#endif  // VELES_UTIL_STRINGUTILS_H

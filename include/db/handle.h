@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_DB_HANDLE_H
-#define VELES_DB_HANDLE_H
+#pragma once
 
 #include "dbif/universe.h"
 #include "dbif/types.h"
@@ -40,7 +39,5 @@ class LocalObjectHandle : public dbif::ObjectHandleBase {
   PLocalObject obj() const { return obj_; }
 };
 
-};
-};
-
-#endif
+}  // namespace db
+}  // namespace veles

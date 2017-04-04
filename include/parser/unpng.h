@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_PARSER_UNPNG_H
-#define VELES_PARSER_UNPNG_H
+#pragma once
 
 #include "data/bindata.h"
 #include "dbif/types.h"
@@ -38,5 +37,3 @@ class PngParser : public Parser {
 
 }  // namespace parser
 }  // namespace veles
-
-#endif

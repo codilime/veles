@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_VISUALIZATION_SELECTRANGEDIALOG_H
-#define VELES_VISUALIZATION_SELECTRANGEDIALOG_H
+#pragma once
 
 #include <QDialog>
 #include <QString>
@@ -54,5 +53,3 @@ class SelectRangeDialog : public QDialog {
 
 }  // namespace visualization
 }  // namespace veles
-
-#endif

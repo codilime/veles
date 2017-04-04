@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_DB_DB_H
-#define VELES_DB_DB_H
+#pragma once
 
 #include "dbif/types.h"
 
@@ -24,7 +23,5 @@ namespace db {
 
 dbif::ObjectHandle create_db();
 
-};
-};
-
-#endif
+}  // namespace db
+}  // namespace veles

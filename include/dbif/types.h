@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_DBIF_TYPES
-#define VELES_DBIF_TYPES
+#pragma once
 
 #include <QSharedPointer>
 #include "data/types.h"
@@ -43,7 +42,5 @@ enum ObjectType {
   CHUNK,
 };
 
-};
-};
-
-#endif
+}  // namespace dbif
+}  // namespace veles

@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_VISUALIZATION_BASE_H
-#define VELES_VISUALIZATION_BASE_H
+#pragma once
 
 #include <QString>
 #include <QBoxLayout>
@@ -96,5 +95,3 @@ class VisualizationWidget : public QOpenGLWidget,
 
 }  // namespace visualization
 }  // namespace veles
-
-#endif  // VELES_VISUALIZATION_BASE_H

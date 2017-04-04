@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_DBIF_PROMISE
-#define VELES_DBIF_PROMISE
+#pragma once
 
 #include <QObject>
 
@@ -40,7 +39,5 @@ class MethodResultPromise : public QObject {
   void gotError(veles::dbif::PError x);
 };
 
-};
-};
-
-#endif
+}  // namespace dbif
+}  // namespace veles

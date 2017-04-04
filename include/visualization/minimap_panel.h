@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_VISUALIZATION_MINIMAP_PANEL_H
-#define VELES_VISUALIZATION_MINIMAP_PANEL_H
+#pragma once
 
 #include <QBoxLayout>
 #include <QPair>
@@ -73,5 +72,3 @@ class MinimapPanel : public QWidget {
 
 }  //  namespace visualization
 }  //  namespace veles
-
-#endif  // VELES_VISUALIZATION_MINIMAP_PANEL_H

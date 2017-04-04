@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_DATA_FIELD
-#define VELES_DATA_FIELD
+#pragma once
 
 #include "data/types.h"
 #include "data/bindata.h"
@@ -170,5 +169,3 @@ struct ChunkDataItem {
 
 }  // namespace data
 }  // namespace veles
-
-#endif  // VELES_DATA_FIELD

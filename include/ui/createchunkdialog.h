@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef CREATECHUNKDIALOG_H
-#define CREATECHUNKDIALOG_H
+#pragma once
 
 #include <QDialog>
 #include <QItemSelectionModel>
@@ -61,5 +60,3 @@ class CreateChunkDialog : public QDialog {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif  // CREATECHUNKDIALOG_H

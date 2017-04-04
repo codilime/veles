@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_DATA_BINDATA_H
-#define VELES_DATA_BINDATA_H
+#pragma once
 
 #include <QString>
 #include <assert.h>
@@ -311,5 +310,3 @@ class BinData {
 
 }  // namespace data
 }  // namespace veles
-
-#endif  // VELES_DATA_BINDATA_H

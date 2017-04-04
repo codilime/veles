@@ -14,9 +14,7 @@
  * limitations under the License.
  *
  */
-
-#ifndef VELES_MSGPACKOBJECT_H
-#define VELES_MSGPACKOBJECT_H
+#pragma once
 
 #include <msgpack.hpp>
 
@@ -368,5 +366,3 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr
 
 }  // namespace messages
 }  // namespace veles
-
-#endif // VELES_MSGPACKOBJECT_H

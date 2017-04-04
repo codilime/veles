@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef ROOTFILEBLOBITEM_H
-#define ROOTFILEBLOBITEM_H
+#pragma once
 
 #include <QList>
 #include <QObject>
@@ -40,5 +39,3 @@ class RootFileBlobItem : public FileBlobItem {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif  // ROOTFILEBLOBITEM_H

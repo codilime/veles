@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_DB_UNIVERSE_H
-#define VELES_DB_UNIVERSE_H
+#pragma once
 
 #include <QObject>
 #include <QStringList>
@@ -74,7 +73,6 @@ class Universe : public QObject {
       quint64 start = 0,
       veles::dbif::ObjectHandle parent_chunk = veles::dbif::ObjectHandle());
 };
-};
-};
 
-#endif
+}  // namespace db
+}  // namespace veles

@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_PARSER_PARSER_H
-#define VELES_PARSER_PARSER_H
+#pragma once
 
 #include <QString>
 #include "data/bindata.h"
@@ -45,5 +44,3 @@ class Parser {
 
 }  // namespace parser
 }  // namespace veles
-
-#endif  // VELES_PARSER_PARSER_H

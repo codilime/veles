@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_DB_OBJECT_H
-#define VELES_DB_OBJECT_H
+#pragma once
 
 #include <atomic>
 
@@ -194,7 +193,5 @@ class ChunkObject : public LocalObject {
   const std::vector<data::ChunkDataItem>& items() const { return items_; }
 };
 
-};
-};
-
-#endif
+}  // namespace db
+}  // namespace veles

@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UTIL_SETTINGS_HEXEDIT_H
-#define VELES_UTIL_SETTINGS_HEXEDIT_H
+#pragma once
 
 namespace veles {
 namespace util {
@@ -31,6 +30,3 @@ void setResizeColumnsToWindowWidth(bool on);
 }  // namespace settings
 }  // namespace util
 }  // namespace veles
-
-
-#endif

@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_MAINWINDOW_H
-#define VELES_MAINWINDOW_H
+#pragma once
 
 #include <QDropEvent>
 #include <QDockWidget>
@@ -102,5 +101,3 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif

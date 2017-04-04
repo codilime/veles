@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UTIL_ENCODERS_C_DATA_ENCODER_H
-#define VELES_UTIL_ENCODERS_C_DATA_ENCODER_H
+#pragma once
 
 #include "util/encoders/iencoder.h"
 
@@ -36,5 +35,3 @@ class CDataEncoder : public IEncoder {
 }  // namespace encoders
 }  // namespace util
 }  // namespace veles
-
-#endif  // VELES_UTIL_ENCODERS_C_DATA_ENCODER_H
