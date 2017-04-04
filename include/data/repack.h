@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_DATA_REPACK_H
-#define VELES_DATA_REPACK_H
+#pragma once
 
 #include "data/bindata.h"
 
@@ -81,6 +80,3 @@ struct Repacker {
 
 }  // namespace data
 }  // namespace veles
-
-#endif  // VELES_DATA_REPACK_H
-

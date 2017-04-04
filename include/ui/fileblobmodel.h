@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef FILEBLOBMODEL_H
-#define FILEBLOBMODEL_H
+#pragma once
 
 #include <QAbstractItemModel>
 #include <QBuffer>
@@ -100,5 +99,3 @@ class FileBlobModel : public QAbstractItemModel {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif  // FILEBLOBMODEL_H

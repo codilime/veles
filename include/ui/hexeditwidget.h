@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UI_HEXEDITWIDGET_H
-#define VELES_UI_HEXEDITWIDGET_H
+#pragma once
 
 #include <QGroupBox>
 #include <QLabel>
@@ -123,5 +122,3 @@ class HexEditWidget : public View {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif // VELES_UI_HEXEDITWIDGET_H

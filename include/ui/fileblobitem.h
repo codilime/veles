@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef FILEBLOBITEM_H
-#define FILEBLOBITEM_H
+#pragma once
 
 #include <QList>
 #include <QObject>
@@ -85,5 +84,3 @@ class FileBlobItem : public QObject {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif  // FILEBLOBITEM_H

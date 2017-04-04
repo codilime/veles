@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef SUBCHUNKFILEBLOBITEM_H
-#define SUBCHUNKFILEBLOBITEM_H
+#pragma once
 
 #include <QList>
 #include <QObject>
@@ -50,5 +49,3 @@ class SubchunkFileBlobItem : public FileBlobItem {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif  // SUBCHUNKFILEBLOBITEM_H

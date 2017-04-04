@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef UI_VALIDATOR_H
-#define UI_VALIDATOR_H
+#pragma once
 
 #include <QValidator>
 
@@ -46,5 +45,3 @@ class SpinBoxValidator : public QValidator {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif // UI_VALIDATOR_H

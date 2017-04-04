@@ -14,12 +14,10 @@
  * limitations under the License.
  *
  */
+#pragma once
 
 #include <QIcon>
 #include <QColor>
-
-#ifndef VELES_UTIL_ICONS_H
-#define VELES_UTIL_ICONS_H
 
 namespace veles {
 namespace util {
@@ -30,5 +28,3 @@ QIcon getColoredIcon(QString path, QColor color, bool black_only = true);
 
 }  // namespace util
 }  // namespace veles
-
-#endif

@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UI_HEXEDIT_H
-#define VELES_UI_HEXEDIT_H
+#pragma once
 
 #include <QAbstractScrollArea>
 #include <QItemSelectionModel>
@@ -159,5 +158,3 @@ class HexEdit : public QAbstractScrollArea {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif  // VELES_UI_HEXEDIT_H

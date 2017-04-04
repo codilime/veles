@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_PARSER_STREAM_H
-#define VELES_PARSER_STREAM_H
+#pragma once
 
 #include <assert.h>
 
@@ -294,7 +293,6 @@ class StreamParser {
   }
 
 };
-};
-};
 
-#endif
+}  // namespace parser
+}  // namespace veles

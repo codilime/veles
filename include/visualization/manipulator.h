@@ -14,9 +14,7 @@
  * limitations under the License.
  *
  */
-
-#ifndef VELES_VISUALIZATION_MANIPULATOR_H
-#define VELES_VISUALIZATION_MANIPULATOR_H
+#pragma once
 
 #include <QObject>
 #include <QQuaternion>
@@ -143,5 +141,3 @@ class SpinManipulator : public Manipulator {
 
 }  // namespace visualization
 }  // namespace veles
-
-#endif  // VELES_VISUALIZATION_MANIPULATOR_H

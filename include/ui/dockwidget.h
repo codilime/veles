@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UI_DOCKWIDGET_H
-#define VELES_UI_DOCKWIDGET_H
+#pragma once
 
 #include <set>
 #include <map>
@@ -267,5 +266,3 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif // VELES_UI_DOCKWIDGET_H

@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UI_NODEWIDGET_H
-#define VELES_UI_NODEWIDGET_H
+#pragma once
 
 #include <QWidget>
 #include <QStringList>
@@ -70,5 +69,3 @@ class NodeWidget : public View {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif // VELES_UI_NODEWIDGET_H

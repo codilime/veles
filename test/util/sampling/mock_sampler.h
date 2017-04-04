@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  */
+#pragma once
 
 #include <QByteArray>
 #include "gmock/gmock.h"

@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UTIL_CONCURRENCY_THREADPOOL_H
-#define VELES_UTIL_CONCURRENCY_THREADPOOL_H
+#pragma once
 
 #include <string>
 #include <functional>
@@ -60,5 +59,3 @@ SchedulingResult runTask(const std::string& topic, Task t);
 }  // namespace threadpool
 }  // namespace util
 }  // namespace veles
-
-#endif

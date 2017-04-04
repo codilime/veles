@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_PARSER_UTILS_H
-#define VELES_PARSER_UTILS_H
+#pragma once
 
 #include <QList>
 
@@ -30,7 +29,6 @@ data::ChunkDataItem findField(dbif::ObjectHandle parent, const QString &name);
 dbif::ObjectHandle makeSubBlob(dbif::ObjectHandle parent, const QString &name,
                                const data::BinData &data);
 QList<Parser *> createAllParsers();
-}
-}
 
-#endif
+}  // namespace parser
+}  // namespace veles

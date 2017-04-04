@@ -15,8 +15,6 @@
  *
  */
 
-#ifndef VELES_DATA_MSGPACK_H
-#define VELES_DATA_MSGPACK_H
 #include <sstream>
 
 #include <msgpack.hpp>
@@ -44,4 +42,3 @@ class NodeID {
 
 }  // namespace data
 }  // namespace veles
-#endif // VELES_DATA_MSGPACK_H

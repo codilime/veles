@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef SEARCHDIALOG_H
-#define SEARCHDIALOG_H
+#pragma once
 
 #include <QDialog>
 #include <QtCore>
@@ -65,5 +64,3 @@ class SearchDialog : public QDialog {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif  // SEARCHDIALOG_H

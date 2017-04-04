@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UI_CONNECTIONDIALOG_H
-#define VELES_UI_CONNECTIONDIALOG_H
+#pragma once
 
 #include <QDialog>
 #include <QFileDialog>
@@ -68,5 +67,3 @@ class ConnectionDialog : public QDialog {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif  // VELES_UI_CONNECTIONDIALOG_H

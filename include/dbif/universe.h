@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_DBIF_UNIVERSE
-#define VELES_DBIF_UNIVERSE
+#pragma once
 
 #include <QObject>
 #include <QCoreApplication>
@@ -126,7 +125,5 @@ class ObjectHandleBase {
   }
 };
 
-};
-};
-
-#endif
+}  // namespace dbif
+}  // namespace veles

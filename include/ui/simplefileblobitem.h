@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef SIMPLEFILEBLOBITEM_H
-#define SIMPLEFILEBLOBITEM_H
+#pragma once
 
 #include <QObject>
 
@@ -31,11 +30,12 @@ class SimpleFileBlobItem : public FileBlobItem {
   Q_OBJECT
 
  public:
-  SimpleFileBlobItem(QString name, QString comment, QObject *parent = 0) : FileBlobItem(name, "", comment, 0, 0, parent) {};
-  bool range(uint64_t *start, uint64_t *end) const override {return false;}
+  SimpleFileBlobItem(QString name, QString comment, QObject *parent = 0)
+    : FileBlobItem(name, "", comment, 0, 0, parent) {}
+  bool range(uint64_t *start, uint64_t *end) const override {
+    return false;
+  }
 };
 
 }  // namespace ui
 }  // namespace veles
-
-#endif  // SIMPLEFILEBLOBITEM_H

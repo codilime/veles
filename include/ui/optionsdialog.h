@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef OPTIONSDIALOG_H
-#define OPTIONSDIALOG_H
+#pragma once
 
 #include <QDialog>
 #include <QtCore>
@@ -42,5 +41,3 @@ class OptionsDialog : public QDialog {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif  // OPTIONSDIALOG_H

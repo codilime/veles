@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_UI_NODETREEWIDGET_H
-#define VELES_UI_NODETREEWIDGET_H
+#pragma once
 
 #include <QGroupBox>
 #include <QLabel>
@@ -100,5 +99,3 @@ class NodeTreeWidget : public View {
 
 }  // namespace ui
 }  // namespace veles
-
-#endif // VELES_UI_NODETREEWIDGET_H

@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef FAKE_SAMPLER_H
-#define FAKE_SAMPLER_H
+#pragma once
 
 #include "util/sampling/isampler.h"
 
@@ -40,5 +39,3 @@ class FakeSampler : public ISampler {
 
 }  // namespace util
 }  // namespace veles
-
-#endif

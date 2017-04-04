@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_DB_TYPES
-#define VELES_DB_TYPES
+#pragma once
 
 #include <QObject>
 #include <QSharedPointer>
@@ -42,7 +41,5 @@ using dbif::PError;
 typedef QSharedPointer<LocalObject> PLocalObject;
 typedef QWeakPointer<LocalObject> WLocalObject;
 
-};
-};
-
-#endif
+}  // namespace db
+}  // namespace veles

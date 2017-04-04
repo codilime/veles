@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_VISUALIZATION_TRIGRAM_H
-#define VELES_VISUALIZATION_TRIGRAM_H
+#pragma once
 
 #include "visualization/trigram.h"
 
@@ -216,5 +215,3 @@ class TrigramWidget : public VisualizationWidget {
 
 }  // namespace visualization
 }  // namespace veles
-
-#endif  // VELES_VISUALIZATION_TRIGRAM_H
