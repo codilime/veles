@@ -37,7 +37,7 @@ class AsyncNode:
         """
         Returns an awaitable of AsyncNode representing the parent.
         """
-        return self.conn.get_node(self.node.parent_id)
+        return self.conn.get_node(self.node.parent)
 
     # queries
 
