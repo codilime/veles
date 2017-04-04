@@ -40,8 +40,6 @@ enum class ObjectType {
 };
 
 class MsgpackObject {
-  // TODO do we want to allow change of object type, or do we want to create
-  // new one in such case?
   ObjectType obj_type;
 
   union ObjectValue{
@@ -76,8 +74,6 @@ class MsgpackObject {
   } value;
 
   void fromMsgpack(const msgpack::object& obj);
-  void validateGetUnsignedInt() const;
-  void validateGetSignedInt() const;
 
  public:
 
@@ -159,24 +155,29 @@ class MsgpackObject {
   }
 
   ObjectType type() const;
-  bool& getBool();
   bool getBool() const;
-  uint64_t& getUnsignedInt();
+  void setBool(bool val);
   uint64_t getUnsignedInt() const;
-  int64_t& getSignedInt();
+  void setUnsignedInt(uint64_t val);
   int64_t getSignedInt() const;
-  double& getDouble();
+  void setSignedInt(int64_t val);
   double getDouble() const;
+  void setDouble(double val);
   std::shared_ptr<std::string> getString();
   const std::shared_ptr<std::string> getString() const;
+  void setString(std::shared_ptr<std::string> val);
   std::shared_ptr<std::vector<uint8_t>> getBin();
   const std::shared_ptr<std::vector<uint8_t>> getBin() const;
+  void setBin(std::shared_ptr<std::vector<uint8_t>> val);
   std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>> getArray();
   const std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>> getArray() const;
+  void setArray(std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>> val);
   std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>> getMap();
   const std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>> getMap() const;
+  void setMap(std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>> val);
   std::pair<int, std::shared_ptr<std::vector<uint8_t>>> getExt();
   const std::pair<int, std::shared_ptr<std::vector<uint8_t>>> getExt() const;
+  void setExt(std::pair<int, std::shared_ptr<std::vector<uint8_t>>> val);
 private:
   void fromAnother(const MsgpackObject& other);
 };
