@@ -29,6 +29,9 @@ TEST(UrlEncoder, encode) {
   EXPECT_EQ(encoder.encode(QByteArray::fromHex("")), "");
   EXPECT_EQ(encoder.encode(QByteArray::fromHex("414243444546")),
             "%41%42%43%44%45%46");
+  EXPECT_EQ(encoder.encode(nullptr, 0), "");
+  uint8_t test[] = {0x00, 0xBB, 0xFF, 0xCC};
+  EXPECT_EQ(encoder.encode(test, 4), "%00%bb%ff%cc");
 }
 
 TEST(UrlEncoder, decode) {

@@ -31,6 +31,13 @@ TEST(CDataEncoder, encode) {
             "unsigned char data[] = {\n"
             + tab + "0x00,\n"
             "};\n");
+  EXPECT_EQ(encoder.encode(nullptr, 0),
+            "unsigned char data[] = {\n};\n");
+  uint8_t test[] = {0xAA, 0xBB, 0xCC, 0xDD};
+  EXPECT_EQ(encoder.encode(test, 4),
+            "unsigned char data[] = {\n"
+            + tab + "0xaa, 0xbb, 0xcc, 0xdd,\n"
+            "};\n");
 
   QByteArray allBytes;
   for (int i = 0; i < 256; i++) {

@@ -28,6 +28,7 @@ namespace encoders {
 class CStringEncoder : public IEncoder {
  public:
   QString encode(const QByteArray& data) override;
+  using IEncoder::encode;
   QString encodingDisplayName() override;
 };
 

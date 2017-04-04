@@ -29,6 +29,7 @@ class CDataEncoder : public IEncoder {
  public:
   const static int indentation = 4;
   QString encode(const QByteArray& data) override;
+  using IEncoder::encode;
   QString encodingDisplayName() override;
 };
 
