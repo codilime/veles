@@ -32,6 +32,7 @@ class TextEncoder : public IEncoder, public IDecoder {
 
  public:
   QString encode(const QByteArray& data) override;
+  using IEncoder::encode;
   QByteArray decode(const QString& str) override;
   QString encodingDisplayName() override;
   QString decodingDisplayName() override;

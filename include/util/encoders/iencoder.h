@@ -27,6 +27,13 @@ class IEncoder {
  public:
   virtual ~IEncoder() {}
   virtual QString encode(const QByteArray& data) = 0;
+  virtual QString encode(const uint8_t* data, size_t size) {
+    QByteArray bytes{};
+    for (size_t i = 0; i < size; i++) {
+      bytes.append(static_cast<char>(data[i]));
+    }
+    return encode(bytes);
+  }
   virtual QString encodingDisplayName() = 0;
 };
 

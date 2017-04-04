@@ -31,6 +31,9 @@ TEST(Base64Encoder, encode) {
   EXPECT_EQ(encoder.encode(QByteArray::fromHex("0102")), "AQI=");
   EXPECT_EQ(encoder.encode(QByteArray::fromHex("ffffff")), "////");
   EXPECT_EQ(encoder.encode(QByteArray::fromHex("aabbccdd")), "qrvM3Q==");
+  EXPECT_EQ(encoder.encode(nullptr, 0), "");
+  uint8_t test[] = {0xAA, 0xBB, 0xCC, 0xDD};
+  EXPECT_EQ(encoder.encode(test, 4), "qrvM3Q==");
 }
 
 TEST(Base64Encoder, decode) {

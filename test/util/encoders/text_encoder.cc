@@ -27,9 +27,12 @@ namespace encoders {
 TEST(TextEncoder, encode) {
   auto encoder = TextEncoder();
   EXPECT_EQ(encoder.encode(QByteArray::fromHex("")), "");
-  EXPECT_EQ(encoder.encode(QByteArray::fromHex("00410041")), "AA");
+  EXPECT_EQ(encoder.encode(QByteArray::fromHex("0041000041")), "AA");
   EXPECT_EQ(encoder.encode(QByteArray::fromHex("0708090a0b0c0d")),
             "\a\b\t\n\v\f\r");
+  EXPECT_EQ(encoder.encode(nullptr, 0), "");
+  uint8_t test[] = {0x00, 0x41, 0x00, 0x00, 0x42};
+  EXPECT_EQ(encoder.encode(test, 5), "AB");
 }
 
 TEST(TextEncoder, decode) {

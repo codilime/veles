@@ -30,6 +30,9 @@ TEST(HexEncoder, encode) {
   EXPECT_EQ(encoder.encode(QByteArray::fromHex("01")), "01");
   EXPECT_EQ(encoder.encode(QByteArray::fromHex("0102")), "0102");
   EXPECT_EQ(encoder.encode(QByteArray::fromHex("ffff")), "ffff");
+  EXPECT_EQ(encoder.encode(nullptr, 0), "");
+  uint8_t test[] = {0x01, 0x02, 0xFF};
+  EXPECT_EQ(encoder.encode(test, 3), "0102ff");
 }
 
 TEST(HexEncoder, decode) {
