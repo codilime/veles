@@ -389,6 +389,7 @@ if(GTEST_FOUND AND GMOCK_FOUND)
         ${TEST_DIR}/data/copybits.cc
         ${TEST_DIR}/data/nodeid.cc
         ${TEST_DIR}/data/repack.cc
+        ${TEST_DIR}/network/msgpackobject.cc
         ${TEST_DIR}/util/encoders/base64_encoder.cc
         ${TEST_DIR}/util/encoders/c_data_encoder.cc
         ${TEST_DIR}/util/encoders/c_string_encoder.cc
@@ -403,7 +404,7 @@ if(GTEST_FOUND AND GMOCK_FOUND)
 
     qt5_use_modules(run_test Core)
 
-    target_link_libraries(run_test veles_db veles_base ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES})
+    target_link_libraries(run_test veles_db veles_base veles_network ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES})
 
     add_custom_command(TARGET run_test
       COMMENT "Running tests"

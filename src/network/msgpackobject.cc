@@ -72,6 +72,57 @@ MsgpackObject &MsgpackObject::operator=(const MsgpackObject& other) {
   return *this;
 }
 
+bool MsgpackObject::operator==(const MsgpackObject &other) const {
+  if (obj_type != other.obj_type) {
+    return false;
+  }
+  switch(obj_type) {
+    case ObjectType::NIL:
+      return true;
+    case ObjectType::BOOLEAN:
+      return value.boolean == other.value.boolean;
+    case ObjectType::UNSIGNED_INTEGER:
+      return value.uint == other.value.uint;
+    case ObjectType::SIGNED_INTEGER:
+      return value.sint == other.value.sint;
+    case ObjectType::DOUBLE:
+      return value.dbl == other.value.dbl;
+    case ObjectType::STR:
+      return *value.str == *other.value.str;
+    case ObjectType::BIN:
+      return *value.bin == *other.value.bin;
+    case ObjectType::ARRAY:
+      if (value.array->size() != other.value.array->size()) {
+        return false;
+      }
+      for (auto it1 = value.array->begin(), it2 = other.value.array->begin();it1 != value.array->end(); ++it1, ++it2) {
+        if (**it1 != **it2) {
+          return false;
+        }
+      }
+      return true;
+    case ObjectType::MAP:
+      if (value.map->size() != other.value.map->size()) {
+        return false;
+      }
+      for (auto it1 = value.map->begin(), it2 = other.value.map->begin(); it1 != value.map->end(); ++it1, ++it2) {
+        if (it1->first != it2->first || *it1->second != *it2->second) {
+          return false;
+        }
+      }
+      return true;
+    case ObjectType::EXT:
+      return value.ext.first == other.value.ext.first && *value.ext.second == *other.value.ext.second;
+    default:
+      assert(false);
+      return false;
+  }
+}
+
+bool MsgpackObject::operator!=(const MsgpackObject &other) const {
+  return !(*this == other);
+}
+
 void MsgpackObject::destroyValue() {
   switch (obj_type) {
   case ObjectType::STR:
@@ -176,6 +227,11 @@ void MsgpackObject::msgpack_unpack(const msgpack::v2::object& obj) {
 
 ObjectType MsgpackObject::type() const {
   return obj_type;
+}
+
+void MsgpackObject::setNil() {
+  destroyValue();
+  obj_type = ObjectType::NIL;
 }
 
 bool MsgpackObject::getBool() const {
