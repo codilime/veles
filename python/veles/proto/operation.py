@@ -31,6 +31,7 @@ class OperationCreate(Operation):
     tags = fields.Set(fields.String())
     attr = fields.Map(fields.String(), fields.Any())
     data = fields.Map(fields.String(), fields.Any())
+    bindata = fields.Map(fields.String(), fields.Binary())
 
 
 class OperationDelete(Operation):

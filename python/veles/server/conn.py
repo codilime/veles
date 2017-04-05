@@ -197,7 +197,7 @@ class AsyncLocalConnection(AsyncConnection):
     def _op_create(self, xact, op, node):
         if node.node is not None:
             raise ObjectExistsError()
-        parent = self.get_node_norefresh(node.parent)
+        parent = self.get_node_norefresh(op.parent)
         if parent.node is None and parent != self.root:
             raise ObjectGoneError()
         node.node = Node(
@@ -222,7 +222,7 @@ class AsyncLocalConnection(AsyncConnection):
             subnode = self.get_node_norefresh(oid)
             xact.save(subnode)
             self._op_delete(xact, op, subnode)
-        self.db.delete(self.id, commit=False)
+        self.db.delete(node.id, commit=False)
         node.node = None
         node.parent = None
 
@@ -246,7 +246,8 @@ class AsyncLocalConnection(AsyncConnection):
     def _op_set_pos(self, xact, op, node):
         if node.node is None:
             raise ObjectGoneError()
-        if op.pos_start == node.pos_start and op.pos_end == node.pos_end:
+        if (op.pos_start == node.node.pos_start and
+                op.pos_end == node.node.pos_end):
             return
         self.db.set_pos(node.id, op.pos_start, op.pos_end, commit=False)
         node.node.pos_start = op.pos_start

@@ -25,7 +25,7 @@ class Transaction:
         self.undo = {}
         self.list_changes = {}
         self.data_subs = {}
-        self.bindata_subs = {}
+        self.bindata_subs = set()
 
     def __enter__(self):
         self.conn.db.begin()
@@ -36,33 +36,34 @@ class Transaction:
             # Everything alright, let's commit.
             self.conn.db.commit()
             for k, (node, parent) in self.undo.items():
+                if k.node == node:
+                    continue
                 # Send all normal subs.  Also handle all subs for created
                 # and removed parents.
-                if k.node != node:
-                    for sub in k.subs:
-                        k._send_sub(sub)
-                    if node is None:
-                        # Node has been created.
-                        for sub in k.list_subs:
-                            self.list_ensure(sub)
-                        for key, subs in k.data_subs.items():
-                            for sub in subs:
-                                if sub not in self.data_subs:
-                                    sub.data_changed(None)
-                        for key, subs in k.bindata_subs.items():
-                            for sub in subs:
-                                if sub not in self.bindata_subs:
-                                    sub.bindata_changed(b'')
-                    if k.node is None:
-                        # Node has been deleted.
-                        for sub in k.list_subs:
+                for sub in k.subs:
+                    k._send_sub(sub)
+                if node is None:
+                    # Node has been created.
+                    for sub in k.list_subs:
+                        self.list_ensure(sub)
+                    for key, subs in k.data_subs.items():
+                        for sub in subs:
+                            if sub not in self.data_subs:
+                                sub.data_changed(None)
+                    for key, subs in k.bindata_subs.items():
+                        for sub in subs:
+                            if sub not in self.bindata_subs:
+                                sub.bindata_changed(b'')
+                if k.node is None:
+                    # Node has been deleted.
+                    for sub in k.list_subs:
+                        sub.error(ObjectGoneError())
+                    for key, subs in k.data_subs.items():
+                        for sub in subs:
                             sub.error(ObjectGoneError())
-                        for key, subs in k.data_subs.items():
-                            for sub in subs:
-                                sub.error(ObjectGoneError())
-                        for key, subs in k.bindata_subs.items():
-                            for sub in subs:
-                                sub.error(ObjectGoneError())
+                    for key, subs in k.bindata_subs.items():
+                        for sub in subs:
+                            sub.error(ObjectGoneError())
                 # Unlist objects removed from parents.
                 if k.parent != parent and parent is not None:
                     for sub, objs in parent.list_subs.items():
@@ -83,7 +84,7 @@ class Transaction:
                 # Skip deleted parents - they already got an exception above.
                 if sub.parent.node is None and sub.parent != self.conn.root:
                     continue
-                sub.list_changed(objs, gone)
+                sub.list_changed(list(objs.values()), list(gone))
             # Send out data subs.
             for sub, data in self.data_subs.items():
                 if sub.obj.node is None:
@@ -93,8 +94,8 @@ class Transaction:
             for sub in self.bindata_subs:
                 if sub.obj.node is None:
                     continue
-                data = self.db.get_bindata(
-                    node.id, sub.key, sub.start, sub.end)
+                data = self.conn.db.get_bindata(
+                    sub.node, sub.key, sub.start, sub.end)
                 sub.bindata_changed(data)
         else:
             # Whoops.  Undo changes.
@@ -105,11 +106,11 @@ class Transaction:
 
     def list_ensure(self, sub):
         if sub not in self.list_changes:
-            self.list_changes[sub] = (set(), set())
+            self.list_changes[sub] = ({}, set())
 
     def list_add(self, sub, node):
         self.list_ensure(sub)
-        self.list_changes[sub][0].add(node)
+        self.list_changes[sub][0][node.id] = node
 
     def list_remove(self, sub, node):
         self.list_ensure(sub)
