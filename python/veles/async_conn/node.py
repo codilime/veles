@@ -15,6 +15,7 @@
 import asyncio
 
 from veles.proto.node import PosFilter
+from veles.proto import operation
 
 
 class AsyncNode:
@@ -132,52 +133,105 @@ class AsyncNode:
         Fills this object with data and creates it on the server.
         Returns an awaitable of self.
         """
-        raise NotImplementedError
+        async def inner():
+            await self.conn.transaction([], [
+                operation.OperationCreate(
+                    node=self.id,
+                    parent=parent,
+                    pos_start=pos[0],
+                    pos_end=pos[1],
+                    tags=tags,
+                    attr=attr,
+                    data=data,
+                    bindata=bindata,
+                )
+            ])
+            return self
+
+        loop = asyncio.get_event_loop()
+        return loop.create_task(inner())
 
     def delete(self):
         """
         Deletes this object on the server.  Returns an awaitable of None.
         """
-        raise NotImplementedError
+        return self.conn.transaction([], [
+            operation.OperationDelete(
+                node=self.id
+            )
+        ])
 
     def set_parent(self, parent):
         """
         Changes the parent of this object.  Parent should be a NodeID.
         Returns an awaitable of None.
         """
-        raise NotImplementedError
+        return self.conn.transaction([], [
+            operation.OperationSetParent(
+                node=self.id,
+                parent=parent
+            )
+        ])
 
     def set_pos(self, start, end):
         """
         Changes the position of this object.  Returns an awaitable of None.
         """
-        raise NotImplementedError
+        return self.conn.transaction([], [
+            operation.OperationSetParent(
+                node=self.id,
+                pos_start=start,
+                pos_end=end,
+            )
+        ])
 
     def add_tag(self, tag):
         """
         Adds a tag to this object.  Returns an awaitable of None.
         """
-        raise NotImplementedError
+        return self.conn.transaction([], [
+            operation.OperationAddTag(
+                node=self.id,
+                tag=tag,
+            )
+        ])
 
     def del_tag(self, tag):
         """
         Removes a tag from this object.  Returns an awaitable of None.
         """
-        raise NotImplementedError
+        return self.conn.transaction([], [
+            operation.OperationDelTag(
+                node=self.id,
+                tag=tag,
+            )
+        ])
 
     def set_attr(self, key, value):
         """
         Sets the value of an attribute of this object, or deletes an attribute
         if the value is None.  Returns an awaitable of None.
         """
-        raise NotImplementedError
+        return self.conn.transaction([], [
+            operation.OperationSetAttr(
+                node=self.id,
+                key=key,
+                data=value,
+            )
+        ])
 
     def set_data(self, key, value):
         """
         Sets a data value associated with this object, or deletes it
         if the value is None.  Returns an awaitable of None.
         """
-        raise NotImplementedError
+        return self.conn.transaction([], [
+            operation.OperationSetData(
+                node=self.id,
+                key=key,
+                data=value,
+            )
+        ])
 
     def set_bindata(self, key, start, value, truncate=False):
         """
@@ -186,7 +240,15 @@ class AsyncNode:
         in a zero-sized binary data, the key is deleted.  Returns an awaitable
         of None.
         """
-        raise NotImplementedError
+        return self.conn.transaction([], [
+            operation.OperationSetBinData(
+                node=self.id,
+                key=key,
+                start=start,
+                data=value,
+                truncate=truncate,
+            )
+        ])
 
     def run_method_raw(self, method, params):
         """

@@ -212,6 +212,7 @@ class AsyncLocalConnection(AsyncConnection):
             self.db.set_data(node.id, key, val)
             xact.set_data(node, key, val)
         for key, val in op.bindata.items():
+            self.db.set_bindata(node.id, key, 0, val)
             for sub in node.bindata_subs.get(key, set()):
                 xact.bindata_changed(sub)
 

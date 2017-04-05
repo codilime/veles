@@ -23,7 +23,22 @@ from veles.async_conn.plugin import (
     QueryHandler,
     BroadcastHandler,
 )
-from .node import AsyncRemoteNode, Request
+from .node import AsyncRemoteNode
+
+
+class Request:
+    def __init__(self, proto):
+        self.proto = proto
+        self.future = asyncio.Future()
+        self.proto.rids[id(self)] = self
+
+    def handle_ack(self):
+        self.future.set_result(None)
+        del self.proto.rids[id(self)]
+
+    def handle_error(self, exc):
+        self.future.set_exception(exc)
+        del self.proto.rids[id(self)]
 
 
 class BroadcastRunner:
@@ -67,7 +82,7 @@ class AsyncRemoteConnection(AsyncConnection):
         self.conns[conn.cid] = None
 
     def transaction(self, checks, operations):
-        req = Request(self.proto, None)
+        req = Request(self.proto)
         self.proto.send_msg(messages.MsgTransaction(
             rid=id(req),
             checks=checks,

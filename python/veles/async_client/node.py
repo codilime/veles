@@ -271,22 +271,6 @@ class QuerySub(BaseSub):
         self.sub.error(exc, checks)
 
 
-class Request:
-    def __init__(self, proto, result):
-        self.proto = proto
-        self.result = result
-        self.future = asyncio.Future()
-        self.proto.rids[id(self)] = self
-
-    def handle_ack(self):
-        self.future.set_result(self.result)
-        del self.proto.rids[id(self)]
-
-    def handle_error(self, exc):
-        self.future.set_exception(exc)
-        del self.proto.rids[id(self)]
-
-
 class MethodRunner:
     def __init__(self, proto):
         self.proto = proto
@@ -363,99 +347,6 @@ class AsyncRemoteNode(AsyncNode):
         del self.subs[sub]
 
     # mutators
-
-    def _create(self, parent=None, pos=(None, None), tags=set(), attr={},
-                data={}, bindata={}):
-        req = Request(self.proto, self)
-        self.proto.send_msg(messages.MsgCreate(
-            rid=id(req),
-            id=self.id,
-            parent=parent,
-            pos_start=pos[0],
-            pos_end=pos[1],
-            tags=tags,
-            attr=attr,
-            data=data,
-            bindata=bindata,
-        ))
-        return req.future
-
-    def delete(self):
-        req = Request(self.proto, self)
-        self.proto.send_msg(messages.MsgDelete(
-            rid=id(req),
-            id=self.id,
-        ))
-        return req.future
-
-    def set_parent(self, parent):
-        req = Request(self.proto, self)
-        self.proto.send_msg(messages.MsgSetParent(
-            rid=id(req),
-            id=self.id,
-            parent=parent,
-        ))
-        return req.future
-
-    def set_pos(self, start, end):
-        req = Request(self.proto, self)
-        self.proto.send_msg(messages.MsgSetPos(
-            rid=id(req),
-            id=self.id,
-            pos_start=start,
-            pos_end=end,
-        ))
-        return req.future
-
-    def add_tag(self, tag):
-        req = Request(self.proto, self)
-        self.proto.send_msg(messages.MsgAddTag(
-            rid=id(req),
-            id=self.id,
-            tag=tag,
-        ))
-        return req.future
-
-    def del_tag(self, tag):
-        req = Request(self.proto, self)
-        self.proto.send_msg(messages.MsgDelTag(
-            rid=id(req),
-            id=self.id,
-            tag=tag,
-        ))
-        return req.future
-
-    def set_attr(self, key, value):
-        req = Request(self.proto, self)
-        self.proto.send_msg(messages.MsgSetAttr(
-            rid=id(req),
-            id=self.id,
-            key=key,
-            data=value,
-        ))
-        return req.future
-
-    def set_data(self, key, value):
-        req = Request(self.proto, self)
-        self.proto.send_msg(messages.MsgSetData(
-            rid=id(req),
-            id=self.id,
-            key=key,
-            data=value,
-        ))
-        return req.future
-
-    def set_bindata(self, key, start, value, truncate=False):
-        req = Request(self.proto, self)
-        self.proto.send_msg(messages.MsgSetBinData(
-            rid=id(req),
-            id=self.id,
-            key=key,
-            start=start,
-            data=value,
-            truncate=truncate,
-        ))
-        return req.future
 
     def run_method_raw(self, method, params):
         mr = MethodRunner(self.proto)
