@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from veles.proto import node, messages, check, operation
+from veles.proto import node, messages, chunk, check, operation
 import six
 
 
@@ -21,15 +21,22 @@ def generate_cpp_code():
     if six.PY2:
         raise RuntimeError('C++ code can only be generated on Python 3.x')
     code = '#define MSGPACK_CLASSES_HEADER \\\n'
+    # TODO change generation based on discussion to avoid need to
+    # specifying all classes like this
     classes_to_generate = [node.Node, node.PosFilter]
     poly_classes = [messages.MsgpackMsg, check.Check, operation.Operation]
+    enum_classes_to_generate = [
+        chunk.FieldSignMode, chunk.FieldFloatMode,
+        chunk.FieldStringMode, chunk.FieldStringEncoding]
     for cls_type in classes_to_generate:
         code += 'class {};\\\n'.format(cls_type.cpp_type())
+    for cls_type in enum_classes_to_generate:
+        code += 'enum class {};\\\n'.format(cls_type.cpp_type())
     for cls_type in poly_classes:
         code += 'class {};\\\n'.format(cls_type.cpp_type())
         for sub_class in cls_type.object_types.values():
             code += 'class {};\\\n'.format(sub_class.cpp_type())
-    for cls_type in classes_to_generate:
+    for cls_type in classes_to_generate + enum_classes_to_generate:
         code += cls_type.generate_header_code()
     for cls_type in poly_classes:
         code += cls_type.generate_base_header_code()
@@ -39,7 +46,7 @@ def generate_cpp_code():
     code += '\n'
 
     code += '#define MSGPACK_CLASSES_SOURCE \\\n'
-    for cls_type in classes_to_generate:
+    for cls_type in classes_to_generate + enum_classes_to_generate:
         code += cls_type.generate_source_code()
     for cls_type in poly_classes:
         code += cls_type.generate_base_source_code()

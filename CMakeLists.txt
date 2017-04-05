@@ -202,7 +202,9 @@ add_custom_command(OUTPUT ${MSGPACK_CPP}
     ${PYTHON_DIR}/veles/proto/node.py
     ${PYTHON_DIR}/veles/proto/messages.py
     ${PYTHON_DIR}/veles/proto/exceptions.py
+    ${PYTHON_DIR}/veles/proto/chunk.py
     ${PYTHON_DIR}/veles/schema/model.py
+    ${PYTHON_DIR}/veles/schema/enumeration.py
     ${PYTHON_DIR}/veles/schema/fields.py
   VERBATIM)
 
