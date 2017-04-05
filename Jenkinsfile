@@ -169,9 +169,9 @@ builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
             sh """cmake -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."""
             sh "cmake --build . --config ${buildConfiguration} -- -j3 > error_and_warnings.txt 2>&1"
             sh "cat error_and_warnings.txt"
-            sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-ubuntu1604 -G ZIP -C ${buildConfiguration}"
+            sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-ubuntu1604 -G \"ZIP;DEB\" -C ${buildConfiguration}"
             junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
-            step([$class: 'ArtifactArchiver', artifacts: '*.zip', fingerprint: true])
+            step([$class: 'ArtifactArchiver', artifacts: 'veles-ubuntu1604.*', fingerprint: true])
             step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
             excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
             parserConfigurations: [[parserName: 'GNU Make + GNU C Compiler (gcc)', pattern: 'error_and_warnings.txt']], unHealthy: ''])

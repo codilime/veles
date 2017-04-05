@@ -425,6 +425,9 @@ endif(WIN32 AND NOT MSVC)
 
 #Unix paths
 if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
+  set(CPACK_PACKAGE_CONTACT "contact@codisec.com")
+  set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5core5a (>= 5.5.1), libqt5gui5 (>= 5.5.1), libqt5widgets5 (>= 5.5.1), libqt5network5 (>= 5.5.1), zlib1g (>= 1:1.2.8)")
   install(TARGETS main_ui RUNTIME DESTINATION bin COMPONENT "application")
 endif(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
 
@@ -452,8 +455,6 @@ if(WIN32)
   set(CPACK_NSIS_DISPLAY_NAME "Veles")
   set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "Codisec")
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "Veles")
-  string(TIMESTAMP VERSION "%Y.%m")
-  set(CPACK_PACKAGE_VERSION "${VERSION}")
   set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
   set(CPACK_NSIS_URL_INFO_ABOUT "https://veles.io")
   set(CPACK_NSIS_CONTACT "contact@codisec.com")
@@ -465,7 +466,6 @@ endif(WIN32)
 
 # Apple
 if(APPLE)
-
   set(CPACK_INSTALL_PREFIX "/Applications")
   # Finding MacDeployQt
   find_program(MACDEPLOYQT_EXECUTABLE
@@ -487,7 +487,8 @@ set(CPACK_COMPONENT_APPLICATION_REQUIRED ON)
 # Few common CPack settings
 set(CPACK_PACKAGE_VENDOR "Codilime")
 set(CPACK_PACKAGE_NAME "veles")
-set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
+string(TIMESTAMP VERSION "%Y.%m")
+set(CPACK_PACKAGE_VERSION "${VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VELES tool for binary data analysis")
 set(CPACK_MONOLITHIC_INSTALL)
 set(CPACK_STRIP_FILES false)
