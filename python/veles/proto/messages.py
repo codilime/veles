@@ -26,7 +26,6 @@ class MsgpackMsg(model.PolymorphicModel):
     pass
 
 
-# XXX NYI
 class MsgConnect(MsgpackMsg):
     """
     Sent by the client immediately upon connection.  Server replies with
@@ -40,10 +39,8 @@ class MsgConnect(MsgpackMsg):
     client_version = fields.String(optional=True)
     client_description = fields.String(optional=True)
     client_type = fields.String(optional=True)
-    key = fields.String(optional=True)
 
 
-# XXX NYI
 class MsgConnected(MsgpackMsg):
     """
     Sent by the server in reply to MsgConnect.
@@ -56,7 +53,6 @@ class MsgConnected(MsgpackMsg):
     server_version = fields.String()
 
 
-# XXX NYI
 class MsgConnectionError(MsgpackMsg):
     """
     Sent by the server in reply to MsgConnect.

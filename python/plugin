@@ -28,14 +28,14 @@ loop = asyncio.get_event_loop()
 host, _, port = sys.argv[1].rpartition(':')
 if host == 'UNIX':
     print('Connecting to UNIX server.')
-    proto = loop.run_until_complete(create_unix_client(loop, port))[1]
+    proto = loop.run_until_complete(create_unix_client(loop, sys.argv[2], port))[1]
 else:
     print('Connecting to TCP server.')
-    proto = loop.run_until_complete(create_tcp_client(loop, host, int(port)))[1]
+    proto = loop.run_until_complete(create_tcp_client(loop, sys.argv[2], host, int(port)))[1]
 conn = AsyncRemoteConnection(loop, proto)
 
 print('Loading plugins.')
-for pname in sys.argv[2:]:
+for pname in sys.argv[3:]:
     print('{}...'.format(pname))
     mod = importlib.import_module('veles.plugins.' + pname)
     conn.register_plugin(mod)

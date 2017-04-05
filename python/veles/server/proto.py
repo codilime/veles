@@ -18,10 +18,12 @@
 # A girl without a name
 
 import asyncio
+import hmac
 
 import msgpack
 
 from veles.proto import messages, msgpackwrap
+from veles.util.helpers import prepare_auth_key
 from veles.async_conn.subscriber import (
     BaseSubscriber,
     BaseSubscriberData,
@@ -40,6 +42,9 @@ from veles.proto.exceptions import (
     SubscriptionInUseError,
     ConnectionLostError,
     SchemaError,
+    ProtocolError,
+    AuthenticationError,
+    CriticalException,
 )
 
 
@@ -211,13 +216,24 @@ class RemoteBroadcastHandler(BroadcastHandler):
 
 
 class ServerProto(asyncio.Protocol):
-    def __init__(self, conn):
+    # TODO generate this as a constant in C++
+    PROTO_VERSION = 1
+
+    def __init__(self, conn, key):
         self.conn = conn
         self.subs = {}
         self.phids = {}
         self.pmids = {}
         self.pqids = {}
         self.pbids = {}
+        self.server_key = prepare_auth_key(key)
+        self.client_key = b''
+        self.authorized = False
+        self.connected = False
+        self.client_name = None
+        self.client_version = None
+        self.client_description = None
+        self.client_type = None
 
     def connection_made(self, transport):
         self.transport = transport
@@ -227,6 +243,20 @@ class ServerProto(asyncio.Protocol):
         self.packer = wrapper.packer
 
     def data_received(self, data):
+        if not self.authorized:
+            tmp = data[:64-len(self.client_key)]
+            data = data[len(tmp):]
+            self.client_key += tmp
+            if len(self.client_key) < 64:
+                return
+            # TODO more secure key checking
+            if not hmac.compare_digest(self.client_key, self.server_key):
+                self.send_msg(messages.MsgConnectionError(
+                    err=AuthenticationError(),
+                ))
+                self.transport.close()
+                return
+            self.authorized = True
         self.unpacker.feed(data)
         while True:
             try:
@@ -237,39 +267,51 @@ class ServerProto(asyncio.Protocol):
                 return
 
     async def handle_msg(self, msg):
-        handlers = {
-            'create': self.msg_create,
-            'delete': self.msg_delete,
-            'set_parent': self.msg_set_parent,
-            'set_pos': self.msg_set_pos,
-            'add_tag': self.msg_add_tag,
-            'del_tag': self.msg_del_tag,
-            'set_attr': self.msg_set_attr,
-            'set_data': self.msg_set_data,
-            'set_bindata': self.msg_set_bindata,
-            'transaction': self.msg_transaction,
-            'method_run': self.msg_method_run,
-            'broadcast_run': self.msg_broadcast_run,
-            'get': self.msg_get,
-            'get_data': self.msg_get_data,
-            'get_bindata': self.msg_get_bindata,
-            'get_list': self.msg_get_list,
-            'get_query': self.msg_get_query,
-            'cancel_subscription': self.msg_cancel_subscription,
-            'plugin_method_register': self.msg_plugin_method_register,
-            'plugin_method_result': self.msg_plugin_method_result,
-            'plugin_method_error': self.msg_plugin_method_error,
-            'plugin_query_register': self.msg_plugin_query_register,
-            'plugin_query_result': self.msg_plugin_query_result,
-            'plugin_query_error': self.msg_plugin_query_error,
-            'plugin_broadcast_register': self.msg_plugin_broadcast_register,
-            'plugin_broadcast_result': self.msg_plugin_broadcast_result,
-            'plugin_handler_unregister': self.msg_plugin_handler_unregister,
-        }
+        if self.connected:
+            handlers = {
+                'create': self.msg_create,
+                'delete': self.msg_delete,
+                'set_parent': self.msg_set_parent,
+                'set_pos': self.msg_set_pos,
+                'add_tag': self.msg_add_tag,
+                'del_tag': self.msg_del_tag,
+                'set_attr': self.msg_set_attr,
+                'set_data': self.msg_set_data,
+                'set_bindata': self.msg_set_bindata,
+                'transaction': self.msg_transaction,
+                'method_run': self.msg_method_run,
+                'broadcast_run': self.msg_broadcast_run,
+                'get': self.msg_get,
+                'get_data': self.msg_get_data,
+                'get_bindata': self.msg_get_bindata,
+                'get_list': self.msg_get_list,
+                'get_query': self.msg_get_query,
+                'cancel_subscription': self.msg_cancel_subscription,
+                'plugin_method_register': self.msg_plugin_method_register,
+                'plugin_method_result': self.msg_plugin_method_result,
+                'plugin_method_error': self.msg_plugin_method_error,
+                'plugin_query_register': self.msg_plugin_query_register,
+                'plugin_query_result': self.msg_plugin_query_result,
+                'plugin_query_error': self.msg_plugin_query_error,
+                'plugin_broadcast_register':
+                    self.msg_plugin_broadcast_register,
+                'plugin_broadcast_result': self.msg_plugin_broadcast_result,
+                'plugin_handler_unregister':
+                    self.msg_plugin_handler_unregister,
+            }
+        else:
+            handlers = {
+                'connect': self.msg_connect,
+            }
         try:
             if msg.object_type not in handlers:
                 raise SchemaError('unhandled message type')
             await handlers[msg.object_type](msg)
+        except CriticalException as err:
+            self.send_msg(messages.MsgConnectionError(
+                err=err,
+            ))
+            self.transport.close()
         except VelesException as err:
             self.send_msg(messages.MsgProtoError(
                 err=err,
@@ -303,6 +345,21 @@ class ServerProto(asyncio.Protocol):
             self.send_msg(messages.MsgRequestAck(
                 rid=msg.rid,
             ))
+
+    async def msg_connect(self, msg):
+        # TODO more sophisticated checking if versions are compatible
+        if self.PROTO_VERSION != msg.proto_version:
+            raise ProtocolError()
+        self.client_name = msg.client_name
+        self.client_version = msg.client_version
+        self.client_description = msg.client_description
+        self.client_type = msg.client_type
+        self.connected = True
+        self.send_msg(messages.MsgConnected(
+            proto_version=self.PROTO_VERSION,
+            server_name='server',
+            server_version='server 1.0'
+        ))
 
     async def msg_create(self, msg):
         await self.do_request(msg, self.conn.create(
@@ -553,9 +610,11 @@ class ServerProto(asyncio.Protocol):
         self.send_msg(messages.MsgPluginHandlerUnregistered(phid=msg.phid))
 
 
-async def create_unix_server(conn, path):
-    return await conn.loop.create_unix_server(lambda: ServerProto(conn), path)
+async def create_unix_server(conn, key, path):
+    return await conn.loop.create_unix_server(
+        lambda: ServerProto(conn, key), path)
 
 
-async def create_tcp_server(conn, ip, port):
-    return await conn.loop.create_server(lambda: ServerProto(conn), ip, port)
+async def create_tcp_server(conn, key, ip, port):
+    return await conn.loop.create_server(
+        lambda: ServerProto(conn, key), ip, port)

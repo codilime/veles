@@ -5,9 +5,9 @@ import sys
 from veles.schema import nodeid
 from veles.scli import client
 
-client = client.create_client(sys.argv[1])
+client = client.create_client(sys.argv[1], sys.argv[2])
 
-obj = nodeid.NodeID.from_hex(sys.argv[2])
+obj = nodeid.NodeID.from_hex(sys.argv[3])
 
 import pprint
 pprint.pprint(client.get(obj))

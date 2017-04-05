@@ -23,10 +23,11 @@ import msgpack
 
 from veles.proto import messages, msgpackwrap
 from veles.proto.exceptions import VelesException, SchemaError
+from veles.util.helpers import prepare_auth_key
 
 
 class ClientProto(asyncio.Protocol):
-    def __init__(self):
+    def __init__(self, key):
         wrapper = msgpackwrap.MsgpackWrapper()
         self.unpacker = wrapper.unpacker
         self.packer = wrapper.packer
@@ -35,9 +36,21 @@ class ClientProto(asyncio.Protocol):
         self.bids = {}
         self.rids = {}
         self.handlers = {}
+        self.auth_key = prepare_auth_key(key)
+
+    def _authorize(self):
+        self.transport.write(self.auth_key)
+        self.send_msg(messages.MsgConnect(
+            proto_version=1,
+            client_name='acli',
+            client_version='acli 1.0',
+            client_description='',
+            client_type='acli',
+        ))
 
     def connection_made(self, transport):
         self.transport = transport
+        self._authorize()
 
     def data_received(self, data):
         self.unpacker.feed(data)
@@ -51,6 +64,8 @@ class ClientProto(asyncio.Protocol):
 
     async def handle_msg(self, msg):
         handlers = {
+            'connection_error': self.msg_connection_error,
+            'connected': self.msg_connected,
             'get_reply': self.msg_get_reply,
             'get_data_reply': self.msg_get_reply,
             'get_bindata_reply': self.msg_get_reply,
@@ -108,6 +123,12 @@ class ClientProto(asyncio.Protocol):
     async def msg_proto_error(self, msg):
         raise msg.err
 
+    async def msg_connection_error(self, msg):
+        raise msg.err
+
+    async def msg_connected(self, msg):
+        print('Connected to server: {}'.format(msg.server_name))
+
     async def msg_plugin_method_run(self, msg):
         handler = self.handlers[msg.phid]
         aresult = handler.run_method(self.conn, msg.node, msg.params)
@@ -158,9 +179,9 @@ class ClientProto(asyncio.Protocol):
         del self.handlers[msg.phid]
 
 
-async def create_unix_client(loop, path):
-    return await loop.create_unix_connection(ClientProto, path)
+async def create_unix_client(loop, key, path):
+    return await loop.create_unix_connection(lambda: ClientProto(key), path)
 
 
-async def create_tcp_client(loop, ip, port):
-    return await loop.create_connection(ClientProto, ip, port)
+async def create_tcp_client(loop, key, ip, port):
+    return await loop.create_connection(lambda: ClientProto(key), ip, port)
