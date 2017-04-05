@@ -18,14 +18,34 @@ import msgpack
 
 from veles.proto import messages, msgpackwrap
 from veles.schema import nodeid
+from veles.util.helpers import prepare_auth_key
 
 
 class Client(object):
-    def __init__(self, sock):
+    def __init__(self, sock, key):
         self.sock = sock
         wrapper = msgpackwrap.MsgpackWrapper()
         self.unpacker = wrapper.unpacker
         self.packer = wrapper.packer
+        self._authorize(prepare_auth_key(key))
+
+    def _authorize(self, key):
+        self.sock.sendall(key)
+        self.send_msg(messages.MsgConnect(
+            proto_version=1,
+            client_name='scli',
+            client_version='scli 1.0',
+            client_description='',
+            client_type='scli',
+        ))
+        pkt = self.getpkt()
+        if isinstance(pkt, messages.MsgConnected):
+            print('Connected to server: {}'.format(pkt.server_name))
+        elif isinstance(pkt, messages.MsgConnectionError):
+            raise pkt.err
+        else:
+            print(pkt)
+            raise Exception('weird reply when attempting to connect')
 
     def getpkt(self):
         while True:
@@ -350,21 +370,21 @@ class Client(object):
 
 
 class UnixClient(Client):
-    def __init__(self, path):
+    def __init__(self, path, key):
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         sock.connect(path)
-        super(UnixClient, self).__init__(sock)
+        super(UnixClient, self).__init__(sock, key)
 
 
 class TcpClient(Client):
-    def __init__(self, ip, port):
+    def __init__(self, ip, port, key):
         sock = socket.create_connection((ip, port))
-        super(TcpClient, self).__init__(sock)
+        super(TcpClient, self).__init__(sock, key)
 
 
-def create_client(addr):
+def create_client(addr, key):
     host, _, port = addr.rpartition(':')
     if host == 'UNIX':
-        return UnixClient(port)
+        return UnixClient(port, key)
     else:
-        return TcpClient(host, int(port))
+        return TcpClient(host, int(port), key)

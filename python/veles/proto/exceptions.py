@@ -39,7 +39,8 @@ class VelesException(Exception, NewObject):
 
     def __init_subclass__(cls, **kwargs):
         super(VelesException, cls).__init_subclass__(**kwargs)
-        VelesException.types[cls.code] = cls
+        if hasattr(cls, 'code'):
+            VelesException.types[cls.code] = cls
 
     @classmethod
     def load(cls, value):
@@ -128,3 +129,17 @@ class RegistryMultiMatchError(VelesException):
 class ConnectionLostError(VelesException):
     code = 'connection_lost'
     msg = "Connection lost"
+
+
+class CriticalException(VelesException):
+    pass
+
+
+class AuthenticationError(CriticalException):
+    code = 'auth_error'
+    msg = 'Authentication key check failed'
+
+
+class ProtocolError(CriticalException):
+    code = 'protocol_error'
+    msg = 'Incompatible protocol version'

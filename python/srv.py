@@ -27,17 +27,18 @@ loop = asyncio.get_event_loop()
 print('Opening database.')
 conn = AsyncLocalConnection(loop, sys.argv[1])
 print('Loading plugins.')
-for pname in sys.argv[3:]:
+for pname in sys.argv[4:]:
     print('{}...'.format(pname))
     mod = importlib.import_module('veles.plugins.' + pname)
     conn.register_plugin(mod)
 host, _, port = sys.argv[2].rpartition(':')
 if host == 'UNIX':
     print('Starting UNIX server.')
-    loop.run_until_complete(create_unix_server(conn, port))
+    loop.run_until_complete(create_unix_server(conn, sys.argv[3], port))
 else:
     print('Starting TCP server.')
-    loop.run_until_complete(create_tcp_server(conn, host, int(port)))
+    loop.run_until_complete(
+        create_tcp_server(conn, sys.argv[3], host, int(port)))
 print('Ready.')
 try:
     loop.add_signal_handler(signal.SIGINT, loop.stop)
