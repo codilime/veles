@@ -18,12 +18,6 @@ else(WIN32)
   cmake_minimum_required(VERSION 3.1.0)
 endif(WIN32)
 
-# Basic packaging data
-set(CPACK_PACKAGE_VENDOR "Codilime")
-set(CPACK_PACKAGE_NAME "veles")
-set(CPACK_DEBIAN_PACKAGE_SECTION "Editors")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VELES hex editor")
-
 include("cmake/googletest.cmake")
 include("cmake/qt.cmake")
 include("cmake/zlib.cmake")
@@ -44,6 +38,19 @@ endif()
 if(APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif(APPLE)
+
+if(WIN32)
+  set(WINDOWS_APPLICATION_OUT_DIRECTORY "Veles UI")
+  if(MSVC)
+    # overwrite default Debug/Release application directory
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${WINDOWS_APPLICATION_OUT_DIRECTORY})
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${WINDOWS_APPLICATION_OUT_DIRECTORY})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${WINDOWS_APPLICATION_OUT_DIRECTORY})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${WINDOWS_APPLICATION_OUT_DIRECTORY})
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${WINDOWS_APPLICATION_OUT_DIRECTORY})
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${WINDOWS_APPLICATION_OUT_DIRECTORY})
+  endif(MSVC)
+endif(WIN32)
 
 # Sources
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
@@ -411,14 +418,14 @@ endif(GTEST_FOUND AND GMOCK_FOUND)
 target_link_libraries(main_ui veles_base veles_db veles_network veles_client veles_visualization Qt5::Widgets parser)
 set_target_properties(main_ui PROPERTIES OUTPUT_NAME "veles")
 if(WIN32 AND NOT MSVC)
-  set_target_properties(main_ui PROPERTIES RUNTIME_OUTPUT_DIRECTORY "bin")
+  set_target_properties(main_ui PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${WINDOWS_APPLICATION_OUT_DIRECTORY})
 endif(WIN32 AND NOT MSVC)
 
 # Post-build packaging
 
 #Unix paths
 if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
-  install(TARGETS main_ui RUNTIME DESTINATION bin)
+  install(TARGETS main_ui RUNTIME DESTINATION bin COMPONENT "application")
 endif(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
 
 # Windows
@@ -430,16 +437,30 @@ if(WIN32)
     COMMENT "Ensuring QT Dependencies"
     COMMAND ${WINDEPLOYQT_EXECUTABLE} ${WINDEPLOYQT_ARGS} $<TARGET_FILE:main_ui>
     DEPENDS $<TARGET_FILE:main_ui>)
-  install(DIRECTORY $<TARGET_FILE_DIR:main_ui> DESTINATION "bin")
+  install(DIRECTORY $<TARGET_FILE_DIR:main_ui> DESTINATION "/" COMPONENT "application")
   if(NOT MSVC)
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/prefix/bin/libzlib.dll" DESTINATION "bin/bin/")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/prefix/bin/libzlib.dll" DESTINATION ${WINDOWS_APPLICATION_OUT_DIRECTORY} COMPONENT "application")
     add_custom_command(TARGET zlib POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
       "${CMAKE_CURRENT_BINARY_DIR}/prefix/bin/libzlib.dll"
-      "${CMAKE_CURRENT_BINARY_DIR}/bin"
+      "${CMAKE_CURRENT_BINARY_DIR}/${WINDOWS_APPLICATION_OUT_DIRECTORY}"
       COMMENT "Copying zlib dll")
   endif(NOT MSVC)
-  set(CPACK_PACKAGE_EXECUTABLES "veles.exe" "VELES")
+  set(CPACK_NSIS_EXECUTABLES_DIRECTORY ${WINDOWS_APPLICATION_OUT_DIRECTORY})
+  set(CPACK_NSIS_MUI_FINISHPAGE_RUN "veles")
+  set(CPACK_NSIS_INSTALLED_ICON_NAME "${WINDOWS_APPLICATION_OUT_DIRECTORY}/veles.exe")
+  set(CPACK_NSIS_DISPLAY_NAME "Veles")
+  set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "Codisec")
+  set(CPACK_PACKAGE_INSTALL_DIRECTORY "Veles")
+  string(TIMESTAMP VERSION "%Y.%m")
+  set(CPACK_PACKAGE_VERSION "${VERSION}")
+  set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+  set(CPACK_NSIS_URL_INFO_ABOUT "https://veles.io")
+  set(CPACK_NSIS_CONTACT "contact@codisec.com")
+  set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/resources/install/license.txt")
+  set(CPACK_PACKAGE_EXECUTABLES "veles" "VELES")
+  set(CPACK_CREATE_DESKTOP_LINKS "veles")
+  set(CPACK_NSIS_MODIFY_PATH ON)
 endif(WIN32)
 
 # Apple
@@ -456,11 +477,18 @@ if(APPLE)
     COMMAND ${MACDEPLOYQT_EXECUTABLE} ARGS ${CMAKE_CURRENT_BINARY_DIR}/\${CONFIGURATION}/$<TARGET_PROPERTY:main_ui,OUTPUT_NAME>.app ${MACDEPLOYQT_ARGS}
     DEPENDS $<TARGET_FILE:main_ui>)
   set_target_properties(main_ui PROPERTIES MACOSX_BUNDLE TRUE)
-  install(TARGETS main_ui BUNDLE DESTINATION "veles")
+  install(TARGETS main_ui BUNDLE DESTINATION "veles" COMPONENT "application")
   set(CPACK_PACKAGE_EXECUTABLES "veles.app" "VELES")
 endif(APPLE)
 
+set(CPACK_COMPONENT_APPLICATION_DISPLAY_NAME "Veles UI application")
+set(CPACK_COMPONENT_APPLICATION_REQUIRED ON)
+
 # Few common CPack settings
+set(CPACK_PACKAGE_VENDOR "Codilime")
+set(CPACK_PACKAGE_NAME "veles")
+set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VELES tool for binary data analysis")
 set(CPACK_MONOLITHIC_INSTALL)
 set(CPACK_STRIP_FILES false)
 INCLUDE(CPack)
