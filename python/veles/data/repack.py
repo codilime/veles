@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from enum import Enum
 import operator
 
 from six.moves import range
@@ -25,10 +24,10 @@ except ImportError:
     from fractions import gcd
 
 from veles.schema.model import Model
-from veles.schema import fields
+from veles.schema import fields, enumeration
 
 
-class Endian(Enum):
+class Endian(enumeration.EnumModel):
     """
     Represents endianness used for repacking data.
     """

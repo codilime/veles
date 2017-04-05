@@ -15,12 +15,11 @@
 from __future__ import unicode_literals
 
 import unittest
-import enum
 import six
 
 from veles.data.bindata import BinData
 from veles.schema.nodeid import NodeID
-from veles.schema import fields
+from veles.schema import fields, enumeration
 from veles.proto.exceptions import VelesException, SchemaError
 
 
@@ -58,7 +57,7 @@ class Zlew(object):
         return 13
 
 
-class ZlewType(enum.Enum):
+class ZlewType(enumeration.EnumModel):
     ZLEW = 'zlewzlewzlew'
     TURBOZLEW = b'turbo'
     DWUZLEW = 2

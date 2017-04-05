@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import enum
 import six
 
 from veles.compatibility import pep487
 from veles.proto.exceptions import SchemaError
 from veles.data import bindata
 from . import nodeid
+from . import enumeration
 
 
 class Field(pep487.NewObject):
@@ -368,7 +368,7 @@ class Object(Field):
 
 class Enum(Field):
     def __init__(self, value_type, optional=False, default=None):
-        if not issubclass(value_type, enum.Enum):
+        if not issubclass(value_type, enumeration.EnumModel):
             raise TypeError('Enum field value_type has to be an enum.')
         self.value_type = value_type
         super(Enum, self).__init__(optional, default)
@@ -384,6 +384,8 @@ class Enum(Field):
         return six.text_type(value.name)
 
     def cpp_type(self):
-        # TODO implement this - we will need to generate
-        # some code from value_type class
-        raise NotImplementedError()
+        return (self.value_type.cpp_type(), True,
+                '{0}::{1}'.format(
+                   self.value_type.cpp_type(),
+                   (self.default.name if self.default is not None
+                    else list(self.value_type.__members__)[0]).upper()))

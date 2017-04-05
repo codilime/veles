@@ -14,29 +14,27 @@
 
 from __future__ import unicode_literals
 
-from enum import Enum
-
-from veles.schema import model, fields
+from veles.schema import model, fields, enumeration
 from veles.data.repack import Repacker
 
 
-class FieldSignMode(Enum):
+class FieldSignMode(enumeration.EnumModel):
     unsigned = 'unsigned'
     signed = 'signed'
 
 
-class FieldFloatMode(Enum):
+class FieldFloatMode(enumeration.EnumModel):
     ieee754_single = 'ieee754_single'
     ieee754_double = 'ieee754_double'
 
 
-class FieldStringMode(Enum):
+class FieldStringMode(enumeration.EnumModel):
     raw = 'raw'
     zero_padded = 'zero_padded'
     zero_terminated = 'zero_terminated'
 
 
-class FieldStringEncoding(Enum):
+class FieldStringEncoding(enumeration.EnumModel):
     raw = 'raw'
     utf8 = 'utf8'
     utf16 = 'utf16'
