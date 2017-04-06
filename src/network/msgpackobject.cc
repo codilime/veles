@@ -332,11 +332,11 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::string
 }
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const data::NodeID& val) {
-  return std::make_shared<MsgpackObject>(0, val.asVector());
+  return std::make_shared<MsgpackObject>(0, val.asStdVector());
 }
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::NodeID> val) {
-  return std::make_shared<MsgpackObject>(0, val->asVector());
+  return std::make_shared<MsgpackObject>(0, val->asStdVector());
 }
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<proto::VelesException> val) {
