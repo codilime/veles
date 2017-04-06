@@ -19,7 +19,6 @@
 #include <QObject>
 #include <QSharedPointer>
 #include <QWeakPointer>
-#include <memory>
 #include "dbif/types.h"
 
 namespace veles {

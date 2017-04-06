@@ -77,7 +77,7 @@ class RootLocalObject : public LocalObject {
  public:
   void runMethod(MethodRunner *runner, PMethodRequest req) override;
   void getInfo(InfoGetter *getter, PInfoRequest req, bool once) override;
-  dbif::ObjectType type() const override { return dbif::ROOT; };
+  dbif::ObjectType type() const override { return dbif::ROOT; }
   void parsers_list_updated();
 
   static PLocalObject create(Universe *db) {
@@ -123,7 +123,7 @@ class FileBlobObject : public DataBlobObject {
     parent->addChild(res);
     return res;
   }
-  dbif::ObjectType type() const override { return dbif::FILE_BLOB; };
+  dbif::ObjectType type() const override { return dbif::FILE_BLOB; }
   QString path() const { return path_; }
 };
 
@@ -143,7 +143,7 @@ class SubBlobObject : public DataBlobObject {
     parent->addChild(res);
     return res;
   }
-  dbif::ObjectType type() const override { return dbif::SUB_BLOB; };
+  dbif::ObjectType type() const override { return dbif::SUB_BLOB; }
 };
 
 class ChunkObject : public LocalObject {
@@ -172,7 +172,7 @@ class ChunkObject : public LocalObject {
   virtual void parse_reply(InfoGetter *getter);
   void getInfo(InfoGetter *getter, PInfoRequest req, bool once) override;
   void runMethod(MethodRunner *runner, PMethodRequest req) override;
-  dbif::ObjectType type() const override { return dbif::CHUNK; };
+  dbif::ObjectType type() const override { return dbif::CHUNK; }
   void killed() override;
 
  public:
