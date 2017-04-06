@@ -17,6 +17,8 @@
 
 #include "network/msgpackobject.h"
 
+#include <cstdint>
+
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
@@ -32,15 +34,15 @@ TEST(MsgpackObject, SimpleAccess) {
   EXPECT_EQ(nil.type(), ObjectType::NIL);
   EXPECT_THROW(nil.getBool(), proto::SchemaError);
 
-  MsgpackObject pos_int(42ull);
+  MsgpackObject pos_int(UINT64_C(42));
   EXPECT_EQ(pos_int.type(), ObjectType::UNSIGNED_INTEGER);
-  EXPECT_EQ(pos_int.getUnsignedInt(), 42ull);
-  EXPECT_EQ(pos_int.getSignedInt(), 42ll);
+  EXPECT_EQ(pos_int.getUnsignedInt(), UINT64_C(42));
+  EXPECT_EQ(pos_int.getSignedInt(), INT64_C(42));
   EXPECT_THROW(pos_int.getBool(), proto::SchemaError);
 
-  MsgpackObject neg_int(-42ll);
+  MsgpackObject neg_int(INT64_C(-42));
   EXPECT_EQ(neg_int.type(), ObjectType::SIGNED_INTEGER);
-  EXPECT_EQ(neg_int.getSignedInt(), -42ll);
+  EXPECT_EQ(neg_int.getSignedInt(), INT64_C(-42));
   EXPECT_THROW(neg_int.getUnsignedInt(), proto::SchemaError);
   EXPECT_THROW(neg_int.getBool(), proto::SchemaError);
 
@@ -122,16 +124,16 @@ TEST(MsgpackObject, TestComparison) {
   EXPECT_NE(tru, fals);
   EXPECT_NE(tru, nil);
 
-  MsgpackObject pos(42ull);
-  MsgpackObject pos2(42ull);
-  MsgpackObject pos3(24ull);
+  MsgpackObject pos(UINT64_C(42));
+  MsgpackObject pos2(UINT64_C(42));
+  MsgpackObject pos3(UINT64_C(24));
   EXPECT_EQ(pos, pos2);
   EXPECT_NE(pos, pos3);
   EXPECT_NE(pos, nil);
 
-  MsgpackObject neg(-42ll);
-  MsgpackObject neg2(-42ll);
-  MsgpackObject neg3(-24ll);
+  MsgpackObject neg(INT64_C(-42));
+  MsgpackObject neg2(INT64_C(-42));
+  MsgpackObject neg3(INT64_C(-24));
   EXPECT_EQ(neg, neg2);
   EXPECT_NE(neg, neg3);
   EXPECT_NE(neg, nil);
@@ -206,10 +208,10 @@ TEST(MsgpackObject, SimpleMsgpackConversion) {
   MsgpackObject tru(true);
   pack_unpack_check(tru);
 
-  MsgpackObject pos(42ull);
+  MsgpackObject pos(UINT64_C(42));
   pack_unpack_check(pos);
 
-  MsgpackObject neg(-42ll);
+  MsgpackObject neg(INT64_C(-42));
   pack_unpack_check(neg);
 
   MsgpackObject dbl(5.0);
