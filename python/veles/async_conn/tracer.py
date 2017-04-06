@@ -121,42 +121,41 @@ class AsyncTracer:
         return self._get_from_node(
             id, lambda node: self._get_bindata_size(node, key))
 
-    async def _get_data(self, id, key, adata):
+    async def _get_data(self, node, key, adata):
         try:
             res = await adata
         except ObjectGoneError:
             self.checks.append(check.CheckGone(
-                node=id,
+                node=node,
             ))
             raise
         else:
             self.checks.append(check.CheckData(
-                node=id,
+                node=node,
                 key=key,
                 data=res,
             ))
             return res
 
-    def get_data(self, id, key):
-        if (id, key) not in self.node_data:
-            anode = self.conn.get_node_norefresh(id)
-            adata = anode.get_data(key)
+    def get_data(self, node, key):
+        if (node, key) not in self.node_data:
+            adata = self.conn.get_data(node, key)
             loop = asyncio.get_event_loop()
-            task = loop.create_task(self._get_data(id, key, adata))
-            self.node_data[id, key] = task
-        return self.node_data[id, key]
+            task = loop.create_task(self._get_data(node, key, adata))
+            self.node_data[node, key] = task
+        return self.node_data[node, key]
 
-    async def _get_bindata(self, id, key, start, end, adata):
+    async def _get_bindata(self, node, key, start, end, adata):
         try:
             res = await adata
         except ObjectGoneError:
             self.checks.append(check.CheckGone(
-                node=id,
+                node=node,
             ))
             raise
         else:
             self.checks.append(check.CheckBinData(
-                node=id,
+                node=node,
                 key=key,
                 start=start,
                 end=end,
@@ -164,18 +163,18 @@ class AsyncTracer:
             ))
             return res
 
-    def get_bindata(self, id, key, start=0, end=None):
-        anode = self.conn.get_node_norefresh(id)
-        adata = anode.get_bindata(key, start, end)
+    def get_bindata(self, node, key, start=0, end=None):
+        adata = self.conn.get_bindata(node, key, start, end)
         loop = asyncio.get_event_loop()
-        return loop.create_task(self._get_bindata(id, key, start, end, adata))
+        return loop.create_task(
+            self._get_bindata(node, key, start, end, adata))
 
     async def _get_list(self, parent, tags, pos_filter, ares):
         try:
             res = await ares
         except ObjectGoneError:
             self.checks.append(check.CheckGone(
-                node=id,
+                node=parent,
             ))
             raise
         else:
@@ -190,11 +189,9 @@ class AsyncTracer:
             return [x.id for x in res]
 
     def get_list(self, parent, tags=set(), pos_filter=PosFilter()):
-        anode = self.conn.get_node_norefresh(parent)
-        ares = anode.get_list(tags, pos_filter)
+        ares = self.conn.get_list(parent, tags, pos_filter)
         loop = asyncio.get_event_loop()
         return loop.create_task(self._get_list(parent, tags, pos_filter, ares))
 
-    def get_query(self, id, sig, params):
-        anode = self.conn.get_node_norefresh(id)
-        return anode.get_query(sig, params, self.checks)
+    def get_query(self, node, sig, params):
+        return self.conn.get_query(node, sig, params, self.checks)
