@@ -93,7 +93,7 @@ def db_bigint_decode(val):
     return None if val is None else bigint_decode(bytes(val))
 
 
-class Database:
+class DbBackend:
     def __init__(self, path):
         if path is None:
             path = ':memory:'

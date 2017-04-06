@@ -20,7 +20,7 @@ import os.path
 
 import six
 
-from veles.db import Database
+from veles.db.backend import DbBackend
 from veles.data.bindata import BinData
 from veles.proto.node import Node
 from veles.schema.nodeid import NodeID
@@ -32,9 +32,9 @@ from veles.tests.proto.test_pos_filter import (
 )
 
 
-class TestDatabase(unittest.TestCase):
+class TestDbBackend(unittest.TestCase):
     def test_simple(self):
-        db = Database(None)
+        db = DbBackend(None)
         node = Node(id=NodeID(),
                     tags={'my_tag'},
                     attr={'my_attr': 'my_val'},
@@ -66,7 +66,7 @@ class TestDatabase(unittest.TestCase):
         d = tempfile.mkdtemp()
         path = os.path.join(d, 'x.db')
         try:
-            db1 = Database(path)
+            db1 = DbBackend(path)
             node = Node(id=NodeID(),
                         tags={'my_tag'},
                         attr={'my_attr': 'my_val'},
@@ -76,7 +76,7 @@ class TestDatabase(unittest.TestCase):
                         bindata={'my_bindata': 12345})
             db1.create(node)
             db1.close()
-            db2 = Database(path)
+            db2 = DbBackend(path)
             n1 = db2.get(NodeID())
             self.assertEqual(n1, None)
             n2 = db2.get(node.id)
@@ -98,7 +98,7 @@ class TestDatabase(unittest.TestCase):
             os.rmdir(d)
 
     def test_delete(self):
-        db = Database(None)
+        db = DbBackend(None)
         node = Node(id=NodeID(),
                     tags={'my_node'},
                     attr={'a': 'b'},
@@ -126,7 +126,7 @@ class TestDatabase(unittest.TestCase):
             db.delete(b'zlew')
 
     def test_parent(self):
-        db = Database(None)
+        db = DbBackend(None)
         id1 = NodeID()
         id2 = NodeID()
         n1 = Node(id=id1, attr={'name': 'parent'}, data=set(), tags=set(),
@@ -179,7 +179,7 @@ class TestDatabase(unittest.TestCase):
             db.set_parent(id1, id2.bytes)
 
     def test_pos(self):
-        db = Database(None)
+        db = DbBackend(None)
         node = Node(id=NodeID(),
                     tags=set(),
                     attr={},
@@ -206,7 +206,7 @@ class TestDatabase(unittest.TestCase):
             db.set_pos(node.id, b'zlew', None)
 
     def test_tags(self):
-        db = Database(None)
+        db = DbBackend(None)
         node = Node(id=NodeID(),
                     tags={'abc', 'def', 'ghi'},
                     attr={},
@@ -231,7 +231,7 @@ class TestDatabase(unittest.TestCase):
             db.del_tag(node.id, 123)
 
     def test_attr(self):
-        db = Database(None)
+        db = DbBackend(None)
         id2 = NodeID()
         node = Node(id=NodeID(),
                     tags={'my_tag'},
@@ -294,7 +294,7 @@ class TestDatabase(unittest.TestCase):
             db.set_attr(node.id, 123, 456)
 
     def test_data(self):
-        db = Database(None)
+        db = DbBackend(None)
         node = Node(id=NodeID(),
                     tags={'my_tag'},
                     attr={'my_attr': 'my_val'},
@@ -349,7 +349,7 @@ class TestDatabase(unittest.TestCase):
             db.get_data(node.id, 123)
 
     def test_bindata(self):
-        db = Database(None)
+        db = DbBackend(None)
         node = Node(id=NodeID(),
                     tags=set(),
                     attr={},
@@ -448,7 +448,7 @@ class TestDatabase(unittest.TestCase):
             db.get_bindata(node.id, 123)
 
     def test_list_simple(self):
-        db = Database(None)
+        db = DbBackend(None)
         n1 = Node(id=NodeID(), tags={'aaa', 'bbb'})
         n2 = Node(id=NodeID(), tags={'aaa', 'ccc'})
         n1_1 = Node(id=NodeID(), parent=n1.id, tags={'ddd'})
@@ -474,7 +474,7 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(set(db.list(n1_2.id)), set())
 
     def test_list_pos(self):
-        db = Database(None)
+        db = DbBackend(None)
         for node in LIST_NODES:
             db.create(node)
         for fil, res in LIST_CASES:

@@ -25,7 +25,7 @@ from collections import defaultdict
 
 from veles.util.future import done_future, bad_future
 from veles.schema.nodeid import NodeID
-from veles.db import Database
+from veles.db.backend import DbBackend
 from veles.proto import operation, check
 from veles.proto.node import Node
 from veles.proto.exceptions import (
@@ -75,7 +75,7 @@ class NameTagsRegistry:
 class AsyncLocalConnection(AsyncConnection):
     def __init__(self, loop, path):
         self.loop = loop
-        self.db = Database(path)
+        self.db = DbBackend(path)
         self.conns = {}
         self.objs = weakref.WeakValueDictionary()
         self.next_cid = 0
