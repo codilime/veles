@@ -188,13 +188,13 @@ class RemoteQueryHandler(QueryHandler):
         self.phid = phid
         super().__init__(query, tags)
 
-    def get_query(self, conn, anode, params, checks):
+    def get_query(self, conn, node, params, checks):
         runner = RemoteQueryRunner(checks)
         self.proto.pqids[id(runner)] = runner
         self.proto.send_msg(messages.MsgPluginQueryGet(
             pqid=id(runner),
             phid=self.phid,
-            node=anode.node,
+            node=node,
             params=params,
         ))
         return runner.future

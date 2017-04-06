@@ -154,9 +154,7 @@ class ClientProto(asyncio.Protocol):
     async def msg_plugin_query_get(self, msg):
         handler = self.handlers[msg.phid]
         checks = []
-        anode = self.conn.get_node_norefresh(msg.node.id)
-        anode.node = msg.node
-        aresult = handler.get_query(self.conn, anode, msg.params, checks)
+        aresult = handler.get_query(self.conn, msg.node, msg.params, checks)
         try:
             result = await aresult
         except VelesException as e:

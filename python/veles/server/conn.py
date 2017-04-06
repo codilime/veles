@@ -169,7 +169,7 @@ class AsyncLocalConnection(AsyncConnection):
             try:
                 handler = self.queries.find(name, anode.node.tags)
                 result = await handler.get_query(
-                    self, anode, params, cur_checks)
+                    self, anode.node, params, cur_checks)
             except VelesException:
                 if self._checks_ok(cur_checks):
                     if checks is not None:

@@ -29,7 +29,7 @@ class AsyncTracer:
 
     def _get_node(self, id):
         if id not in self.nodes:
-            self.nodes[id] = self.conn.get_node(id)
+            self.nodes[id] = self.conn.get(id)
         return self.nodes[id]
 
     def _inject_node(self, node):
@@ -41,7 +41,7 @@ class AsyncTracer:
 
         async def inner():
             try:
-                node = (await anode).node
+                node = await anode
             except ObjectGoneError:
                 self.checks.append(check.CheckGone(
                     node=id,

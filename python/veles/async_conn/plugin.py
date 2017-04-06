@@ -71,7 +71,7 @@ class QueryHandler:
         self.query = query
         self.tags = tags
 
-    def get_query(self, conn, anode, params, checks):
+    def get_query(self, conn, node, params, checks):
         """
         Returns an awaitable of result.
         """
@@ -86,21 +86,21 @@ class LocalQueryHandler(QueryHandler):
         self.sig = sig
         self.func = func
 
-    async def _get_query(self, conn, anode, params, checks):
+    async def _get_query(self, conn, node, params, checks):
         params = self.sig.params.load(params)
         tracer = AsyncTracer(conn)
-        tracer._inject_node(anode)
+        tracer._inject_node(node)
         try:
-            result = await self.func(conn, anode, params, tracer)
+            result = await self.func(conn, node.id, params, tracer)
         finally:
             if checks is not None:
                 checks += tracer.checks
         result = self.sig.result.dump(result)
         return result
 
-    def get_query(self, conn, anode, params, checks):
+    def get_query(self, conn, node, params, checks):
         loop = asyncio.get_event_loop()
-        return loop.create_task(self._get_query(conn, anode, params, checks))
+        return loop.create_task(self._get_query(conn, node, params, checks))
 
 
 class BroadcastHandler:
