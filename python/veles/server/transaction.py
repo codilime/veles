@@ -14,6 +14,7 @@
 
 from copy import deepcopy
 
+from veles.schema.nodeid import NodeID
 from veles.proto.exceptions import (
     ObjectGoneError,
 )
@@ -82,17 +83,21 @@ class Transaction:
             # Now send out all buffered list changes.
             for sub, (objs, gone) in self.list_changes.items():
                 # Skip deleted parents - they already got an exception above.
-                if sub.parent.node is None and sub.parent != self.conn.root:
-                    continue
+                if sub.parent != NodeID.root_id:
+                    anode = self.conn.get_node_norefresh(sub.parent)
+                    if anode.node is None:
+                        continue
                 sub.list_changed(list(objs.values()), list(gone))
             # Send out data subs.
             for sub, data in self.data_subs.items():
-                if sub.obj.node is None:
+                anode = self.conn.get_node_norefresh(sub.node)
+                if anode.node is None:
                     continue
                 sub.data_changed(data)
             # Send out bindata subs.
             for sub in self.bindata_subs:
-                if sub.obj.node is None:
+                anode = self.conn.get_node_norefresh(sub.node)
+                if anode.node is None:
                     continue
                 data = self.conn.db.get_bindata(
                     sub.node, sub.key, sub.start, sub.end)
@@ -110,7 +115,7 @@ class Transaction:
 
     def list_add(self, sub, node):
         self.list_ensure(sub)
-        self.list_changes[sub][0][node.id] = node
+        self.list_changes[sub][0][node.id] = node.node
 
     def list_remove(self, sub, node):
         self.list_ensure(sub)

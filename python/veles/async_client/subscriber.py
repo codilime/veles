@@ -12,28 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from veles.async_conn.node import AsyncNode
 from veles.proto import messages
 from veles.proto.exceptions import (
     SchemaError,
 )
 
 
-class BaseSub:
-    def __init__(self, sub, proto):
+class BaseSubManager:
+    def __init__(self, sub):
         self.sub = sub
-        self.proto = proto
+        self.proto = sub.tracker.proto
         self.proto.qids[id(self)] = self
-        self.alive = True
 
     def cancel(self):
-        self.alive = False
         self.proto.send_msg(messages.MsgCancelSubscription(
             qid=id(self),
         ))
 
     def handle_reply(self, msg):
-        if not self.alive:
+        if not self.sub.active:
             return
         self._handle_reply(msg)
 
@@ -41,33 +38,32 @@ class BaseSub:
         self.sub.error(exc)
 
     def handle_error(self, exc, checks):
-        if not self.alive:
+        if not self.sub.active:
             return
         self._handle_error(exc, checks)
 
 
-class GetterSub(BaseSub):
+class NodeSubManager(BaseSubManager):
     def __init__(self, sub):
-        super().__init__(sub, sub.obj.proto)
+        super().__init__(sub, sub.tracker.proto)
         self.proto.send_msg(messages.MsgGet(
             qid=id(self),
-            id=sub.obj.id,
+            id=sub.node,
             sub=True,
         ))
 
     def _handle_reply(self, msg):
         if not isinstance(msg, messages.MsgGetReply):
             raise SchemaError('weird reply to get')
-        self.sub.obj.node = msg.obj
-        self.sub.object_changed()
+        self.sub.node_changed(msg.obj)
 
 
-class DataSub(BaseSub):
+class DataSubManager(BaseSubManager):
     def __init__(self, sub):
-        super().__init__(sub, sub.obj.proto)
+        super().__init__(sub)
         self.proto.send_msg(messages.MsgGetData(
             qid=id(self),
-            id=sub.obj.id,
+            id=sub.node,
             key=sub.key,
             sub=True,
         ))
@@ -78,12 +74,12 @@ class DataSub(BaseSub):
         self.sub.data_changed(msg.data)
 
 
-class BinDataSub(BaseSub):
+class BinDataSubManager(BaseSubManager):
     def __init__(self, sub):
-        super().__init__(sub, sub.obj.proto)
+        super().__init__(sub)
         self.proto.send_msg(messages.MsgGetBinData(
             qid=id(self),
-            id=sub.obj.id,
+            id=sub.node,
             key=sub.key,
             start=sub.start,
             end=sub.end,
@@ -96,13 +92,12 @@ class BinDataSub(BaseSub):
         self.sub.bindata_changed(msg.data)
 
 
-class ListSub(BaseSub):
+class ListSubManager(BaseSubManager):
     def __init__(self, sub):
-        self.conn = sub.parent.conn
-        super().__init__(sub, sub.parent.proto)
+        super().__init__(sub)
         self.proto.send_msg(messages.MsgGetList(
             qid=id(self),
-            parent=sub.parent.id,
+            parent=sub.parent,
             tags=sub.tags,
             pos_filter=sub.pos_filter,
             sub=True,
@@ -111,21 +106,15 @@ class ListSub(BaseSub):
     def _handle_reply(self, msg):
         if not isinstance(msg, messages.MsgGetListReply):
             raise SchemaError('weird reply to get_list')
-        res = []
-        for node in msg.objs:
-            obj = self.conn.get_node_norefresh(node.id)
-            obj.node = node
-            res.append(obj)
-        self.sub.list_changed(res, msg.gone)
+        self.sub.list_changed(msg.objs, msg.gone)
 
 
-class QuerySub(BaseSub):
+class QuerySubManager(BaseSubManager):
     def __init__(self, sub):
-        self.conn = sub.obj.conn
-        super().__init__(sub, sub.obj.proto)
+        super().__init__(sub)
         self.proto.send_msg(messages.MsgGetQuery(
             qid=id(self),
-            node=sub.obj.id,
+            node=sub.node,
             query=sub.name,
             params=sub.params,
             trace=sub.trace,
@@ -139,47 +128,3 @@ class QuerySub(BaseSub):
 
     def _handle_error(self, exc, checks):
         self.sub.error(exc, checks)
-
-
-class AsyncRemoteNode(AsyncNode):
-    def __init__(self, conn, id, node):
-        super().__init__(conn, id, node)
-        self.proto = conn.proto
-        self.subs = {}
-
-    # subscriptions
-
-    def _add_sub(self, sub):
-        self.subs[sub] = GetterSub(sub)
-
-    def _del_sub(self, sub):
-        self.subs[sub].cancel()
-        del self.subs[sub]
-
-    def _add_sub_data(self, sub):
-        self.subs[sub] = DataSub(sub)
-
-    def _del_sub_data(self, sub):
-        self.subs[sub].cancel()
-        del self.subs[sub]
-
-    def _add_sub_bindata(self, sub):
-        self.subs[sub] = BinDataSub(sub)
-
-    def _del_sub_bindata(self, sub):
-        self.subs[sub].cancel()
-        del self.subs[sub]
-
-    def _add_sub_list(self, sub):
-        self.subs[sub] = ListSub(sub)
-
-    def _del_sub_list(self, sub):
-        self.subs[sub].cancel()
-        del self.subs[sub]
-
-    def _add_sub_query(self, sub):
-        self.subs[sub] = QuerySub(sub)
-
-    def _del_sub_query(self, sub):
-        self.subs[sub].cancel()
-        del self.subs[sub]

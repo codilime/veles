@@ -17,33 +17,33 @@ import asyncio
 from veles.proto import check
 from veles.proto.exceptions import VelesException
 from veles.async_conn.subscriber import (
-    BaseSubscriber,
+    BaseSubscriberNode,
     BaseSubscriberData,
     BaseSubscriberBinData,
     BaseSubscriberList,
 )
 
 
-class CheckGoneSubscriber(BaseSubscriber):
-    def __init__(self, obj, manager):
+class CheckGoneSubscriber(BaseSubscriberNode):
+    def __init__(self, tracker, node, manager):
         self.manager = manager
-        super().__init__(obj)
+        super().__init__(tracker, node)
 
-    def object_changed(self):
+    def node_changed(self, node):
         self.manager.invalidate()
 
     def error(self, err):
         pass
 
 
-class CheckNodeSubscriber(BaseSubscriber):
-    def __init__(self, obj, manager):
+class CheckNodeSubscriber(BaseSubscriberNode):
+    def __init__(self, tracker, node, manager):
         self.manager = manager
         self.checks = []
-        super().__init__(obj)
+        super().__init__(tracker, node)
 
-    def object_changed(self):
-        if not self.obj.conn._checks_ok(self.checks):
+    def node_changed(self, node):
+        if not self.manager.conn._checks_ok(self.checks):
             self.manager.invalidate()
 
     def error(self, err):
@@ -51,10 +51,10 @@ class CheckNodeSubscriber(BaseSubscriber):
 
 
 class CheckSubscriberData(BaseSubscriberData):
-    def __init__(self, obj, check, manager):
+    def __init__(self, tracker, check, manager):
         self.check = check
         self.manager = manager
-        super().__init__(obj, check.key)
+        super().__init__(tracker, check.node, check.key)
 
     def data_changed(self, data):
         if data != self.check.data:
@@ -65,10 +65,11 @@ class CheckSubscriberData(BaseSubscriberData):
 
 
 class CheckSubscriberBinData(BaseSubscriberBinData):
-    def __init__(self, obj, check, manager):
+    def __init__(self, tracker, check, manager):
         self.check = check
         self.manager = manager
-        super().__init__(obj, check.key, check.start, check.end)
+        super().__init__(
+            tracker, check.node, check.key, check.start, check.end)
 
     def bindata_changed(self, data):
         if data != self.check.data:
@@ -79,10 +80,10 @@ class CheckSubscriberBinData(BaseSubscriberBinData):
 
 
 class CheckSubscriberList(BaseSubscriberList):
-    def __init__(self, obj, check, manager):
+    def __init__(self, tracker, check, manager):
         self.check = check
         self.manager = manager
-        super().__init__(obj, check.tags, check.pos_filter)
+        super().__init__(tracker, check.parent, check.tags, check.pos_filter)
 
     def list_changed(self, changed, gone):
         if gone or any(node.id not in self.check.nodes for node in changed):
@@ -95,8 +96,8 @@ class CheckSubscriberList(BaseSubscriberList):
 class QueryManager:
     def __init__(self, sub):
         self.sub = sub
-        self.id = sub.obj.id
-        self.conn = sub.obj.conn
+        self.node = sub.node
+        self.conn = sub.tracker
         self.idle = True
         self.cancelled = False
         self.check_subs = set()
@@ -126,8 +127,7 @@ class QueryManager:
         for ch in checks:
             if isinstance(ch, check.CheckGone):
                 if ch.node not in checks_gone:
-                    anode = self.conn.get_node_norefresh(ch.node)
-                    sub = CheckGoneSubscriber(anode, self)
+                    sub = CheckGoneSubscriber(self.conn, ch.node, self)
                     self.check_subs.add(sub)
                     checks_gone[ch.node] = sub
             elif isinstance(ch, (
@@ -139,24 +139,20 @@ class QueryManager:
                 check.CheckBinDataSize,
             )):
                 if ch.node not in checks_node:
-                    anode = self.conn.get_node_norefresh(ch.node)
-                    sub = CheckNodeSubscriber(anode, self)
+                    sub = CheckNodeSubscriber(self.conn, ch.node, self)
                     self.check_subs.add(sub)
                     checks_node[ch.node] = sub
                 checks_node[ch.node].checks.append(ch)
             elif isinstance(ch, check.CheckData):
                 if (ch.node, ch.key) not in checks_data:
-                    anode = self.conn.get_node_norefresh(ch.node)
-                    sub = CheckSubscriberData(anode, ch, self)
+                    sub = CheckSubscriberData(self.conn, ch, self)
                     self.check_subs.add(sub)
                     checks_data[ch.node, ch.key] = sub
             elif isinstance(ch, check.CheckBinData):
-                anode = self.conn.get_node_norefresh(ch.node)
-                sub = CheckSubscriberBinData(anode, ch, self)
+                sub = CheckSubscriberBinData(self.conn, ch, self)
                 self.check_subs.add(sub)
             elif isinstance(ch, check.CheckList):
-                anode = self.conn.get_node_norefresh(ch.parent)
-                sub = CheckSubscriberList(anode, ch, self)
+                sub = CheckSubscriberList(self.conn, ch, self)
                 self.check_subs.add(sub)
             else:
                 assert False
@@ -165,7 +161,7 @@ class QueryManager:
         checks = []
         try:
             result = await self.conn._get_query_raw(
-                self.id, self.sub.name, self.sub.params, checks)
+                self.node, self.sub.name, self.sub.params, checks)
         except VelesException as e:
             if self.cancelled:
                 return

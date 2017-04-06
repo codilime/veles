@@ -40,10 +40,18 @@ from veles.proto.exceptions import (
 from veles.async_conn.plugin import (
     MethodHandler, QueryHandler, BroadcastHandler
 )
+from veles.async_conn.subscriber import (
+    BaseSubscriberNode,
+    BaseSubscriberData,
+    BaseSubscriberBinData,
+    BaseSubscriberList,
+    BaseSubscriberQuery,
+)
 from veles.async_conn.conn import AsyncConnection
 
 from .node import AsyncLocalNode
 from .transaction import Transaction
+from .query import QueryManager
 
 
 class NameTagsRegistry:
@@ -79,14 +87,16 @@ class AsyncLocalConnection(AsyncConnection):
         self.conns = {}
         self.objs = weakref.WeakValueDictionary()
         self.next_cid = 0
-        # all_subs is a set of all subscriptions in existence - this exists
+        # all_subs is a dict mapping all non-query subscriptions in existence
+        # to their AsyncLocalNodes - this exists
         # so that all involved objects are strongly referenced (otherwise,
         # being only reacheble through the weak dict, they could be GCd along
         # with all their subscriptions).
-        self.all_subs = set()
+        self.all_subs = {}
         self.methods = NameTagsRegistry()
         self.queries = NameTagsRegistry()
         self.broadcasts = {}
+        self.query_subs = {}
         super().__init__()
 
     def new_conn(self, conn):
@@ -445,3 +455,50 @@ class AsyncLocalConnection(AsyncConnection):
             self.broadcasts[handler.broadcast].remove(handler)
         else:
             raise TypeError('unknown type of plugin handler')
+
+    # subscribers
+
+    def register_subscriber(self, sub):
+        if isinstance(sub, BaseSubscriberNode):
+            anode = self.get_node_norefresh(sub.node)
+            anode._add_sub(sub)
+            self.all_subs[sub] = anode
+        elif isinstance(sub, BaseSubscriberData):
+            anode = self.get_node_norefresh(sub.node)
+            anode._add_sub_data(sub)
+            self.all_subs[sub] = anode
+        elif isinstance(sub, BaseSubscriberBinData):
+            anode = self.get_node_norefresh(sub.node)
+            anode._add_sub_bindata(sub)
+            self.all_subs[sub] = anode
+        elif isinstance(sub, BaseSubscriberList):
+            anode = self.get_node_norefresh(sub.parent)
+            anode._add_sub_list(sub)
+            self.all_subs[sub] = anode
+        elif isinstance(sub, BaseSubscriberQuery):
+            self.query_subs[sub] = QueryManager(sub)
+        else:
+            raise TypeError('unknown type of subscription')
+
+    def unregister_subscriber(self, sub):
+        if isinstance(sub, BaseSubscriberNode):
+            anode = self.get_node_norefresh(sub.node)
+            anode._del_sub(sub)
+            del self.all_subs[sub]
+        elif isinstance(sub, BaseSubscriberData):
+            anode = self.get_node_norefresh(sub.node)
+            anode._del_sub_data(sub)
+            del self.all_subs[sub]
+        elif isinstance(sub, BaseSubscriberBinData):
+            anode = self.get_node_norefresh(sub.node)
+            anode._del_sub_bindata(sub)
+            del self.all_subs[sub]
+        elif isinstance(sub, BaseSubscriberList):
+            anode = self.get_node_norefresh(sub.parent)
+            anode._del_sub_list(sub)
+            del self.all_subs[sub]
+        elif isinstance(sub, BaseSubscriberQuery):
+            self.query_subs[sub].cancel()
+            del self.query_subs[sub]
+        else:
+            raise TypeError('unknown type of subscription')

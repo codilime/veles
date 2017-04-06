@@ -12,182 +12,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
-
 import weakref
 
 from veles.proto import messages
 from veles.proto.node import PosFilter
-from veles.proto.exceptions import (
-    SchemaError,
-)
 from veles.async_conn.conn import AsyncConnection
 from veles.async_conn.plugin import (
     MethodHandler,
     QueryHandler,
     BroadcastHandler,
 )
-from .node import AsyncRemoteNode
-
-
-class Getter:
-    def __init__(self, proto, node):
-        self.proto = proto
-        self.future = asyncio.Future()
-        self.proto.qids[id(self)] = self
-        self.proto.send_msg(messages.MsgGet(
-            qid=id(self),
-            id=node
-        ))
-
-    def handle_reply(self, msg):
-        if not isinstance(msg, messages.MsgGetReply):
-            raise SchemaError('weird reply to get')
-        self.future.set_result(msg.obj)
-        del self.proto.qids[id(self)]
-
-    def handle_error(self, exc, checks):
-        self.future.set_exception(exc)
-        del self.proto.qids[id(self)]
-
-
-class DataGetter:
-    def __init__(self, proto, node, key):
-        self.proto = proto
-        self.future = asyncio.Future()
-        self.proto.qids[id(self)] = self
-        self.proto.send_msg(messages.MsgGetData(
-            qid=id(self),
-            id=node,
-            key=key,
-        ))
-
-    def handle_reply(self, msg):
-        if not isinstance(msg, messages.MsgGetDataReply):
-            raise SchemaError('weird reply to get_data')
-        self.future.set_result(msg.data)
-        del self.proto.qids[id(self)]
-
-    def handle_error(self, exc, checks):
-        self.future.set_exception(exc)
-        del self.proto.qids[id(self)]
-
-
-class BinDataGetter:
-    def __init__(self, proto, node, key, start, end):
-        self.proto = proto
-        self.future = asyncio.Future()
-        self.proto.qids[id(self)] = self
-        self.proto.send_msg(messages.MsgGetBinData(
-            qid=id(self),
-            id=node,
-            key=key,
-            start=start,
-            end=end,
-        ))
-
-    def handle_reply(self, msg):
-        if not isinstance(msg, messages.MsgGetBinDataReply):
-            raise SchemaError('weird reply to get_bindata')
-        self.future.set_result(msg.data)
-        del self.proto.qids[id(self)]
-
-    def handle_error(self, exc, checks):
-        self.future.set_exception(exc)
-        del self.proto.qids[id(self)]
-
-
-class ListGetter:
-    def __init__(self, proto, parent, tags, pos_filter):
-        self.proto = proto
-        self.future = asyncio.Future()
-        self.proto.qids[id(self)] = self
-        self.proto.send_msg(messages.MsgGetList(
-            qid=id(self),
-            parent=parent,
-            tags=tags,
-            pos_filter=pos_filter,
-        ))
-
-    def handle_reply(self, msg):
-        if not isinstance(msg, messages.MsgGetListReply):
-            raise SchemaError('weird reply to get_list')
-        self.future.set_result(msg.objs)
-        del self.proto.qids[id(self)]
-
-    def handle_error(self, exc, checks):
-        self.future.set_exception(exc)
-        del self.proto.qids[id(self)]
-
-
-class QueryGetter:
-    def __init__(self, proto, node, query, params, checks):
-        self.proto = proto
-        self.checks = checks
-        self.future = asyncio.Future()
-        self.proto.qids[id(self)] = self
-        self.proto.send_msg(messages.MsgGetQuery(
-            qid=id(self),
-            node=node,
-            query=query,
-            params=params,
-            trace=checks is not None,
-        ))
-
-    def handle_reply(self, msg):
-        if not isinstance(msg, messages.MsgGetQueryReply):
-            raise SchemaError('weird reply to get_query')
-        if self.checks is not None:
-            self.checks += msg.checks
-        self.future.set_result(msg.result)
-        del self.proto.qids[id(self)]
-
-    def handle_error(self, exc, checks):
-        if self.checks is not None:
-            self.checks += checks
-        self.future.set_exception(exc)
-        del self.proto.qids[id(self)]
-
-
-class Request:
-    def __init__(self, proto):
-        self.proto = proto
-        self.future = asyncio.Future()
-        self.proto.rids[id(self)] = self
-
-    def handle_ack(self):
-        self.future.set_result(None)
-        del self.proto.rids[id(self)]
-
-    def handle_error(self, exc):
-        self.future.set_exception(exc)
-        del self.proto.rids[id(self)]
-
-
-class MethodRunner:
-    def __init__(self, proto):
-        self.proto = proto
-        self.future = asyncio.Future()
-        self.proto.mids[id(self)] = self
-
-    def handle_result(self, result):
-        self.future.set_result(result)
-        del self.proto.mids[id(self)]
-
-    def handle_error(self, exc):
-        self.future.set_exception(exc)
-        del self.proto.mids[id(self)]
-
-
-class BroadcastRunner:
-    def __init__(self, proto):
-        self.proto = proto
-        self.future = asyncio.Future()
-        self.proto.bids[id(self)] = self
-
-    def handle_result(self, result):
-        self.future.set_result(result)
-        del self.proto.bids[id(self)]
+from veles.async_conn.node import AsyncNode
+from veles.async_conn.subscriber import (
+    BaseSubscriberNode,
+    BaseSubscriberData,
+    BaseSubscriberBinData,
+    BaseSubscriberList,
+    BaseSubscriberQuery,
+)
+from .runner import (
+    NodeGetter,
+    DataGetter,
+    BinDataGetter,
+    ListGetter,
+    QueryGetter,
+    Request,
+    MethodRunner,
+    BroadcastRunner,
+)
+from .subscriber import (
+    NodeSubManager,
+    DataSubManager,
+    BinDataSubManager,
+    ListSubManager,
+    QuerySubManager,
+)
 
 
 class AsyncRemoteConnection(AsyncConnection):
@@ -198,13 +57,14 @@ class AsyncRemoteConnection(AsyncConnection):
         self.conns = {}
         self.next_cid = 0
         self.proto.conn = self
+        self.subs = {}
         super().__init__()
 
     def get_node_norefresh(self, obj_id):
         try:
             return self.objs[obj_id]
         except KeyError:
-            res = AsyncRemoteNode(self, obj_id, None)
+            res = AsyncNode(self, obj_id, None)
             self.objs[obj_id] = res
             return res
 
@@ -222,7 +82,7 @@ class AsyncRemoteConnection(AsyncConnection):
     # getters
 
     def get(self, node):
-        return Getter(self.proto, node).future
+        return NodeGetter(self.proto, node).future
 
     def get_data(self, node, key):
         return DataGetter(self.proto, node, key).future
@@ -293,3 +153,24 @@ class AsyncRemoteConnection(AsyncConnection):
         self.proto.send_msg(messages.MsgPluginHandlerUnregister(
             phid=id(handler),
         ))
+
+    # subscribers
+
+    def register_subscriber(self, sub):
+        if isinstance(sub, BaseSubscriberNode):
+            manager = NodeSubManager(sub)
+        elif isinstance(sub, BaseSubscriberData):
+            manager = DataSubManager(sub)
+        elif isinstance(sub, BaseSubscriberBinData):
+            manager = BinDataSubManager(sub)
+        elif isinstance(sub, BaseSubscriberList):
+            manager = ListSubManager(sub)
+        elif isinstance(sub, BaseSubscriberQuery):
+            manager = QuerySubManager(sub)
+        else:
+            raise TypeError('unknown type of subscription')
+        self.subs[sub] = manager
+
+    def unregister_subscriber(self, sub):
+        self.subs[sub].cancel()
+        del self.subs[sub]

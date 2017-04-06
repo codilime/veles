@@ -18,46 +18,46 @@ from veles.proto.exceptions import VelesException
 
 
 class BaseSubscriber:
+    def __init__(self, tracker):
+        self.active = True
+        self.tracker = tracker
+        self.tracker.register_subscriber(self)
+
+    def cancel(self):
+        if self.active:
+            self.active = False
+            self.tracker.unregister_subscriber(self)
+
+
+class BaseSubscriberNode(BaseSubscriber):
     """
     A subscriber of node modifications.  To watch for node modifications,
-    create a subclass of this, override object_changed and error callbacks,
+    create a subclass of this, override node_changed and error callbacks,
     and create an instance.  When the subscription is no longer used, call
     cancel().
     """
 
-    def __init__(self, obj):
-        self.obj = obj
-        self.alive = True
-        self.obj._add_sub(self)
+    def __init__(self, tracker, node):
+        self.node = node
+        super().__init__(tracker)
 
-    def cancel(self):
-        if self.alive:
-            self.alive = False
-            self.obj._del_sub(self)
-
-    def object_changed(self):
+    def node_changed(self, node):
         raise NotImplementedError
 
     def error(self, err):
         raise NotImplementedError
 
 
-class BaseSubscriberData:
+class BaseSubscriberData(BaseSubscriber):
     """
     A subscriber of node data modifications.  ``data_changed`` will be called
     whenever the data value is changed.
     """
 
-    def __init__(self, obj, key):
-        self.obj = obj
+    def __init__(self, tracker, node, key):
+        self.node = node
         self.key = key
-        self.alive = True
-        self.obj._add_sub_data(self)
-
-    def cancel(self):
-        if self.alive:
-            self.alive = False
-            self.obj._del_sub_data(self)
+        super().__init__(tracker)
 
     def data_changed(self, data):
         raise NotImplementedError
@@ -66,24 +66,18 @@ class BaseSubscriberData:
         raise NotImplementedError
 
 
-class BaseSubscriberBinData:
+class BaseSubscriberBinData(BaseSubscriber):
     """
     A subscriber of node binary data modifications.  ``bindata_changed`` will
     be called whenever the given bindara range is changed.
     """
 
-    def __init__(self, obj, key, start, end):
-        self.obj = obj
+    def __init__(self, tracker, node, key, start, end):
+        self.node = node
         self.key = key
         self.start = start
         self.end = end
-        self.alive = True
-        self.obj._add_sub_bindata(self)
-
-    def cancel(self):
-        if self.alive:
-            self.alive = False
-            self.obj._del_sub_bindata(self)
+        super().__init__(tracker)
 
     def bindata_changed(self, data):
         raise NotImplementedError
@@ -92,24 +86,18 @@ class BaseSubscriberBinData:
         raise NotImplementedError
 
 
-class BaseSubscriberQueryRaw:
+class BaseSubscriberQueryRaw(BaseSubscriber):
     """
     A subscriber of query results.  ``raw_result_changed`` is called whenever
     the result changes.
     """
 
-    def __init__(self, obj, name, params, trace=False):
-        self.obj = obj
+    def __init__(self, tracker, node, name, params, trace=False):
+        self.node = node
         self.name = name
         self.params = params
         self.trace = trace
-        self.alive = True
-        self.obj._add_sub_query(self)
-
-    def cancel(self):
-        if self.alive:
-            self.alive = False
-            self.obj._del_sub_query(self)
+        super().__init__(tracker)
 
     def raw_result_changed(self, result, checks):
         raise NotImplementedError
@@ -125,9 +113,9 @@ class BaseSubscriberQuery(BaseSubscriberQueryRaw):
     the result changes.
     """
 
-    def __init__(self, obj, sig, params):
+    def __init__(self, tracker, node, sig, params):
         self.sig = sig
-        super().__init__(obj, sig.name, sig.params.dump(params))
+        super().__init__(tracker, node, sig.name, sig.params.dump(params))
 
     def result_changed(self, result):
         raise NotImplementedError
@@ -139,23 +127,18 @@ class BaseSubscriberQuery(BaseSubscriberQueryRaw):
             self.error(e, checks)
 
 
-class BaseSubscriberList:
-    def __init__(self, parent, tags=frozenset(), pos_filter=PosFilter()):
+class BaseSubscriberList(BaseSubscriber):
+    def __init__(self, tracker, parent, tags=frozenset(),
+                 pos_filter=PosFilter()):
         self.parent = parent
         self.tags = tags
         self.pos_filter = pos_filter
-        self.alive = True
-        self.parent._add_sub_list(self)
-
-    def cancel(self):
-        if self.alive:
-            self.alive = False
-            self.parent._del_sub_list(self)
+        super().__init__(tracker)
 
     def matches(self, node):
         if node is None:
             return False
-        if node.parent != self.parent.id:
+        if node.parent != self.parent:
             return False
         if not self.tags <= node.tags:
             return False

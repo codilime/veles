@@ -108,38 +108,6 @@ class AsyncNode:
         """
         return self.conn.get_query(self.id, sig, params, checks)
 
-    # subscriptions - only to be used by BaseSubscriber*.
-
-    def _add_sub(self, sub):
-        raise NotImplementedError
-
-    def _del_sub(self, sub):
-        raise NotImplementedError
-
-    def _add_sub_data(self, sub):
-        raise NotImplementedError
-
-    def _del_sub_data(self, sub):
-        raise NotImplementedError
-
-    def _add_sub_bindata(self, sub):
-        raise NotImplementedError
-
-    def _del_sub_bindata(self, sub):
-        raise NotImplementedError
-
-    def _add_sub_list(self, sub):
-        raise NotImplementedError
-
-    def _del_sub_list(self, sub):
-        raise NotImplementedError
-
-    def _add_sub_query(self, sub):
-        raise NotImplementedError
-
-    def _del_sub_query(self, sub):
-        raise NotImplementedError
-
     # mutators
 
     def _create(self, parent, pos=(None, None), tags=set(), attr={},

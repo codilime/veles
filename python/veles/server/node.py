@@ -18,8 +18,6 @@ from veles.proto.exceptions import (
 )
 from veles.schema.nodeid import NodeID
 
-from .query import QueryManager
-
 
 class AsyncLocalNode(AsyncNode):
     def __init__(self, conn, id, node, parent):
@@ -29,22 +27,19 @@ class AsyncLocalNode(AsyncNode):
         self.data_subs = {}
         self.bindata_subs = {}
         self.list_subs = {}
-        self.query_subs = {}
 
     # subscriptions
 
     def _add_sub(self, sub):
         self.subs.add(sub)
-        self.conn.all_subs.add(sub)
         self._send_sub(sub)
 
     def _del_sub(self, sub):
         self.subs.remove(sub)
-        self.conn.all_subs.remove(sub)
 
     def _send_sub(self, sub):
         if self.node is not None:
-            sub.object_changed()
+            sub.node_changed(self.node)
         else:
             sub.error(ObjectGoneError())
 
@@ -52,15 +47,13 @@ class AsyncLocalNode(AsyncNode):
         obj_ids = self.conn.db.list(self.id, sub.tags, sub.pos_filter)
         objs = {self.conn.get_node_norefresh(x) for x in obj_ids}
         self.list_subs[sub] = objs
-        self.conn.all_subs.add(sub)
         if self.node is not None or self.id == NodeID.root_id:
-            sub.list_changed(objs, [])
+            sub.list_changed([obj.node for obj in objs], [])
         else:
             sub.error(ObjectGoneError())
 
     def _del_sub_list(self, sub):
         del self.list_subs[sub]
-        self.conn.all_subs.remove(sub)
 
     # data sub
 
@@ -68,7 +61,6 @@ class AsyncLocalNode(AsyncNode):
         if sub.key not in self.data_subs:
             self.data_subs[sub.key] = set()
         self.data_subs[sub.key].add(sub)
-        self.conn.all_subs.add(sub)
         if self.node is None:
             sub.error(ObjectGoneError())
         else:
@@ -78,7 +70,6 @@ class AsyncLocalNode(AsyncNode):
         self.data_subs[sub.key].remove(sub)
         if not self.data_subs[sub.key]:
             del self.data_subs[sub.key]
-        self.conn.all_subs.remove(sub)
 
     # bindata sub
 
@@ -86,7 +77,6 @@ class AsyncLocalNode(AsyncNode):
         if sub.key not in self.bindata_subs:
             self.bindata_subs[sub.key] = set()
         self.bindata_subs[sub.key].add(sub)
-        self.conn.all_subs.add(sub)
         if self.node is None:
             sub.error(ObjectGoneError())
         else:
@@ -97,13 +87,3 @@ class AsyncLocalNode(AsyncNode):
         self.bindata_subs[sub.key].remove(sub)
         if not self.bindata_subs[sub.key]:
             del self.bindata_subs[sub.key]
-        self.conn.all_subs.remove(sub)
-
-    def _add_sub_query(self, sub):
-        self.query_subs[sub] = QueryManager(sub)
-        self.conn.all_subs.add(sub)
-
-    def _del_sub_query(self, sub):
-        self.query_subs[sub].cancel()
-        del self.query_subs[sub]
-        self.conn.all_subs.remove(sub)

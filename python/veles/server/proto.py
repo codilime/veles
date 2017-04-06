@@ -25,7 +25,7 @@ import msgpack
 from veles.proto import messages, msgpackwrap
 from veles.util.helpers import prepare_auth_key
 from veles.async_conn.subscriber import (
-    BaseSubscriber,
+    BaseSubscriberNode,
     BaseSubscriberData,
     BaseSubscriberBinData,
     BaseSubscriberList,
@@ -50,16 +50,16 @@ from veles.proto.exceptions import (
 PROTO_VERSION = 1
 
 
-class Subscriber(BaseSubscriber):
-    def __init__(self, obj, proto, qid):
+class SubscriberNode(BaseSubscriberNode):
+    def __init__(self, tracker, node, proto, qid):
         self.proto = proto
         self.qid = qid
-        super().__init__(obj)
+        super().__init__(tracker, node)
 
-    def object_changed(self):
+    def node_changed(self, node):
         self.proto.send_msg(messages.MsgGetReply(
             qid=self.qid,
-            obj=self.obj.node
+            obj=node
         ))
 
     def error(self, err):
@@ -70,10 +70,10 @@ class Subscriber(BaseSubscriber):
 
 
 class SubscriberData(BaseSubscriberData):
-    def __init__(self, obj, key, proto, qid):
+    def __init__(self, tracker, node, key, proto, qid):
         self.proto = proto
         self.qid = qid
-        super().__init__(obj, key)
+        super().__init__(tracker, node, key)
 
     def data_changed(self, data):
         self.proto.send_msg(messages.MsgGetDataReply(
@@ -89,10 +89,10 @@ class SubscriberData(BaseSubscriberData):
 
 
 class SubscriberBinData(BaseSubscriberBinData):
-    def __init__(self, obj, key, start, end, proto, qid):
+    def __init__(self, tracker, node, key, start, end, proto, qid):
         self.proto = proto
         self.qid = qid
-        super().__init__(obj, key, start, end)
+        super().__init__(tracker, node, key, start, end)
 
     def bindata_changed(self, data):
         self.proto.send_msg(messages.MsgGetBinDataReply(
@@ -108,15 +108,15 @@ class SubscriberBinData(BaseSubscriberBinData):
 
 
 class SubscriberList(BaseSubscriberList):
-    def __init__(self, obj, tags, pos_filter, proto, qid):
+    def __init__(self, tracker, parent, tags, pos_filter, proto, qid):
         self.proto = proto
         self.qid = qid
-        super().__init__(obj, tags, pos_filter)
+        super().__init__(tracker, parent, tags, pos_filter)
 
     def list_changed(self, changed, gone):
         self.proto.send_msg(messages.MsgGetListReply(
-            objs=[obj.node for obj in changed],
             qid=self.qid,
+            objs=changed,
             gone=gone
         ))
 
@@ -128,10 +128,10 @@ class SubscriberList(BaseSubscriberList):
 
 
 class SubscriberQuery(BaseSubscriberQueryRaw):
-    def __init__(self, obj, name, params, trace, proto, qid):
+    def __init__(self, tracker, node, name, params, trace, proto, qid):
         self.proto = proto
         self.qid = qid
-        super().__init__(obj, name, params, trace)
+        super().__init__(tracker, node, name, params, trace)
 
     def raw_result_changed(self, result, checks):
         self.proto.send_msg(messages.MsgGetQueryReply(
@@ -408,8 +408,8 @@ class ServerProto(asyncio.Protocol):
 
     async def msg_method_run(self, msg):
         try:
-            anode = self.conn.get_node_norefresh(msg.node)
-            result = await anode.run_method_raw(msg.method, msg.params)
+            result = await self.conn.run_method_raw(
+                msg.node, msg.method, msg.params)
         except VelesException as err:
             self.send_msg(messages.MsgMethodError(
                 mid=msg.mid,
@@ -431,10 +431,9 @@ class ServerProto(asyncio.Protocol):
     async def msg_get(self, msg):
         if msg.qid in self.subs:
             raise SubscriptionInUseError()
-        obj = self.conn.get_node_norefresh(msg.id)
         if not msg.sub:
             try:
-                obj = await obj.refresh()
+                node = await self.conn.get(msg.id)
             except VelesException as err:
                 self.send_msg(messages.MsgQueryError(
                     qid=msg.qid,
@@ -443,18 +442,18 @@ class ServerProto(asyncio.Protocol):
             else:
                 self.send_msg(messages.MsgGetReply(
                     qid=msg.qid,
-                    obj=obj.node,
+                    obj=node,
                 ))
         else:
-            self.subs[msg.qid] = Subscriber(obj, self, msg.qid)
+            self.subs[msg.qid] = SubscriberNode(
+                self.conn, msg.id, self, msg.qid)
 
     async def msg_get_data(self, msg):
         if msg.qid in self.subs:
             raise SubscriptionInUseError()
-        obj = self.conn.get_node_norefresh(msg.id)
         if not msg.sub:
             try:
-                data = await obj.get_data(msg.key)
+                data = await self.conn.get_data(msg.id, msg.key)
             except VelesException as err:
                 self.send_msg(messages.MsgQueryError(
                     qid=msg.qid,
@@ -466,15 +465,16 @@ class ServerProto(asyncio.Protocol):
                     data=data
                 ))
         else:
-            self.subs[msg.qid] = SubscriberData(obj, msg.key, self, msg.qid)
+            self.subs[msg.qid] = SubscriberData(
+                self.conn, msg.id, msg.key, self, msg.qid)
 
     async def msg_get_bindata(self, msg):
         if msg.qid in self.subs:
             raise SubscriptionInUseError()
-        obj = self.conn.get_node_norefresh(msg.id)
         if not msg.sub:
             try:
-                data = await obj.get_bindata(msg.key, msg.start, msg.end)
+                data = await self.conn.get_bindata(
+                    msg.id, msg.key, msg.start, msg.end)
             except VelesException as err:
                 self.send_msg(messages.MsgQueryError(
                     qid=msg.qid,
@@ -487,15 +487,15 @@ class ServerProto(asyncio.Protocol):
                 ))
         else:
             self.subs[msg.qid] = SubscriberBinData(
-                obj, msg.key, msg.start, msg.end, self, msg.qid)
+                self.conn, msg.id, msg.key, msg.start, msg.end, self, msg.qid)
 
     async def msg_get_list(self, msg):
         if msg.qid in self.subs:
             raise SubscriptionInUseError()
-        parent = self.conn.get_node_norefresh(msg.parent)
         if not msg.sub:
             try:
-                objs = await parent.get_list(msg.tags, msg.pos_filter)
+                objs = await self.conn.get_list(
+                    msg.parent, msg.tags, msg.pos_filter)
             except VelesException as err:
                 self.send_msg(messages.MsgQueryError(
                     qid=msg.qid,
@@ -504,20 +504,20 @@ class ServerProto(asyncio.Protocol):
             else:
                 self.send_msg(messages.MsgGetListReply(
                     qid=msg.qid,
-                    objs=[obj.node for obj in objs]
+                    objs=objs,
                 ))
         else:
             self.subs[msg.qid] = SubscriberList(
-                parent, msg.tags, msg.pos_filter, self, msg.qid)
+                self.conn, msg.parent, msg.tags, msg.pos_filter, self, msg.qid)
 
     async def msg_get_query(self, msg):
         if msg.qid in self.subs:
             raise SubscriptionInUseError()
-        obj = self.conn.get_node_norefresh(msg.node)
         if not msg.sub:
             checks = [] if msg.trace else None
             try:
-                result = await obj.get_query_raw(msg.query, msg.params, checks)
+                result = await self.conn.get_query_raw(
+                    msg.node, msg.query, msg.params, checks)
             except VelesException as err:
                 self.send_msg(messages.MsgQueryError(
                     qid=msg.qid,
@@ -532,7 +532,8 @@ class ServerProto(asyncio.Protocol):
                 ))
         else:
             self.subs[msg.qid] = SubscriberQuery(
-                obj, msg.query, msg.params, msg.trace, self, msg.qid)
+                self.conn, msg.node, msg.query, msg.params, msg.trace,
+                self, msg.qid)
 
     async def msg_cancel_subscription(self, msg):
         if msg.qid in self.subs:

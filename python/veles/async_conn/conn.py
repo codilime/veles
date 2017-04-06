@@ -154,6 +154,12 @@ class AsyncConnection:
         loop = asyncio.get_event_loop()
         return loop.create_task(get_results())
 
+    def register_subscriber(self, sub):
+        raise NotImplementedError
+
+    def unregister_subscriber(self, sub):
+        raise NotImplementedError
+
     def register_plugin_handler(self, handler):
         raise NotImplementedError
 
