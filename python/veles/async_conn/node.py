@@ -47,21 +47,32 @@ class AsyncNode:
         """
         Refetches the node from connection and returns an awaitable of self.
         """
-        raise NotImplementedError
+        anode = self.conn.get(self.id)
+
+        async def inner():
+            try:
+                self.node = await anode
+            except:
+                self.node = None
+                raise
+            return self
+
+        loop = asyncio.get_event_loop()
+        return loop.create_task(inner())
 
     def get_data(self, key):
         """
         Fetches data with the given key, returns an awaitable of the data
         value.
         """
-        raise NotImplementedError
+        return self.conn.get_data(self.id, key)
 
     def get_bindata(self, key, start, end):
         """
         Fetches a range of bindata with the given key, returns an awaitable
-        of BinData.
+        of bytes.
         """
-        raise NotImplementedError
+        return self.conn.get_bindata(self.id, key, start, end)
 
     def get_list(self, tags=frozenset(), pos_filter=PosFilter()):
         """
@@ -69,29 +80,33 @@ class AsyncNode:
         tags, and with pos_start/pos_end in the given ranges.
         Returns an awaitable of list of AsyncNodes.
         """
-        raise NotImplementedError
+        anodes = self.conn.get_list(self.id, tags, pos_filter)
+
+        async def inner():
+            nodes = await anodes
+            res = []
+            for node in nodes:
+                anode = self.conn.get_node_norefresh(node.id)
+                anode.node = node
+                res.append(anode)
+            return res
+
+        loop = asyncio.get_event_loop()
+        return loop.create_task(inner())
 
     def get_query_raw(self, name, params, checks=None):
         """
         Runs a query, returns an awaitable of the result.  If checks is not
         None, it should be a list that query's checks will be appended to.
         """
-        raise NotImplementedError
+        return self.conn.get_query_raw(self.id, name, params, checks)
 
     def get_query(self, sig, params, checks=None):
         """
         Runs a query, translating its params and result according
         to the given signature.  Returns an awaitable of the result.
         """
-        params = sig.params.dump(params)
-        aresult = self.get_query_raw(sig.query, params, checks)
-
-        async def get_result():
-            result = await aresult
-            return sig.result.load(result)
-
-        loop = asyncio.get_event_loop()
-        return loop.create_task(get_result())
+        return self.conn.get_query(self.id, sig, params, checks)
 
     # subscriptions - only to be used by BaseSubscriber*.
 
@@ -254,19 +269,11 @@ class AsyncNode:
         """
         Runs a method on the object.  Returns an awaitable of the result.
         """
-        raise NotImplementedError
+        return self.conn.run_method_raw(self.id, method, params)
 
     def run_method(self, sig, params):
         """
         Runs a method on the object, translating its params and result
         according to the given signature.  Returns an awaitable of the result.
         """
-        params = sig.params.dump(params)
-        aresult = self.run_method_raw(sig.method, params)
-
-        async def get_result():
-            result = await aresult
-            return sig.result.load(result)
-
-        loop = asyncio.get_event_loop()
-        return loop.create_task(get_result())
+        return self.conn.run_method(self.id, sig, params)

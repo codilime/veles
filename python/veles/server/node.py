@@ -12,28 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
-
-from veles.util.future import done_future, bad_future
 from veles.async_conn.node import AsyncNode
 from veles.proto.exceptions import (
-    VelesException,
     ObjectGoneError,
 )
-from veles.proto.check import CheckGone, CheckTags
-from veles.proto.node import PosFilter
 from veles.schema.nodeid import NodeID
 
 from .query import QueryManager
-
-
-def _resolve_obj(conn, obj):
-    if isinstance(obj, NodeID):
-        return obj, conn.get_node_norefresh(obj)
-    elif isinstance(obj, AsyncNode):
-        return obj.id, obj
-    else:
-        raise TypeError('expected NodeID or AsyncNode')
 
 
 class AsyncLocalNode(AsyncNode):
@@ -45,61 +30,6 @@ class AsyncLocalNode(AsyncNode):
         self.bindata_subs = {}
         self.list_subs = {}
         self.query_subs = {}
-
-    # getters
-
-    def refresh(self):
-        if self.node is None:
-            return bad_future(ObjectGoneError())
-        return done_future(self)
-
-    def get_data(self, key):
-        if self.node is None:
-            return bad_future(ObjectGoneError())
-        return done_future(self.conn.db.get_data(self.id, key))
-
-    def get_bindata(self, key, start, end):
-        if self.node is None:
-            return bad_future(ObjectGoneError())
-        return done_future(self.conn.db.get_bindata(self.id, key, start, end))
-
-    def get_list(self, tags=frozenset(), pos_filter=PosFilter()):
-        if self.node is None and self != self.conn.root:
-            return bad_future(ObjectGoneError())
-        obj_ids = self.conn.db.list(self.id, tags, pos_filter)
-        objs = [self.conn.get_node_norefresh(x) for x in obj_ids]
-        return done_future(objs)
-
-    async def _get_query_raw(self, name, params, checks):
-        while True:
-            if self.node is None:
-                if checks is not None:
-                    checks.append(CheckGone(
-                        node=self.id
-                    ))
-                raise ObjectGoneError()
-            cur_checks = [CheckTags(
-                node=self.id,
-                tags=self.node.tags,
-            )]
-            try:
-                handler = self.conn.queries.find(name, self.node.tags)
-                result = await handler.get_query(
-                    self.conn, self, params, cur_checks)
-            except VelesException:
-                if self.conn._checks_ok(cur_checks):
-                    if checks is not None:
-                        checks += cur_checks
-                    raise
-            else:
-                if self.conn._checks_ok(cur_checks):
-                    if checks is not None:
-                        checks += cur_checks
-                    return result
-
-    def get_query_raw(self, name, params, checks=None):
-        loop = asyncio.get_event_loop()
-        return loop.create_task(self._get_query_raw(name, params, checks))
 
     # subscriptions
 
@@ -177,14 +107,3 @@ class AsyncLocalNode(AsyncNode):
         self.query_subs[sub].cancel()
         del self.query_subs[sub]
         self.conn.all_subs.remove(sub)
-
-    # mutators
-
-    def run_method_raw(self, method, params):
-        if self.node is None:
-            return bad_future(ObjectGoneError())
-        try:
-            handler = self.conn.methods.find(method, self.node.tags)
-        except VelesException as e:
-            return bad_future(e)
-        return handler.run_method(self.conn, self.node, params)

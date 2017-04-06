@@ -95,7 +95,7 @@ class CheckSubscriberList(BaseSubscriberList):
 class QueryManager:
     def __init__(self, sub):
         self.sub = sub
-        self.anode = sub.obj
+        self.id = sub.obj.id
         self.conn = sub.obj.conn
         self.idle = True
         self.cancelled = False
@@ -164,8 +164,8 @@ class QueryManager:
     async def refresh(self):
         checks = []
         try:
-            result = await self.anode._get_query_raw(
-                self.sub.name, self.sub.params, checks)
+            result = await self.conn._get_query_raw(
+                self.id, self.sub.name, self.sub.params, checks)
         except VelesException as e:
             if self.cancelled:
                 return

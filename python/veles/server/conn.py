@@ -27,7 +27,7 @@ from veles.util.future import done_future, bad_future
 from veles.schema.nodeid import NodeID
 from veles.db.backend import DbBackend
 from veles.proto import operation, check
-from veles.proto.node import Node
+from veles.proto.node import Node, PosFilter
 from veles.proto.exceptions import (
     VelesException,
     ObjectGoneError,
@@ -113,6 +113,68 @@ class AsyncLocalConnection(AsyncConnection):
                 res = AsyncLocalNode(self, obj_id, node, parent)
             self.objs[obj_id] = res
             return res
+
+    # getters
+
+    def get(self, node):
+        anode = self.get_node_norefresh(node)
+        if anode.node is None:
+            return bad_future(ObjectGoneError())
+        return done_future(anode.node)
+
+    def get_data(self, node, key):
+        anode = self.get_node_norefresh(node)
+        if anode.node is None:
+            return bad_future(ObjectGoneError())
+        return done_future(self.db.get_data(node, key))
+
+    def get_bindata(self, node, key, start, end):
+        anode = self.get_node_norefresh(node)
+        if anode.node is None:
+            return bad_future(ObjectGoneError())
+        return done_future(self.db.get_bindata(node, key, start, end))
+
+    def get_list(self, parent, tags=frozenset(), pos_filter=PosFilter()):
+        if parent != NodeID.root_id:
+            anode = self.get_node_norefresh(parent)
+            if anode.node is None:
+                return bad_future(ObjectGoneError())
+        node_ids = self.db.list(parent, tags, pos_filter)
+        nodes = [self.get_node_norefresh(x).node for x in node_ids]
+        return done_future(nodes)
+
+    async def _get_query_raw(self, node, name, params, checks):
+        anode = self.get_node_norefresh(node)
+        while True:
+            if anode.node is None:
+                if checks is not None:
+                    checks.append(check.CheckGone(
+                        node=node
+                    ))
+                raise ObjectGoneError()
+            cur_checks = [check.CheckTags(
+                node=node,
+                tags=anode.node.tags,
+            )]
+            try:
+                handler = self.queries.find(name, anode.node.tags)
+                result = await handler.get_query(
+                    self, anode, params, cur_checks)
+            except VelesException:
+                if self._checks_ok(cur_checks):
+                    if checks is not None:
+                        checks += cur_checks
+                    raise
+            else:
+                if self._checks_ok(cur_checks):
+                    if checks is not None:
+                        checks += cur_checks
+                    return result
+
+    def get_query_raw(self, node, name, params, checks=None):
+        loop = asyncio.get_event_loop()
+        return loop.create_task(self._get_query_raw(
+            node, name, params, checks))
 
     def _check_ok_gone(self, el):
         node = self.get_node_norefresh(el.node)
@@ -339,6 +401,16 @@ class AsyncLocalConnection(AsyncConnection):
             return bad_future(err)
         else:
             return done_future(None)
+
+    def run_method_raw(self, node, method, params):
+        anode = self.get_node_norefresh(node)
+        if anode.node is None:
+            return bad_future(ObjectGoneError())
+        try:
+            handler = self.methods.find(method, anode.node.tags)
+        except VelesException as e:
+            return bad_future(e)
+        return handler.run_method(self, anode.node, params)
 
     def run_broadcast_raw(self, broadcast, params):
         aresults = []

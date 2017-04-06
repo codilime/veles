@@ -14,6 +14,7 @@
 
 import asyncio
 
+from veles.proto.node import PosFilter
 from veles.schema.nodeid import NodeID
 from .plugin import MethodHandler, QueryHandler, BroadcastHandler
 
@@ -43,6 +44,57 @@ class AsyncConnection:
         """
         return self.get_node_norefresh(id).refresh()
 
+    def get(self, node):
+        """
+        Fetches a Node with the given id from the server.  Returns
+        an awaitable of Node.
+        """
+        raise NotImplementedError
+
+    def get_data(self, node, key):
+        """
+        Fetches data of a given node with the given key, returns an awaitable
+        of the data value.
+        """
+        raise NotImplementedError
+
+    def get_bindata(self, node, key, start, end):
+        """
+        Fetches a range of bindata of a given node with the given key, returns
+        an awaitable of bytes.
+        """
+        raise NotImplementedError
+
+    def get_list(self, parent, tags=frozenset(), pos_filter=PosFilter()):
+        """
+        Fetches a list of children of a given node, containing given
+        tags, and with pos_start/pos_end in the given ranges.
+        Returns an awaitable of list of Nodes.
+        """
+        raise NotImplementedError
+
+    def get_query_raw(self, node, name, params, checks=None):
+        """
+        Runs a query, returns an awaitable of the result.  If checks is not
+        None, it should be a list that query's checks will be appended to.
+        """
+        raise NotImplementedError
+
+    def get_query(self, node, sig, params, checks=None):
+        """
+        Runs a query, translating its params and result according
+        to the given signature.  Returns an awaitable of the result.
+        """
+        params = sig.params.dump(params)
+        aresult = self.get_query_raw(node, sig.query, params, checks)
+
+        async def get_result():
+            result = await aresult
+            return sig.result.load(result)
+
+        loop = asyncio.get_event_loop()
+        return loop.create_task(get_result())
+
     def create(self, id=None, parent=None, pos=(None, None), tags=set(),
                attr={}, data={}, bindata={}):
         """
@@ -59,6 +111,27 @@ class AsyncConnection:
 
     def transaction(self, checks, operations):
         raise NotImplementedError
+
+    def run_method_raw(self, node, method, params):
+        """
+        Runs a method on the given node.  Returns an awaitable of the result.
+        """
+        raise NotImplementedError
+
+    def run_method(self, node, sig, params):
+        """
+        Runs a method on the given node, translating its params and result
+        according to the given signature.  Returns an awaitable of the result.
+        """
+        params = sig.params.dump(params)
+        aresult = self.run_method_raw(node, sig.method, params)
+
+        async def get_result():
+            result = await aresult
+            return sig.result.load(result)
+
+        loop = asyncio.get_event_loop()
+        return loop.create_task(get_result())
 
     def run_broadcast_raw(self, broadcast, params):
         """
