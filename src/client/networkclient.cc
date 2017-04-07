@@ -188,16 +188,13 @@ void NetworkClient::sendMsgConnect() {
       new std::string(client_description_.toStdString()));
   std::shared_ptr<std::string> client_type_ptr(
       new std::string(client_type_.toStdString()));
-  std::shared_ptr<std::string> authentication_key_ptr(
-      new std::string);
 
   msg_ptr msg(new messages::MsgConnect(
       1,
       pair_str(true, client_name_ptr),
       pair_str(true, client_version_ptr),
       pair_str(true, client_description_ptr),
-      pair_str(true, client_type_ptr),
-      pair_str(true, authentication_key_ptr)
+      pair_str(true, client_type_ptr)
       ));
 
   sendMessage(msg);
