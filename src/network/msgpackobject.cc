@@ -51,7 +51,7 @@ void MsgpackObject::fromAnother(const MsgpackObject& other)
     new (&value.ext) std::pair<int, std::shared_ptr<std::vector<uint8_t>>>(other.value.ext);
     break;
   default:
-    break;  // TODO: fatal exit here
+    abort();
   }
 }
 
@@ -97,8 +97,7 @@ void MsgpackObject::destroyValue() {
     // PODs
     break;
   default:
-    // TODO: fatal exit here
-    break;
+    abort();
   }
 }
 
@@ -141,7 +140,7 @@ void MsgpackObject::fromMsgpack(const msgpack::v2::object &obj) {
     obj.convert(value.array);
     // convert nullptr that got created from nils to MsgpackObject holding nil
     for (auto& val : *value.array) {
-      if (val == nullptr) {
+      if (!val) {
         val = std::make_shared<MsgpackObject>();
       }
     }
@@ -152,7 +151,7 @@ void MsgpackObject::fromMsgpack(const msgpack::v2::object &obj) {
     obj.convert(value.map);
     // convert nullptr that got created from nils to MsgpackObject holding nil
     for (auto& it : *value.map) {
-      if (it.second == nullptr) {
+      if (!it.second) {
         it.second = std::make_shared<MsgpackObject>();
       }
     }
@@ -164,6 +163,8 @@ void MsgpackObject::fromMsgpack(const msgpack::v2::object &obj) {
     value.ext.first = obj_ext.type();
     value.ext.second = std::make_shared<std::vector<uint8_t>>(obj_ext.data(), obj_ext.data()+obj_ext.size);
     break;
+  default:
+    abort();
   }
 }
 
