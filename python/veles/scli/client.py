@@ -18,6 +18,7 @@ import msgpack
 
 from veles.proto import messages, msgpackwrap
 from veles.schema import nodeid
+from veles.server.proto import PROTO_VERSION
 from veles.util.helpers import prepare_auth_key
 
 
@@ -32,7 +33,7 @@ class Client(object):
     def _authorize(self, key):
         self.sock.sendall(key)
         self.send_msg(messages.MsgConnect(
-            proto_version=1,
+            proto_version=PROTO_VERSION,
             client_name='scli',
             client_version='scli 1.0',
             client_description='',
