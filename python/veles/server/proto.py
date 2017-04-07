@@ -42,10 +42,12 @@ from veles.proto.exceptions import (
     SubscriptionInUseError,
     ConnectionLostError,
     SchemaError,
-    ProtocolError,
+    ProtocolMismatchError,
     AuthenticationError,
-    CriticalException,
 )
+
+# TODO generate this as a constant in C++
+PROTO_VERSION = 1
 
 
 class Subscriber(BaseSubscriber):
@@ -216,9 +218,6 @@ class RemoteBroadcastHandler(BroadcastHandler):
 
 
 class ServerProto(asyncio.Protocol):
-    # TODO generate this as a constant in C++
-    PROTO_VERSION = 1
-
     def __init__(self, conn, key):
         self.conn = conn
         self.subs = {}
@@ -249,7 +248,6 @@ class ServerProto(asyncio.Protocol):
             self.client_key += tmp
             if len(self.client_key) < 64:
                 return
-            # TODO more secure key checking
             if not hmac.compare_digest(self.client_key, self.server_key):
                 self.send_msg(messages.MsgConnectionError(
                     err=AuthenticationError(),
@@ -307,11 +305,6 @@ class ServerProto(asyncio.Protocol):
             if msg.object_type not in handlers:
                 raise SchemaError('unhandled message type')
             await handlers[msg.object_type](msg)
-        except CriticalException as err:
-            self.send_msg(messages.MsgConnectionError(
-                err=err,
-            ))
-            self.transport.close()
         except VelesException as err:
             self.send_msg(messages.MsgProtoError(
                 err=err,
@@ -348,15 +341,19 @@ class ServerProto(asyncio.Protocol):
 
     async def msg_connect(self, msg):
         # TODO more sophisticated checking if versions are compatible
-        if self.PROTO_VERSION != msg.proto_version:
-            raise ProtocolError()
+        if PROTO_VERSION != msg.proto_version:
+            self.send_msg(messages.MsgConnectionError(
+                err=ProtocolMismatchError(),
+            ))
+            self.transport.close()
+            return
         self.client_name = msg.client_name
         self.client_version = msg.client_version
         self.client_description = msg.client_description
         self.client_type = msg.client_type
         self.connected = True
         self.send_msg(messages.MsgConnected(
-            proto_version=self.PROTO_VERSION,
+            proto_version=PROTO_VERSION,
             server_name='server',
             server_version='server 1.0'
         ))

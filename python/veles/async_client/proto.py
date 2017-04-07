@@ -23,11 +23,13 @@ import msgpack
 
 from veles.proto import messages, msgpackwrap
 from veles.proto.exceptions import VelesException, SchemaError
+from veles.server.proto import PROTO_VERSION
 from veles.util.helpers import prepare_auth_key
 
 
 class ClientProto(asyncio.Protocol):
-    def __init__(self, key):
+    def __init__(self, auth_key, name='acli',
+                 version='1.0', description='', type='acli'):
         wrapper = msgpackwrap.MsgpackWrapper()
         self.unpacker = wrapper.unpacker
         self.packer = wrapper.packer
@@ -36,16 +38,20 @@ class ClientProto(asyncio.Protocol):
         self.bids = {}
         self.rids = {}
         self.handlers = {}
-        self.auth_key = prepare_auth_key(key)
+        self.auth_key = prepare_auth_key(auth_key)
+        self.client_name = name
+        self.client_version = version
+        self.client_description = description
+        self.client_type = type
 
     def _authorize(self):
         self.transport.write(self.auth_key)
         self.send_msg(messages.MsgConnect(
-            proto_version=1,
-            client_name='acli',
-            client_version='acli 1.0',
-            client_description='',
-            client_type='acli',
+            proto_version=PROTO_VERSION,
+            client_name=self.client_name,
+            client_version=self.client_version,
+            client_description=self.client_description,
+            client_type=self.client_type,
         ))
 
     def connection_made(self, transport):

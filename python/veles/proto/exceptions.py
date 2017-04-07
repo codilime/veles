@@ -128,15 +128,11 @@ class ConnectionLostError(VelesException):
     msg = "Connection lost"
 
 
-class CriticalException(VelesException):
-    pass
-
-
-class AuthenticationError(CriticalException):
+class AuthenticationError(VelesException):
     code = 'auth_error'
     msg = 'Authentication key check failed'
 
 
-class ProtocolError(CriticalException):
+class ProtocolMismatchError(VelesException):
     code = 'protocol_error'
     msg = 'Incompatible protocol version'
