@@ -53,11 +53,12 @@ builders['mingw32'] = { node('windows') {
             def branch = getBranch()
             withEnv(["PATH+QT=${env.QT}\\Tools\\mingw530_32\\bin;${env.QT}\\5.7\\mingw53_32\\bin",
                      "PATH+CMAKE=${env.CMAKE}\\bin",
-                     "GOOGLETEST_DIR=${tool 'googletest'}"]) {
+                     "GOOGLETEST_DIR=${tool 'googletest'}",
+                     "EMBED_PYTHON_ARCHIVE_PATH=${tool 'embed-python-32'}"]) {
               bat(script: "rd /s /q build_mingw", returnStatus: true)
               bat script: "md build_mingw", returnStatus: true
               dir('build_mingw') {
-                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -G \"MinGW Makefiles\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."
+                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -G \"MinGW Makefiles\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."
                 bat script: "cmake --build . --config ${buildConfiguration} -- -j3"
                 bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-mingw -G ZIP;NSIS -C ${buildConfiguration}"
               }
@@ -88,7 +89,8 @@ builders['msvc2015_64'] = { node('windows'){
             withEnv(["PATH+QT=${env.QT}\\Tools\\${version}\\bin;${env.QT}\\5.7\\${version}\\bin",
                      "PATH+CMAKE=${env.CMAKE}\\bin",
                      "CMAKE_PREFIX_PATH+QT=${env.QT}\\5.7\\${version}",
-                     "GOOGLETEST_DIR=${tool 'googletest'}"
+                     "GOOGLETEST_DIR=${tool 'googletest'}",
+                     "EMBED_PYTHON_ARCHIVE_PATH=${tool 'embed-python-64'}"
                      ]){
               if(version.contains("64")){
                 generator = "${generator} Win64"
@@ -96,7 +98,7 @@ builders['msvc2015_64'] = { node('windows'){
               bat(script: "rd /s /q build_${version}", returnStatus: true)
               bat script: "md build_${version}", returnStatus: true
               dir ("build_${version}") {
-                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -G \"${generator}\" ..\\"
+                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -G \"${generator}\" ..\\"
                 bat script: "cmake --build . --config ${buildConfiguration} > error_and_warnings.txt"
                 bat script: "type error_and_warnings.txt"
                 bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G ZIP;NSIS -C ${buildConfiguration}"
@@ -132,14 +134,15 @@ builders['msvc2015'] = {node('windows'){
             withEnv(["PATH+QT=${env.QT}\\Tools\\${version}\\bin;${env.QT}\\5.7\\${version}\\bin",
                      "PATH+CMAKE=${env.CMAKE}\\bin",
                      "CMAKE_PREFIX_PATH+QT=${env.QT}\\5.7\\${version}",
-                     "GOOGLETEST_DIR=${tool 'googletest'}"]){
+                     "GOOGLETEST_DIR=${tool 'googletest'}",
+                     "EMBED_PYTHON_ARCHIVE_PATH=${tool 'embed-python-32'}"]){
               if(version.contains("64")){
                 generator = "${generator} Win64"
               }
               bat(script: "rd /s /q build_${version}", returnStatus: true)
               bat script: "md build_${version}", returnStatus: true
               dir ("build_${version}") {
-                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -G \"${generator}\" ..\\"
+                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -G \"${generator}\" ..\\"
                 bat script: "cmake --build . --config ${buildConfiguration}"
                 bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G ZIP;NSIS -C ${buildConfiguration}"
               }
