@@ -73,6 +73,12 @@ MsgpackObject &MsgpackObject::operator=(const MsgpackObject& other) {
 }
 
 bool MsgpackObject::operator==(const MsgpackObject &other) const {
+  if (obj_type == ObjectType::UNSIGNED_INTEGER && other.obj_type == ObjectType::SIGNED_INTEGER) {
+    return value.uint <= INT64_MAX && other.value.sint >= 0 && value.uint == static_cast<uint64_t>(other.value.sint);
+  }
+  if (obj_type == ObjectType::SIGNED_INTEGER && other.obj_type == ObjectType::UNSIGNED_INTEGER) {
+    return other.value.uint <= INT64_MAX && value.sint >= 0 && other.value.uint == static_cast<uint64_t>(value.sint);
+  }
   if (obj_type != other.obj_type) {
     return false;
   }

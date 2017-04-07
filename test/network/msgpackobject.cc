@@ -138,6 +138,12 @@ TEST(MsgpackObject, TestComparison) {
   EXPECT_NE(neg, neg3);
   EXPECT_NE(neg, nil);
 
+  MsgpackObject sign_pos(INT64_C(42));
+  EXPECT_EQ(pos, sign_pos);
+  MsgpackObject opposite(uint64_t(-42));
+  EXPECT_EQ(opposite.getUnsignedInt(), static_cast<uint64_t>(neg.getSignedInt()));
+  EXPECT_NE(opposite, neg);
+
   MsgpackObject dbl(5.0);
   MsgpackObject dbl2(5.0);
   MsgpackObject dbl3(5.1);
@@ -193,47 +199,214 @@ TEST(MsgpackObject, TestComparison) {
   EXPECT_EQ(ext, ext3);
 }
 
-void pack_unpack_check(MsgpackObject& obj) {
+void pack_unpack_check(MsgpackObject& obj, std::string msg) {
   msgpack::sbuffer sbuf;
   msgpack::pack(sbuf, obj);
-  msgpack::object mo = msgpack::unpack(sbuf.data(), sbuf.size()).get();
-  auto unp_obj = std::make_shared<MsgpackObject>(obj);
-  EXPECT_EQ(obj, *unp_obj);
+  msgpack::object_handle oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  msgpack::object mo = oh.get();
+  auto unp_obj = std::make_shared<MsgpackObject>(mo);
+  EXPECT_EQ(obj, *unp_obj) << msg;
 }
 
 TEST(MsgpackObject, SimpleMsgpackConversion) {
   MsgpackObject nil;
-  pack_unpack_check(nil);
+  pack_unpack_check(nil, "nil");
 
   MsgpackObject tru(true);
-  pack_unpack_check(tru);
+  pack_unpack_check(tru, "bool");
 
   MsgpackObject pos(UINT64_C(42));
-  pack_unpack_check(pos);
+  pack_unpack_check(pos, "pos_int");
 
   MsgpackObject neg(INT64_C(-42));
-  pack_unpack_check(neg);
+  pack_unpack_check(neg, "neg_int");
 
   MsgpackObject dbl(5.0);
-  pack_unpack_check(dbl);
+  pack_unpack_check(dbl, "double");
 
   MsgpackObject str("FOOBAR");
-  pack_unpack_check(str);
+  pack_unpack_check(str, "string");
 
   MsgpackObject bin(std::vector<uint8_t>(5, 30));
-  pack_unpack_check(bin);
+  pack_unpack_check(bin, "bin");
 
   MsgpackObject array(std::vector<std::shared_ptr<MsgpackObject>>(5, std::make_shared<MsgpackObject>(true)));
-  pack_unpack_check(array);
+  pack_unpack_check(array, "array");
 
   std::map<std::string, std::shared_ptr<MsgpackObject>> map_data;
   map_data["foo"] = std::make_shared<MsgpackObject>("foo");
   map_data["bar"] = std::make_shared<MsgpackObject>("bar");
   MsgpackObject map(map_data);
-  pack_unpack_check(map);
+  pack_unpack_check(map, "map");
 
   MsgpackObject ext(30, std::vector<uint8_t>(5, 30));
-  pack_unpack_check(ext);
+  pack_unpack_check(ext, "ext");
+}
+
+TEST(MsgpackObject, TestUnpack) {
+  msgpack::sbuffer sbuf;
+  msgpack::packer<msgpack::sbuffer> packer(sbuf);
+  packer.pack_nil();
+  msgpack::object_handle oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  msgpack::object mo = oh.get();
+  std::shared_ptr<MsgpackObject> unp_obj = std::make_shared<MsgpackObject>(mo);
+  EXPECT_EQ(unp_obj->type(), ObjectType::NIL);
+
+  sbuf.clear();
+  packer.pack(42);
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  unp_obj = std::make_shared<MsgpackObject>(mo);
+  EXPECT_EQ(unp_obj->getUnsignedInt(), static_cast<uint64_t>(42));
+
+  sbuf.clear();
+  packer.pack(-42);
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  unp_obj = std::make_shared<MsgpackObject>(mo);
+  EXPECT_EQ(unp_obj->getSignedInt(), -42);
+
+  sbuf.clear();
+  packer.pack(true);
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  unp_obj = std::make_shared<MsgpackObject>(mo);
+  EXPECT_EQ(unp_obj->getBool(), true);
+
+  sbuf.clear();
+  packer.pack(5.0);
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  unp_obj = std::make_shared<MsgpackObject>(mo);
+  EXPECT_DOUBLE_EQ(unp_obj->getDouble(), 5.0);
+
+  sbuf.clear();
+  packer.pack("FOOBAR");
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  unp_obj = std::make_shared<MsgpackObject>(mo);
+  EXPECT_EQ(*unp_obj->getString(), "FOOBAR");
+
+  sbuf.clear();
+  packer.pack(std::vector<uint8_t>(5, 30));
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  unp_obj = std::make_shared<MsgpackObject>(mo);
+  EXPECT_EQ(*unp_obj->getBin(), std::vector<uint8_t>(5, 30));
+
+  sbuf.clear();
+  packer.pack(std::vector<uint64_t>(5, 30));
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  unp_obj = std::make_shared<MsgpackObject>(mo);
+  EXPECT_EQ(unp_obj->getArray()->size(), 5);
+  for (auto i : *unp_obj->getArray()) {
+    EXPECT_EQ(i->getUnsignedInt(), 30);
+  }
+
+  sbuf.clear();
+  std::map<std::string, std::shared_ptr<MsgpackObject>> map_data;
+  map_data["foo"] = std::make_shared<MsgpackObject>("foo");
+  map_data["bar"] = std::make_shared<MsgpackObject>("bar");
+  packer.pack(map_data);
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  unp_obj = std::make_shared<MsgpackObject>(mo);
+  EXPECT_EQ(unp_obj->getMap()->size(), 2);
+  EXPECT_EQ(*(*unp_obj->getMap())["foo"]->getString(), "foo");
+  EXPECT_EQ(*(*unp_obj->getMap())["bar"]->getString(), "bar");
+
+  sbuf.clear();
+  packer.pack_ext(5, 30);
+  const char data[] = {0x00, 0x01, 0x02, 0x03, 0x04};
+  packer.pack_ext_body(data, 5);
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  unp_obj = std::make_shared<MsgpackObject>(mo);
+  EXPECT_EQ(unp_obj->getExt().first, 30);
+  EXPECT_THAT(*unp_obj->getExt().second, ContainerEq(std::vector<uint8_t>({0x00, 0x01, 0x02, 0x03, 0x04})));
+}
+
+TEST(MsgpackObject, TestPack) {
+  msgpack::sbuffer sbuf;
+  msgpack::packer<msgpack::sbuffer> packer(sbuf);
+  MsgpackObject nil;
+  packer.pack(nil);
+  msgpack::object_handle oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  msgpack::object mo = oh.get();
+  EXPECT_TRUE(mo.is_nil());
+
+  sbuf.clear();
+  MsgpackObject tru(true);
+  packer.pack(tru);
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  EXPECT_EQ(mo.as<bool>(), true);
+
+  sbuf.clear();
+  MsgpackObject pos(UINT64_C(42));
+  packer.pack(pos);
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  EXPECT_EQ(mo.as<uint64_t>(), 42);
+
+  sbuf.clear();
+  MsgpackObject neg(INT64_C(-42));
+  packer.pack(neg);
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  EXPECT_EQ(mo.as<int64_t>(), -42);
+
+  sbuf.clear();
+  MsgpackObject dbl(5.0);
+  packer.pack(dbl);
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  EXPECT_DOUBLE_EQ(mo.as<double>(), 5.0);
+
+  sbuf.clear();
+  MsgpackObject str("FOOBAR");
+  packer.pack(str);
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  EXPECT_EQ(mo.as<std::string>(), "FOOBAR");
+
+  sbuf.clear();
+  MsgpackObject bin(std::vector<uint8_t>(5, 30));
+  packer.pack(bin);
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  EXPECT_THAT(mo.as<std::vector<uint8_t>>(), ContainerEq(std::vector<uint8_t>(5, 30)));
+
+  sbuf.clear();
+  MsgpackObject array(std::vector<std::shared_ptr<MsgpackObject>>(5, std::make_shared<MsgpackObject>(true)));
+  packer.pack(array);
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  EXPECT_THAT(mo.as<std::vector<bool>>(), ContainerEq(std::vector<bool>(5, true)));
+
+  sbuf.clear();
+  std::map<std::string, std::shared_ptr<MsgpackObject>> map_data;
+  map_data["foo"] = std::make_shared<MsgpackObject>("foo");
+  map_data["bar"] = std::make_shared<MsgpackObject>("bar");
+  MsgpackObject map(map_data);
+  packer.pack(map);
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  EXPECT_EQ((mo.as<std::map<std::string, std::string>>().size()), 2);
+  EXPECT_EQ((mo.as<std::map<std::string, std::string>>()["foo"]), "foo");
+  EXPECT_EQ((mo.as<std::map<std::string, std::string>>()["bar"]), "bar");
+
+  sbuf.clear();
+  MsgpackObject ext(30, std::vector<uint8_t>(5, 30));
+  packer.pack(ext);
+  oh = msgpack::unpack(sbuf.data(), sbuf.size());
+  mo = oh.get();
+  EXPECT_EQ(mo.via.ext.type(), 30);
+  EXPECT_EQ(mo.via.ext.size, static_cast<uint32_t>(5));
+  for (int i = 0; i < 5; ++i) {
+    EXPECT_EQ(mo.via.ext.data()[i], 30);
+  }
 }
 
 }  // namespace messages
