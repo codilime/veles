@@ -15,13 +15,14 @@
  *
  */
 #include "network/msgpackobject.h"
+
 namespace veles {
 namespace messages {
 
 void MsgpackObject::fromAnother(const MsgpackObject& other)
 {
   obj_type = other.type();
-  switch(obj_type) {
+  switch (obj_type) {
   case ObjectType::BOOLEAN:
     value.boolean = other.value.boolean;
     break;
@@ -50,7 +51,7 @@ void MsgpackObject::fromAnother(const MsgpackObject& other)
     new (&value.ext) std::pair<int, std::shared_ptr<std::vector<uint8_t>>>(other.value.ext);
     break;
   default:
-    break;
+    break;  // TODO: fatal exit here
   }
 }
 
@@ -72,7 +73,7 @@ MsgpackObject &MsgpackObject::operator=(const MsgpackObject& other) {
 }
 
 void MsgpackObject::destroyValue() {
-  switch(obj_type) {
+  switch (obj_type) {
   case ObjectType::STR:
     (&value.str)->std::shared_ptr<std::string>::~shared_ptr();
     break;
@@ -88,8 +89,15 @@ void MsgpackObject::destroyValue() {
   case ObjectType::EXT:
     (&value.ext)->std::pair<int, std::shared_ptr<std::vector<uint8_t>>>::~pair();
     break;
+  case ObjectType::NIL:
+  case ObjectType::BOOLEAN:
+  case ObjectType::UNSIGNED_INTEGER:
+  case ObjectType::SIGNED_INTEGER:
+  case ObjectType::DOUBLE:
+    // PODs
+    break;
   default:
-    // Other types are POD
+    // TODO: fatal exit here
     break;
   }
 }
@@ -169,7 +177,8 @@ ObjectType MsgpackObject::type() const {
 }
 
 bool MsgpackObject::getBool() const {
-  if (obj_type != ObjectType::BOOLEAN) throw proto::SchemaError("Wrong MsgpackObject type when trying to get bool");
+  if (obj_type != ObjectType::BOOLEAN)
+    throw proto::SchemaError("Wrong MsgpackObject type when trying to get bool");
   return value.boolean;
 }
 
@@ -180,8 +189,10 @@ void MsgpackObject::setBool(bool val) {
 }
 
 uint64_t MsgpackObject::getUnsignedInt() const {
-  if (obj_type == ObjectType::UNSIGNED_INTEGER) return value.uint;
-  if (obj_type == ObjectType::SIGNED_INTEGER && value.sint >= 0) return value.sint;
+  if (obj_type == ObjectType::UNSIGNED_INTEGER)
+    return value.uint;
+  if (obj_type == ObjectType::SIGNED_INTEGER && value.sint >= 0)
+    return value.sint;
   throw proto::SchemaError("Wrong MsgpackObject type when trying to get unsigned int");
 }
 
@@ -191,8 +202,10 @@ void MsgpackObject::setUnsignedInt(uint64_t val) {
   value.uint = val;
 }
 int64_t MsgpackObject::getSignedInt() const {
-  if (obj_type == ObjectType::SIGNED_INTEGER) return value.sint;
-  if (obj_type == ObjectType::UNSIGNED_INTEGER && value.uint <= INT64_MAX) return value.uint;
+  if (obj_type == ObjectType::SIGNED_INTEGER)
+    return value.sint;
+  if (obj_type == ObjectType::UNSIGNED_INTEGER && value.uint <= INT64_MAX)
+    return value.uint;
   throw proto::SchemaError("Wrong MsgpackObject type when trying to get signed int");
 }
 
@@ -203,7 +216,8 @@ void MsgpackObject::setSignedInt(int64_t val) {
 }
 
 double MsgpackObject::getDouble() const {
-  if (obj_type != ObjectType::DOUBLE) throw proto::SchemaError("Wrong MsgpackObject type when trying to get double");
+  if (obj_type != ObjectType::DOUBLE)
+    throw proto::SchemaError("Wrong MsgpackObject type when trying to get double");
   return value.dbl;
 }
 
@@ -214,12 +228,14 @@ void MsgpackObject::setDouble(double val) {
 }
 
 std::shared_ptr<std::string> MsgpackObject::getString() {
-  if (obj_type != ObjectType::STR) throw proto::SchemaError("Wrong MsgpackObject type when trying to get string");
+  if (obj_type != ObjectType::STR)
+    throw proto::SchemaError("Wrong MsgpackObject type when trying to get string");
   return value.str;
 }
 
 const std::shared_ptr<std::string> MsgpackObject::getString() const {
-  if (obj_type != ObjectType::STR) throw proto::SchemaError("Wrong MsgpackObject type when trying to get string");
+  if (obj_type != ObjectType::STR)
+    throw proto::SchemaError("Wrong MsgpackObject type when trying to get string");
   return value.str;
 }
 
@@ -230,12 +246,14 @@ void MsgpackObject::setString(std::shared_ptr<std::string> val) {
 }
 
 std::shared_ptr<std::vector<uint8_t>> MsgpackObject::getBin() {
-  if (obj_type != ObjectType::BIN) throw proto::SchemaError("Wrong MsgpackObject type when trying to get binary data");
+  if (obj_type != ObjectType::BIN)
+    throw proto::SchemaError("Wrong MsgpackObject type when trying to get binary data");
   return value.bin;
 }
 
 const std::shared_ptr<std::vector<uint8_t>> MsgpackObject::getBin() const {
-  if (obj_type != ObjectType::BIN) throw proto::SchemaError("Wrong MsgpackObject type when trying to get binary data");
+  if (obj_type != ObjectType::BIN)
+    throw proto::SchemaError("Wrong MsgpackObject type when trying to get binary data");
   return value.bin;
 }
 
@@ -246,12 +264,14 @@ void MsgpackObject::setBin(std::shared_ptr<std::vector<uint8_t>> val) {
 }
 
 std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>> MsgpackObject::getArray() {
-  if (obj_type != ObjectType::ARRAY) throw proto::SchemaError("Wrong MsgpackObject type when trying to get array");
+  if (obj_type != ObjectType::ARRAY)
+    throw proto::SchemaError("Wrong MsgpackObject type when trying to get array");
   return value.array;
 }
 
 const std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>> MsgpackObject::getArray() const {
-  if (obj_type != ObjectType::ARRAY) throw proto::SchemaError("Wrong MsgpackObject type when trying to get array");
+  if (obj_type != ObjectType::ARRAY)
+    throw proto::SchemaError("Wrong MsgpackObject type when trying to get array");
   return value.array;
 }
 
@@ -262,12 +282,14 @@ void MsgpackObject::setArray(std::shared_ptr<std::vector<std::shared_ptr<Msgpack
 }
 
 std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>> MsgpackObject::getMap() {
-  if (obj_type != ObjectType::MAP) throw proto::SchemaError("Wrong MsgpackObject type when trying to get map");
+  if (obj_type != ObjectType::MAP)
+    throw proto::SchemaError("Wrong MsgpackObject type when trying to get map");
   return value.map;
 }
 
 const std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>> MsgpackObject::getMap() const {
-  if (obj_type != ObjectType::MAP) throw proto::SchemaError("Wrong MsgpackObject type when trying to get map");
+  if (obj_type != ObjectType::MAP)
+    throw proto::SchemaError("Wrong MsgpackObject type when trying to get map");
   return value.map;
 }
 
@@ -278,12 +300,14 @@ void MsgpackObject::setMap(std::shared_ptr<std::map<std::string, std::shared_ptr
 }
 
 std::pair<int, std::shared_ptr<std::vector<uint8_t>>> MsgpackObject::getExt() {
-  if (obj_type != ObjectType::EXT) throw proto::SchemaError("Wrong MsgpackObject type when trying to get ext");
+  if (obj_type != ObjectType::EXT)
+    throw proto::SchemaError("Wrong MsgpackObject type when trying to get ext");
   return value.ext;
 }
 
 const std::pair<int, std::shared_ptr<std::vector<uint8_t>>> MsgpackObject::getExt() const {
-  if (obj_type != ObjectType::EXT) throw proto::SchemaError("Wrong MsgpackObject type when trying to get ext");
+  if (obj_type != ObjectType::EXT)
+    throw proto::SchemaError("Wrong MsgpackObject type when trying to get ext");
   return value.ext;
 }
 

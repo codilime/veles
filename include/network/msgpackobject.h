@@ -99,7 +99,7 @@ class MsgpackObject {
 
   void destroyValue();
 
-  void msgpack_unpack(msgpack::object const& obj);
+  void msgpack_unpack(const msgpack::object& obj);
 
   template <typename Packer>
   void msgpack_pack(Packer& pk) const {
@@ -133,13 +133,13 @@ class MsgpackObject {
       break;
     case ObjectType::ARRAY:
       pk.pack_array(static_cast<uint32_t>(value.array->size()));
-      for (auto el : *value.array) {
+      for (const auto& el : *value.array) {
         pk.pack(el);
       }
       break;
     case ObjectType::MAP:
       pk.pack_map(static_cast<uint32_t>(value.map->size()));
-      for (auto el : *value.map) {
+      for (const auto& el : *value.map) {
         pk.pack_str(static_cast<uint32_t>(el.first.size()));
         pk.pack_str_body(el.first.data(), static_cast<uint32_t>(el.first.size()));
         pk.pack(el.second);
@@ -193,79 +193,74 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const data::NodeID& val);
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::NodeID> val);
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<proto::VelesException> val);
 
+namespace details_ {
+
+template <class T>
+std::shared_ptr<MsgpackObject> convertCollectionHelper(const T& val) {
+  std::vector<std::shared_ptr<MsgpackObject>> values;
+  for (const auto& elem : val) {
+    values.push_back(toMsgpackObject(elem));
+  }
+  return std::make_shared<MsgpackObject>(values);
+}
+
+template <class T>
+std::shared_ptr<MsgpackObject> convertMapHelper(const T& val) {
+  std::map<std::string, std::shared_ptr<MsgpackObject>> value;
+  for (const auto& elem : val) {
+    value[elem.first] = toMsgpackObject(elem.second);
+  }
+  return std::make_shared<MsgpackObject>(value);
+}
+
+}
+
 template <class T>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::unordered_set<T>& val) {
-  std::vector<std::shared_ptr<MsgpackObject>> value;
-  for (auto elem : val) {
-    value.push_back(toMsgpackObject(elem));
-  }
-  return std::make_shared<MsgpackObject>(value);
+  return details_::convertCollectionHelper(val);
 }
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::unordered_set<T>> val) {
-  if (val == nullptr) throw std::bad_cast();
-  std::vector<std::shared_ptr<MsgpackObject>> value;
-  for (auto elem : *val) {
-    value.push_back(toMsgpackObject(elem));
-  }
-  return std::make_shared<MsgpackObject>(value);
+std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::unordered_set<T>> val_ptr) {
+  if (!val_ptr)
+    throw std::bad_cast();
+  return details_::convertCollectionHelper(*val_ptr);
 }
+
 template <class T>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::unordered_set<std::shared_ptr<T>>& val) {
-  std::vector<std::shared_ptr<MsgpackObject>> value;
-  for (auto elem : val) {
-    value.push_back(toMsgpackObject(elem));
-  }
-  return std::make_shared<MsgpackObject>(value);
+  return details_::convertCollectionHelper(val);
 }
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::unordered_set<std::shared_ptr<T>>> val) {
-  if (val == nullptr) throw std::bad_cast();
-  std::vector<std::shared_ptr<MsgpackObject>> value;
-  for (auto elem : *val) {
-    value.push_back(toMsgpackObject(elem));
-  }
-  return std::make_shared<MsgpackObject>(value);
+std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::unordered_set<std::shared_ptr<T>>> val_ptr) {
+  if (!val_ptr)
+    throw std::bad_cast();
+  return details_::convertCollectionHelper(*val_ptr);
 }
 
 template <class T>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::vector<T>& val) {
-  std::vector<std::shared_ptr<MsgpackObject>> value;
-  for (auto elem : val) {
-    value.push_back(toMsgpackObject(elem));
-  }
-  return std::make_shared<MsgpackObject>(value);
+  return details_::convertCollectionHelper(val);
 }
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::vector<T>> val) {
-  if (val == nullptr) throw std::bad_cast();
-  std::vector<std::shared_ptr<MsgpackObject>> value;
-  for (auto elem : *val) {
-    value.push_back(toMsgpackObject(elem));
-  }
-  return std::make_shared<MsgpackObject>(value);
+std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::vector<T>> val_ptr) {
+  if (!val_ptr)
+    throw std::bad_cast();
+  return details_::convertCollectionHelper(*val_ptr);
 }
 
 template <class T>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::vector<std::shared_ptr<T>>& val) {
-  std::vector<std::shared_ptr<MsgpackObject>> value;
-  for (auto elem : val) {
-    value.push_back(toMsgpackObject(elem));
-  }
-  return std::make_shared<MsgpackObject>(value);
+  return details_::convertCollectionHelper(val);
 }
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::vector<std::shared_ptr<T>>> val) {
-  if (val == nullptr) throw std::bad_cast();
-  std::vector<std::shared_ptr<MsgpackObject>> value;
-  for (auto elem : *val) {
-    value.push_back(toMsgpackObject(elem));
-  }
-  return std::make_shared<MsgpackObject>(value);
+std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::vector<std::shared_ptr<T>>> val_ptr) {
+  if (!val_ptr)
+    throw std::bad_cast();
+  return details_::convertCollectionHelper(*val_ptr);
 }
 
 template<>
@@ -276,40 +271,26 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::vector
 
 template <class T>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::unordered_map<std::string, T>& val) {
-  std::map<std::string, std::shared_ptr<MsgpackObject>> value;
-  for (auto elem : val) {
-    value[elem.first] = toMsgpackObject(elem.second);
-  }
-  return std::make_shared<MsgpackObject>(value);
+  return details_::convertMapHelper(val);
 }
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::unordered_map<std::string, T>> val) {
-  if (val == nullptr) throw std::bad_cast();
-  std::map<std::string, std::shared_ptr<MsgpackObject>> value;
-  for (auto elem : *val) {
-    value[elem.first] = toMsgpackObject(elem.second);
-  }
-  return std::make_shared<MsgpackObject>(value);
+std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::unordered_map<std::string, T>> val_ptr) {
+  if (!val_ptr)
+    throw std::bad_cast();
+  return details_::convertMapHelper(*val_ptr);
 }
 
 template <class T>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::unordered_map<std::string, std::shared_ptr<T>>& val) {
-  std::map<std::string, std::shared_ptr<MsgpackObject>> value;
-  for (auto elem : val) {
-    value[elem.first] = toMsgpackObject(elem.second);
-  }
-  return std::make_shared<MsgpackObject>(value);
+  return details_::convertMapHelper(val);
 }
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<T>>> val) {
-  if (val == nullptr) throw std::bad_cast();
-  std::map<std::string, std::shared_ptr<MsgpackObject>> value;
-  for (auto elem : *val) {
-    value[elem.first] = toMsgpackObject(elem.second);
-  }
-  return std::make_shared<MsgpackObject>(value);
+std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<T>>> val_ptr) {
+  if (!val_ptr)
+    throw std::bad_cast();
+  return details_::convertMapHelper(*val_ptr);
 }
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const MsgpackObject& obj);
@@ -324,39 +305,42 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<MsgpackObject>& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<std::string>& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<std::vector<uint8_t>>& out);
+
 template <class T>
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<std::vector<T>>& out) {
   if (obj == nullptr) {
     out = nullptr;
   } else {
     auto tmp = obj->getArray();
-    for (auto el : *tmp) {
+    for (const auto& el : *tmp) {
       T conv;
       fromMsgpackObject(el, conv);
       out->push_back(conv);
     }
   }
 }
+
 template <class T>
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<std::unordered_set<T>>& out) {
   if (obj == nullptr) {
     out = nullptr;
   } else {
     auto tmp = obj->getArray();
-    for (auto el : *tmp) {
+    for (const auto& el : *tmp) {
       T conv;
       fromMsgpackObject(el, conv);
       out->insert(conv);
     }
   }
 }
+
 template <class T>
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<std::unordered_map<std::string, T>>& out) {
-  if (obj == nullptr) {
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj_ptr, std::shared_ptr<std::unordered_map<std::string, T>>& out) {
+  if (!obj_ptr) {
     out = nullptr;
   } else {
-    auto tmp = obj->getMap();
-    for (auto el : *tmp) {
+    auto tmp = obj_ptr->getMap();
+    for (const auto& el : *tmp) {
       T conv;
       fromMsgpackObject(el.second, conv);
       (*out)[el.first] = conv;
