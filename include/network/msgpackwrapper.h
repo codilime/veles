@@ -29,11 +29,11 @@ namespace messages {
 MSGPACK_CLASSES_HEADER
 
 class MsgpackWrapper {
-  msgpack::unpacker unp;
-  static const int read_size = 1024;
+  msgpack::unpacker unp_;
+  static const int READ_SIZE_ = 1024;
 
  public:
-  static std::shared_ptr<MsgpackMsg> parseMessage(msgpack::object_handle *handle) {
+  static std::shared_ptr<MsgpackMsg> parseMessage(msgpack::object_handle* handle) {
     msgpack::object obj = handle->get();
     return MsgpackMsg::polymorphicLoad(obj);
   }
@@ -44,19 +44,19 @@ class MsgpackWrapper {
     pk.pack(mss);
   }
 
-  std::shared_ptr<MsgpackMsg> loadMessage(QTcpSocket *connection) {
+  std::shared_ptr<MsgpackMsg> loadMessage(QTcpSocket* connection) {
     // This method can throw msgpack::type_error when malformed message is read
     msgpack::object_handle handle;
-    if (unp.next(handle)) {
+    if (unp_.next(handle)) {
       return parseMessage(&handle);
     }
-    unp.reserve_buffer(read_size);
-    qint64 read = connection->read(unp.buffer(), read_size);
+    unp_.reserve_buffer(READ_SIZE_);
+    qint64 read = connection->read(unp_.buffer(), READ_SIZE_);
     if (read == -1) {
         return nullptr;
     }
-    unp.buffer_consumed(read);
-    if (unp.next(handle)) {
+    unp_.buffer_consumed(read);
+    if (unp_.next(handle)) {
       return parseMessage(&handle);
     } else {
       return nullptr;
