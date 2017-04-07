@@ -158,7 +158,11 @@ void ConnectionManager::startLocalServer() {
 #if defined(Q_OS_LINUX)
   QString python_interpreter_executable("python3");
 #elif defined(Q_OS_WIN)
-  QString python_interpreter_executable("py.exe");
+  QString python_interpreter_executable(qApp->applicationDirPath() + "/../veles-server/python/python.exe");
+  QFileInfo check_file(python_interpreter_executable);
+  if (!check_file.exists()) {
+    python_interpreter_executable = QString("py.exe");
+  }
 #else
   QString python_interpreter_executable("python");
 #endif

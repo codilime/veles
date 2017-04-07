@@ -23,6 +23,7 @@ include("cmake/qt.cmake")
 include("cmake/zlib.cmake")
 include("cmake/msgpack.cmake")
 include("cmake/cppgen.cmake")
+include("cmake/server.cmake")
 # Compiler flags
 set(CMAKE_CXX_STANDARD_REQUIRED 11) # Use c++11
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -482,6 +483,7 @@ if(APPLE)
 endif(APPLE)
 
 set(CPACK_COMPONENT_APPLICATION_DISPLAY_NAME "Veles UI application")
+set(CPACK_COMPONENT_SERVER_DISPLAY_NAME "Veles server")
 set(CPACK_COMPONENT_APPLICATION_REQUIRED ON)
 
 # Few common CPack settings
