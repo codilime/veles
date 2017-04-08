@@ -60,6 +60,9 @@ class NodeID(pep487.NewObject):
             return self.bytes == other.bytes
         return False
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __hash__(self):
         return hash(self.bytes)
 

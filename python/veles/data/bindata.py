@@ -117,6 +117,9 @@ class BinData(object):
                 self._width == other._width and
                 self._raw_data == other._raw_data)
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __len__(self):
         """
         Returns the length of this BinData instance in elements.

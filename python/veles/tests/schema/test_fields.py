@@ -36,6 +36,9 @@ class Piwo(object):
     def __eq__(self, other):
         return type(self) == type(other)
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __hash__(self):
         return 13
 
@@ -52,6 +55,9 @@ class Zlew(object):
 
     def __eq__(self, other):
         return type(self) == type(other)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __hash__(self):
         return 13

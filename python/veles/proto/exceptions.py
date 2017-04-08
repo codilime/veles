@@ -68,6 +68,9 @@ class VelesException(Exception, NewObject):
                 and self.code == other.code
                 and self.msg == other.msg)
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __hash__(self):
         return hash((self.code, self.msg))
 
