@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import weakref
-
 from veles.proto import messages
 from veles.proto.node import PosFilter
 from veles.async_conn.conn import AsyncConnection
@@ -22,12 +20,13 @@ from veles.async_conn.plugin import (
     QueryHandler,
     BroadcastHandler,
 )
-from veles.async_conn.node import AsyncNode
-from veles.async_conn.subscriber import (
+from veles.db.subscriber import (
     BaseSubscriberNode,
     BaseSubscriberData,
     BaseSubscriberBinData,
     BaseSubscriberList,
+)
+from veles.async_conn.subscriber import (
     BaseSubscriberQuery,
 )
 from .runner import (
@@ -53,20 +52,11 @@ class AsyncRemoteConnection(AsyncConnection):
     def __init__(self, loop, proto):
         self.loop = loop
         self.proto = proto
-        self.objs = weakref.WeakValueDictionary()
         self.conns = {}
         self.next_cid = 0
         self.proto.conn = self
         self.subs = {}
         super().__init__()
-
-    def get_node_norefresh(self, obj_id):
-        try:
-            return self.objs[obj_id]
-        except KeyError:
-            res = AsyncNode(self, obj_id, None)
-            self.objs[obj_id] = res
-            return res
 
     def new_conn(self, conn):
         cid = self.next_cid

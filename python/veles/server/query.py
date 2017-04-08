@@ -16,7 +16,7 @@ import asyncio
 
 from veles.proto import check
 from veles.proto.exceptions import VelesException
-from veles.async_conn.subscriber import (
+from veles.db.subscriber import (
     BaseSubscriberNode,
     BaseSubscriberData,
     BaseSubscriberBinData,

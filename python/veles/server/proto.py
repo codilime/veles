@@ -24,13 +24,13 @@ import msgpack
 
 from veles.proto import messages, msgpackwrap
 from veles.util.helpers import prepare_auth_key
-from veles.async_conn.subscriber import (
+from veles.db.subscriber import (
     BaseSubscriberNode,
     BaseSubscriberData,
     BaseSubscriberBinData,
     BaseSubscriberList,
-    BaseSubscriberQueryRaw,
 )
+from veles.async_conn.subscriber import BaseSubscriberQueryRaw
 from veles.async_conn.plugin import (
     MethodHandler,
     QueryHandler,

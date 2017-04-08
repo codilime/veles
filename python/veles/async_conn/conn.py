@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import weakref
+
 import asyncio
 
 from veles.proto.node import PosFilter
 from veles.schema.nodeid import NodeID
 from .plugin import MethodHandler, QueryHandler, BroadcastHandler
+from .node import AsyncNode
 
 
 class AsyncConnection:
@@ -25,16 +28,22 @@ class AsyncConnection:
     """
 
     def __init__(self):
+        self.anodes = weakref.WeakValueDictionary()
         self.root = self.get_node_norefresh(NodeID.root_id)
 
-    def get_node_norefresh(self, id):
+    def get_node_norefresh(self, nid):
         """
         Returns an AsyncNode with the given id immediately.  Does not fetch it
         from the server - it may contain invalid data until refresh is called.
         Such nodes may still be useful for some operations (eg. listing
         children).
         """
-        raise NotImplementedError
+        try:
+            return self.anodes[nid]
+        except KeyError:
+            res = AsyncNode(self, nid, None)
+            self.anodes[nid] = res
+            return res
 
     def get_node(self, id):
         """

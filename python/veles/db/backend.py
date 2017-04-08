@@ -523,7 +523,8 @@ class DbBackend:
         return {NodeID(bytes(x)) for x, in c.fetchall()}
 
     def begin(self):
-        assert not self.db.in_transaction
+        if six.PY3:
+            assert not self.db.in_transaction
 
     def commit(self):
         self.db.commit()
