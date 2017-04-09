@@ -144,6 +144,10 @@ class DbTracker(object):
         data = self.get_bindata(el.node, el.key, el.start, el.end)
         return data == el.data
 
+    def _check_ok_trigger(self, el):
+        node = self.get(el.node)
+        return node.triggers.get(el.key) == el.state
+
     def _check_ok_list(self, el):
         nodes = self.get_list_raw(el.parent, el.tags, el.pos_filter)
         return el.nodes == nodes
@@ -159,6 +163,7 @@ class DbTracker(object):
             check.CheckData: self._check_ok_data,
             check.CheckBinDataSize: self._check_ok_bindata_size,
             check.CheckBinData: self._check_ok_bindata,
+            check.CheckTrigger: self._check_ok_trigger,
             check.CheckList: self._check_ok_list,
         }
         try:
@@ -290,6 +295,18 @@ class DbTracker(object):
             else:
                 del dbnode.node.bindata[op.key]
 
+    def _op_add_trigger(self, xact, op, dbnode):
+        if dbnode.node is None:
+            raise ObjectGoneError()
+        # XXX
+        raise NotImplementedError
+
+    def _op_del_trigger(self, xact, op, dbnode):
+        if dbnode.node is None:
+            raise ObjectGoneError()
+        # XXX
+        raise NotImplementedError
+
     def transaction(self, checks, ops):
         if not self.checks_ok(checks):
             raise PreconditionFailedError()
@@ -304,6 +321,8 @@ class DbTracker(object):
                 operation.OperationSetAttr: self._op_set_attr,
                 operation.OperationSetData: self._op_set_data,
                 operation.OperationSetBinData: self._op_set_bindata,
+                operation.OperationAddTrigger: self._op_add_trigger,
+                operation.OperationDelTrigger: self._op_del_trigger,
             }
             for op in ops:
                 dbnode = self.get_cached_node(op.node)

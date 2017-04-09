@@ -121,6 +121,19 @@ class AsyncTracer:
         return self._get_from_node(
             id, lambda node: self._get_bindata_size(node, key))
 
+    def _get_trigger(self, node, key):
+        res = node.triggers.get(key)
+        self.checks.append(check.CheckTrigger(
+            node=node.id,
+            key=key,
+            state=res,
+        ))
+        return res
+
+    def get_trigger(self, id, key):
+        return self._get_from_node(
+            id, lambda node: self._get_trigger(node, key))
+
     async def _get_data(self, node, key, adata):
         try:
             res = await adata

@@ -32,6 +32,7 @@ class OperationCreate(Operation):
     attr = fields.Map(fields.String(), fields.Any())
     data = fields.Map(fields.String(), fields.Any())
     bindata = fields.Map(fields.String(), fields.Binary())
+    triggers = fields.Set(fields.String())
 
 
 class OperationDelete(Operation):
@@ -84,3 +85,15 @@ class OperationSetBinData(Operation):
     start = fields.SmallUnsignedInteger(default=0)
     data = fields.Binary()
     truncate = fields.Boolean(default=False)
+
+
+class OperationAddTrigger(Operation):
+    object_type = 'add_trigger'
+
+    trigger = fields.String()
+
+
+class OperationDelTrigger(Operation):
+    object_type = 'del_trigger'
+
+    trigger = fields.String()

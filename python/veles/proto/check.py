@@ -15,7 +15,7 @@
 from __future__ import unicode_literals
 
 from veles.schema import model, fields
-from veles.proto.node import PosFilter
+from veles.proto.node import TriggerState, PosFilter
 
 
 class Check(model.PolymorphicModel):
@@ -90,6 +90,14 @@ class CheckBinData(Check):
     start = fields.SmallUnsignedInteger()
     end = fields.SmallUnsignedInteger(optional=True)
     data = fields.Binary()
+
+
+class CheckTrigger(Check):
+    object_type = 'trigger'
+
+    node = fields.NodeID()
+    key = fields.String()
+    state = fields.Enum(TriggerState, optional=True)
 
 
 class CheckList(Check):

@@ -29,7 +29,9 @@ def generate_cpp_code():
     poly_classes = [messages.MsgpackMsg, check.Check, operation.Operation]
     enum_classes_to_generate = [
         chunk.FieldSignMode, chunk.FieldFloatMode,
-        chunk.FieldStringMode, chunk.FieldStringEncoding]
+        chunk.FieldStringMode, chunk.FieldStringEncoding,
+        node.TriggerState,
+    ]
     for cls_type in classes_to_generate:
         code += 'class {};\\\n'.format(cls_type.cpp_type())
     for cls_type in enum_classes_to_generate:

@@ -310,6 +310,7 @@ class MsgCreate(MsgpackMsg):
     attr = fields.Map(fields.String(), fields.Any())
     data = fields.Map(fields.String(), fields.Any())
     bindata = fields.Map(fields.String(), fields.Binary())
+    triggers = fields.Set(fields.String())
 
 
 class MsgDelete(MsgpackMsg):

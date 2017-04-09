@@ -12,8 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from veles.schema import model, fields
+from veles.schema import model, fields, enumeration
 from veles.schema.nodeid import NodeID
+
+
+class TriggerState(enumeration.EnumModel):
+    pending = 'pending'
+    done = 'done'
+    exception = 'exception'
 
 
 class Node(model.Model):
@@ -34,6 +40,9 @@ class Node(model.Model):
       this dict correspond to bindata keys, and the values are size of the
       corresponding binary data in bytes.  The actual bindata has to
       be downloaded separately.
+    - ``triggers``: a dict containing active triggers for the given node.
+      The keys are trigger names, and they are mapped to the state of
+      the given trigger.
     """
 
     id = fields.NodeID()
@@ -44,6 +53,7 @@ class Node(model.Model):
     attr = fields.Map(fields.String(), fields.Any())
     data = fields.Set(fields.String())
     bindata = fields.Map(fields.String(), fields.SmallUnsignedInteger())
+    triggers = fields.Map(fields.String(), fields.Enum(TriggerState))
 
 
 class PosFilter(model.Model):
