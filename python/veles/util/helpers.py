@@ -14,4 +14,4 @@
 
 
 def prepare_auth_key(key):
-    return bytearray.fromhex(key) + b'\x00' * (64 - len(key)//2)
+    return bytes(bytearray.fromhex(key) + b'\x00' * (64 - len(key)//2))
