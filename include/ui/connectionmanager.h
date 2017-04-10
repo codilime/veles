@@ -63,6 +63,7 @@ class ConnectionManager : public QObject {
   void serverProcessReadyRead();
   void updateConnectionStatus(
       client::NetworkClient::ConnectionStatus connection_status);
+  void raiseConnectionDialog();
 
  private:
   QAction* show_connection_dialog_action_;

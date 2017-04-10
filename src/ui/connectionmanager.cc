@@ -213,6 +213,11 @@ void ConnectionManager::updateConnectionStatus(
       connection_status != client::NetworkClient::ConnectionStatus::NotConnected);
 }
 
+void ConnectionManager::raiseConnectionDialog() {
+  connection_dialog_->raise();
+  connection_dialog_->activateWindow();
+}
+
 /*****************************************************************************/
 /* ConnectionNotificationWidget */
 /*****************************************************************************/
