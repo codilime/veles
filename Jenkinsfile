@@ -167,7 +167,8 @@ builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
           dir ("build") {
             def branch = getBranch()
             sh """cmake -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."""
-            sh "cmake --build . --config ${buildConfiguration} -- -j3 2>&1 | tee error_and_warnings.txt"
+            sh "cmake --build . --config ${buildConfiguration} -- -j3 > error_and_warnings.txt 2>&1"
+            sh "cat error_and_warnings.txt"
             sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-ubuntu1604 -G ZIP -C ${buildConfiguration}"
             junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
             step([$class: 'ArtifactArchiver', artifacts: '*.zip', fingerprint: true])
@@ -194,7 +195,8 @@ builders['macosx'] = { node ('macosx'){
           dir ("build") {
             def branch = getBranch()
             sh "cmake .. -G \"Xcode\" -DCMAKE_PREFIX_PATH=$QT/5.7/clang_64 -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\""
-            sh "cmake --build . --config ${buildConfiguration} 2>&1 | tee error_and_warnings.txt"
+            sh "cmake --build . --config ${buildConfiguration} > error_and_warnings.txt 2>&1"
+            sh "cat error_and_warnings.txt"
             sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-osx -G ZIP -C ${buildConfiguration}"
             junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
             step([$class: 'ArtifactArchiver', artifacts: '*.zip', fingerprint: true])
