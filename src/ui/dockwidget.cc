@@ -1130,8 +1130,21 @@ void MainWindowWithDetachableDockWidgets::updateCloseButtonsAndIconsOnTabBars() 
 void MainWindowWithDetachableDockWidgets::updateActiveDockWidget() {
   QApplication::processEvents();
 
-  QColor bg = palette().color(QPalette::Highlight);
-  QColor fg = palette().color(QPalette::HighlightedText);
+  QString tab_bar_stylesheet = QString(
+      "QTabBar::tab {"
+      "background : palette(window);"
+      "color : palette(window-text);"
+      "border-top-left-radius: 4px;"
+      "border-top-right-radius: 4px;"
+      "border: 1px solid palette(shadow);"
+      "padding: 4px;"
+      "}"
+      "QTabBar::tab:selected {"
+      "border-bottom: 0px solid palette(shadow);"
+      "}"
+      "QTabBar::tab:!selected {"
+      "margin-top: 2px;"
+      "}");
 
   QList<QTabBar*> tab_bars = findChildren<QTabBar*>();
   for (auto tab_bar : tab_bars) {
@@ -1139,18 +1152,14 @@ void MainWindowWithDetachableDockWidgets::updateActiveDockWidget() {
         && active_dock_widget_ == dynamic_cast<DockWidget*>(
         tabToDockWidget(tab_bar, tab_bar->currentIndex()))
         && active_dock_widget_) {
-      tab_bar->setStyleSheet(
-          QString("QTabBar::tab::selected {"
-          "background : rgb(%1, %2, %3);"
-          "color : rgb(%4, %5, %6);"
-          "border-top-left-radius: 4px;"
-          "border-top-right-radius: 4px;"
-          "padding: 4px;"
-          "}")
-          .arg(bg.red()).arg(bg.green()).arg(bg.blue())
-          .arg(fg.red()).arg(fg.green()).arg(fg.blue()));
+      tab_bar->setStyleSheet(tab_bar_stylesheet +
+          QString("QTabBar::tab:selected {"
+          "background : palette(highlight);"
+          "color : palette(highlighted-text);"
+          "border-bottom: 0px solid palette(shadow);"
+          "}"));
     } else {
-      tab_bar->setStyleSheet("");
+      tab_bar->setStyleSheet(tab_bar_stylesheet);
     }
   }
 
@@ -1160,13 +1169,11 @@ void MainWindowWithDetachableDockWidgets::updateActiveDockWidget() {
         && active_dock_widget_ == dock_widget) {
       dock_widget->setStyleSheet(
           QString("%1::title {"
-          "background : rgb(%2, %3, %4);"
-          "color : rgb(%5, %6, %7);"
+          "background : palette(highlight);"
+          "color : palette(highlighted-text);"
           "}")
           .arg(QString(
-          dock_widget->metaObject()->className()).replace(':', '-'))
-          .arg(bg.red()).arg(bg.green()).arg(bg.blue())
-          .arg(fg.red()).arg(fg.green()).arg(fg.blue()));
+          dock_widget->metaObject()->className()).replace(':', '-')));
     } else {
       dock_widget->setStyleSheet("");
     }
