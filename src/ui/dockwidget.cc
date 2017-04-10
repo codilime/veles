@@ -733,7 +733,7 @@ DockWidget* MainWindowWithDetachableDockWidgets::addTab(QWidget *widget,
   QApplication::processEvents();
   updateDocksAndTabs();
   bringDockWidgetToFront(dock_widget);
-  setActiveDockWidget(dock_widget);
+  dock_widget->setFocus(Qt::OtherFocusReason);
 
   return dock_widget;
 }

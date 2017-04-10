@@ -130,6 +130,9 @@ void VelesMainWindow::init() {
       &ConnectionNotificationWidget::updateConnectionStatus);
   tool_bar_->addWidget(connection_notification_widget_);
 
+  bringDockWidgetToFront(log_dock_widget_);
+  log_dock_widget_->setFocus(Qt::OtherFocusReason);
+
   connection_manager_->showConnectionDialogAction()->trigger();
   connect(this, &VelesMainWindow::shown,
       connection_manager_, &ConnectionManager::raiseConnectionDialog,
