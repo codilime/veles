@@ -358,11 +358,11 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::string
 }
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const data::NodeID& val) {
-  return std::make_shared<MsgpackObject>(0, val.asStdVector());
+  return details_::convertNodeIDHelper(val);
 }
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::NodeID> val) {
-  return std::make_shared<MsgpackObject>(0, val->asStdVector());
+  return details_::convertNodeIDHelper(*val);
 }
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<proto::VelesException> val) {
@@ -380,7 +380,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const double val) {
 
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<data::NodeID>& out) {
   if (obj->type() == ObjectType::NIL) {
-    out = std::make_shared<data::NodeID>(data::NodeID::NIL_VALUE);
+    out = data::NodeID::getNilId();
   } else {
     out = std::make_shared<data::NodeID>(obj->getExt().second->data());
   }
@@ -442,6 +442,17 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, bool& out) {
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, double& out) {
   out = obj->getDouble();
 }
+
+namespace details_ {
+
+std::shared_ptr<MsgpackObject> details_::convertNodeIDHelper(const data::NodeID &val) {
+  if (val) {
+    return std::make_shared<MsgpackObject>(0, val.asStdVector());
+  }
+  return std::make_shared<MsgpackObject>();
+}
+
+}  // namespace details_
 
 }  // namespace messages
 }  // namespace veles

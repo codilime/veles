@@ -201,6 +201,8 @@ std::shared_ptr<MsgpackObject> convertCollectionHelper(const T& val);
 template <class T>
 std::shared_ptr<MsgpackObject> convertMapHelper(const T& val);
 
+std::shared_ptr<MsgpackObject> convertNodeIDHelper(const data::NodeID& val);
+
 }  // namespace details_
 
 template <class T>

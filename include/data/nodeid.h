@@ -16,10 +16,10 @@
  */
 #pragma once
 
+#include <random>
 #include <vector>
 
 #include <QString>
-
 #include <msgpack.hpp>
 
 namespace veles {
@@ -28,19 +28,25 @@ namespace data {
 class NodeID {
   static const size_t WIDTH_ = 24;
   uint8_t value[WIDTH_];
+  std::random_device random_;
  public:
   static const uint8_t NIL_VALUE[WIDTH_];
-  // TODO singleton
   static const uint8_t ROOT_VALUE[WIDTH_];
 
   NodeID();
   NodeID(const uint8_t* data);
-  NodeID(const QString& data);
+  NodeID(const std::string& data);
+  NodeID(const NodeID& other);
 
   QString toHexString() const;
-  std::vector<uint8_t> asStdVector() const {
-    return std::vector<uint8_t>(value, value + WIDTH_);
-  }
+  static std::shared_ptr<NodeID> fromHexString(QString& val);
+  std::vector<uint8_t> asStdVector() const;
+  // functions for more convinient getting of special values
+  static std::shared_ptr<NodeID> getRootNodeId();
+  static std::shared_ptr<NodeID> getNilId();
+  bool operator==(const NodeID &other) const;
+  bool operator!=(const NodeID &other) const;
+  explicit operator bool() const;
 };
 
 }  // namespace data
