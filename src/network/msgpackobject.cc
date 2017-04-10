@@ -156,13 +156,14 @@ void MsgpackObject::fromMsgpack(const msgpack::v2::object &obj) {
       }
     }
     break;
-  case msgpack::type::EXT:
+  case msgpack::type::EXT: {
     obj_type = ObjectType::EXT;
     new (&value.ext) std::pair<int, std::shared_ptr<std::vector<uint8_t>>>;
     auto obj_ext = obj.via.ext;
     value.ext.first = obj_ext.type();
     value.ext.second = std::make_shared<std::vector<uint8_t>>(obj_ext.data(), obj_ext.data()+obj_ext.size);
     break;
+  }
   default:
     abort();
   }

@@ -213,7 +213,7 @@ std::shared_ptr<MsgpackObject> convertMapHelper(const T& val) {
   return std::make_shared<MsgpackObject>(value);
 }
 
-}
+}  // namespace details_
 
 template <class T>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::unordered_set<T>& val) {
