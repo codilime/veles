@@ -68,6 +68,10 @@ void VelesMainWindow::dropEvent(QDropEvent *ev) {
 
 void VelesMainWindow::dragEnterEvent(QDragEnterEvent *ev) { ev->accept(); }
 
+void VelesMainWindow::showEvent(QShowEvent* event) {
+  emit shown();
+}
+
 /*****************************************************************************/
 /* VelesMainWindow - Private Slots */
 /*****************************************************************************/
@@ -127,6 +131,9 @@ void VelesMainWindow::init() {
   tool_bar_->addWidget(connection_notification_widget_);
 
   connection_manager_->showConnectionDialogAction()->trigger();
+  connect(this, &VelesMainWindow::shown,
+      connection_manager_, &ConnectionManager::raiseConnectionDialog,
+      Qt::QueuedConnection);
 }
 
 void VelesMainWindow::createActions() {

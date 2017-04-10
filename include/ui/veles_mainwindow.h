@@ -50,8 +50,9 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   QStringList parsersList() {return parsers_list_;}
 
  protected:
-  void dropEvent(QDropEvent *ev) override;
-  void dragEnterEvent(QDragEnterEvent *ev) override;
+  void dropEvent(QDropEvent* ev) override;
+  void dragEnterEvent(QDragEnterEvent* ev) override;
+  void showEvent(QShowEvent* event) override;
 
  private slots:
   void newFile();
@@ -60,6 +61,9 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   void updateParsers(dbif::PInfoReply replay);
   void showDatabase();
   void showLog();
+
+ signals:
+  void shown();
 
  private:
   void init();
