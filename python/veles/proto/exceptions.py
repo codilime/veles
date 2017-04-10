@@ -137,5 +137,5 @@ class AuthenticationError(VelesException):
 
 
 class ProtocolMismatchError(VelesException):
-    code = 'protocol_error'
+    code = 'protocol_mismatch_error'
     msg = 'Incompatible protocol version'

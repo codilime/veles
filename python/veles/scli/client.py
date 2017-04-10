@@ -23,21 +23,26 @@ from veles.util.helpers import prepare_auth_key
 
 
 class Client(object):
-    def __init__(self, sock, key):
+    def __init__(self, sock, key, name='scli', version='1.0',
+                 description='', type='scli'):
         self.sock = sock
         wrapper = msgpackwrap.MsgpackWrapper()
         self.unpacker = wrapper.unpacker
         self.packer = wrapper.packer
+        self.client_name = name
+        self.client_version = version
+        self.client_description = description
+        self.client_type = type
         self._authorize(prepare_auth_key(key))
 
     def _authorize(self, key):
         self.sock.sendall(key)
         self.send_msg(messages.MsgConnect(
             proto_version=PROTO_VERSION,
-            client_name='scli',
-            client_version='scli 1.0',
-            client_description='',
-            client_type='scli',
+            client_name=self.client_name,
+            client_version=self.client_version,
+            client_description=self.client_description,
+            client_type=self.client_type,
         ))
         pkt = self.getpkt()
         if isinstance(pkt, messages.MsgConnected):
