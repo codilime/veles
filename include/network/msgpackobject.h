@@ -196,22 +196,10 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<proto::Vele
 namespace details_ {
 
 template <class T>
-std::shared_ptr<MsgpackObject> convertCollectionHelper(const T& val) {
-  std::vector<std::shared_ptr<MsgpackObject>> values;
-  for (const auto& elem : val) {
-    values.push_back(toMsgpackObject(elem));
-  }
-  return std::make_shared<MsgpackObject>(values);
-}
+std::shared_ptr<MsgpackObject> convertCollectionHelper(const T& val);
 
 template <class T>
-std::shared_ptr<MsgpackObject> convertMapHelper(const T& val) {
-  std::map<std::string, std::shared_ptr<MsgpackObject>> value;
-  for (const auto& elem : val) {
-    value[elem.first] = toMsgpackObject(elem.second);
-  }
-  return std::make_shared<MsgpackObject>(value);
-}
+std::shared_ptr<MsgpackObject> convertMapHelper(const T& val);
 
 }  // namespace details_
 
@@ -347,6 +335,28 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj_ptr, std::shared
     }
   }
 }
+
+namespace details_ {
+
+template <class T>
+std::shared_ptr<MsgpackObject> convertCollectionHelper(const T& val) {
+  std::vector<std::shared_ptr<MsgpackObject>> values;
+  for (const auto& elem : val) {
+    values.push_back(toMsgpackObject(elem));
+  }
+  return std::make_shared<MsgpackObject>(values);
+}
+
+template <class T>
+std::shared_ptr<MsgpackObject> convertMapHelper(const T& val) {
+  std::map<std::string, std::shared_ptr<MsgpackObject>> value;
+  for (const auto& elem : val) {
+    value[elem.first] = toMsgpackObject(elem.second);
+  }
+  return std::make_shared<MsgpackObject>(value);
+}
+
+}  // namespace details_
 
 }  // namespace messages
 }  // namespace veles
