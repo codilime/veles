@@ -26,26 +26,30 @@ namespace veles {
 namespace data {
 
 class NodeID {
-  static const size_t WIDTH_ = 24;
-  uint8_t value[WIDTH_];
-  std::random_device random_;
  public:
-  static const uint8_t NIL_VALUE[WIDTH_];
-  static const uint8_t ROOT_VALUE[WIDTH_];
+  static const size_t WIDTH = 24;
+
+ private:
+  uint8_t value[WIDTH];
+  static std::mt19937 random_;
+
+ public:
+  static const uint8_t NIL_VALUE[WIDTH];
+  static const uint8_t ROOT_VALUE[WIDTH];
 
   NodeID();
-  NodeID(const uint8_t* data);
-  NodeID(const std::string& data);
+  explicit NodeID(const uint8_t* data);
+  explicit NodeID(const std::string& data);
   NodeID(const NodeID& other);
 
   QString toHexString() const;
   static std::shared_ptr<NodeID> fromHexString(QString& val);
   std::vector<uint8_t> asStdVector() const;
-  // functions for more convinient getting of special values
+  // functions for more convenient getting of special values
   static std::shared_ptr<NodeID> getRootNodeId();
   static std::shared_ptr<NodeID> getNilId();
-  bool operator==(const NodeID &other) const;
-  bool operator!=(const NodeID &other) const;
+  bool operator==(const NodeID& other) const;
+  bool operator!=(const NodeID& other) const;
   explicit operator bool() const;
 };
 

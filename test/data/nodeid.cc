@@ -36,7 +36,7 @@ TEST(NodeID, SimpleCreation) {
   EXPECT_EQ(nil, *NodeID::getNilId());
   EXPECT_EQ(root, *NodeID::getRootNodeId());
 
-  NodeID from_str(std::string("000000000000000000000000"));
+  NodeID from_str("000000000000000000000000");
   const uint8_t data[] = {
     0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30,
     0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30,
@@ -46,18 +46,19 @@ TEST(NodeID, SimpleCreation) {
 }
 
 TEST(NodeID, ToFromHexString) {
-  QString str(48, QChar('3'));
+  QString str(NodeID::WIDTH*2, QChar('3'));
   auto id = NodeID::fromHexString(str);
   EXPECT_EQ(str, id->toHexString());
-  NodeID from_str(std::string("333333333333333333333333"));
+  NodeID from_str("333333333333333333333333");
   EXPECT_EQ(*id, from_str);
   EXPECT_EQ(from_str.toHexString(), str);
-  EXPECT_EQ(NodeID::fromHexString(QString()), nullptr);
+  QString str2(NodeID::WIDTH, QChar('3'));
+  EXPECT_EQ(NodeID::fromHexString(str2), nullptr);
 }
 
 TEST(NodeID, ToVector) {
-  EXPECT_THAT(NodeID::getNilId()->asStdVector(), ContainerEq(std::vector<uint8_t>(24, 0)));
-  EXPECT_THAT(NodeID::getRootNodeId()->asStdVector(), ContainerEq(std::vector<uint8_t>(24, 255)));
+  EXPECT_THAT(NodeID::getNilId()->asStdVector(), ContainerEq(std::vector<uint8_t>(NodeID::WIDTH, 0)));
+  EXPECT_THAT(NodeID::getRootNodeId()->asStdVector(), ContainerEq(std::vector<uint8_t>(NodeID::WIDTH, 255)));
 }
 
 }  // namespace data

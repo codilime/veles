@@ -7,37 +7,43 @@ using veles::util::encoders::HexEncoder;
 namespace veles {
 namespace data {
 
-const uint8_t NodeID::NIL_VALUE[NodeID::WIDTH_] = {};
-const uint8_t NodeID::ROOT_VALUE[NodeID::WIDTH_] = {
+const uint8_t NodeID::NIL_VALUE[NodeID::WIDTH] = {};
+const uint8_t NodeID::ROOT_VALUE[NodeID::WIDTH] = {
   0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
   0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 };
 
+std::mt19937 NodeID::random_= [](){
+    std::array<int, 5> seed_data;
+    std::random_device r;
+    std::generate_n(seed_data.data(), seed_data.size(), std::ref(r));
+    std::seed_seq seq(seed_data.begin(), seed_data.end());
+    return std::mt19937(seq);
+  }();
+
 NodeID::NodeID() {
-  for (size_t i = 0; i < WIDTH_; i+=sizeof(unsigned int)) {
-    *reinterpret_cast<unsigned int*>(&value[i]) = random_();
-  }
+  std::generate_n(value, WIDTH, std::ref(random_));
 }
 
 NodeID::NodeID(const uint8_t* data) {
-  memcpy(value, data, WIDTH_);
+  memcpy(value, data, WIDTH);
 }
 
 NodeID::NodeID(const std::string& data) {
-  assert(data.size() == WIDTH_);
-  memcpy(value, data.data(), WIDTH_);
+  assert(data.size() == WIDTH);
+  memcpy(value, data.data(), WIDTH);
 }
 
-NodeID::NodeID(const NodeID &other) {
-  memcpy(value, other.value, WIDTH_);
+NodeID::NodeID(const NodeID& other) {
+  memcpy(value, other.value, WIDTH);
 }
 
 QString NodeID::toHexString() const {
-  return HexEncoder().encode(value, WIDTH_);
+  return HexEncoder().encode(value, WIDTH);
 }
 
-std::shared_ptr<NodeID> NodeID::fromHexString(QString &val) {
-  if (val.size() != 48) {
+std::shared_ptr<NodeID> NodeID::fromHexString(QString& val) {
+  if (val.size() != WIDTH*2) {
     return nullptr;
   }
   QByteArray arr = HexEncoder().decode(val);
@@ -45,21 +51,21 @@ std::shared_ptr<NodeID> NodeID::fromHexString(QString &val) {
 }
 
 std::vector<uint8_t> NodeID::asStdVector() const {
-  return std::vector<uint8_t>(value, value + WIDTH_);
+  return std::vector<uint8_t>(value, value + WIDTH);
 }
 
 std::shared_ptr<NodeID> NodeID::getRootNodeId() {
-  static std::shared_ptr<NodeID> root(new NodeID(ROOT_VALUE));
+  static auto root = std::make_shared<NodeID>(ROOT_VALUE);
   return root;
 }
 
 std::shared_ptr<NodeID> NodeID::getNilId() {
-  static std::shared_ptr<NodeID> nil(new NodeID(NIL_VALUE));
+  static auto nil = std::make_shared<NodeID>(NIL_VALUE);
   return nil;
 }
 
 bool NodeID::operator==(const NodeID &other) const {
-  return memcmp(this->value, other.value, WIDTH_) == 0;
+  return memcmp(this->value, other.value, WIDTH) == 0;
 }
 
 bool NodeID::operator!=(const NodeID &other) const {
@@ -67,7 +73,7 @@ bool NodeID::operator!=(const NodeID &other) const {
 }
 
 NodeID::operator bool() const {
-  return memcmp(this->value, NIL_VALUE, WIDTH_) == 0;
+  return memcmp(this->value, NIL_VALUE, WIDTH) == 0;
 }
 
 }  // namespace data

@@ -445,7 +445,7 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, double& out) {
 
 namespace details_ {
 
-std::shared_ptr<MsgpackObject> details_::convertNodeIDHelper(const data::NodeID &val) {
+std::shared_ptr<MsgpackObject> convertNodeIDHelper(const data::NodeID& val) {
   if (val) {
     return std::make_shared<MsgpackObject>(0, val.asStdVector());
   }
