@@ -17,8 +17,6 @@
 #include "include/ui/searchdialog.h"
 #include "ui_searchdialog.h"
 
-#include <QMessageBox>
-
 namespace veles {
 namespace ui {
 
@@ -29,6 +27,18 @@ SearchDialog::SearchDialog(HexEdit *hexEdit, QWidget *parent)
       _lastFoundSize(0) {
   ui->setupUi(this);
   _hexEdit = hexEdit;
+  message_box_not_found_ = new QMessageBox(this);
+  message_box_not_found_->setWindowTitle(tr("HexEdit"));
+  message_box_not_found_->setText(
+      tr("Not found, wrapping to the beginning."));
+  message_box_not_found_->setStandardButtons(QMessageBox::Close);
+  message_box_not_found_->setDefaultButton(QMessageBox::Close);
+  message_box_not_found_->setIcon(QMessageBox::Information);
+
+  message_box_not_valid_hex_string_= new QMessageBox(this);
+  message_box_not_valid_hex_string_->setWindowTitle(tr("HexEdit"));
+  message_box_not_valid_hex_string_->setStandardButtons(QMessageBox::Close);
+  message_box_not_valid_hex_string_->setDefaultButton(QMessageBox::Close);
 }
 
 SearchDialog::~SearchDialog() { delete ui; }
@@ -125,7 +135,7 @@ qint64 SearchDialog::findNext() {
     _lastFoundPos = -1;
     _lastFoundSize = 0;
     _hexEdit->setSelection(0, 0, false);
-    QMessageBox::information(this, tr("HexEdit"), tr("Not found, wrapping to the beginning."));
+    message_box_not_found_->show();
   }
 
   return idx;
@@ -187,9 +197,9 @@ data::BinData SearchDialog::getContent(int comboIndex, const QString &input) {
   switch (comboIndex) {
     case 0:  // hex
       if (!isHexStr(input)) {
-        QMessageBox::warning(
-            this, tr("HexEdit"),
+        message_box_not_valid_hex_string_->setText(
             QString(tr("\"%1\" is not valid hex string.")).arg(input));
+        message_box_not_valid_hex_string_->show();
       } else {
 
         QString currentByte;
