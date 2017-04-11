@@ -1,7 +1,16 @@
+set(SERVER_DIR ${CMAKE_CURRENT_BINARY_DIR}/veles-server)
+set(SERVER_OUTPUT_STARTUP_SCRIPT_FILE ${SERVER_DIR}/srv.py)
+
+add_custom_command(OUTPUT ${SERVER_OUTPUT_STARTUP_SCRIPT_FILE}
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+  "${CMAKE_SOURCE_DIR}/python/srv.py"
+  "${SERVER_OUTPUT_STARTUP_SCRIPT_FILE}"
+  COMMENT "Copying server script")
+
 if(WIN32)
   set(BASEPYEXE py.exe -3)
-  set(SERVER_DIR ${CMAKE_CURRENT_BINARY_DIR}/veles-server)
   set(SERVER_PYTHON_DIR ${SERVER_DIR}/python)
+  set(SERVER_DIR_DESTINATION "/")
   file(TO_NATIVE_PATH ${SERVER_PYTHON_DIR} SERVER_PYTHON_DIR_NATIVE)
 
   if(NOT EMBED_PYTHON_ARCHIVE_PATH)
@@ -15,7 +24,7 @@ if(WIN32)
   set(SERVER_OUTPUT_REQUIRMENTS_FILE ${SERVER_PYTHON_DIR}/six.py)
   set(SERVER_OUTPUT_EMBED_PYTHON_FILE ${SERVER_PYTHON_DIR}/python.exe)
   set(SERVER_OUTPUT_VELES_LIB_FILE ${SERVER_PYTHON_DIR}/veles/__init__.py)
-  set(SERVER_OUTPUT_STARTUP_SCRIPT_FILE ${SERVER_DIR}/srv.py)
+
 
   add_custom_command(OUTPUT ${SERVER_OUTPUT_REQUIRMENTS_FILE}
     COMMAND ${BASEPYEXE} -m pip install -r ${CMAKE_SOURCE_DIR}/python/requirements.txt -t ${SERVER_DIR}/python
@@ -25,12 +34,6 @@ if(WIN32)
     COMMAND ${CMAKE_COMMAND} -E tar xzf ${EMBED_PYTHON_ARCHIVE_PATH}
     WORKING_DIRECTORY ${SERVER_PYTHON_DIR}
     COMMENT "Installing server embed python")
-
-  add_custom_command(OUTPUT ${SERVER_OUTPUT_STARTUP_SCRIPT_FILE}
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${CMAKE_SOURCE_DIR}/python/srv.py"
-    "${SERVER_OUTPUT_STARTUP_SCRIPT_FILE}"
-    COMMENT "Copying server script")
 
   add_custom_command(OUTPUT ${SERVER_OUTPUT_VELES_LIB_FILE}
     COMMAND ${BASEPYEXE} setup.py install --install-lib ${SERVER_PYTHON_DIR_NATIVE}
@@ -44,8 +47,45 @@ if(WIN32)
     DEPENDS ${SERVER_OUTPUT_STARTUP_SCRIPT_FILE}
   )
 
+endif(WIN32)
+
+
+if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
+  set(BASEPYEXE python3)
+  set(SERVER_DIR_DESTINATION share)
+  # create venv with dependencies after installation and remove it when removing package
+  set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
+      ${CMAKE_CURRENT_SOURCE_DIR}/resources/install/postinst
+      ${CMAKE_CURRENT_SOURCE_DIR}/resources/install/prerm)
+
+
+  set(SERVER_OUTPUT_REQUIRMENTS_FILE ${SERVER_DIR}/requirements.txt)
+
+  add_custom_command(OUTPUT ${SERVER_OUTPUT_REQUIRMENTS_FILE}
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${CMAKE_SOURCE_DIR}/python/requirements.txt"
+    "${SERVER_DIR}/requirements.txt"
+    COMMENT "Copying server script")
+
+  set(SERVER_OUTPUT_VELES_LIB_FILE ${SERVER_PYTHON_DIR}/veles)
+
+  add_custom_command(OUTPUT ${SERVER_OUTPUT_VELES_LIB_FILE}
+    COMMAND ${BASEPYEXE} setup.py sdist --dist-dir ${SERVER_DIR}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python/
+    COMMENT "Installing veles python lib")
+
+  add_custom_target(server
+    DEPENDS ${SERVER_OUTPUT_REQUIRMENTS_FILE}
+    DEPENDS ${SERVER_OUTPUT_STARTUP_SCRIPT_FILE}
+    DEPENDS ${SERVER_OUTPUT_VELES_LIB_FILE}
+  )
+
+endif(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
+
+if(NOT CMAKE_HOST_APPLE)
   # prepare server environment only in install target
   install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_CURRENT_BINARY_DIR}\" --target server)")
-  install(DIRECTORY ${SERVER_DIR} DESTINATION "/" COMPONENT "server")
+  install(DIRECTORY ${SERVER_DIR} DESTINATION ${SERVER_DIR_DESTINATION} COMPONENT "server")
+endif(NOT CMAKE_HOST_APPLE)
 
-endif(WIN32)
+

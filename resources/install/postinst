@@ -1,0 +1,6 @@
+#!/bin/sh
+python3 -m venv /usr/share/veles-server/venv
+/usr/share/veles-server/venv/bin/python3 -m pip install -r /usr/share/veles-server/requirements.txt
+/usr/share/veles-server/venv/bin/python3 -m pip install /usr/share/veles-server/veles-*.tar.gz
+rm /usr/share/veles-server/requirements.txt
+rm /usr/share/veles-server/veles-*.tar.gz
