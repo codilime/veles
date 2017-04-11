@@ -214,6 +214,7 @@ add_custom_command(OUTPUT ${MSGPACK_CPP}
     ${PYTHON_DIR}/veles/schema/model.py
     ${PYTHON_DIR}/veles/schema/enumeration.py
     ${PYTHON_DIR}/veles/schema/fields.py
+    ${PYTHON_DIR}/veles/tests/schema/cpp_test_models.py
   VERBATIM)
 
 add_library(veles_network
@@ -390,6 +391,7 @@ if(GTEST_FOUND AND GMOCK_FOUND)
         ${TEST_DIR}/data/nodeid.cc
         ${TEST_DIR}/data/repack.cc
         ${TEST_DIR}/network/msgpackobject.cc
+        ${TEST_DIR}/network/model.cc
         ${TEST_DIR}/util/encoders/base64_encoder.cc
         ${TEST_DIR}/util/encoders/c_data_encoder.cc
         ${TEST_DIR}/util/encoders/c_string_encoder.cc
