@@ -128,5 +128,5 @@ public slots:
   QTextStream* output_stream_;
 };
 
-} // client
-} // veles
+}  // namespace client
+}  // namespace veles
