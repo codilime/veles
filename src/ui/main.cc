@@ -14,8 +14,6 @@
  * limitations under the License.
  *
  */
-#include <iostream>
-
 #include <QApplication>
 #include <QSurfaceFormat>
 #include <QTranslator>
@@ -70,6 +68,7 @@ int main(int argc, char *argv[]) {
   auto files = parser.positionalArguments();
   for (auto file : files) {
     mainWin->addFile(file);
+    QApplication::processEvents();
   }
 
   return app.exec();

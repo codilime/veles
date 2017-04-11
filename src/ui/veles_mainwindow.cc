@@ -310,7 +310,7 @@ void VelesMainWindow::createFileBlob(QString fileName) {
     createHexEditTab(
         fileName.isEmpty() ? "untitled" : fileName,
         reply.dynamicCast<dbif::RootCreateFileBlobFromDataRequest::ReplyType>()
-            ->object);
+        ->object);
   });
 
   connect(promise, &dbif::MethodResultPromise::gotError,
@@ -321,7 +321,7 @@ void VelesMainWindow::createFileBlob(QString fileName) {
 }
 
 void VelesMainWindow::createHexEditTab(QString fileName,
-                                     dbif::ObjectHandle fileBlob) {
+    dbif::ObjectHandle fileBlob) {
   QSharedPointer<FileBlobModel> data_model(
       new FileBlobModel(fileBlob, {QFileInfo(fileName).fileName()}));
   QSharedPointer<QItemSelectionModel> selection_model(
