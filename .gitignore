@@ -1,3 +1,4 @@
 *~
 *.swp
+*.vdb
 CMakeLists.txt.user
