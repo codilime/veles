@@ -123,6 +123,10 @@ DockWidget* DockWidget::getParentDockWidget(QObject* obj) {
   while (obj) {
     DockWidget* dock = dynamic_cast<DockWidget*>(obj);
     if (dock == nullptr) {
+      QWidget* widget = dynamic_cast<QWidget*>(obj);
+      if(widget && widget->isTopLevel()) {
+        return nullptr;
+      }
       obj = obj->parent();
     } else {
       return dock;

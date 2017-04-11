@@ -18,6 +18,8 @@
 
 #include <QDialog>
 #include <QtCore>
+#include <QMessageBox>
+
 #include "include/ui/hexedit.h"
 #include "data/bindata.h"
 
@@ -60,6 +62,8 @@ class SearchDialog : public QDialog {
   data::BinData _findBa;
   qint64 _lastFoundPos;
   qint64 _lastFoundSize;
+  QMessageBox* message_box_not_found_;
+  QMessageBox* message_box_not_valid_hex_string_;
 };
 
 }  // namespace ui
