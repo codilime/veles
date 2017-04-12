@@ -62,18 +62,28 @@ def generate_cpp_code():
         code += 'enum class {};\\\n'.format(el.cpp_type())
     for el in cpp_test_models.models:
         code += 'class {};\\\n'.format(el.cpp_type())
+    for el in cpp_test_models.poly_models:
+        code += 'class {};\\\n'.format(el.cpp_type())
+        for sub_class in el.object_types.values():
+            code += 'class {};\\\n'.format(sub_class.cpp_type())
 
     for el in cpp_test_models.enums:
             code += el.generate_header_code()
-
     for el in cpp_test_models.enums:
             code += el.generate_source_code()
+    for el in cpp_test_models.poly_models:
+        code += el.generate_base_header_code()
+        for sub_class in el.object_types.values():
+            code += sub_class.generate_header_code()
 
     for el in cpp_test_models.models:
             code += el.generate_header_code()
-
     for el in cpp_test_models.models:
             code += el.generate_source_code()
+    for el in cpp_test_models.poly_models:
+        code += el.generate_base_source_code()
+        for sub_class in el.object_types.values():
+            code += sub_class.generate_source_code()
 
     return code
 

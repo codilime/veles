@@ -132,6 +132,22 @@ class Enum(model.Model):
 class EnumOptional(model.Model):
     a = fields.Enum(TestEnum, optional=True)
 
+
+class BaseModel(model.PolymorphicModel):
+    a = fields.String()
+
+
+class SubType1(BaseModel):
+    object_type = 'sub1'
+
+    b = fields.String()
+
+
+class SubType2(BaseModel):
+    object_type = 'sub2'
+
+    b = fields.Binary()
+
 # TODO improve it (we can't simply depend on sequence of declaration since
 # module __dict__ isn't ordered)
 
@@ -146,5 +162,4 @@ models = [
     Binary, BinaryOptional, NodeIDModel, NodeIDModelOptional,
     List, ListOptional, Set, SetOptional, Map, MapOptional,
     Object, ObjectOptional, Enum, EnumOptional]
-
-# TODO polymodel tests
+poly_models = [BaseModel]

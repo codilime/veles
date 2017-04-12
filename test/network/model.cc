@@ -364,5 +364,55 @@ TEST(TestModel, TestEnum) {
   EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
 }
 
+TEST(TestModel, TestPolyModel) {
+  std::map<std::string, std::shared_ptr<MsgpackObject>> data;
+  data["a"] = std::make_shared<MsgpackObject>("test-base-attr");
+  data["b"] = std::make_shared<MsgpackObject>("test-sub-attr");
+  data["object_type"] = std::make_shared<MsgpackObject>("sub1");
+  auto obj = std::make_shared<MsgpackObject>(data);
+  std::shared_ptr<SubType1> ptr;
+  std::shared_ptr<SubType2> ptr2;
+  std::shared_ptr<BaseModel> ptr3;
+  fromMsgpackObject(obj, ptr);
+  EXPECT_EQ(*ptr->a, "test-base-attr");
+  EXPECT_EQ(*ptr->b, "test-sub-attr");
+  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+  fromMsgpackObject(obj, ptr3);
+  EXPECT_EQ(ptr3->object_type, "sub1");
+  ptr = std::dynamic_pointer_cast<SubType1>(ptr3);
+  EXPECT_NE(ptr, nullptr);
+  EXPECT_EQ(*ptr->a, "test-base-attr");
+  EXPECT_EQ(*ptr->b, "test-sub-attr");
+  ptr2 = std::dynamic_pointer_cast<SubType2>(ptr3);
+  EXPECT_EQ(ptr2, nullptr);
+
+  ptr = nullptr;
+  ptr2 = nullptr;
+  ptr3 = nullptr;
+  (*obj->getMap())["b"] = std::make_shared<MsgpackObject>(std::make_shared<std::vector<uint8_t>>(5,30));
+  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
+  fromMsgpackObject(obj, ptr2);
+  EXPECT_EQ(*ptr2->a, "test-base-attr");
+  EXPECT_THAT(*ptr2->b, ContainerEq(std::vector<uint8_t>(5,30)));
+  EXPECT_THROW(fromMsgpackObject(obj, ptr3), proto::SchemaError);
+
+  ptr = nullptr;
+  ptr2 = nullptr;
+  ptr3 = nullptr;
+  (*obj->getMap())["object_type"] = std::make_shared<MsgpackObject>("sub2");
+  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
+  fromMsgpackObject(obj, ptr2);
+  EXPECT_EQ(*ptr2->a, "test-base-attr");
+  EXPECT_THAT(*ptr2->b, ContainerEq(std::vector<uint8_t>(5,30)));
+  fromMsgpackObject(obj, ptr3);
+  EXPECT_EQ(ptr3->object_type, "sub2");
+  ptr = std::dynamic_pointer_cast<SubType1>(ptr3);
+  EXPECT_EQ(ptr, nullptr);
+  ptr2 = std::dynamic_pointer_cast<SubType2>(ptr3);
+  EXPECT_NE(ptr2, nullptr);
+  EXPECT_EQ(*ptr2->a, "test-base-attr");
+  EXPECT_THAT(*ptr2->b, ContainerEq(std::vector<uint8_t>(5,30)));
+}
+
 }  // namespace messages
 }  // namespace veles
