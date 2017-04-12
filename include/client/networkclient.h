@@ -79,7 +79,6 @@ class NetworkClient : public QObject {
   void setOutput(QTextStream* stream);
 
   void sendMsgConnect();
-  void sendMessage(msg_ptr msg);
   virtual void registerMessageHandlers();
   virtual void handleNodeTreeRelatedMessage(msg_ptr msg);
   virtual void handleConnectedMessage(msg_ptr msg);
@@ -98,8 +97,10 @@ class NetworkClient : public QObject {
 
 signals:
   void connectionStatusChanged(ConnectionStatus connection_status);
+  void messageReceived(msg_ptr message);
 
 public slots:
+  void sendMessage(msg_ptr msg);
   void setConnectionStatus(ConnectionStatus connection_status);
   void socketConnected();
   void socketDisconnected();
