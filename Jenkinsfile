@@ -201,9 +201,9 @@ builders['macosx'] = { node ('macosx'){
             sh "cmake .. -G \"Xcode\" -DCMAKE_PREFIX_PATH=$QT/5.7/clang_64 -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\""
             sh "cmake --build . --config ${buildConfiguration} > error_and_warnings.txt 2>&1"
             sh "cat error_and_warnings.txt"
-            sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-osx -G ZIP -C ${buildConfiguration}"
+            sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-osx -G \"DragNDrop;ZIP\" -C ${buildConfiguration}"
             junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
-            step([$class: 'ArtifactArchiver', artifacts: '*.zip', fingerprint: true])
+            step([$class: 'ArtifactArchiver', artifacts: 'veles-osx.*', fingerprint: true])
             step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
             excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
             parserConfigurations: [[parserName: 'Clang (LLVM based)', pattern: 'error_and_warnings.txt']], unHealthy: ''])
