@@ -64,6 +64,8 @@ class ConnectionManager : public QObject {
   void updateConnectionStatus(
       client::NetworkClient::ConnectionStatus connection_status);
   void raiseConnectionDialog();
+  void sendListConnectionsMessage();
+  void messageReceived(client::msg_ptr message);
 
  private:
   QAction* show_connection_dialog_action_;

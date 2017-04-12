@@ -296,6 +296,7 @@ class ServerProto(asyncio.Protocol):
                 'plugin_broadcast_result': self.msg_plugin_broadcast_result,
                 'plugin_handler_unregister':
                     self.msg_plugin_handler_unregister,
+                'list_connections': self.msg_list_connections,
             }
         else:
             handlers = {
@@ -606,6 +607,12 @@ class ServerProto(asyncio.Protocol):
         self.conn.unregister_plugin_handler(self.phids[msg.phid])
         del self.phids[msg.phid]
         self.send_msg(messages.MsgPluginHandlerUnregistered(phid=msg.phid))
+
+    async def msg_list_connections(self, msg):
+        self.send_msg(messages.MsgConnectionsReply(
+            qid=msg.qid,
+            connections=[],
+        ))
 
 
 async def create_unix_server(conn, key, path):

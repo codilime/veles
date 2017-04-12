@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from veles.proto import node, messages, chunk, check, operation
+from veles.proto import node, messages, chunk, check, operation, connection
 import six
 
 
@@ -23,7 +23,7 @@ def generate_cpp_code():
     code = '#define MSGPACK_CLASSES_HEADER \\\n'
     # TODO change generation based on discussion to avoid need to
     # specifying all classes like this
-    classes_to_generate = [node.Node, node.PosFilter]
+    classes_to_generate = [node.Node, node.PosFilter, connection.Connection]
     poly_classes = [messages.MsgpackMsg, check.Check, operation.Operation]
     enum_classes_to_generate = [
         chunk.FieldSignMode, chunk.FieldFloatMode,
