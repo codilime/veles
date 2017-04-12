@@ -170,7 +170,11 @@ void ConnectionManager::startLocalServer() {
     python_interpreter_executable = QString("py.exe");
   }
 #else
-  QString python_interpreter_executable("python");
+  QString python_interpreter_executable(qApp->applicationDirPath() + "/../Resources/veles-server/venv/bin/python3");
+  QFileInfo check_file(python_interpreter_executable);
+  if (!check_file.exists()) {
+    python_interpreter_executable = QString("python3");
+  }
 #endif
 
   QTextStream out(veles::ui::LogWidget::output());
