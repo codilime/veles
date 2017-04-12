@@ -200,15 +200,6 @@ void NetworkClient::sendMsgConnect() {
   sendMessage(msg);
 }
 
-void NetworkClient::sendMessage(msg_ptr msg) {
-  if (client_socket_ && client_socket_->isValid()) {
-    msgpack::sbuffer buf;
-    msgpack::packer<msgpack::sbuffer> packer(buf);
-    messages::MsgpackWrapper::dumpObject(packer, msg);
-    client_socket_->write(buf.data(), buf.size());
-  }
-}
-
 void NetworkClient::registerMessageHandlers() {
   message_handlers_["subscription_cancelled"]
       = &NetworkClient::handleNodeTreeRelatedMessage;
@@ -376,6 +367,15 @@ void NetworkClient::handlePluginHandlerUnregisteredMessage(msg_ptr msg) {
   // TODO - is this something that client should implement in a subclass?
 }
 
+void NetworkClient::sendMessage(msg_ptr msg) {
+  if (client_socket_ && client_socket_->isValid()) {
+    msgpack::sbuffer buf;
+    msgpack::packer<msgpack::sbuffer> packer(buf);
+    messages::MsgpackWrapper::dumpObject(packer, msg);
+    client_socket_->write(buf.data(), buf.size());
+  }
+}
+
 void NetworkClient::setConnectionStatus(ConnectionStatus connection_status) {
   if (status_ != connection_status) {
     status_ = connection_status;
@@ -428,6 +428,7 @@ void NetworkClient::newDataAvailable() {
     }
 
     if (msg) {
+      emit messageReceived(msg);
       auto handler_iter = message_handlers_.find(msg->object_type);
       if(handler_iter != message_handlers_.end()) {
         MessageHandler handler = handler_iter->second;
