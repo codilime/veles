@@ -63,7 +63,6 @@ NetworkClient::NetworkClient(QObject* parent) : QObject(parent),
 }
 
 NetworkClient::~NetworkClient() {
-  delete node_tree_;
 }
 
 NetworkClient::ConnectionStatus NetworkClient::connectionStatus() {
@@ -143,7 +142,7 @@ void NetworkClient::disconnect() {
   }
 }
 
-NodeTree* NetworkClient::nodeTree() {
+std::unique_ptr<NodeTree> const& NetworkClient::nodeTree() {
   return node_tree_;
 }
 
@@ -393,7 +392,7 @@ void NetworkClient::socketConnected() {
         "authentication key and \"connect\" message." << endl;
   }
 
-  node_tree_ = new NodeTree(this);
+  node_tree_ = std::unique_ptr<NodeTree>(new NodeTree(this));
   client_socket_->write(authentication_key_);
   sendMsgConnect();
 }
@@ -405,8 +404,7 @@ void NetworkClient::socketDisconnected() {
   }
 
   if (node_tree_) {
-    delete node_tree_;
-    node_tree_ = nullptr;
+    node_tree_.reset();
   }
 
   if (client_socket_) {
