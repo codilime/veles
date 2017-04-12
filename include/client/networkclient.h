@@ -63,7 +63,7 @@ class NetworkClient : public QObject {
       QString client_type,
       QByteArray authentication_key);
   void disconnect();
-  NodeTree* nodeTree();
+  std::unique_ptr<NodeTree> const& nodeTree();
 
   QString serverHostName();
   int serverPort();
@@ -109,7 +109,7 @@ public slots:
 
  private:
   QTcpSocket* client_socket_;
-  NodeTree* node_tree_;
+  std::unique_ptr<NodeTree> node_tree_;
   ConnectionStatus status_;
 
   QString server_name_;
