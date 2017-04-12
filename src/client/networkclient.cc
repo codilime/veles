@@ -58,7 +58,8 @@ NetworkClient::NetworkClient(QObject* parent) : QObject(parent),
     client_interface_name_("127.0.0.1"),
     protocol_version_(1), client_name_(""),
     client_version_("[unspecified version]"), client_description_(""),
-    client_type_(""), authentication_key_(""), output_stream_(nullptr) {
+    client_type_(""), authentication_key_(""), output_stream_(nullptr),
+    qid_(0) {
   registerMessageHandlers();
 }
 
@@ -144,6 +145,10 @@ void NetworkClient::disconnect() {
 
 std::unique_ptr<NodeTree> const& NetworkClient::nodeTree() {
   return node_tree_;
+}
+
+uint64_t NetworkClient::nextQid() {
+  return ++qid_;
 }
 
 unsigned int NetworkClient::protocolVersion() {

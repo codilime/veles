@@ -64,6 +64,7 @@ class NetworkClient : public QObject {
       QByteArray authentication_key);
   void disconnect();
   std::unique_ptr<NodeTree> const& nodeTree();
+  uint64_t nextQid();
 
   QString serverHostName();
   int serverPort();
@@ -127,6 +128,7 @@ public slots:
   std::unordered_map<std::string, MessageHandler> message_handlers_;
 
   QTextStream* output_stream_;
+  uint64_t qid_;
 };
 
 }  // namespace client

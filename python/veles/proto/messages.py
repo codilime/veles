@@ -18,6 +18,7 @@ from veles.proto.node import Node, PosFilter
 from veles.proto.exceptions import VelesException
 from veles.proto.check import Check
 from veles.proto.operation import Operation
+from veles.proto.connection import Connection
 from veles.schema import model, fields
 from veles.schema.nodeid import NodeID
 
@@ -228,10 +229,16 @@ class MsgGetQueryReply(MsgpackMsg):
 class MsgListConnections(MsgpackMsg):
     object_type = 'list_connections'
 
+    qid = fields.SmallUnsignedInteger()
+    sub = fields.Boolean(default=False)
+
 
 # XXX NYI
 class MsgConnectionsReply(MsgpackMsg):
     object_type = 'connections_reply'
+
+    qid = fields.SmallUnsignedInteger()
+    connections = fields.List(fields.Object(Connection))
 
 
 # XXX NYI

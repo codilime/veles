@@ -56,6 +56,8 @@ ConnectionManager::ConnectionManager(QWidget* parent)
 
   connect(network_client_, &client::NetworkClient::connectionStatusChanged,
       this, &ConnectionManager::updateConnectionStatus);
+  connect(network_client_, &client::NetworkClient::messageReceived,
+        this, &ConnectionManager::messageReceived);
 }
 
 ConnectionManager::~ConnectionManager() {
@@ -215,11 +217,48 @@ void ConnectionManager::updateConnectionStatus(
   emit connectionStatusChanged(connection_status);
   disconnect_action_->setEnabled(
       connection_status != client::NetworkClient::ConnectionStatus::NotConnected);
+  if(connection_status == client::NetworkClient::ConnectionStatus::Connected) {
+    sendListConnectionsMessage();
+  }
 }
 
 void ConnectionManager::raiseConnectionDialog() {
   connection_dialog_->raise();
   connection_dialog_->activateWindow();
+}
+
+void ConnectionManager::sendListConnectionsMessage() {
+  if(network_client_) {
+    std::shared_ptr<messages::MsgListConnections> list_connections_message
+        = std::make_shared<messages::MsgListConnections>(
+        network_client_->nextQid(), true);
+    network_client_->sendMessage(list_connections_message);
+  }
+}
+
+void ConnectionManager::messageReceived(client::msg_ptr message) {
+  if (message->object_type == "connections_reply") {
+    std::shared_ptr<messages::MsgConnectionsReply> connections_reply
+        = std::dynamic_pointer_cast<messages::MsgConnectionsReply>(message);
+    if (connections_reply) {
+      QTextStream& out = *network_client_output_;
+      out << "ConnectionManager: received updated list of connections:"
+          << endl;
+
+      if (connections_reply->connections) {
+        for (auto connection : *connections_reply->connections) {
+          out
+              << "    id = " << connection->client_id
+              << " name = \"" << QString::fromStdString(*connection->client_name)
+              << "\""
+              << " type = \"" << QString::fromStdString(*connection->client_type)
+              << "\"" << endl;
+        }
+      } else {
+        out << "    -" << endl;
+      }
+    }
+  }
 }
 
 /*****************************************************************************/
