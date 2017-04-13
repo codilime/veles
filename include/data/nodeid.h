@@ -16,31 +16,41 @@
  */
 #pragma once
 
+#include <random>
 #include <vector>
 
 #include <QString>
-
 #include <msgpack.hpp>
 
 namespace veles {
 namespace data {
 
 class NodeID {
-  static const size_t WIDTH_ = 24;
-  uint8_t value[WIDTH_];
  public:
-  static const uint8_t NIL_VALUE[WIDTH_];
-  // TODO singleton
-  static const uint8_t ROOT_VALUE[WIDTH_];
+  static const size_t WIDTH = 24;
+
+ private:
+  uint8_t value[WIDTH];
+  static std::mt19937 random_;
+
+ public:
+  static const uint8_t NIL_VALUE[WIDTH];
+  static const uint8_t ROOT_VALUE[WIDTH];
 
   NodeID();
-  NodeID(const uint8_t* data);
-  NodeID(const QString& data);
+  explicit NodeID(const uint8_t* data);
+  explicit NodeID(const std::string& data);
+  NodeID(const NodeID& other);
 
   QString toHexString() const;
-  std::vector<uint8_t> asStdVector() const {
-    return std::vector<uint8_t>(value, value + WIDTH_);
-  }
+  static std::shared_ptr<NodeID> fromHexString(QString& val);
+  std::vector<uint8_t> asStdVector() const;
+  // functions for more convenient getting of special values
+  static std::shared_ptr<NodeID> getRootNodeId();
+  static std::shared_ptr<NodeID> getNilId();
+  bool operator==(const NodeID& other) const;
+  bool operator!=(const NodeID& other) const;
+  explicit operator bool() const;
 };
 
 }  // namespace data

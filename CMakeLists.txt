@@ -387,6 +387,7 @@ if(GTEST_FOUND AND GMOCK_FOUND)
         ${TEST_DIR}/run_test.cc
         ${TEST_DIR}/data/bindata.cc
         ${TEST_DIR}/data/copybits.cc
+        ${TEST_DIR}/data/nodeid.cc
         ${TEST_DIR}/data/repack.cc
         ${TEST_DIR}/util/encoders/base64_encoder.cc
         ${TEST_DIR}/util/encoders/c_data_encoder.cc
