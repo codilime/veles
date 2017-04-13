@@ -257,6 +257,8 @@ void ConnectionManager::messageReceived(client::msg_ptr message) {
       } else {
         out << "    -" << endl;
       }
+
+      emit connectionsChanged(connections_reply->connections);
     }
   }
 }
@@ -323,6 +325,98 @@ void ConnectionNotificationWidget::timerEvent(QTimerEvent* event) {
           icon_not_connected_);
     }
   }
+}
+
+/*****************************************************************************/
+/* ConnectionsWidget */
+/*****************************************************************************/
+
+ConnectionsWidget::ConnectionsWidget(QWidget* parent) : QWidget(parent) {
+  users_icon_ = QPixmap(":/images/clients.png");
+  users_icon_label_ = new QLabel(this);
+  users_icon_label_->setPixmap(users_icon_);
+  layout_ = new QHBoxLayout(this);
+  setLayout(layout_);
+
+  QScrollArea* scroll_area = new QScrollArea(this);
+  scroll_area->setFrameShape(QFrame::NoFrame);
+  scroll_area->setWidgetResizable(true);
+  QWidget* scroll_area_contents = new QWidget(scroll_area);
+  scroll_area_layout_ = new QHBoxLayout(scroll_area_contents);
+  scroll_area_contents->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+  scroll_area->setMaximumHeight(users_icon_label_->sizeHint().height());
+  scroll_area_contents->setLayout(scroll_area_layout_);
+  scroll_area_layout_->setSizeConstraint(QLayout::SetMinAndMaxSize);
+  scroll_area_layout_->setMargin(0);
+  scroll_area_layout_->addStretch(1);
+  scroll_area_layout_->addWidget(users_icon_label_);
+  scroll_area->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+  scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  scroll_area->setWidget(scroll_area_contents);
+
+  layout_->addWidget(scroll_area);
+  layout_->setStretchFactor(scroll_area, 1);
+  layout_->addSpacing(10);
+
+  users_icon_label_->hide();
+
+  label_stylesheet_ = QString(
+      "QLabel {"
+      "background : palette(highlight);"
+      "color : palette(highlighted-text);"
+      "border-radius: 4px;"
+      "border-width: 0px;"
+      "padding-left: 5px;"
+      "padding-right: 5px;"
+      "}");
+}
+
+ConnectionsWidget::~ConnectionsWidget() {
+
+}
+
+void ConnectionsWidget::updateConnectionStatus(
+    client::NetworkClient::ConnectionStatus connection_status) {
+  if(connection_status ==
+      client::NetworkClient::ConnectionStatus::NotConnected) {
+    clear();
+  }
+}
+
+void ConnectionsWidget::updateConnections(
+      std::shared_ptr<std::vector<std::shared_ptr<messages::Connection>>>
+      connections) {
+  clear();
+  if(connections && connections->size()) {
+    users_icon_label_->show();
+
+    for (auto connection : *connections) {
+      QLabel* client_label = new QLabel;
+      client_label->setText(QString::fromStdString(*connection->client_name));
+      client_label->setToolTip(QString(
+          "<p><b>Client name:</b> %1</p>"
+          "<p><b>Client type:</b> %2</p>"
+          "<p><b>Client version:</b> %3</p>"
+          "<p><b>Client description:</b> %4</p>")
+          .arg(QString::fromStdString(*connection->client_name))
+          .arg(QString::fromStdString(*connection->client_type))
+          .arg(QString::fromStdString(*connection->client_version))
+          .arg(QString::fromStdString(*connection->client_description)));
+      client_label->setStyleSheet(label_stylesheet_);
+      scroll_area_layout_->addWidget(client_label);
+      user_labels_.push_back(client_label);
+    }
+  }
+}
+
+void ConnectionsWidget::clear() {
+  for (auto label : user_labels_) {
+      label->deleteLater();
+  }
+
+  user_labels_.clear();
+  users_icon_label_->hide();
 }
 
 }  // namespace ui
