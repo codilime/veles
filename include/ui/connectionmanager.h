@@ -16,6 +16,8 @@
  */
 #pragma once
 
+#include <memory>
+
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -23,11 +25,12 @@
 #include <QLabel>
 #include <QPixmap>
 #include <QHBoxLayout>
+#include <QScrollArea>
 
 #include "client/networkclient.h"
-
 #include "ui/connectiondialog.h"
 #include "ui_connectionnotificationwidget.h"
+#include "network/msgpackwrapper.h"
 
 namespace veles {
 namespace ui {
@@ -50,6 +53,9 @@ class ConnectionManager : public QObject {
  signals:
   void connectionStatusChanged(
       client::NetworkClient::ConnectionStatus connection_status);
+  void connectionsChanged(
+      std::shared_ptr<std::vector<std::shared_ptr<messages::Connection>>>
+      connections);
 
  public slots:
   void locallyCreatedServerStarted();
@@ -107,6 +113,35 @@ class ConnectionNotificationWidget : public QWidget {
   QPixmap icon_alarm_;
 
   Ui::ConnectionNotificationWidget* ui_;
+};
+
+/*****************************************************************************/
+/* ConnectionsWidget */
+/*****************************************************************************/
+
+class ConnectionsWidget : public QWidget {
+  Q_OBJECT
+
+ public:
+  ConnectionsWidget(QWidget* parent = nullptr);
+  virtual ~ConnectionsWidget();
+
+ public slots:
+  void updateConnectionStatus(
+      client::NetworkClient::ConnectionStatus connection_status);
+  void updateConnections(
+      std::shared_ptr<std::vector<std::shared_ptr<messages::Connection>>>
+      connections);
+
+ private:
+  void clear();
+
+  QPixmap users_icon_;
+  QLabel* users_icon_label_;
+  QHBoxLayout* layout_;
+  QHBoxLayout* scroll_area_layout_;
+  std::list<QLabel*> user_labels_;
+  QString label_stylesheet_;
 };
 
 }  // namespace ui

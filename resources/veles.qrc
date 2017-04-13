@@ -45,5 +45,6 @@
         <file>images/connection_connected.png</file>
         <file>images/connection_not_connected.png</file>
         <file>images/connection_alarm.png</file>
+        <file>images/clients.png</file>
     </qresource>
 </RCC>
