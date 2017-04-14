@@ -189,18 +189,18 @@ class Model(pep487.NewObject):
                 '{}' if field.cpp_type()[1] else 'std::shared_ptr<{}>').format(
                 field.cpp_type()[0])
             builder = '''auto it_{0} = obj->getMap()->find("{0}");\\
-if (it_{0} != obj->getMap()->end()'''.format(field.name)
+if (it_{0} != obj->getMap()->end() && \
+it_{0}->second->type() != ObjectType::NIL) {{\\
+'''.format(field.name)
             conv_func = '''{1} obj_{0};\\
   fromMsgpackObject(it_{0}->second, obj_{0});'''.format(field.name, arg_type)
             if field.optional:
-                builder += '''&& it_{0}->second->type() != ObjectType::NIL) {{\\
-  {2}\\
+                builder += '''{2}\\
   b.set_{0}(std::pair<bool, {1}>(true, obj_{0}));\\
 }}\\
 '''.format(field.name, arg_type, conv_func)
             else:
-                builder += ''') {{\\
-  {2}\\
+                builder += '''  {2}\\
   b.set_{0}(obj_{0});\\
 }} else {{\\
   throw proto::SchemaError("Nonoptional field \

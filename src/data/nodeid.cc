@@ -7,6 +7,8 @@ using veles::util::encoders::HexEncoder;
 namespace veles {
 namespace data {
 
+const uint8_t NodeID::EXT_ID = 0;
+
 const uint8_t NodeID::NIL_VALUE[NodeID::WIDTH] = {};
 const uint8_t NodeID::ROOT_VALUE[NodeID::WIDTH] = {
   0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,

@@ -13,8 +13,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from veles.proto import node, messages, chunk, check, operation, connection
 import six
+
+from veles.proto import connection, node, messages, chunk, check, operation
+from veles.tests.schema import cpp_test_models
 
 
 def generate_cpp_code():
@@ -51,6 +53,36 @@ def generate_cpp_code():
     for cls_type in poly_classes:
         code += cls_type.generate_base_source_code()
         for sub_class in cls_type.object_types.values():
+            code += sub_class.generate_source_code()
+
+    code += '\n'
+
+    code += '#define MSGPACK_TESTS_CODE \\\n'
+    for el in cpp_test_models.enums:
+        code += 'enum class {};\\\n'.format(el.cpp_type())
+    for el in cpp_test_models.models:
+        code += 'class {};\\\n'.format(el.cpp_type())
+    for el in cpp_test_models.poly_models:
+        code += 'class {};\\\n'.format(el.cpp_type())
+        for sub_class in el.object_types.values():
+            code += 'class {};\\\n'.format(sub_class.cpp_type())
+
+    for el in cpp_test_models.enums:
+            code += el.generate_header_code()
+    for el in cpp_test_models.enums:
+            code += el.generate_source_code()
+    for el in cpp_test_models.poly_models:
+        code += el.generate_base_header_code()
+        for sub_class in el.object_types.values():
+            code += sub_class.generate_header_code()
+
+    for el in cpp_test_models.models:
+            code += el.generate_header_code()
+    for el in cpp_test_models.models:
+            code += el.generate_source_code()
+    for el in cpp_test_models.poly_models:
+        code += el.generate_base_source_code()
+        for sub_class in el.object_types.values():
             code += sub_class.generate_source_code()
 
     return code

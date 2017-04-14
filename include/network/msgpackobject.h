@@ -215,7 +215,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::unordered_set<T>& val)
 template <class T>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::unordered_set<T>> val_ptr) {
   if (!val_ptr)
-    throw std::bad_cast();
+    throw proto::SchemaError("Unexpected nullptr");
   return details_::convertCollectionHelper(*val_ptr);
 }
 
@@ -227,7 +227,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::unordered_set<std::sha
 template <class T>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::unordered_set<std::shared_ptr<T>>> val_ptr) {
   if (!val_ptr)
-    throw std::bad_cast();
+    throw proto::SchemaError("Unexpected nullptr");
   return details_::convertCollectionHelper(*val_ptr);
 }
 
@@ -239,7 +239,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::vector<T>& val) {
 template <class T>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::vector<T>> val_ptr) {
   if (!val_ptr)
-    throw std::bad_cast();
+    throw proto::SchemaError("Unexpected nullptr");
   return details_::convertCollectionHelper(*val_ptr);
 }
 
@@ -251,7 +251,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::vector<std::shared_ptr
 template <class T>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::vector<std::shared_ptr<T>>> val_ptr) {
   if (!val_ptr)
-    throw std::bad_cast();
+    throw proto::SchemaError("Unexpected nullptr");
   return details_::convertCollectionHelper(*val_ptr);
 }
 
@@ -269,7 +269,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::unordered_map<std::str
 template <class T>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::unordered_map<std::string, T>> val_ptr) {
   if (!val_ptr)
-    throw std::bad_cast();
+    throw proto::SchemaError("Unexpected nullptr");
   return details_::convertMapHelper(*val_ptr);
 }
 
@@ -281,7 +281,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::unordered_map<std::str
 template <class T>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<T>>> val_ptr) {
   if (!val_ptr)
-    throw std::bad_cast();
+    throw proto::SchemaError("Unexpected nullptr");
   return details_::convertMapHelper(*val_ptr);
 }
 
@@ -304,6 +304,7 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr
     out = nullptr;
   } else {
     auto tmp = obj->getArray();
+    out = std::make_shared<std::vector<T>>();
     for (const auto& el : *tmp) {
       T conv;
       fromMsgpackObject(el, conv);
@@ -317,6 +318,7 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr
   if (obj == nullptr) {
     out = nullptr;
   } else {
+    out = std::make_shared<std::unordered_set<T>>();
     auto tmp = obj->getArray();
     for (const auto& el : *tmp) {
       T conv;
@@ -331,6 +333,7 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj_ptr, std::shared
   if (!obj_ptr) {
     out = nullptr;
   } else {
+    out = std::make_shared<std::unordered_map<std::string, T>>();
     auto tmp = obj_ptr->getMap();
     for (const auto& el : *tmp) {
       T conv;

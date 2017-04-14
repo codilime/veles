@@ -444,6 +444,9 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr
   if (obj->type() == ObjectType::NIL) {
     out = data::NodeID::getNilId();
   } else {
+    if (obj->getExt().first != data::NodeID::EXT_ID) {
+      throw proto::SchemaError("Wrong ext type for NodeID");
+    }
     out = std::make_shared<data::NodeID>(obj->getExt().second->data());
   }
 }
@@ -509,7 +512,7 @@ namespace details_ {
 
 std::shared_ptr<MsgpackObject> convertNodeIDHelper(const data::NodeID& val) {
   if (val) {
-    return std::make_shared<MsgpackObject>(0, val.asStdVector());
+    return std::make_shared<MsgpackObject>(data::NodeID::EXT_ID, val.asStdVector());
   }
   return std::make_shared<MsgpackObject>();
 }
