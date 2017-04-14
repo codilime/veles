@@ -15,6 +15,7 @@
  *
  */
 #include "network/msgpackobject.h"
+#include "models.h"
 
 namespace veles {
 namespace messages {
@@ -444,7 +445,7 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr
   if (obj->type() == ObjectType::NIL) {
     out = data::NodeID::getNilId();
   } else {
-    if (obj->getExt().first != data::NodeID::EXT_ID) {
+    if (obj->getExt().first != proto::EXT_NODE_ID) {
       throw proto::SchemaError("Wrong ext type for NodeID");
     }
     out = std::make_shared<data::NodeID>(obj->getExt().second->data());
@@ -512,7 +513,7 @@ namespace details_ {
 
 std::shared_ptr<MsgpackObject> convertNodeIDHelper(const data::NodeID& val) {
   if (val) {
-    return std::make_shared<MsgpackObject>(data::NodeID::EXT_ID, val.asStdVector());
+    return std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_NODE_ID), val.asStdVector());
   }
   return std::make_shared<MsgpackObject>();
 }

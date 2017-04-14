@@ -54,7 +54,7 @@ class ConnectionManager : public QObject {
   void connectionStatusChanged(
       client::NetworkClient::ConnectionStatus connection_status);
   void connectionsChanged(
-      std::shared_ptr<std::vector<std::shared_ptr<messages::Connection>>>
+      std::shared_ptr<std::vector<std::shared_ptr<proto::Connection>>>
       connections);
 
  public slots:
@@ -131,7 +131,7 @@ class ConnectionsWidget : public QWidget {
   void updateConnectionStatus(
       client::NetworkClient::ConnectionStatus connection_status);
   void updateConnections(
-      std::shared_ptr<std::vector<std::shared_ptr<messages::Connection>>>
+      std::shared_ptr<std::vector<std::shared_ptr<proto::Connection>>>
       connections);
 
  private:

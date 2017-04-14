@@ -256,8 +256,8 @@ void ConnectionManager::raiseConnectionDialog() {
 
 void ConnectionManager::sendListConnectionsMessage() {
   if(network_client_) {
-    std::shared_ptr<messages::MsgListConnections> list_connections_message
-        = std::make_shared<messages::MsgListConnections>(
+    std::shared_ptr<proto::MsgListConnections> list_connections_message
+        = std::make_shared<proto::MsgListConnections>(
         network_client_->nextQid(), true);
     network_client_->sendMessage(list_connections_message);
   }
@@ -265,8 +265,8 @@ void ConnectionManager::sendListConnectionsMessage() {
 
 void ConnectionManager::messageReceived(client::msg_ptr message) {
   if (message->object_type == "connections_reply") {
-    std::shared_ptr<messages::MsgConnectionsReply> connections_reply
-        = std::dynamic_pointer_cast<messages::MsgConnectionsReply>(message);
+    std::shared_ptr<proto::MsgConnectionsReply> connections_reply
+        = std::dynamic_pointer_cast<proto::MsgConnectionsReply>(message);
     if (connections_reply) {
       QTextStream& out = *network_client_output_;
       out << "ConnectionManager: received updated list of connections:"
@@ -412,7 +412,7 @@ void ConnectionsWidget::updateConnectionStatus(
 }
 
 void ConnectionsWidget::updateConnections(
-      std::shared_ptr<std::vector<std::shared_ptr<messages::Connection>>>
+      std::shared_ptr<std::vector<std::shared_ptr<proto::Connection>>>
       connections) {
   clear();
   if(connections && connections->size()) {

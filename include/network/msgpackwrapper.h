@@ -23,21 +23,19 @@
 
 #include "network/msgpackobject.h"
 #include "proto/exceptions.h"
-#include "messages.h"
+#include "models.h"
 
 namespace veles {
 namespace messages {
-
-MSGPACK_CLASSES_HEADER
 
 class MsgpackWrapper {
   msgpack::unpacker unp_;
   static const int READ_SIZE_ = 1024;
 
  public:
-  static std::shared_ptr<MsgpackMsg> parseMessage(msgpack::object_handle* handle) {
+  static std::shared_ptr<proto::MsgpackMsg> parseMessage(msgpack::object_handle* handle) {
     msgpack::object obj = handle->get();
-    return MsgpackMsg::polymorphicLoad(obj);
+    return proto::MsgpackMsg::polymorphicLoad(obj);
   }
 
   template <class Packer, class T>
@@ -46,7 +44,7 @@ class MsgpackWrapper {
     pk.pack(mss);
   }
 
-  std::shared_ptr<MsgpackMsg> loadMessage(QTcpSocket* connection) {
+  std::shared_ptr<proto::MsgpackMsg> loadMessage(QTcpSocket* connection) {
     // This method can throw msgpack::type_error when malformed message is read
     msgpack::object_handle handle;
     if (unp_.next(handle)) {

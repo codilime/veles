@@ -193,7 +193,7 @@ void NetworkClient::sendMsgConnect() {
   std::shared_ptr<std::string> client_type_ptr(
       new std::string(client_type_.toStdString()));
 
-  msg_ptr msg(new messages::MsgConnect(
+  msg_ptr msg(new proto::MsgConnect(
       1,
       pair_str(true, client_name_ptr),
       pair_str(true, client_version_ptr),
@@ -271,8 +271,8 @@ void NetworkClient::handleConnectedMessage(msg_ptr msg) {
 }
 
 void NetworkClient::handleProtoErrorMessage(msg_ptr msg) {
-  messages::MsgProtoError* mpe
-      = dynamic_cast<messages::MsgProtoError*>(msg.get());
+  proto::MsgProtoError* mpe
+      = dynamic_cast<proto::MsgProtoError*>(msg.get());
   if (mpe) {
     if (output()) {
       *output()
@@ -321,8 +321,8 @@ void NetworkClient::handlePluginTriggerRunMessage(msg_ptr msg) {
 }
 
 void NetworkClient::handleConnErrorMessage(msg_ptr msg) {
-  messages::MsgConnectionError* cem
-      = dynamic_cast<messages::MsgConnectionError*>(msg.get());
+  proto::MsgConnectionError* cem
+      = dynamic_cast<proto::MsgConnectionError*>(msg.get());
   if (cem) {
     if (output()) {
       *output()

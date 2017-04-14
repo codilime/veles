@@ -15,7 +15,7 @@
  *
  */
 
-#include "messages.h"
+#include "models.h"
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
@@ -24,11 +24,10 @@
 #include "network/msgpackwrapper.h"
 
 using namespace testing;
+using namespace veles::tests::schema;
 
 namespace veles {
 namespace messages {
-
-MSGPACK_TESTS_CODE
 
 TEST(TestModel, TestCommon) {
   msgpack::sbuffer sbuf;
@@ -230,7 +229,7 @@ TEST(TestModel, TestBinary) {
 
 TEST(TestModel, TestNodeIDModel) {
   std::vector<uint8_t> ext_data(24, 0x30);
-  auto obj = pack(std::make_shared<MsgpackObject>(data::NodeID::EXT_ID, ext_data));
+  auto obj = pack(std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_NODE_ID), ext_data));
   std::shared_ptr<NodeIDModel> ptr;
   std::shared_ptr<NodeIDModelOptional> ptr2;
   fromMsgpackObject(obj, ptr);
@@ -248,7 +247,7 @@ TEST(TestModel, TestNodeIDModel) {
   EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
   EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
 
-  obj = pack(std::make_shared<MsgpackObject>(data::NodeID::EXT_ID+1, ext_data));
+  obj = pack(std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_NODE_ID+1), ext_data));
   EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
   EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
 }

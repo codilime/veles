@@ -147,19 +147,3 @@ class SubType2(BaseModel):
     object_type = 'sub2'
 
     b = fields.Binary()
-
-# TODO improve it (we can't simply depend on sequence of declaration since
-# module __dict__ isn't ordered)
-
-
-enums = [TestEnum]
-models = [
-    Any, AnyOptional, Integer, IntegerOptional,
-    UnsignedInteger, UnsignedIntegerOptional,
-    SmallInteger, SmallIntegerOptional,
-    SmallUnsignedInteger, SmallUnsignedIntegerOptional,
-    Boolean, BooleanOptional, Float, FloatOptional, String, StringOptional,
-    Binary, BinaryOptional, NodeIDModel, NodeIDModelOptional,
-    List, ListOptional, Set, SetOptional, Map, MapOptional,
-    Object, ObjectOptional, Enum, EnumOptional]
-poly_models = [BaseModel]

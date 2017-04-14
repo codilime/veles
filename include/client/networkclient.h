@@ -37,7 +37,7 @@ namespace client {
 class NodeTree;
 
 typedef std::pair<bool, std::shared_ptr<std::string>> pair_str;
-typedef std::shared_ptr<messages::MsgpackMsg> msg_ptr;
+typedef std::shared_ptr<proto::MsgpackMsg> msg_ptr;
 
 /*****************************************************************************/
 /* NetworkClient */

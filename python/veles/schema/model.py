@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from copy import copy
+import sys
 
 import six
 
@@ -46,6 +47,9 @@ class Model(pep487.NewObject):
             if isinstance(attr, fields.Field):
                 cls.fields.append(attr)
 
+        sys.modules[cls.__module__].__dict__.setdefault(
+            '_models', []).append(cls)
+
     def dump(self):
         val = {}
         for field in self.fields:
@@ -67,74 +71,52 @@ class Model(pep487.NewObject):
         return cls(**args)
 
     @classmethod
-    def generate_header_code(cls, bases=None, extra_pack=None, extra_code=''):
+    def generate_header_code(cls, bases=None):
         if not cls.fields:
             return ''
-        code = '\\\n'
+        code = '\n'
         inherit = ''
         if bases:
             inherit = ' : {}'.format(
                 ', '.join(['public {}'.format(base[0]) for base in bases]))
-        code += 'class {}{} {{\\\n'.format(cls.cpp_type(), inherit)
+        code += 'class {}{} {{\n'.format(cls.cpp_type()[0], inherit)
 
         fields_code = ''
         constructor_args = []
         setters = []
         builder_cons = []
-        to_object = []
         for field in cls.fields:
             arg_type = (
                 '{}' if field.cpp_type()[1] else 'std::shared_ptr<{}>').format(
                 field.cpp_type()[0])
             if field.optional:
-                fields_code += '  std::pair<bool, {0}> {1};\\\n'.format(
+                fields_code += '  std::pair<bool, {0}> {1};\n'.format(
                     arg_type, field.name)
                 arg = 'const std::pair<bool, {}>& {}'.format(
                     arg_type, field.name)
                 builder_cons.append('{}(false, {})'.format(
                     field.name, field.cpp_type()[2]))
-                to_object.append('''if (this->{0}.first) {{\\
-                  msg["{0}"] = toMsgpackObject(this->{0}.second);\\
-                }} else {{\\
-                  msg["{0}"] = std::make_shared<MsgpackObject>();\\
-                }}\\
-                '''.format(field.name))
             else:
-                fields_code += '  {} {};\\\n'.format(
+                fields_code += '  {} {};\n'.format(
                     arg_type, field.name)
                 arg = '{} {}'.format(arg_type, field.name)
                 builder_cons.append('{}({})'.format(
                     field.name, field.cpp_type()[2]))
-                pack_code = ''
-                if not field.cpp_type()[1]:
-                    pack_code += '''if (this->{0} == nullptr) {{\\
-  throw proto::SchemaError("Nonoptional field {0} not set when packing");\\
-}}\\
-'''.format(field.name)
-                pack_code += '''msg["{0}"] = toMsgpackObject(this->{0});\\
-'''.format(field.name)
-                to_object.append(pack_code)
             constructor_args.append(arg)
-            setters.append('''\\
-    Builder& set_{0}({1}) {{\\
-      this->{0} = {2};\\
-      return *this;\\
-    }}\\
-'''.format(field.name, arg, ('std::shared_ptr<{}>({{}})'.format(
-                field.cpp_type()[0])
-                 if not field.cpp_type()[1] and not field.optional
-                 else '{}').format(field.name)))
-        code += ' public:\\\n'
-        code += '''  class Builder {{\\
-{0}\\
- public:\\
-  Builder() : {4} {{}}\\
-  {1}\\
-    std::shared_ptr<{2}> build() {{\\
-      return std::make_shared<{2}>({3});\\
-    }}\\
-  }};\\
-'''.format(fields_code, ''.join(setters), cls.cpp_type(), ', '.join(
+            setters.append('''
+    Builder& set_{0}({1});
+'''.format(field.name, arg))
+        code += ' public:\n'
+        code += '''  class Builder {{
+{0}
+ public:
+  Builder() : {4} {{}}
+  {1}
+    std::shared_ptr<{2}> build() {{
+      return std::make_shared<{2}>({3});
+    }}
+  }};
+'''.format(fields_code, ''.join(setters), cls.cpp_type()[0], ', '.join(
             field.name for field in cls.fields), ', '.join(builder_cons))
         # TODO some encapsulation ?
         code += fields_code
@@ -142,45 +124,106 @@ class Model(pep487.NewObject):
         if bases:
             bases_cons = ', '.join(['{}({})'.format(base[0], base[1])
                                     for base in bases if base[1] is not None])
-            code += '  {}({}) : {}, {} {{}}\\\n'.format(
-                cls.cpp_type(),
+            code += '  {}({}) : {}, {} {{}}\n'.format(
+                cls.cpp_type()[0],
                 ', '.join(constructor_args),
                 bases_cons,
                 ', '.join('{0}({0})'.format(field.name)
                           for field in cls.fields))
         else:
-            code += '  {}({}) : {} {{}}\\\n'.format(
-                cls.cpp_type(),
+            code += '  {}({}) : {} {{}}\n'.format(
+                cls.cpp_type()[0],
                 ', '.join(constructor_args),
                 ', '.join('{0}({0})'.format(field.name)
                           for field in cls.fields))
-        code += '''\\
-  static std::shared_ptr<{0}> loadMessagePack(msgpack::object& obj);\\
-'''.format(cls.cpp_type())
-        if extra_pack is None:
-            extra_pack = []
-        code += '''\\
-  std::shared_ptr<MsgpackObject> serializeToMsgpackObject() {{\\
-    std::map<std::string, std::shared_ptr<MsgpackObject>> msg;\\
-    {0}\\
-    {1}\\
-    return std::make_shared<MsgpackObject>(msg);\\
-  }}\\
-'''.format(''.join(to_object), '\\\n'.join(
-            ['msg["{0}"] = toMsgpackObject(this->{0});'.format(extra) for extra
-             in extra_pack]))
-        code += extra_code
-        code += '};\\\n'
-        code += ('void fromMsgpackObject(const std::shared_ptr<MsgpackObject>'
-                 ' obj, std::shared_ptr<{0}>& out);\\\n'.format(
-                    cls.cpp_type()))
-        code += ('std::shared_ptr<MsgpackObject> toMsgpackObject'
-                 '(std::shared_ptr<{}> val);\\\n'.format(cls.cpp_type()))
+        code += '''
+  static std::shared_ptr<{0}> loadMessagePack(msgpack::object& obj);
+'''.format(cls.cpp_type()[0])
+        code += '''
+  std::shared_ptr<messages::MsgpackObject> serializeToMsgpackObject();
+'''
+        code += '};\n'
 
         return code
 
     @classmethod
-    def generate_source_code(cls, extra_code=''):
+    def generate_source_code(cls, extra_pack=None):
+        if not cls.fields:
+            return ''
+        if extra_pack is None:
+            extra_pack = []
+        code = ''
+
+        to_object = []
+
+        for field in cls.fields:
+            arg_type = (
+                '{}' if field.cpp_type()[1] else 'std::shared_ptr<{}>').format(
+                field.cpp_type()[0])
+            if field.optional:
+                to_object.append('''if (this->{0}.first) {{
+                  msg["{0}"] = messages::toMsgpackObject(this->{0}.second);
+                }} else {{
+                  msg["{0}"] = std::make_shared<messages::MsgpackObject>();
+                }}
+                '''.format(field.name))
+                arg = 'const std::pair<bool, {}>& {}'.format(
+                    arg_type, field.name)
+            else:
+                pack_code = ''
+                if not field.cpp_type()[1]:
+                    pack_code += '''if (this->{0} == nullptr) {{
+  throw proto::SchemaError("Nonoptional field {0} not set when packing");
+}}
+'''.format(field.name)
+                pack_code += (
+                    '''msg["{0}"] = messages::toMsgpackObject(this->{0});
+'''.format(field.name))
+                to_object.append(pack_code)
+                arg = '{} {}'.format(arg_type, field.name)
+            code += '''
+                {3}::Builder& {3}::Builder::set_{0}({1}) {{
+                  this->{0} = {2};
+                  return *this;
+                }}
+            '''.format(field.name, arg, ('std::shared_ptr<{}>({{}})'.format(
+                field.cpp_type()[0]) if not field.cpp_type()[1]
+                and not field.optional else '{}').format(field.name),
+                       cls.cpp_type()[0])
+
+        code += '''
+  std::shared_ptr<messages::MsgpackObject> {2}::serializeToMsgpackObject() {{
+    std::map<std::string, std::shared_ptr<messages::MsgpackObject>> msg;
+    {0}
+    {1}
+    return std::make_shared<messages::MsgpackObject>(msg);
+  }}
+'''.format(''.join(to_object), '\n'.join(
+            ['msg["{0}"] = messages::toMsgpackObject(this->{0});'.format(
+                extra) for extra in extra_pack]), cls.cpp_type()[0])
+        code += '''
+std::shared_ptr<{0}> {0}::loadMessagePack(msgpack::object& obj) {{
+  auto loc_obj = std::make_shared<messages::MsgpackObject>(obj);
+  std::shared_ptr<{0}> out;
+  fromMsgpackObject(loc_obj, out);
+  return out;
+}}
+'''.format(cls.cpp_type()[1])
+        return code
+
+    @classmethod
+    def generate_header_conv_code(cls):
+        if not cls.fields:
+            return ''
+        code = ('void fromMsgpackObject(const std::shared_ptr<MsgpackObject>'
+                'obj, std::shared_ptr<{0}>& out);\n'.format(
+                    cls.cpp_type()[1]))
+        code += ('std::shared_ptr<MsgpackObject> toMsgpackObject'
+                 '(std::shared_ptr<{}> val);\n'.format(cls.cpp_type()[1]))
+        return code
+
+    @classmethod
+    def generate_source_conv_code(cls):
         if not cls.fields:
             return ''
         from_object = []
@@ -188,51 +231,44 @@ class Model(pep487.NewObject):
             arg_type = (
                 '{}' if field.cpp_type()[1] else 'std::shared_ptr<{}>').format(
                 field.cpp_type()[0])
-            builder = '''auto it_{0} = obj->getMap()->find("{0}");\\
+            builder = '''auto it_{0} = obj->getMap()->find("{0}");
 if (it_{0} != obj->getMap()->end() && \
-it_{0}->second->type() != ObjectType::NIL) {{\\
+it_{0}->second->type() != ObjectType::NIL) {{
 '''.format(field.name)
-            conv_func = '''{1} obj_{0};\\
+            conv_func = '''{1} obj_{0};
   fromMsgpackObject(it_{0}->second, obj_{0});'''.format(field.name, arg_type)
             if field.optional:
-                builder += '''{2}\\
-  b.set_{0}(std::pair<bool, {1}>(true, obj_{0}));\\
-}}\\
+                builder += '''{2}
+  b.set_{0}(std::pair<bool, {1}>(true, obj_{0}));
+}}
 '''.format(field.name, arg_type, conv_func)
             else:
-                builder += '''  {2}\\
-  b.set_{0}(obj_{0});\\
-}} else {{\\
+                builder += '''  {2}
+  b.set_{0}(obj_{0});
+}} else {{
   throw proto::SchemaError("Nonoptional field \
-{0} not found when unpacking");\\
+{0} not found when unpacking");
 }}'''.format(field.name, arg_type, conv_func)
             from_object.append(builder)
         code = '''void fromMsgpackObject(const std::shared_ptr<MsgpackObject> \
-obj, std::shared_ptr<{0}>& out) {{\\
-            {0}::Builder b;\\
-            {1}\\
-            out = b.build();\\
-          }}\\
-        '''.format(cls.cpp_type(), '\\\n'.join(from_object))
+obj, std::shared_ptr<{0}>& out) {{
+            {0}::Builder b;
+            {1}
+            out = b.build();
+          }}
+        '''.format(cls.cpp_type()[1], '\n'.join(from_object))
         code += '''std::shared_ptr<MsgpackObject> \
-toMsgpackObject(std::shared_ptr<{0}> val) {{\\
-            return val->serializeToMsgpackObject();\\
-          }}\\
-        '''.format(cls.cpp_type())
-        code += '''\\
-std::shared_ptr<{0}> {0}::loadMessagePack(msgpack::object& obj) {{\\
-  auto loc_obj = std::make_shared<MsgpackObject>(obj);\\
-  std::shared_ptr<{0}> out;\\
-  fromMsgpackObject(loc_obj, out);\\
-  return out;\\
-}}\\
-'''.format(cls.cpp_type())
-        code += extra_code
+toMsgpackObject(std::shared_ptr<{0}> val) {{
+            return val->serializeToMsgpackObject();
+          }}
+        '''.format(cls.cpp_type()[1])
         return code
 
     @classmethod
     def cpp_type(cls):
-        return cls.__name__
+        """returns a tuple containing class name and fully qualified name"""
+        return cls.__name__, '::'.join(
+            cls.__module__.split('.')[:-1] + [cls.__name__])
 
     def __str__(self):
         return '{}({})'.format(type(self).__name__, ', '.join(
@@ -297,83 +333,90 @@ class PolymorphicModel(Model):
 
     @classmethod
     def generate_base_header_code(cls):
-        code = '''\\
-class {0} {{\\
-  static void initObjectTypes() {{\\
-{1}  }}\\
-  virtual std::shared_ptr<MsgpackObject> serializeToMsgpackObject() = 0;\\
- public:\\
+        code = '''
+class {0} {{
+ public:
+  virtual std::shared_ptr<messages::MsgpackObject> \
+serializeToMsgpackObject() = 0;
+  static void initObjectTypes() {{
+{1}  }}
   template<typename T> static std::shared_ptr<{0}> \
-  createInstance(const std::shared_ptr<MsgpackObject> obj) {{\\
-    std::shared_ptr<T> out;\\
-    fromMsgpackObject(obj, out);\\
-    return out;\\
-  }}\\
+  createInstance(const std::shared_ptr<messages::MsgpackObject> obj) {{
+    std::shared_ptr<T> out;
+    fromMsgpackObject(obj, out);
+    return out;
+  }}
   static std::map<std::string, std::shared_ptr<{0}>(*)\
-(const std::shared_ptr<MsgpackObject>)>& objectTypes() {{\\
+(const std::shared_ptr<messages::MsgpackObject>)>& objectTypes() {{
     static std::map<std::string, std::shared_ptr<{0}>(*)\
-(const std::shared_ptr<MsgpackObject>)> object_types;\\
-    return object_types;\\
-  }}\\
-  std::string object_type;\\
-  {0}(std::string object_type) : object_type(object_type) {{}}\\
-  virtual ~{0}() {{}}\\
-  \\
-  friend void fromMsgpackObject(const std::shared_ptr<MsgpackObject>\
- obj, std::shared_ptr<{0}>& out);\\
-  friend std::shared_ptr<MsgpackObject> \
-toMsgpackObject(std::shared_ptr<{0}> val);\\
-  static std::shared_ptr<{0}> polymorphicLoad(msgpack::object& obj) {{\\
-    auto loc_obj = std::make_shared<MsgpackObject>(obj);\\
-    std::shared_ptr<{0}> out;\\
-    fromMsgpackObject(loc_obj, out);\\
-    return out;\\
-  }}\\
-}};\\
-\\
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject>\
- obj, std::shared_ptr<{0}>& out);\\
-std::shared_ptr<MsgpackObject> toMsgpackObject(std::shared_ptr<{0}> val);\\
-'''.format(cls.cpp_type(),
+(const std::shared_ptr<messages::MsgpackObject>)> object_types;
+    return object_types;
+  }}
+  std::string object_type;
+  {0}(std::string object_type) : object_type(object_type) {{}}
+  virtual ~{0}() {{}}
+
+  static std::shared_ptr<{0}> polymorphicLoad(msgpack::object& obj);
+}};
+
+'''.format(cls.cpp_type()[0],
            ''.join([
-               '    objectTypes()["{0}"] = &createInstance<{1}>;\\\n'.format(
-                   obj_type, obj_class.cpp_type())
+               '    objectTypes()["{0}"] = &createInstance<{1}>;\n'.format(
+                   obj_type, obj_class.cpp_type()[0])
                for obj_type, obj_class in cls.object_types.items()
                if obj_class.fields]))
         return code
 
     @classmethod
     def generate_base_source_code(cls):
-        code = '''void fromMsgpackObject(const std::shared_ptr<MsgpackObject>\
- obj, std::shared_ptr<{0}>& out) {{\\
-  auto& types = {0}::objectTypes();\\
-  if (types.size() == 0) {{\\
-    {0}::initObjectTypes();\\
-  }}\\
-  auto obj_type = *(*obj->getMap())["object_type"]->getString();\\
-  if (types.find(obj_type) ==  types.end()) {{\\
-    throw proto::SchemaError("Unknown object_type: " + obj_type);\\
-  }}\\
-  out = types[obj_type](obj);\\
-}}\\
-\\
-std::shared_ptr<MsgpackObject> toMsgpackObject(std::shared_ptr<{0}> val) {{\\
-  return val->serializeToMsgpackObject();\\
-}}\\
-'''.format(cls.cpp_type())
+        code = '''std::shared_ptr<{0}> {0}::polymorphicLoad(msgpack::object& obj) {{
+    auto loc_obj = std::make_shared<messages::MsgpackObject>(obj);
+    std::shared_ptr<{0}> out;
+    fromMsgpackObject(loc_obj, out);
+    return out;
+  }}
+'''.format(cls.cpp_type()[0])
         return code
 
     @classmethod
-    def generate_header_code(cls, bases=None, extra_pack=None, extra_code=''):
+    def generate_base_header_conv_code(cls):
+        code = '''void fromMsgpackObject(const std::shared_ptr<MsgpackObject>\
+ obj, std::shared_ptr<{0}>& out);
+std::shared_ptr<MsgpackObject> toMsgpackObject(std::shared_ptr<{0}> val);
+'''.format(cls.cpp_type()[1])
+        return code
+
+    @classmethod
+    def generate_base_source_conv_code(cls):
+        code = '''void fromMsgpackObject(const std::shared_ptr<MsgpackObject>\
+ obj, std::shared_ptr<{0}>& out) {{
+  auto& types = {0}::objectTypes();
+  if (types.size() == 0) {{
+    {0}::initObjectTypes();
+  }}
+  auto obj_type = *(*obj->getMap())["object_type"]->getString();
+  if (types.find(obj_type) ==  types.end()) {{
+    throw proto::SchemaError("Unknown object_type: " + obj_type);
+  }}
+  out = types[obj_type](obj);
+}}
+
+std::shared_ptr<MsgpackObject> toMsgpackObject(std::shared_ptr<{0}> val) {{
+  return val->serializeToMsgpackObject();
+}}
+'''.format(cls.cpp_type()[1])
+        return code
+
+    @classmethod
+    def generate_header_code(cls, bases=None):
         return super(PolymorphicModel, cls).generate_header_code(
             [
                 (cls.__bases__[0].__name__, '"{}"'.format(cls.object_type)),
-                ('std::enable_shared_from_this<{}>'.format(cls.cpp_type()),
+                ('std::enable_shared_from_this<{}>'.format(cls.cpp_type()[0]),
                  None)
-            ],
-            ['object_type'],
-            extra_code)
+            ])
 
     @classmethod
-    def generate_source_code(cls, extra_pack=None, extra_code=''):
-        return super(PolymorphicModel, cls).generate_source_code(extra_code)
+    def generate_source_code(cls, extra_pack=None):
+        return super(PolymorphicModel, cls).generate_source_code(
+            ['object_type'])

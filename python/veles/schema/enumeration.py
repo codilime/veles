@@ -16,44 +16,52 @@ from enum import Enum
 
 
 class EnumModel(Enum):
+    # multiple inheritance with another metaclass is too much work
+    # so there will be slight code repetition
     @classmethod
     def cpp_type(cls):
-        return cls.__name__
+        return cls.__name__, '::'.join(
+            cls.__module__.split('.')[:-1] + [cls.__name__])
 
     @classmethod
     def generate_header_code(cls):
-        code = '''enum class {0} {{\\
-{1}\\
-}};\\
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject>\
- obj, {0}& out);\\
-std::shared_ptr<MsgpackObject> toMsgpackObject({0} val);\\
-'''.format(cls.cpp_type(), ',\\\n'.join(
+        code = '''enum class {0} {{
+{1}
+}};
+'''.format(cls.cpp_type()[0], ',\n'.join(
             name.upper() for name in cls.__members__))
         return code
 
     @classmethod
-    def generate_source_code(cls):
+    def generate_header_conv_code(cls):
         code = '''void fromMsgpackObject(const std::shared_ptr<MsgpackObject>\
- obj, {0}& out) {{\\
-{1}\\
-  throw proto::SchemaError("Unrecognized enum value");\\
-}}\\
-std::shared_ptr<MsgpackObject> toMsgpackObject({0} val) {{\\
-  switch (val) {{\\
-{2}\\
-    default:\\
-      throw proto::SchemaError("Unrecognized enum value");\\
-  }}\\
-}}\\
-'''.format(cls.cpp_type(),
-           '\\\n'.join(['''  if (*obj->getString() == "{1}") {{\\
-    out = {0}::{2};\\
-    return;\\
-  }}'''.format(cls.cpp_type(), name, name.upper())
+ obj, {0}& out);
+std::shared_ptr<MsgpackObject> toMsgpackObject({0} val);
+'''.format(cls.cpp_type()[1])
+        return code
+
+    @classmethod
+    def generate_source_conv_code(cls):
+        code = '''void fromMsgpackObject(const std::shared_ptr<MsgpackObject>\
+ obj, {0}& out) {{
+{1}
+  throw proto::SchemaError("Unrecognized enum value");
+}}
+std::shared_ptr<MsgpackObject> toMsgpackObject({0} val) {{
+  switch (val) {{
+{2}
+    default:
+      throw proto::SchemaError("Unrecognized enum value");
+  }}
+}}
+'''.format(cls.cpp_type()[1],
+           '\n'.join(['''  if (*obj->getString() == "{1}") {{
+    out = {0}::{2};
+    return;
+  }}'''.format(cls.cpp_type()[1], name, name.upper())
                         for name in cls.__members__]),
-           '\\\n'.join(['''    case {0}::{2}:\\
+           '\n'.join(['''    case {0}::{2}:
       return std::make_shared<MsgpackObject>("{1}");'''.format(
-               cls.cpp_type(), name, name.upper())
+               cls.cpp_type()[1], name, name.upper())
                for name in cls.__members__]))
         return code
