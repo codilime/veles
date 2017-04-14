@@ -72,6 +72,7 @@ class MsgpackObject {
   } value;
 
   void fromMsgpack(const msgpack::object& obj);
+  void destroyValue();
 
  public:
 
@@ -96,8 +97,8 @@ class MsgpackObject {
   ~MsgpackObject();
 
   MsgpackObject& operator=(const MsgpackObject& other);
-
-  void destroyValue();
+  bool operator==(const MsgpackObject &other) const;
+  bool operator!=(const MsgpackObject &other) const;
 
   void msgpack_unpack(const msgpack::object& obj);
 
@@ -153,6 +154,7 @@ class MsgpackObject {
   }
 
   ObjectType type() const;
+  void setNil();
   bool getBool() const;
   void setBool(bool val);
   uint64_t getUnsignedInt() const;
