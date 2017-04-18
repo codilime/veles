@@ -471,6 +471,7 @@ endif(WIN32)
 
 # Apple
 if(APPLE)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
   set(CPACK_INSTALL_PREFIX "/Applications")
   # Finding MacDeployQt
   find_program(MACDEPLOYQT_EXECUTABLE
