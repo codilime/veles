@@ -51,16 +51,20 @@ builders['mingw32'] = { node('windows') {
             deleteDir()
             checkout scm
             def branch = getBranch()
+            def cpack_generator = "ZIP"
             withEnv(["PATH+QT=${env.QT}\\Tools\\mingw530_32\\bin;${env.QT}\\5.7\\mingw53_32\\bin",
                      "PATH+CMAKE=${env.CMAKE}\\bin",
                      "GOOGLETEST_DIR=${tool 'googletest'}",
                      "EMBED_PYTHON_ARCHIVE_PATH=${tool 'embed-python-32'}"]) {
+              if (!buildConfiguration.equals("Debug")) {
+                cpack_generator = "${cpack_generator};NSIS"
+              }
               bat(script: "rd /s /q build_mingw", returnStatus: true)
               bat script: "md build_mingw", returnStatus: true
               dir('build_mingw') {
                 bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -G \"MinGW Makefiles\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."
                 bat script: "cmake --build . --config ${buildConfiguration} -- -j3"
-                bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-mingw -G ZIP;NSIS -C ${buildConfiguration}"
+                bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-mingw -G \"${cpack_generator}\" -C ${buildConfiguration}"
               }
             }
             junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
@@ -86,6 +90,7 @@ builders['msvc2015_64'] = { node('windows'){
             checkout scm
             def branch = getBranch()
             def generator = "Visual Studio 14 2015"
+            def cpack_generator = "ZIP"
             withEnv(["PATH+QT=${env.QT}\\Tools\\${version}\\bin;${env.QT}\\5.7\\${version}\\bin",
                      "PATH+CMAKE=${env.CMAKE}\\bin",
                      "CMAKE_PREFIX_PATH+QT=${env.QT}\\5.7\\${version}",
@@ -95,13 +100,16 @@ builders['msvc2015_64'] = { node('windows'){
               if(version.contains("64")){
                 generator = "${generator} Win64"
               }
+              if (!buildConfiguration.equals("Debug")) {
+                cpack_generator = "${cpack_generator};NSIS"
+              }
               bat(script: "rd /s /q build_${version}", returnStatus: true)
               bat script: "md build_${version}", returnStatus: true
               dir ("build_${version}") {
                 bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -G \"${generator}\" ..\\"
                 bat script: "cmake --build . --config ${buildConfiguration} > error_and_warnings.txt"
                 bat script: "type error_and_warnings.txt"
-                bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G ZIP;NSIS -C ${buildConfiguration}"
+                bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G \"${cpack_generator}\" -C ${buildConfiguration}"
               }
               junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
               step([$class: 'ArtifactArchiver', artifacts: "build_${version}/veles-${version}.*", fingerprint: true])
@@ -131,6 +139,7 @@ builders['msvc2015'] = {node('windows'){
             checkout scm
             def branch = getBranch()
             def generator = "Visual Studio 14 2015"
+            def cpack_generator = "ZIP"
             withEnv(["PATH+QT=${env.QT}\\Tools\\${version}\\bin;${env.QT}\\5.7\\${version}\\bin",
                      "PATH+CMAKE=${env.CMAKE}\\bin",
                      "CMAKE_PREFIX_PATH+QT=${env.QT}\\5.7\\${version}",
@@ -139,12 +148,15 @@ builders['msvc2015'] = {node('windows'){
               if(version.contains("64")){
                 generator = "${generator} Win64"
               }
+              if (!buildConfiguration.equals("Debug")) {
+                cpack_generator = "${cpack_generator};NSIS"
+              }
               bat(script: "rd /s /q build_${version}", returnStatus: true)
               bat script: "md build_${version}", returnStatus: true
               dir ("build_${version}") {
                 bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -G \"${generator}\" ..\\"
                 bat script: "cmake --build . --config ${buildConfiguration}"
-                bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G ZIP;NSIS -C ${buildConfiguration}"
+                bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G \"${cpack_generator}\" -C ${buildConfiguration}"
               }
               junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
               step([$class: 'ArtifactArchiver', artifacts: "build_${version}/veles-${version}.*", fingerprint: true])
