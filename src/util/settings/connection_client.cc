@@ -16,6 +16,7 @@
  */
 #include <QSettings>
 #include <QApplication>
+#include <QStandardPaths>
 
 #include "util/settings/connection_client.h"
 
@@ -26,7 +27,7 @@ namespace connection {
 
 bool default_run_server = true;
 QString localhost("127.0.0.1");
-QString default_database("veles.vdb");
+QString default_database_file("veles.vdb");
 int default_server_port = 3135;
 bool default_shut_down_server = true;
 
@@ -129,7 +130,7 @@ void setConnectionKey(QString connection_key) {
 }
 
 QString databaseNameDefault() {
-  return default_database;
+  return QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/" + default_database_file;
 }
 
 QString databaseName() {
