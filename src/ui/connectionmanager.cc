@@ -69,6 +69,10 @@ ConnectionManager::~ConnectionManager() {
   delete network_client_output_;
 }
 
+client::NetworkClient* ConnectionManager::networkClient() {
+  return network_client_;
+}
+
 QAction* ConnectionManager::showConnectionDialogAction() {
   return show_connection_dialog_action_;
 }

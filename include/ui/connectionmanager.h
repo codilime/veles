@@ -46,6 +46,7 @@ class ConnectionManager : public QObject {
   ConnectionManager(QWidget* parent = nullptr);
   virtual ~ConnectionManager();
 
+  client::NetworkClient* networkClient();
   QAction* showConnectionDialogAction();
   QAction* disconnectAction();
   QAction* killLocallyCreatedServerAction();
