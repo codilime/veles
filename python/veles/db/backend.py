@@ -14,6 +14,7 @@
 
 import operator
 
+import os
 import sqlite3
 
 import six
@@ -99,6 +100,11 @@ class DbBackend:
             path = ':memory:'
         elif path.startswith(':'):
             path = './' + path
+
+        dirname = os.path.dirname(path)
+        if dirname != '' and not os.path.exists(dirname):
+            os.makedirs(dirname)
+
         self.db = sqlite3.connect(path)
         appid = self.db.execute('pragma application_id').fetchone()[0]
         if appid == 0:
