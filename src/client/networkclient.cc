@@ -384,11 +384,11 @@ void NetworkClient::sendMessage(msg_ptr msg) {
 void NetworkClient::setConnectionStatus(ConnectionStatus connection_status) {
   if (status_ != connection_status) {
     status_ = connection_status;
-    emit connectionStatusChanged(status_);
     if (output()) {
       *output() << "NetworkClient: New connection status: "
           << connStatusStr(connection_status) << "." << endl;
     }
+    emit connectionStatusChanged(status_);
   }
 }
 
@@ -432,7 +432,6 @@ void NetworkClient::newDataAvailable() {
     }
 
     if (msg) {
-      emit messageReceived(msg);
       auto handler_iter = message_handlers_.find(msg->object_type);
       if(handler_iter != message_handlers_.end()) {
         MessageHandler handler = handler_iter->second;
@@ -443,6 +442,7 @@ void NetworkClient::newDataAvailable() {
               "type: \"" << msg->object_type.c_str() << "\"." << endl;
         }
       }
+      emit messageReceived(msg);
     } else {
       break;
     }

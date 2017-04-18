@@ -27,6 +27,7 @@
 #include "dbif/promise.h"
 #include "dbif/types.h"
 #include "dbif/universe.h"
+#include "client/dbif.h"
 #include "util/version.h"
 #include "ui/databaseinfo.h"
 #include "ui/veles_mainwindow.h"
@@ -257,7 +258,14 @@ void VelesMainWindow::showLog() {
 
 void VelesMainWindow::createDb() {
   if (database_ == nullptr) {
+#if 0
     database_ = db::create_db();
+#else
+    auto nc = new client::NCWrapper(
+        connection_manager_->networkClient(), this);
+    database_ = QSharedPointer<client::NCObjectHandle>::create(
+        nc, *data::NodeID::getRootNodeId(), dbif::ObjectType::ROOT);
+#endif
   }
   auto database_info = new DatabaseInfo(database_);
   DockWidget* dock_widget = new DockWidget;

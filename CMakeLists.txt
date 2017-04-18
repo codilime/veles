@@ -267,8 +267,10 @@ add_library(veles_client
     ${INCLUDE_DIR}/client/node.h
     ${INCLUDE_DIR}/client/nodetree.h
     ${INCLUDE_DIR}/client/networkclient.h
+    ${INCLUDE_DIR}/client/dbif.h
     ${SRC_DIR}/client/nodetree.cc
-    ${SRC_DIR}/client/networkclient.cc)
+    ${SRC_DIR}/client/networkclient.cc
+    ${SRC_DIR}/client/dbif.cc)
 
 qt5_use_modules(veles_client Core Network)
 target_link_libraries(veles_client veles_base veles_data veles_network)
@@ -392,7 +394,8 @@ add_executable(main_ui
     ${CMAKE_SOURCE_DIR}/moc_trigram.cpp
     ${CMAKE_SOURCE_DIR}/moc_manipulator.cpp
     ${CMAKE_SOURCE_DIR}/moc_connectiondialog.cpp
-    ${CMAKE_SOURCE_DIR}/moc_networkclient.cpp)
+    ${CMAKE_SOURCE_DIR}/moc_networkclient.cpp
+    ${CMAKE_SOURCE_DIR}/moc_dbif.cpp)
 
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${GENERATED_MOC_FILES})
 
