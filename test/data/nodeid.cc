@@ -61,5 +61,12 @@ TEST(NodeID, ToVector) {
   EXPECT_THAT(NodeID::getRootNodeId()->asStdVector(), ContainerEq(std::vector<uint8_t>(NodeID::WIDTH, 255)));
 }
 
+TEST(NodeID, TestBoolConv) {
+    NodeID n;
+    EXPECT_TRUE(n);
+    EXPECT_FALSE(*NodeID::getNilId());
+    EXPECT_TRUE(*NodeID::getRootNodeId());
+}
+
 }  // namespace data
 }  // namespace veles

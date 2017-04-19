@@ -75,7 +75,7 @@ bool NodeID::operator!=(const NodeID &other) const {
 }
 
 NodeID::operator bool() const {
-  return memcmp(this->value, NIL_VALUE, WIDTH) == 0;
+  return memcmp(this->value, NIL_VALUE, WIDTH) != 0;
 }
 
 }  // namespace data
