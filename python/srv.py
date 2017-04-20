@@ -22,21 +22,21 @@ import importlib
 from veles.server.conn import AsyncLocalConnection
 from veles.server.proto import create_unix_server, create_tcp_server
 
-print('Świtezianka server starting up...')
+print('Świtezianka server is starting up...')
 loop = asyncio.get_event_loop()
-print('Opening database.')
+print('Opening database...')
 conn = AsyncLocalConnection(loop, sys.argv[1])
-print('Loading plugins.')
+print('Loading plugins...')
 for pname in sys.argv[4:]:
     print('{}...'.format(pname))
     mod = importlib.import_module('veles.plugins.' + pname)
     conn.register_plugin(mod)
 host, _, port = sys.argv[2].rpartition(':')
 if host == 'UNIX':
-    print('Starting UNIX server.')
+    print('Starting UNIX server...')
     loop.run_until_complete(create_unix_server(conn, sys.argv[3], port))
 else:
-    print('Starting TCP server.')
+    print('Starting TCP server...')
     loop.run_until_complete(
         create_tcp_server(conn, sys.argv[3], host, int(port)))
 print('Ready.')
