@@ -153,3 +153,7 @@ class Repacker(Model):
                     pos = (dpu - i - 1) * self.padded_width
                 res[u * dpu + i] = unit >> (pos + self.low_pad) & mask
         return res
+
+    @classmethod
+    def cpp_type(cls):
+        return 'RepackerModel', 'veles::data::Repacker', 'data/repack.h'

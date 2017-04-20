@@ -224,7 +224,7 @@ class StreamParser {
 
   std::vector<uint8_t> getBytes(const QString &name, uint64_t len) {
     auto data = getData(
-      name, data::Repacker{data::Endian::LITTLE, 8, 8}, len,
+      name, data::Repacker(), len,
       data::FieldHighType());
     std::vector<uint8_t> res;
     for (size_t i = 0; i < data.size(); i++) {
@@ -236,7 +236,7 @@ class StreamParser {
   std::vector<uint8_t> getBytesUntil(const QString &name, uint8_t termination,
                                      bool include_termination = true) {
     auto data =
-        getDataUntil(name, data::Repacker{data::Endian::LITTLE, 8, 8},
+        getDataUntil(name, data::Repacker(),
                      data::BinData::fromRawData(8, {termination}),
                      data::FieldHighType(), include_termination);
     std::vector<uint8_t> res;
@@ -248,7 +248,7 @@ class StreamParser {
 
   uint8_t getByte(const QString &name) {
     auto data = getData(
-      name, data::Repacker{data::Endian::LITTLE, 8, 8}, 1,
+      name, data::Repacker(), 1,
       data::FieldHighType());
     if (!data.size())
       return 0;

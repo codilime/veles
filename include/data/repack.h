@@ -17,27 +17,17 @@
 #pragma once
 
 #include "data/bindata.h"
+#include "models.h"
 
 namespace veles {
 namespace data {
 
-/** Represents endianness used for repacking data.  */
-enum class Endian {
-  LITTLE, BIG,
-};
-
 /** Represents data repacking format.  */
-struct Repacker {
-  /** Endanness to use for repacking.  */
-  Endian endian;
-  /** Element width, in bits, to repack from.  */
-  unsigned from_width;
-  /** Element width, in bits, to repack into.  */
-  unsigned to_width;
-  /** Amount of padding, in bits, to be skipped around each element.
-      Low pad is between LSB and the actual element, high pad
-      is between MSB and the actual element.  */
-  unsigned high_pad, low_pad;
+class Repacker : public RepackerModel {
+ public:
+  Repacker(Endian endian = Endian::LITTLE, uint64_t from_width = 8, uint64_t to_width = 8, uint64_t high_pad = 0, uint64_t low_pad = 0) :
+    RepackerModel(endian, from_width, to_width, high_pad, low_pad) {}
+  using RepackerModel::RepackerModel;
 
   /** Element width, including padding.  */
   unsigned paddedWidth() const { return to_width + high_pad + low_pad; }

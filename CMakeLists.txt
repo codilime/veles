@@ -142,20 +142,62 @@ add_library(veles_visualization
 qt5_use_modules(veles_visualization Core Gui Widgets)
 target_link_libraries(veles_visualization veles_base)
 
+set(MSGPACK_CPP_FWD_HEADER "${CMAKE_CURRENT_BINARY_DIR}/fwd_models.h")
+set(MSGPACK_CPP_HEADER "${CMAKE_CURRENT_BINARY_DIR}/models.h")
+set(MSGPACK_CPP_SOURCE "${CMAKE_CURRENT_BINARY_DIR}/models.cc")
+set(PYTHON_DIR ${CMAKE_SOURCE_DIR}/python)
+
+add_custom_command(OUTPUT ${MSGPACK_CPP_HEADER} ${MSGPACK_CPP_SOURCE} ${MSGPACK_CPP_FWD_HEADER}
+  COMMAND ${PYEXE} -m veles.cpp.generate ${CMAKE_CURRENT_BINARY_DIR}
+    veles.data.repack
+    veles.proto.node
+    veles.proto.check
+    veles.proto.chunk
+    veles.proto.connection
+    veles.proto.operation
+    veles.proto.messages
+    veles.proto.msgpackwrap
+    veles.tests.schema.cpp_test_models
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python
+  COMMENT "Generating msgpack C++ code from Python"
+  DEPENDS cpp_python_gen
+    ${PYTHON_DIR}/veles/cpp/generate.py
+    ${PYTHON_DIR}/veles/data/repack.py
+    ${PYTHON_DIR}/veles/proto/check.py
+    ${PYTHON_DIR}/veles/proto/chunk.py
+    ${PYTHON_DIR}/veles/proto/connection.py
+    ${PYTHON_DIR}/veles/proto/exceptions.py
+    ${PYTHON_DIR}/veles/proto/messages.py
+    ${PYTHON_DIR}/veles/proto/msgpackwrap.py
+    ${PYTHON_DIR}/veles/proto/operation.py
+    ${PYTHON_DIR}/veles/proto/node.py
+    ${PYTHON_DIR}/veles/schema/model.py
+    ${PYTHON_DIR}/veles/schema/enumeration.py
+    ${PYTHON_DIR}/veles/schema/fields.py
+    ${PYTHON_DIR}/veles/tests/schema/cpp_test_models.py
+  VERBATIM)
+
 # LIB: veles_data
 add_library(veles_data
-    ${INCLUDE_DIR}/data/types.h
+    ${MSGPACK_CPP_FWD_HEADER}
+    ${MSGPACK_CPP_HEADER}
     ${INCLUDE_DIR}/data/bindata.h
-    ${INCLUDE_DIR}/data/repack.h
     ${INCLUDE_DIR}/data/field.h
     ${INCLUDE_DIR}/data/nodeid.h
+    ${INCLUDE_DIR}/data/repack.h
+    ${INCLUDE_DIR}/data/types.h
+    ${INCLUDE_DIR}/network/msgpackobject.h
+    ${INCLUDE_DIR}/proto/exceptions.h
+    ${MSGPACK_CPP_SOURCE}
     ${SRC_DIR}/data/bindata.cc
-    ${SRC_DIR}/data/repack.cc
     ${SRC_DIR}/data/nodeid.cc
+    ${SRC_DIR}/data/repack.cc
+    ${SRC_DIR}/network/msgpackobject.cc
 )
 
-add_dependencies(veles_data msgpack-c)
 qt5_use_modules(veles_data Core)
+add_dependencies(veles_data msgpack-c)
+target_link_libraries(veles_data veles_base)
 
 # LIB: veles_dbif
 add_library(veles_dbif
@@ -198,50 +240,11 @@ qt5_use_modules(parser Core)
 add_dependencies(parser zlib)
 target_link_libraries(parser veles_db veles_dbif ${ZLIB_LIBRARIES})
 
-set(MSGPACK_CPP_FWD_HEADER "${CMAKE_CURRENT_BINARY_DIR}/fwd_models.h")
-set(MSGPACK_CPP_HEADER "${CMAKE_CURRENT_BINARY_DIR}/models.h")
-set(MSGPACK_CPP_SOURCE "${CMAKE_CURRENT_BINARY_DIR}/models.cc")
-set(PYTHON_DIR ${CMAKE_SOURCE_DIR}/python)
-
-add_custom_command(OUTPUT ${MSGPACK_CPP_HEADER} ${MSGPACK_CPP_SOURCE} ${MSGPACK_CPP_FWD_HEADER}
-  COMMAND ${PYEXE} -m veles.cpp.generate ${CMAKE_CURRENT_BINARY_DIR}
-    veles.proto.node
-    veles.proto.check
-    veles.proto.chunk
-    veles.proto.connection
-    veles.proto.operation
-    veles.proto.messages
-    veles.proto.msgpackwrap
-    veles.tests.schema.cpp_test_models
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python
-  COMMENT "Generating msgpack C++ code from Python"
-  DEPENDS cpp_python_gen
-    ${PYTHON_DIR}/veles/cpp/generate.py
-    ${PYTHON_DIR}/veles/proto/check.py
-    ${PYTHON_DIR}/veles/proto/chunk.py
-    ${PYTHON_DIR}/veles/proto/connection.py
-    ${PYTHON_DIR}/veles/proto/exceptions.py
-    ${PYTHON_DIR}/veles/proto/messages.py
-    ${PYTHON_DIR}/veles/proto/msgpackwrap.py
-    ${PYTHON_DIR}/veles/proto/operation.py
-    ${PYTHON_DIR}/veles/proto/node.py
-    ${PYTHON_DIR}/veles/schema/model.py
-    ${PYTHON_DIR}/veles/schema/enumeration.py
-    ${PYTHON_DIR}/veles/schema/fields.py
-    ${PYTHON_DIR}/veles/tests/schema/cpp_test_models.py
-  VERBATIM)
-
 add_library(veles_network
-    ${MSGPACK_CPP_FWD_HEADER}
-    ${MSGPACK_CPP_HEADER}
-    ${INCLUDE_DIR}/proto/exceptions.h
     ${INCLUDE_DIR}/network/msgpackwrapper.h
-    ${INCLUDE_DIR}/network/msgpackobject.h
-    ${MSGPACK_CPP_SOURCE}
-    ${SRC_DIR}/network/msgpackobject.cc
 )
 
-add_dependencies(veles_network msgpack-c)
+target_link_libraries(veles_network veles_data)
 qt5_use_modules(veles_network Core Network Widgets)
 
 
