@@ -9,4 +9,4 @@ from veles.scli import client
 client = client.create_client(sys.argv[1], sys.argv[2])
 obj = nodeid.NodeID.from_hex(sys.argv[3])
 for x in client.get_sub(obj):
-	pprint(x)
+    pprint(x)

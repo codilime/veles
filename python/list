@@ -9,8 +9,8 @@ from veles.scli import client
 client = client.create_client(sys.argv[1], sys.argv[2])
 
 if len(sys.argv) > 2:
-	obj = NodeID.from_hex(sys.argv[3])
+    obj = NodeID.from_hex(sys.argv[3])
 else:
-	obj = NodeID.root_id
+    obj = NodeID.root_id
 
 pprint(client.list(obj))
