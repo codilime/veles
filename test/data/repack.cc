@@ -250,5 +250,22 @@ TEST(Repack, Padded8to23MixedBig) {
   EXPECT_EQ(b.element64(1), 0x667788u);
 }
 
+TEST(Repack, MsgpackConversion) {
+  auto format = std::make_shared<Repacker>(Endian::BIG, 8, 23, 1, 8);
+  auto obj = messages::toMsgpackObject(format);
+  EXPECT_EQ(*(*obj->getMap())["endian"]->getString(), "BIG");
+  EXPECT_EQ((*obj->getMap())["from_width"]->getUnsignedInt(), 8);
+  EXPECT_EQ((*obj->getMap())["to_width"]->getUnsignedInt(), 23);
+  EXPECT_EQ((*obj->getMap())["high_pad"]->getUnsignedInt(), 1);
+  EXPECT_EQ((*obj->getMap())["low_pad"]->getUnsignedInt(), 8);
+  std::shared_ptr<Repacker> ptr;
+  messages::fromMsgpackObject(obj, ptr);
+  EXPECT_EQ(ptr->endian, Endian::BIG);
+  EXPECT_EQ(ptr->from_width, 8);
+  EXPECT_EQ(ptr->to_width, 23);
+  EXPECT_EQ(ptr->high_pad, 1);
+  EXPECT_EQ(ptr->low_pad, 8);
 }
-}
+
+}  // namespace data
+}  // namespace veles

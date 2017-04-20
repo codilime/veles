@@ -68,20 +68,33 @@ class MsgpackObject;
 }  // namespace messages
 }  // namespace veles
 '''
+    deps = set()
+    sources = []
     # TODO create DAG of modules here instead of relying that they are sorted
     for module_name in args.source_modules:
         module = importlib.import_module(module_name)
         namespaces = module_name.split('.')
+        deps.update(get_deps(module))
         fwd_header, header, source = generate_from_file(module, namespaces)
         fwd_header_code += fwd_header
         header_code += header
-        source_code += source
+        sources.append(source)
+    source_code += ''.join('#include "{}"\n'.format(i) for i in deps)
+    source_code += ''.join(sources)
     with open(path.join(args.destination, 'fwd_models.h'), 'w') as f:
         f.write(fwd_header_code)
     with open(path.join(args.destination, 'models.h'), 'w') as f:
         f.write(header_code)
     with open(path.join(args.destination, 'models.cc'), 'w') as f:
         f.write(source_code)
+
+
+def get_deps(source):
+    deps = set()
+    for el in getattr(source, '_models', []):
+        if len(el.cpp_type()) > 2:
+            deps.add(el.cpp_type()[2])
+    return deps
 
 
 def generate_from_file(source, namespaces):
@@ -114,6 +127,16 @@ namespace messages {
         header_fwd += 'class {};\n'.format(el.cpp_type()[0])
 
     header_fwd += namespace_specific_end
+
+    for el in getattr(source, '_models', []):
+        if len(el.cpp_type()) > 2:
+            namespaces = el.cpp_type()[1].split('::')
+            for ns in namespaces[:-1]:
+                header_fwd += 'namespace {} {{\n'.format(ns)
+            header_fwd += 'class {};\n'.format(namespaces[-1])
+            for ns in namespaces[-2::-1]:
+                header_fwd += '}}  // namespace {}\n'.format(ns)
+
     header_fwd += namespace_messages_start
 
     for el in enums:

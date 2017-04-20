@@ -110,14 +110,12 @@ class Model(pep487.NewObject):
         code += '''  class Builder {{
 {0}
  public:
-  Builder() : {4} {{}}
+  Builder() : {3} {{}}
   {1}
-    std::shared_ptr<{2}> build() {{
-      return std::make_shared<{2}>({3});
-    }}
+    std::shared_ptr<{2}> build();
   }};
-'''.format(fields_code, ''.join(setters), cls.cpp_type()[0], ', '.join(
-            field.name for field in cls.fields), ', '.join(builder_cons))
+'''.format(fields_code, ''.join(setters),
+           cls.cpp_type()[1], ', '.join(builder_cons))
         # TODO some encapsulation ?
         code += fields_code
 
@@ -137,8 +135,8 @@ class Model(pep487.NewObject):
                 ', '.join('{0}({0})'.format(field.name)
                           for field in cls.fields))
         code += '''
-  static std::shared_ptr<{0}> loadMessagePack(msgpack::object& obj);
-'''.format(cls.cpp_type()[0])
+  static std::shared_ptr<{0}> loadMessagePack(const msgpack::object& obj);
+'''.format(cls.cpp_type()[1])
         code += '''
   std::shared_ptr<messages::MsgpackObject> serializeToMsgpackObject();
 '''
@@ -202,13 +200,17 @@ class Model(pep487.NewObject):
             ['msg["{0}"] = messages::toMsgpackObject(this->{0});'.format(
                 extra) for extra in extra_pack]), cls.cpp_type()[0])
         code += '''
-std::shared_ptr<{0}> {0}::loadMessagePack(msgpack::object& obj) {{
+std::shared_ptr<{0}> {1}::loadMessagePack(const msgpack::object& obj) {{
   auto loc_obj = std::make_shared<messages::MsgpackObject>(obj);
   std::shared_ptr<{0}> out;
   fromMsgpackObject(loc_obj, out);
   return out;
 }}
-'''.format(cls.cpp_type()[1])
+'''.format(cls.cpp_type()[1], cls.cpp_type()[0])
+        code += '''std::shared_ptr<{1}> {0}::Builder::build() {{
+  return std::make_shared<{1}>({2});
+}}'''.format(cls.cpp_type()[0], cls.cpp_type()[1],
+             ', '.join(field.name for field in cls.fields))
         return code
 
     @classmethod
@@ -266,7 +268,11 @@ toMsgpackObject(std::shared_ptr<{0}> val) {{
 
     @classmethod
     def cpp_type(cls):
-        """returns a tuple containing class name and fully qualified name"""
+        """returns a tuple containing class name and fully qualified name
+        (in case we want to subclass generated model to add some functionality
+        this should be fully qualified name of this subclass - in such
+        case 3rd tuple element containing name of header file needs to be
+        provided)"""
         return cls.__name__, '::'.join(
             cls.__module__.split('.')[:-1] + [cls.__name__])
 
@@ -356,7 +362,7 @@ serializeToMsgpackObject() = 0;
   {0}(std::string object_type) : object_type(object_type) {{}}
   virtual ~{0}() {{}}
 
-  static std::shared_ptr<{0}> polymorphicLoad(msgpack::object& obj);
+  static std::shared_ptr<{0}> polymorphicLoad(const msgpack::object& obj);
 }};
 
 '''.format(cls.cpp_type()[0],
@@ -369,7 +375,7 @@ serializeToMsgpackObject() = 0;
 
     @classmethod
     def generate_base_source_code(cls):
-        code = '''std::shared_ptr<{0}> {0}::polymorphicLoad(msgpack::object& obj) {{
+        code = '''std::shared_ptr<{0}> {0}::polymorphicLoad(const msgpack::object& obj) {{
     auto loc_obj = std::make_shared<messages::MsgpackObject>(obj);
     std::shared_ptr<{0}> out;
     fromMsgpackObject(loc_obj, out);
@@ -411,9 +417,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(std::shared_ptr<{0}> val) {{
     def generate_header_code(cls, bases=None):
         return super(PolymorphicModel, cls).generate_header_code(
             [
-                (cls.__bases__[0].__name__, '"{}"'.format(cls.object_type)),
-                ('std::enable_shared_from_this<{}>'.format(cls.cpp_type()[0]),
-                 None)
+                (cls.__bases__[0].__name__, '"{}"'.format(cls.object_type))
             ])
 
     @classmethod
