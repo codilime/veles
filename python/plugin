@@ -15,9 +15,9 @@
 # limitations under the License.
 
 import asyncio
-import sys
-import signal
 import importlib
+import signal
+import sys
 
 from veles.async_client.conn import AsyncRemoteConnection
 from veles.async_client.proto import create_unix_client, create_tcp_client
