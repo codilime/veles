@@ -16,6 +16,7 @@
 
 import sys
 from pprint import pprint
+
 from veles.data.bindata import BinData
 from veles.dis.isa.falcon import FalconIsa
 

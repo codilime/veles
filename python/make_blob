@@ -3,6 +3,7 @@
 from __future__ import unicode_literals, print_function
 
 import sys
+
 from veles.scli import client
 from veles.schema.nodeid import NodeID
 
