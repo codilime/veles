@@ -22,24 +22,24 @@ from veles.server.proto import create_unix_server, create_tcp_server
 from veles.async_client.conn import AsyncRemoteConnection
 from veles.async_client.proto import create_unix_client, create_tcp_client
 
-print('Świtezianka proxy starting up...')
+print('Świtezianka proxy is starting up...')
 loop = asyncio.get_event_loop()
 
 host, _, port = sys.argv[1].rpartition(':')
 if host == 'UNIX':
-    print('Connecting to UNIX server.')
+    print('Connecting to UNIX server...')
     proto = loop.run_until_complete(create_unix_client(loop, sys.argv[2], port))[1]
 else:
-    print('Connecting to TCP server.')
+    print('Connecting to TCP server...')
     proto = loop.run_until_complete(create_tcp_client(loop, sys.argv[2], host, int(port)))[1]
 conn = AsyncRemoteConnection(loop, proto)
 
 host, _, port = sys.argv[3].rpartition(':')
 if host == 'UNIX':
-    print('Starting UNIX server.')
+    print('Starting UNIX server...')
     loop.run_until_complete(create_unix_server(conn, sys.argv[4], port))
 else:
-    print('Starting TCP server.')
+    print('Starting TCP server...')
     loop.run_until_complete(create_tcp_server(conn, sys.argv[4], host, int(port)))
 print('Ready.')
 try:

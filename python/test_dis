@@ -14,15 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from veles.dis.isa.falcon import FalconIsa
-from veles.data.bindata import BinData
 import sys
+from pprint import pprint
+from veles.data.bindata import BinData
+from veles.dis.isa.falcon import FalconIsa
 
 data = []
 for x in sys.argv[1:]:
     data.append(int(x, 16))
 
-from pprint import pprint
 pos = 0
 while pos < len(data):
     res = FalconIsa().parse(BinData(8, data), 'aaa', pos)
