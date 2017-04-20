@@ -134,7 +134,7 @@ void ConnectionDialog::clientLocalhost() {
 
 void ConnectionDialog::randomKey() {
   // TODO: This is cryptographically-secure on all modern OS-es, but this isn't
-  // explicitely guarateed by the standard. We should fix it someday.
+  // explicitely guaranteed by the standard. We should fix it someday.
   std::random_device rd;
   std::uniform_int_distribution<uint32_t> uniform;
   auto gen_key_part = [&rd, &uniform](){
@@ -214,7 +214,6 @@ void ConnectionDialog::loadSettings() {
 
 void ConnectionDialog::saveSettings() {
   util::settings::connection::setCurrentProfile(ui_->profile->currentText());
-
   util::settings::connection::setRunServer(
       ui_->new_server_radio_button->isChecked());
   util::settings::connection::setServerHost(
