@@ -113,11 +113,11 @@ bool runServerDefault() {
 }
 
 bool runServer() {
-  return profileSettings("conection.run_server", runServerDefault()).toBool();
+  return profileSettings("connection.run_server", runServerDefault()).toBool();
 }
 
 void setRunServer(bool run_server) {
-  setProfileSettings("conection.run_server", run_server);
+  setProfileSettings("connection.run_server", run_server);
 }
 
 QString serverHostDefault() {
@@ -125,11 +125,11 @@ QString serverHostDefault() {
 }
 
 QString serverHost() {
-  return profileSettings("conection.server", serverHostDefault()).toString();
+  return profileSettings("connection.server", serverHostDefault()).toString();
 }
 
 void setServerHost(QString server_host) {
-  setProfileSettings("conection.server", server_host);
+  setProfileSettings("connection.server", server_host);
 }
 
 int serverPortDefault() {
@@ -137,11 +137,11 @@ int serverPortDefault() {
 }
 
 int serverPort() {
-  return profileSettings("conection.server_port", serverPortDefault()).toInt();
+  return profileSettings("connection.server_port", serverPortDefault()).toInt();
 }
 
 void setServerPort(int server_port) {
-  setProfileSettings("conection.server_port", server_port);
+  setProfileSettings("connection.server_port", server_port);
 }
 
 QString clientInterfaceDefault() {
@@ -149,16 +149,16 @@ QString clientInterfaceDefault() {
 }
 
 QString clientInterface() {
-  return profileSettings("conection.client_interface",
+  return profileSettings("connection.client_interface",
       clientInterfaceDefault()).toString();
 }
 
 void setClientInterface(QString client_interface) {
-  setProfileSettings("conection.client_interface", client_interface);
+  setProfileSettings("connection.client_interface", client_interface);
 }
 
 QString clientName() {
-  return profileSettings("conection.client_name", clientNameDefault()).toString();
+  return profileSettings("connection.client_name", clientNameDefault()).toString();
 }
 
 QString clientNameDefault() {
@@ -168,10 +168,10 @@ QString clientNameDefault() {
 #elif defined(Q_OS_WIN)
   user_name = qgetenv("USERNAME");
 #else
-    user_name = "Veles UI";
+  user_name = "Veles UI";
 #endif
 
-  if(user_name.length() == 0) {
+  if (user_name.length() == 0) {
     user_name = "Veles UI";
   }
 
@@ -179,7 +179,7 @@ QString clientNameDefault() {
 }
 
 void setClientName(QString client_name) {
-  setProfileSettings("conection.client_name", client_name);
+  setProfileSettings("connection.client_name", client_name);
 }
 
 QString connectionKeyDefault() {
@@ -187,12 +187,12 @@ QString connectionKeyDefault() {
 }
 
 QString connectionKey() {
-  return profileSettings("conection.key", connectionKeyDefault()).toString();
+  return profileSettings("connection.key", connectionKeyDefault()).toString();
 }
 
 void setConnectionKey(QString connection_key) {
   QSettings settings;
-  setProfileSettings("conection.key", connection_key);
+  setProfileSettings("connection.key", connection_key);
 }
 
 QString databaseNameDefault() {
@@ -200,12 +200,12 @@ QString databaseNameDefault() {
 }
 
 QString databaseName() {
-  return profileSettings("conection.database",
+  return profileSettings("connection.database",
       databaseNameDefault()).toString();
 }
 
 void setDatabaseName(QString database_name) {
-  setProfileSettings("conection.database", database_name);
+  setProfileSettings("connection.database", database_name);
 }
 
 QString serverScriptDefault() {
@@ -217,7 +217,7 @@ QString serverScriptDefault() {
 #elif defined(Q_OS_MAC)
   server_script = qApp->applicationDirPath() + "/../Resources/veles-server/srv.py";
 #else
-  #error OS not supported
+  #warning "This OS is not officially supported, you may need to set this path manually."
 #endif
   QFileInfo check_file(server_script);
   if (!check_file.exists()) {
