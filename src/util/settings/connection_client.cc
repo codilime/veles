@@ -14,8 +14,9 @@
  * limitations under the License.
  *
  */
-#include <QSettings>
 #include <QApplication>
+#include <QDir>
+#include <QSettings>
 #include <QStandardPaths>
 #include <QFileInfo>
 
@@ -213,14 +214,16 @@ QString serverScriptDefault() {
   server_script = qApp->applicationDirPath() + "/../veles-server/srv.py";
 #elif defined(Q_OS_LINUX)
   server_script = qApp->applicationDirPath() + "/../share/veles-server/srv.py";
-#else
+#elif defined(Q_OS_MAC)
   server_script = qApp->applicationDirPath() + "/../Resources/veles-server/srv.py";
+#else
+  #error OS not supported
 #endif
   QFileInfo check_file(server_script);
   if (!check_file.exists()) {
     server_script = qApp->applicationDirPath() + "/python/srv.py";
   }
-  return server_script;
+  return QDir::cleanPath(server_script);
 }
 
 QString serverScript() {
