@@ -39,7 +39,9 @@ class NCWrapper;
 
 class NCObjectHandle : public dbif::ObjectHandleBase {
  public:
-  NCObjectHandle(NCWrapper* nc, data::NodeID id, dbif::ObjectType type);
+  NCObjectHandle(NCWrapper* nc = nullptr,
+      data::NodeID id = *data::NodeID::getNilId(),
+      dbif::ObjectType type = dbif::ObjectType::CHUNK);
   data::NodeID id();
 
   virtual dbif::InfoPromise *getInfo(dbif::PInfoRequest req);
@@ -92,9 +94,9 @@ class NCWrapper : public QObject {
   dbif::MethodResultPromise* handleRootCreateFileBlobFromDataRequest(
       QSharedPointer<dbif::RootCreateFileBlobFromDataRequest>
       create_file_blob_request);
-  dbif::MethodResultPromise* handleChunkCreateRequest(
+  dbif::MethodResultPromise* handleChunkCreateRequest(data::NodeID id,
       QSharedPointer<dbif::ChunkCreateRequest> chunk_create_request);
-  dbif::MethodResultPromise* handleChunkCreateSubBlobRequest(
+  dbif::MethodResultPromise* handleChunkCreateSubBlobRequest(data::NodeID id,
       QSharedPointer<dbif::ChunkCreateSubBlobRequest>
       chunk_create_subblob_request);
   dbif::MethodResultPromise* handleDeleteRequest(data::NodeID id);
@@ -126,6 +128,8 @@ class NCWrapper : public QObject {
   std::unordered_map<uint64_t, QPointer<dbif::InfoPromise>>
       root_children_promises_;
   std::unordered_map<uint64_t, QSharedPointer<NCObjectHandle>> created_objs_waiting_for_ack_;
+  typedef std::map<data::NodeID, NCObjectHandle> ChildrenMap;
+  std::unordered_map<uint64_t, QSharedPointer<ChildrenMap>> children_maps_;
 
   bool detailed_debug_info_;
 };

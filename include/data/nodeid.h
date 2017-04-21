@@ -50,6 +50,7 @@ class NodeID {
   static std::shared_ptr<NodeID> getNilId();
   bool operator==(const NodeID& other) const;
   bool operator!=(const NodeID& other) const;
+  bool operator<(const NodeID& other) const;
   explicit operator bool() const;
 };
 
