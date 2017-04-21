@@ -249,7 +249,6 @@ add_library(veles_client
     ${INCLUDE_DIR}/client/node.h
     ${INCLUDE_DIR}/client/nodetree.h
     ${INCLUDE_DIR}/client/networkclient.h
-    ${SRC_DIR}/client/node.cc
     ${SRC_DIR}/client/nodetree.cc
     ${SRC_DIR}/client/networkclient.cc)
 
