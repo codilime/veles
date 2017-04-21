@@ -408,29 +408,91 @@ void NCWrapper::handleQueryErrorMessage(msg_ptr message) {
 
 dbif::InfoPromise* NCWrapper::handleDescriptionRequest(data::NodeID id,
     bool sub) {
-  // TODO
-  return nullptr;
+  uint64_t qid = nc_->nextQid();
+  if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
+    if (nc_->output() && detailed_debug_info_) {
+      *nc_->output() << QString("NCWrapper: Sending MsgGet message "
+          "for node id \"%1\".").arg(id.toHexString()) << endl;
+    }
+
+    auto msg = std::make_shared<messages::MsgGet>(
+        qid,
+        std::make_shared<data::NodeID>(id),
+        sub);
+    nc_->sendMessage(msg);
+  }
+
+  return addInfoPromise(qid, sub);;
 }
 
 dbif::InfoPromise* NCWrapper::handleChildrenRequest(data::NodeID id, bool sub) {
-  // TODO
-  return nullptr;
+  uint64_t qid = nc_->nextQid();
+  if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
+    if (nc_->output() && detailed_debug_info_) {
+      *nc_->output() << QString("NCWrapper: Sending MsgGetList message.")
+          << endl;
+    }
+    const auto null_pos = std::pair<bool, int64_t>(false, 0);
+    auto msg = std::make_shared<messages::MsgGetList>(
+        qid,
+        std::make_shared<data::NodeID>(id),
+        std::make_shared<std::unordered_set<std::shared_ptr<std::string>>>(),
+        std::make_shared<messages::PosFilter>(
+            null_pos, null_pos, null_pos, null_pos),
+        sub);
+    nc_->sendMessage(msg);
+  }
+
+  auto promise = addInfoPromise(qid, sub);
+  if(sub && id == *data::NodeID::getRootNodeId()) {
+    root_children_promises_[qid] = promise;
+  }
+  return promise;
 }
 
 dbif::InfoPromise* NCWrapper::handleParsersListRequest() {
   // TODO
-  return nullptr;
+  return new dbif::InfoPromise;
 }
 
 dbif::InfoPromise* NCWrapper::handleBlobDataRequest(
     data::NodeID id, uint64_t start, uint64_t end, bool sub) {
-  // TODO
-  return nullptr;
+  uint64_t qid = nc_->nextQid();
+  if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
+    if (nc_->output() && detailed_debug_info_) {
+      *nc_->output() << QString("NCWrapper: Sending MsgGetBinData message.")
+          << endl;
+    }
+    const auto end_pos = std::pair<bool, int64_t>(true, end);
+    auto msg = std::make_shared<messages::MsgGetBinData>(
+        qid,
+        std::make_shared<data::NodeID>(id),
+        std::make_shared<std::string>("data"),
+        start,
+        end_pos,
+        sub);
+    nc_->sendMessage(msg);
+  }
+
+  return addInfoPromise(qid, sub);
 }
 
 dbif::InfoPromise* NCWrapper::handleChunkDataRequest(data::NodeID id, bool sub) {
-  // TODO
-  return nullptr;
+  uint64_t qid = nc_->nextQid();
+  if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
+    if (nc_->output() && detailed_debug_info_) {
+      *nc_->output() << QString("NCWrapper: Sending MsgGetData message.")
+          << endl;
+    }
+    auto msg = std::make_shared<messages::MsgGetData>(
+        qid,
+        std::make_shared<data::NodeID>(id),
+        std::make_shared<std::string>("data"),
+        sub);
+    nc_->sendMessage(msg);
+  }
+
+  return addInfoPromise(qid, sub);
 }
 
 /*****************************************************************************/
