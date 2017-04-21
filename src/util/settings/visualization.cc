@@ -17,8 +17,6 @@
 #include "util/settings/visualization.h"
 
 #include <QSettings>
-#include <QStyleFactory>
-#include <QFont>
 
 #include "visualization/trigram.h"
 
