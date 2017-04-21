@@ -49,9 +49,9 @@ const int k_brightness_heuristic_max = 66;
 // decrease this to reduce noise (but you may lose data if you overdo it)
 const double k_brightness_heuristic_scaling = 2.5;
 
-TrigramWidget::TrigramWidget(QWidget *parent) :
-    VisualizationWidget(parent), texture(nullptr), databuf(nullptr), angle(0),
-    c_sph(0), c_cyl(0), c_pos(0), shape_(EVisualizationShape::CUBE),
+TrigramWidget::TrigramWidget(QWidget* parent) :
+    VisualizationWidget(parent), texture_(nullptr), databuf_(nullptr),
+    c_sph_(0), c_cyl_(0), c_pos_(0), shape_(EVisualizationShape::CUBE),
     mode_(EVisualizationMode::TRIGRAM), brightness_slider_(nullptr),
     is_playing_(true) {
   show_labels_ = util::settings::visualization::showCaptions();
@@ -67,10 +67,11 @@ TrigramWidget::TrigramWidget(QWidget *parent) :
 }
 
 TrigramWidget::~TrigramWidget() {
-  if (texture == nullptr && databuf == nullptr) return;
+  if (!texture_ && !databuf_)
+    return;
   makeCurrent();
-  delete texture;
-  delete databuf;
+  delete texture_;
+  delete databuf_;
   releaseLabels();
   releaseRF();
   doneCurrent();
@@ -84,9 +85,9 @@ void TrigramWidget::setBrightness(int value) {
 void TrigramWidget::setMode(EVisualizationMode mode, bool animate) {
   mode_ = mode;
   if (mode_ == EVisualizationMode::LAYERED_DIGRAM && !animate) {
-    c_pos = 1;
+    c_pos_ = 1;
   } else if (mode_ == EVisualizationMode::TRIGRAM && !animate) {
-    c_pos = 0;
+    c_pos_ = 0;
   }
 }
 
@@ -101,21 +102,19 @@ float TrigramWidget::vfovDeg(float min_fov_deg, float aspect_ratio) {
   return vfov / deg2rad;
 }
 
-
 void TrigramWidget::refresh(AdditionalResampleDataPtr ad) {
   if (use_brightness_heuristic_) {
     if (ad) {
       setBrightness(std::static_pointer_cast<BrightnessData>(ad)->brightness);
-      if (brightness_slider_ != nullptr) {
+      if (brightness_slider_ != nullptr)
         brightness_slider_->setValue(brightness_);
-      }
     } else {
       autoSetBrightness();
     }
   }
   makeCurrent();
-  delete texture;
-  delete databuf;
+  delete texture_;
+  delete databuf_;
   initTextures();
   doneCurrent();
 }
@@ -184,7 +183,7 @@ void TrigramWidget::prepareOptions(QMainWindow *visualization_window) {
   QHBoxLayout* layout = new QHBoxLayout;
   brightness_widget->setLayout(layout);
 
-  QLabel *brightness_label = new QLabel;
+  QLabel* brightness_label = new QLabel;
   brightness_label->setPixmap(QPixmap(":/images/brightness.png"));
   brightness_label->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   layout->addWidget(brightness_label);
@@ -320,7 +319,7 @@ void TrigramWidget::autoSetBrightness() {
     brightness_slider_->setValue(brightness_);
 }
 
-bool TrigramWidget::event(QEvent *event) {
+bool TrigramWidget::event(QEvent* event) {
   if (event->type() == QEvent::MouseMove) {
     QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
     if ((mouse_event->buttons() & Qt::LeftButton)
@@ -341,34 +340,31 @@ bool TrigramWidget::event(QEvent *event) {
   return QWidget::event(event);
 }
 
-void TrigramWidget::timerEvent(QTimerEvent *e) {
-  if (is_playing_)
-    angle += 0.5f;
-
+void TrigramWidget::timerEvent(QTimerEvent*) {
   if (shape_ == EVisualizationShape::CYLINDER) {
-    c_cyl += 0.01f;
+    c_cyl_ += 0.01f;
   } else {
-    c_cyl -= 0.01f;
+    c_cyl_ -= 0.01f;
   }
   if (shape_ == EVisualizationShape::SPHERE) {
-    c_sph += 0.01f;
+    c_sph_ += 0.01f;
   } else {
-    c_sph -= 0.01f;
+    c_sph_ -= 0.01f;
   }
-  if (c_cyl > 1) c_cyl = 1;
-  if (c_cyl < 0) c_cyl = 0;
-  if (c_sph > 1) c_sph = 1;
-  if (c_sph < 0) c_sph = 0;
+  if (c_cyl_ > 1) c_cyl_ = 1;
+  if (c_cyl_ < 0) c_cyl_ = 0;
+  if (c_sph_ > 1) c_sph_ = 1;
+  if (c_sph_ < 0) c_sph_ = 0;
 
-  if (mode_ == EVisualizationMode::LAYERED_DIGRAM && c_pos < 1) {
-    c_pos += 0.01f;
-    if (c_pos > 1)
-      c_pos = 1;
+  if (mode_ == EVisualizationMode::LAYERED_DIGRAM && c_pos_ < 1) {
+    c_pos_ += 0.01f;
+    if (c_pos_ > 1)
+      c_pos_ = 1;
   }
-  if (mode_ != EVisualizationMode::LAYERED_DIGRAM && c_pos) {
-    c_pos -= 0.01f;
-    if (c_pos < 0)
-      c_pos = 0;
+  if (mode_ != EVisualizationMode::LAYERED_DIGRAM && c_pos_) {
+    c_pos_ -= 0.01f;
+    if (c_pos_ < 0)
+      c_pos_ = 0;
   }
   update();
 }
@@ -394,41 +390,42 @@ bool TrigramWidget::initializeVisualizationGL() {
 }
 
 void TrigramWidget::initShaders() {
-  if (!program.addShaderFromSourceFile(QOpenGLShader::Vertex,
+  if (!program_.addShaderFromSourceFile(QOpenGLShader::Vertex,
                                        ":/trigram/vshader.glsl"))
     close();
 
   // Compile fragment shader
-  if (!program.addShaderFromSourceFile(QOpenGLShader::Fragment,
+  if (!program_.addShaderFromSourceFile(QOpenGLShader::Fragment,
                                        ":/trigram/fshader.glsl"))
     close();
 
   // Link shader pipeline
-  if (!program.link()) close();
+  if (!program_.link())
+    close();
 
-  timer.start(12, this);
+  timer_.start(12, this);
 }
 
 void TrigramWidget::initTextures() {
   int size = static_cast<int>(getDataSize());
   const uint8_t *data = reinterpret_cast<const uint8_t*>(getData());
 
-  databuf = new QOpenGLBuffer(QOpenGLBuffer::Type(GL_TEXTURE_BUFFER));
-  databuf->create();
-  databuf->bind();
-  databuf->allocate(data, size);
-  databuf->release();
+  databuf_ = new QOpenGLBuffer(QOpenGLBuffer::Type(GL_TEXTURE_BUFFER));
+  databuf_->create();
+  databuf_->bind();
+  databuf_->allocate(data, size);
+  databuf_->release();
 
-  texture = new QOpenGLTexture(QOpenGLTexture::TargetBuffer);
-  texture->setSize(size);
-  texture->setFormat(QOpenGLTexture::R8U);
-  texture->create();
-  texture->bind();
-  glTexBuffer(GL_TEXTURE_BUFFER, QOpenGLTexture::R8U, databuf->bufferId());
+  texture_ = new QOpenGLTexture(QOpenGLTexture::TargetBuffer);
+  texture_->setSize(size);
+  texture_->setFormat(QOpenGLTexture::R8U);
+  texture_->create();
+  texture_->bind();
+  glTexBuffer(GL_TEXTURE_BUFFER, QOpenGLTexture::R8U, databuf_->bufferId());
 }
 
 void TrigramWidget::initGeometry() {
-  vao.create();
+  vao_.create();
 }
 
 QAction* TrigramWidget::createAction(const QIcon& icon,
@@ -510,8 +507,8 @@ void TrigramWidget::prepareManipulatorToolbar(
 }
 
 void TrigramWidget::resizeGLImpl(int w, int h) {
-  width = w;
-  height = h;
+  width_ = w;
+  height_ = h;
 }
 
 void TrigramWidget::paintGLImpl() {
@@ -521,13 +518,13 @@ void TrigramWidget::paintGLImpl() {
   glDepthFunc(GL_ALWAYS);
   unsigned size = static_cast<unsigned>(getDataSize());
 
-  program.bind();
-  texture->bind();
-  vao.bind();
+  program_.bind();
+  texture_->bind();
+  vao_.bind();
 
   QMatrix4x4 mp, m;
   mp.setToIdentity();
-  float aspect_ratio = static_cast<float>(width) / height;
+  float aspect_ratio = static_cast<float>(width_) / height_;
   mp.perspective(vfovDeg(45.f, aspect_ratio), aspect_ratio, 0.01f, 100.0f);
 
   m.setToIdentity();
@@ -539,21 +536,21 @@ void TrigramWidget::paintGLImpl() {
     m = current_manipulator_->transform();
   }
 
-  int loc_sz = program.uniformLocation("sz");
-  program.setUniformValue("tx", 0);
-  program.setUniformValue("c_cyl", c_cyl);
-  program.setUniformValue("c_sph", c_sph);
-  program.setUniformValue("c_pos", c_pos);
-  program.setUniformValue("xfrm", mp * m);
+  int loc_sz = program_.uniformLocation("sz");
+  program_.setUniformValue("tx", 0);
+  program_.setUniformValue("c_cyl", c_cyl_);
+  program_.setUniformValue("c_sph", c_sph_);
+  program_.setUniformValue("c_pos", c_pos_);
+  program_.setUniformValue("xfrm", mp * m);
   GLfloat c_brightness = brightness_ * brightness_ * brightness_;
   c_brightness /= getDataSize();
-  program.setUniformValue("c_brightness", c_brightness);
+  program_.setUniformValue("c_brightness", c_brightness);
   glUniform1ui(loc_sz, size);
   glDrawArrays(GL_POINTS, 0, size - 2);
 
-  vao.release();
-  texture->release();
-  program.release();
+  vao_.release();
+  texture_->release();
+  program_.release();
 
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   QMatrix4x4 mvp = mp * m;
@@ -566,11 +563,11 @@ void TrigramWidget::paintGLImpl() {
 
 void TrigramWidget::paintLabels(QMatrix4x4& scene_mp, QMatrix4x4& scene_m) {
   QMatrix4x4 screen_mp;
-  screen_mp.ortho(0, width, 0, height, -1.f, 1.f);
+  screen_mp.ortho(0, width_, 0, height_, -1.f, 1.f);
 
   QMatrix4x4 scene_to_screen;
   scene_to_screen.setToIdentity();
-  scene_to_screen.scale(width * .5f, height * .5f, -1.f);
+  scene_to_screen.scale(width_ * .5f, height_ * .5f, -1.f);
   scene_to_screen.translate(1.f, 1.f, 0.f);
   scene_to_screen = scene_to_screen * scene_mp * scene_m;
 
@@ -597,7 +594,7 @@ void TrigramWidget::paintLabel(LabelPositionMixer& mixer,
     QMatrix4x4& scene_to_screen, QMatrix4x4& screen_mp,
     QOpenGLTexture* texture) {
   texture->bind();
-  QVector4D world_pos = mixer.mix(c_sph, c_cyl, c_pos);
+  QVector4D world_pos = mixer.mix(c_sph_, c_cyl_, c_pos_);
   QVector3D screen_pos = calcScreenPosForLabel(
           world_pos.toVector3D(), scene_to_screen,
           texture->width(), texture->height());
@@ -714,17 +711,17 @@ void TrigramWidget::paintRF(QMatrix4x4& mvp) {
   rf_program_.setUniformValue("mvp", mvp);
   switch (shape_) {
   case EVisualizationShape::CUBE:
-    if (c_cyl == 0.f && c_sph == 0.f) {
+    if (c_cyl_ == 0.f && c_sph_ == 0.f) {
       glDrawArrays(GL_LINES, 0, 6);
     }
     break;
   case EVisualizationShape::CYLINDER:
-    if (c_cyl == 1.f) {
+    if (c_cyl_ == 1.f) {
       glDrawArrays(GL_LINES, 6, 4);
     }
     break;
   case EVisualizationShape::SPHERE:
-    if (c_sph == 1.f) {
+    if (c_sph_ == 1.f) {
       glDrawArrays(GL_LINES, 10, 2);
     }
     break;
