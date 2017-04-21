@@ -104,10 +104,10 @@ class TrigramWidget : public VisualizationWidget {
   enum class EVisualizationShape {CUBE, CYLINDER, SPHERE};
   enum class EVisualizationMode {TRIGRAM, LAYERED_DIGRAM};
 
-  explicit TrigramWidget(QWidget *parent = 0);
+  explicit TrigramWidget(QWidget* parent = 0);
   ~TrigramWidget();
 
-  virtual void prepareOptions(QMainWindow *visualization_window) override;
+  virtual void prepareOptions(QMainWindow* visualization_window) override;
   void setMode(EVisualizationMode mode, bool animate = true);
 
   static float vfovDeg(float min_fov_deg, float aspect_ratio);
@@ -123,8 +123,8 @@ class TrigramWidget : public VisualizationWidget {
   void refresh(AdditionalResampleDataPtr ad) override;
   bool initializeVisualizationGL() override;
 
-  bool event(QEvent *event) override;
-  void timerEvent(QTimerEvent *e) override;
+  bool event(QEvent* event) override;
+  void timerEvent(QTimerEvent*) override;
 
   void resizeGLImpl(int w, int h) override;
   void paintGLImpl() override;
@@ -168,23 +168,22 @@ class TrigramWidget : public VisualizationWidget {
   int suggestBrightness();  // heuristic
   void autoSetBrightness();
 
-  QBasicTimer timer;
-  QOpenGLShaderProgram program;
-  QOpenGLTexture *texture;
-  QOpenGLBuffer *databuf;
+  QBasicTimer timer_;
+  QOpenGLShaderProgram program_;
+  QOpenGLTexture* texture_;
+  QOpenGLBuffer* databuf_;
 
-  QOpenGLVertexArrayObject vao;
-  float angle;
-  float c_sph, c_cyl, c_pos;
-  int width, height;
+  QOpenGLVertexArrayObject vao_;
+  float c_sph_, c_cyl_, c_pos_;
+  int width_, height_;
   EVisualizationShape shape_;
   EVisualizationMode mode_;
 
-  QAction *cube_action_;
-  QAction *cylinder_action_;
-  QAction *sphere_action_;
-  QSlider *brightness_slider_;
-  QCheckBox *use_heuristic_checkbox_;
+  QAction* cube_action_;
+  QAction* cylinder_action_;
+  QAction* sphere_action_;
+  QSlider* brightness_slider_;
+  QCheckBox* use_heuristic_checkbox_;
   bool is_playing_, use_brightness_heuristic_;
   QCheckBox* show_labels_and_rf_checkbox_;
   bool show_labels_;
