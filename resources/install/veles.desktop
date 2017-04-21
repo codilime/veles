@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=Veles
+Comment=A new age tool for binary analysis
+Exec=/usr/bin/veles
+Icon=/usr/share/veles/veles.ico
+Terminal=false
+Type=Application
+Categories=Utility;Application;

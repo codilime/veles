@@ -434,6 +434,10 @@ if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
   set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5core5a (>= 5.5.1), libqt5gui5 (>= 5.5.1), libqt5widgets5 (>= 5.5.1), libqt5network5 (>= 5.5.1), zlib1g (>= 1:1.2.8), python3 (>= 3.5.0), python3-venv (>= 3.5.0)")
   install(TARGETS main_ui RUNTIME DESTINATION bin COMPONENT "application")
+
+  install(FILES "${PROJECT_SOURCE_DIR}/resources/install/veles.desktop" DESTINATION share/applications/ COMPONENT "application")
+  install(FILES "${PROJECT_SOURCE_DIR}/resources/icons/veles.ico" DESTINATION share/veles/ COMPONENT "application")
+
 endif(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
 
 # Windows
