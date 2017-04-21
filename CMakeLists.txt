@@ -430,6 +430,7 @@ endif(WIN32 AND NOT MSVC)
 
 #Unix paths
 if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
+  set(CMAKE_INSTALL_PREFIX "/usr")
   set(CPACK_PACKAGE_CONTACT "contact@veles.io")
   set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5core5a (>= 5.5.1), libqt5gui5 (>= 5.5.1), libqt5widgets5 (>= 5.5.1), libqt5network5 (>= 5.5.1), zlib1g (>= 1:1.2.8), python3 (>= 3.5.0), python3-venv (>= 3.5.0)")
