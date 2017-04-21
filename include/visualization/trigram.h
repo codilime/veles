@@ -42,6 +42,9 @@
 namespace veles {
 namespace visualization {
 
+extern const int k_minimum_brightness;
+extern const int k_maximum_brightness;
+
 /*****************************************************************************/
 /* LabelPositionMixer */
 /*****************************************************************************/
@@ -159,7 +162,9 @@ class TrigramWidget : public VisualizationWidget {
   void setManipulator(Manipulator* manipulator);
 
  private:
+  int brightness_;  // has to be set through setBrightness()
   void setBrightness(int value);
+
   int suggestBrightness();  // heuristic
   void autoSetBrightness();
 
@@ -170,11 +175,10 @@ class TrigramWidget : public VisualizationWidget {
 
   QOpenGLVertexArrayObject vao;
   float angle;
-  float c_sph, c_cyl, c_pos, c_brightness;
+  float c_sph, c_cyl, c_pos;
   int width, height;
   EVisualizationShape shape_;
   EVisualizationMode mode_;
-  int brightness_;
 
   QAction *cube_action_;
   QAction *cylinder_action_;

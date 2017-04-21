@@ -68,9 +68,10 @@ add_library(veles_base
     ${INCLUDE_DIR}/util/sampling/isampler.h
     ${INCLUDE_DIR}/util/sampling/uniform_sampler.h
     ${INCLUDE_DIR}/util/sampling/fake_sampler.h
-    ${INCLUDE_DIR}/util/settings/theme.h
-    ${INCLUDE_DIR}/util/settings/hexedit.h
     ${INCLUDE_DIR}/util/settings/connection_client.h
+    ${INCLUDE_DIR}/util/settings/hexedit.h
+    ${INCLUDE_DIR}/util/settings/theme.h
+    ${INCLUDE_DIR}/util/settings/visualization.h
 
     ${INCLUDE_DIR}/util/encoders/base64_encoder.h
     ${INCLUDE_DIR}/util/encoders/c_data_encoder.h
@@ -91,9 +92,10 @@ add_library(veles_base
     ${SRC_DIR}/util/sampling/isampler.cc
     ${SRC_DIR}/util/sampling/uniform_sampler.cc
     ${SRC_DIR}/util/sampling/fake_sampler.cc
-    ${SRC_DIR}/util/settings/theme.cc
-    ${SRC_DIR}/util/settings/hexedit.cc
     ${SRC_DIR}/util/settings/connection_client.cc
+    ${SRC_DIR}/util/settings/hexedit.cc
+    ${SRC_DIR}/util/settings/theme.cc
+    ${SRC_DIR}/util/settings/visualization.cc
 
     ${SRC_DIR}/util/encoders/base64_encoder.cc
     ${SRC_DIR}/util/encoders/c_data_encoder.cc
