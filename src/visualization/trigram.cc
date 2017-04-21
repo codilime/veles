@@ -15,7 +15,6 @@
  *
  */
 #include "visualization/trigram.h"
-#include "util/icons.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -36,6 +35,9 @@
 #include <QToolButton>
 #include <QWidgetAction>
 
+#include "util/icons.h"
+#include "util/settings/visualization.h"
+
 namespace veles {
 namespace visualization {
 
@@ -50,10 +52,11 @@ const double k_brightness_heuristic_scaling = 2.5;
 TrigramWidget::TrigramWidget(QWidget *parent) :
     VisualizationWidget(parent), texture(nullptr), databuf(nullptr), angle(0),
     c_sph(0), c_cyl(0), c_pos(0), shape_(EVisualizationShape::CUBE),
-    mode_(EVisualizationMode::TRIGRAM),
-    brightness_((k_maximum_brightness + k_minimum_brightness) / 2),
-    brightness_slider_(nullptr), is_playing_(true),
-    use_brightness_heuristic_(true), show_labels_(false) {
+    mode_(EVisualizationMode::TRIGRAM), brightness_slider_(nullptr),
+    is_playing_(true) {
+  show_labels_ = util::settings::visualization::showCaptions();
+  setBrightness(util::settings::visualization::brightness());
+  use_brightness_heuristic_ = util::settings::visualization::autoBrightness();
   manipulators_.push_back(spin_manipulator_ = new SpinManipulator(this));
   manipulators_.push_back(trackball_manipulator_ = new TrackballManipulator(this));
   manipulators_.push_back(free_manipulator_ = new FreeManipulator(this));
@@ -74,9 +77,8 @@ TrigramWidget::~TrigramWidget() {
 }
 
 void TrigramWidget::setBrightness(int value) {
+  util::settings::visualization::setBrightness(value);
   brightness_ = value;
-  c_brightness = static_cast<float>(value) * value * value;
-  c_brightness /= getDataSize();
 }
 
 void TrigramWidget::setMode(EVisualizationMode mode, bool animate) {
@@ -89,7 +91,7 @@ void TrigramWidget::setMode(EVisualizationMode mode, bool animate) {
 }
 
 float TrigramWidget::vfovDeg(float min_fov_deg, float aspect_ratio) {
-  if(aspect_ratio >= 1.f) {
+  if (aspect_ratio >= 1.f) {
     return min_fov_deg;
   }
 
@@ -103,7 +105,7 @@ float TrigramWidget::vfovDeg(float min_fov_deg, float aspect_ratio) {
 void TrigramWidget::refresh(AdditionalResampleDataPtr ad) {
   if (use_brightness_heuristic_) {
     if (ad) {
-      brightness_ = std::static_pointer_cast<BrightnessData>(ad)->brightness;
+      setBrightness(std::static_pointer_cast<BrightnessData>(ad)->brightness);
       if (brightness_slider_ != nullptr) {
         brightness_slider_->setValue(brightness_);
       }
@@ -111,7 +113,6 @@ void TrigramWidget::refresh(AdditionalResampleDataPtr ad) {
       autoSetBrightness();
     }
   }
-  setBrightness(brightness_);
   makeCurrent();
   delete texture;
   delete databuf;
@@ -165,7 +166,10 @@ void TrigramWidget::prepareOptions(QMainWindow *visualization_window) {
   show_labels_and_rf_checkbox_->setChecked(show_labels_);
   rf_widget_action->setDefaultWidget(show_labels_and_rf_checkbox_);
   connect(show_labels_and_rf_checkbox_, &QCheckBox::toggled,
-      [this](bool toggled){show_labels_ = toggled;});
+      [this](bool toggled) {
+    show_labels_ = toggled;
+    util::settings::visualization::setShowCaptions(toggled);
+  });
   QToolBar* captions_toolbar = new QToolBar("Captions", this);
   captions_toolbar->setMovable(false);
   captions_toolbar->addAction(rf_widget_action);
@@ -185,7 +189,8 @@ void TrigramWidget::prepareOptions(QMainWindow *visualization_window) {
   brightness_label->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   layout->addWidget(brightness_label);
 
-  brightness_ = suggestBrightness();
+  if (use_brightness_heuristic_)
+    setBrightness(suggestBrightness());
   brightness_slider_ = new QSlider(Qt::Horizontal);
   brightness_slider_->setMinimum(k_minimum_brightness);
   brightness_slider_->setMaximum(k_maximum_brightness);
@@ -267,21 +272,24 @@ void TrigramWidget::setShape(EVisualizationShape shape) {
 }
 
 void TrigramWidget::brightnessSliderMoved(int value) {
-  if (value == brightness_) return;
+  if (value == brightness_)
+    return;
   use_brightness_heuristic_ = false;
+  util::settings::visualization::setAutoBrightness(false);
   use_heuristic_checkbox_->setChecked(false);
   setBrightness(value);
 }
 
 void TrigramWidget::setUseBrightnessHeuristic(int state) {
   use_brightness_heuristic_ = state;
+  util::settings::visualization::setAutoBrightness(state);
   if (use_brightness_heuristic_) {
     autoSetBrightness();
   }
 }
 
 void TrigramWidget::setManipulator(Manipulator* manipulator) {
-  if(manipulator == current_manipulator_) {
+  if (manipulator == current_manipulator_) {
     return;
   }
 
@@ -295,7 +303,7 @@ void TrigramWidget::setManipulator(Manipulator* manipulator) {
   }
   current_manipulator_ = manipulator;
 
-  if(!is_playing_) {
+  if (!is_playing_) {
     playPause();
   }
 
@@ -305,16 +313,15 @@ void TrigramWidget::setManipulator(Manipulator* manipulator) {
 
 void TrigramWidget::autoSetBrightness() {
   auto new_brightness = suggestBrightness();
-  if (new_brightness == brightness_) return;
-  brightness_ = new_brightness;
-  if (brightness_slider_ != nullptr) {
+  if (new_brightness == brightness_)
+    return;
+  setBrightness(new_brightness);
+  if (brightness_slider_)
     brightness_slider_->setValue(brightness_);
-  }
-  setBrightness(brightness_);
 }
 
 bool TrigramWidget::event(QEvent *event) {
-  if(event->type() == QEvent::MouseMove) {
+  if (event->type() == QEvent::MouseMove) {
     QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
     if ((mouse_event->buttons() & Qt::LeftButton)
         && current_manipulator_ == spin_manipulator_) {
@@ -335,9 +342,8 @@ bool TrigramWidget::event(QEvent *event) {
 }
 
 void TrigramWidget::timerEvent(QTimerEvent *e) {
-  if (is_playing_) {
+  if (is_playing_)
     angle += 0.5f;
-  }
 
   if (shape_ == EVisualizationShape::CYLINDER) {
     c_cyl += 0.01f;
@@ -356,27 +362,30 @@ void TrigramWidget::timerEvent(QTimerEvent *e) {
 
   if (mode_ == EVisualizationMode::LAYERED_DIGRAM && c_pos < 1) {
     c_pos += 0.01f;
-    if (c_pos > 1) c_pos = 1;
+    if (c_pos > 1)
+      c_pos = 1;
   }
   if (mode_ != EVisualizationMode::LAYERED_DIGRAM && c_pos) {
     c_pos -= 0.01f;
-    if (c_pos < 0) c_pos = 0;
+    if (c_pos < 0)
+      c_pos = 0;
   }
   update();
 }
 
 bool TrigramWidget::initializeVisualizationGL() {
-  if (!initializeOpenGLFunctions()) return false;
+  if (!initializeOpenGLFunctions())
+    return false;
 
   glClearColor(0, 0, 0, 1);
   glEnable(GL_DEPTH_TEST);
 
-  autoSetBrightness();
+  if (use_brightness_heuristic_)
+    autoSetBrightness();
 
   initShaders();
   initTextures();
   initGeometry();
-  setBrightness(brightness_);
 
   initLabels();
   initRF();
@@ -443,12 +452,12 @@ QAbstractButton* TrigramWidget::createActionButton(QAction* action) {
   button->setAutoExclusive(true);
   button->setProperty("action", QVariant(qintptr(action)));
   connect(button, &QPushButton::toggled, [button](bool toggled){
-        if(toggled) {
+        if (toggled) {
           QAction* action =
               reinterpret_cast<QAction*>(
               qvariant_cast<qintptr>(
               button->property("action")));
-          if(action) {
+          if (action) {
             action->trigger();
           }
         }
@@ -459,7 +468,7 @@ QAbstractButton* TrigramWidget::createActionButton(QAction* action) {
             reinterpret_cast<Manipulator*>(
             qvariant_cast<qintptr>(
             action->property("manipulator")));
-        if(manipulator == new_manipulator) {
+        if (manipulator == new_manipulator) {
           button->setChecked(true);
         }
       });
@@ -536,6 +545,8 @@ void TrigramWidget::paintGLImpl() {
   program.setUniformValue("c_sph", c_sph);
   program.setUniformValue("c_pos", c_pos);
   program.setUniformValue("xfrm", mp * m);
+  GLfloat c_brightness = brightness_ * brightness_ * brightness_;
+  c_brightness /= getDataSize();
   program.setUniformValue("c_brightness", c_brightness);
   glUniform1ui(loc_sz, size);
   glDrawArrays(GL_POINTS, 0, size - 2);
