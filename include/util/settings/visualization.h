@@ -16,11 +16,6 @@
  */
 #pragma once
 
-#include <QColor>
-#include <QPalette>
-#include <QString>
-#include <QStyle>
-
 namespace veles {
 namespace util {
 namespace settings {
