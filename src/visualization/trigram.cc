@@ -119,7 +119,7 @@ void TrigramWidget::refresh(AdditionalResampleDataPtr ad) {
   doneCurrent();
 }
 
-void TrigramWidget::prepareOptions(QMainWindow *visualization_window) {
+void TrigramWidget::prepareOptions(QMainWindow* visualization_window) {
   VisualizationWidget::prepareOptions(visualization_window);
 
   QColor icon_color = palette().color(QPalette::WindowText);
@@ -408,7 +408,7 @@ void TrigramWidget::initShaders() {
 
 void TrigramWidget::initTextures() {
   int size = static_cast<int>(getDataSize());
-  const uint8_t *data = reinterpret_cast<const uint8_t*>(getData());
+  const uint8_t* data = reinterpret_cast<const uint8_t*>(getData());
 
   databuf_ = new QOpenGLBuffer(QOpenGLBuffer::Type(GL_TEXTURE_BUFFER));
   databuf_->create();

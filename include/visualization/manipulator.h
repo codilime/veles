@@ -16,9 +16,10 @@
  */
 #pragma once
 
+#include <QEvent>
+#include <QMatrix4x4>
 #include <QObject>
 #include <QQuaternion>
-#include <QMatrix4x4>
 #include <QVector3D>
 
 namespace veles {
@@ -31,11 +32,28 @@ namespace visualization {
 class Manipulator : public QObject {
   Q_OBJECT
 
+ protected:
+  static bool isMouseEvent(QEvent* event) {
+    return event->type() == QEvent::MouseButtonDblClick
+        || event->type() == QEvent::MouseButtonPress
+        || event->type() == QEvent::MouseButtonRelease
+        || event->type() == QEvent::MouseMove;
+  }
+
+  static bool isKeyEvent(QEvent* event) {
+    return event->type() == QEvent::KeyPress
+        || event->type() == QEvent::KeyRelease;
+  }
+
+  static bool isWheelEvent(QEvent* event) {
+    return event->type() == QEvent::Wheel;
+  }
+
  public:
   Manipulator(QObject* parent = nullptr);
   virtual QMatrix4x4 transform() = 0;
-  virtual void initFromMatrix(QMatrix4x4 m) {};
-  virtual void update(float dt) {};
+  virtual void initFromMatrix(QMatrix4x4 m) {}
+  virtual void update(float dt) {}
   virtual QString manipulatorName() = 0;
   virtual bool processEvent(QObject* watched, QEvent* event);
   virtual bool handlesPause();
