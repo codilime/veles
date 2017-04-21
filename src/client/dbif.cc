@@ -197,51 +197,209 @@ dbif::MethodResultPromise* NCWrapper::runMethod(
 }
 
 /*****************************************************************************/
-/* NCWrapper - NetworkClients message handlers */
+/* NCWrapper - NetworkClient message handlers */
 /*****************************************************************************/
 
 void NCWrapper::handleGetListReplyMessage(
     std::shared_ptr<proto::MsgpackMsg> message) {
-  // TODO
+  auto reply = std::dynamic_pointer_cast<proto::MsgGetListReply>(message);
+  if (reply) {
+    if (nc_->output() && detailed_debug_info_) {
+      *nc_->output() << QString("NCWrapper: received MsgGetListReply "
+          "(%1 object(s)).").arg(reply->objs->size()) << endl;
+    }
+
+    const auto promise_iter = promises_.find(reply->qid);
+    if (promise_iter != promises_.end()) {
+      std::vector<dbif::ObjectHandle> objects;
+      for (auto child : *reply->objs) {
+        objects.push_back(QSharedPointer<NCObjectHandle>::create(
+            this, *child->id, typeFromTags(child->tags)));
+      }
+      emit promise_iter->second->gotInfo(
+          QSharedPointer<dbif::ChildrenRequest::ReplyType>::create(objects));
+    }
+  }
 }
 
 void NCWrapper::handleRequestAckMessage(
     std::shared_ptr<proto::MsgpackMsg> message) {
-  // TODO
+  auto reply = std::dynamic_pointer_cast<proto::MsgRequestAck>(message);
+  if (reply) {
+    if (nc_->output() && detailed_debug_info_) {
+      *nc_->output() << QString("NCWrapper: received MsgRequestAck.") << endl;
+    }
+
+    const auto promise_iter = method_promises_.find(reply->rid);
+    if (promise_iter != method_promises_.end()) {
+      auto id_iter = created_objs_waiting_for_ack_.find(reply->rid);
+      if(id_iter != created_objs_waiting_for_ack_.end()) {
+        emit promise_iter->second->gotResult(
+            QSharedPointer<dbif::RootCreateFileBlobFromDataRequest::ReplyType>
+            ::create(id_iter->second));
+        created_objs_waiting_for_ack_.erase(id_iter);
+      }
+    }
+
+    // TODO Do we have other cases when we need to do something special when
+    // MsgRequestAck is received?
+  }
 }
 
 void getQStringAttr(std::shared_ptr<std::unordered_map<std::string,
     std::shared_ptr<messages::MsgpackObject>>> attr, std::string key,
     QString& val) {
-  // TODO
+  auto iter = attr->find(key);
+  if (iter != attr->end()) {
+    std::shared_ptr<std::string> val_ptr;
+    messages::fromMsgpackObject(iter->second, val_ptr);
+    if (val_ptr) {
+      val = QString::fromStdString(*val_ptr);
+    }
+  }
 }
 
 template<class T> void getAttrSPtr(std::shared_ptr<std::unordered_map<
     std::string, std::shared_ptr<messages::MsgpackObject>>> attr,
     std::string key, T& val) {
-  // TODO
+  auto iter = attr->find(key);
+  if (iter != attr->end()) {
+    std::shared_ptr<T> val_ptr;
+    messages::fromMsgpackObject(iter->second, val_ptr);
+    if (val_ptr) {
+      val = *val_ptr;
+    }
+  }
 }
 
 template<class T> void getAttr(std::shared_ptr<std::unordered_map<std::string,
     std::shared_ptr<messages::MsgpackObject>>> attr, std::string key, T& val) {
-  // TODO
+  auto iter = attr->find(key);
+  if (iter != attr->end()) {
+    messages::fromMsgpackObject(iter->second, val);
+  }
 }
 
 void NCWrapper::handleGetReplyMessage(
     std::shared_ptr<proto::MsgpackMsg> message) {
-  // TODO
+  auto reply = std::dynamic_pointer_cast<proto::MsgGetReply>(message);
+  if (reply) {
+    const auto promise_iter = promises_.find(reply->qid);
+    if (promise_iter != promises_.end()) {
+      QString name("");
+      QString comment("");
+
+      getQStringAttr(reply->obj->attr, std::string("name"), name);
+      getQStringAttr(reply->obj->attr, std::string("comment"), comment);
+
+      dbif::ObjectType node_type = typeFromTags(reply->obj->tags);
+
+      if (nc_->output() && detailed_debug_info_) {
+        *nc_->output() << QString("NCWrapper: received MsgGetReply - name: \""
+            "%1\" comment: \"%2\".").arg(name).arg(comment)<< endl;
+      }
+
+      if (node_type == dbif::ObjectType::FILE_BLOB
+          || node_type == dbif::ObjectType::SUB_BLOB) {
+
+        uint64_t base(0);
+        uint64_t size(0);
+        uint64_t width(8);
+
+        getAttr<uint64_t>(reply->obj->attr, "base", base);
+        getAttr<uint64_t>(reply->obj->attr, "size", size);
+        getAttr<uint64_t>(reply->obj->attr, "width", width);
+
+        if (node_type == dbif::ObjectType::FILE_BLOB) {
+          QString path;
+          getQStringAttr(reply->obj->attr, std::string("path"), path);
+
+          emit promise_iter->second->gotInfo(
+              QSharedPointer<dbif::FileBlobDescriptionReply>
+              ::create(name, comment, base, size, width, path));
+        } else {
+          auto parent = QSharedPointer<NCObjectHandle>::create(
+              this, *reply->obj->parent, dbif::ObjectType::CHUNK); //FIXME
+
+          emit promise_iter->second->gotInfo(
+              QSharedPointer<dbif::SubBlobDescriptionReply>
+              ::create(name, comment, base, size, width, parent));
+        }
+      } else if (node_type == dbif::ObjectType::CHUNK) {
+        data::NodeID blob_id = *data::NodeID::getNilId();
+        getAttrSPtr<data::NodeID>(reply->obj->attr, std::string("blob"),
+            blob_id);
+        auto blob = QSharedPointer<NCObjectHandle>::create(
+            this, blob_id, dbif::ObjectType::FILE_BLOB);
+        auto parent = QSharedPointer<NCObjectHandle>::create(
+            this, *reply->obj->parent, dbif::ObjectType::CHUNK);
+        if (*blob == *parent) {
+          parent = QSharedPointer<NCObjectHandle>::create(
+              this, *data::NodeID::getNilId(), dbif::ObjectType::CHUNK);
+        }
+        uint64_t start(0);
+        uint64_t end(0);
+        QString chunk_type;
+
+        getAttr<uint64_t>(reply->obj->attr, "start", start);
+        getAttr<uint64_t>(reply->obj->attr, "end", end);
+        getQStringAttr(reply->obj->attr, "type", chunk_type);
+
+        emit promise_iter->second->gotInfo(
+            QSharedPointer<dbif::ChunkDescriptionReply>
+            ::create(name, comment, blob, parent, start, end, chunk_type));
+      } else {
+        emit promise_iter->second->gotInfo(
+            QSharedPointer<dbif::DescriptionReply>
+            ::create(name, comment));
+      }
+
+      if (subscriptions_.find(reply->qid) == subscriptions_.end()) {
+        promises_.erase(promise_iter);
+      }
+    }
+  }
 }
 
 void NCWrapper::handleGetBinDataReplyMessage(msg_ptr message) {
-  // TODO
+  auto reply = std::dynamic_pointer_cast<proto::MsgGetBinDataReply>(message);
+  if (reply) {
+    if (nc_->output() && detailed_debug_info_) {
+      *nc_->output() << QString("NCWrapper: received MsgGetBinDataReply.")
+      << endl;
+    }
+
+    const auto promise_iter = promises_.find(reply->qid);
+    if (promise_iter != promises_.end()) {
+      data::BinData bindata(8, reply->data->size(), reply->data->data());
+      emit promise_iter->second->gotInfo(
+          QSharedPointer<dbif::BlobDataRequest::ReplyType>::create(bindata));
+    }
+  }
 }
 
 void NCWrapper::handleGetDataReplyMessage(msg_ptr message) {
-  // TODO
+  auto reply = std::dynamic_pointer_cast<proto::MsgGetDataReply>(message);
+  if (reply) {
+    if (nc_->output() && detailed_debug_info_) {
+      *nc_->output() << QString("NCWrapper: received MsgGetDataReply.")
+      << endl;
+    }
+
+    //TODO
+  }
 }
 
 void NCWrapper::handleQueryErrorMessage(msg_ptr message) {
-  // TODO
+  auto reply = std::dynamic_pointer_cast<proto::MsgQueryError>(message);
+  if (reply) {
+    if (nc_->output() && detailed_debug_info_) {
+      *nc_->output()
+          << QString("NCWrapper: received MsgQueryError.") << endl
+          << "    code: " << QString::fromStdString(reply->err->code)
+          << "  msg: " << QString::fromStdString(reply->err->msg) << endl;
+    }
+  }
 }
 
 /*****************************************************************************/
