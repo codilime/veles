@@ -138,6 +138,8 @@ void VelesMainWindow::init() {
   connect(connection_manager_, &ConnectionManager::connectionStatusChanged,
       connection_notification_widget_,
       &ConnectionNotificationWidget::updateConnectionStatus);
+  connect(connection_manager_, &ConnectionManager::connectionStatusChanged,
+      this, &VelesMainWindow::updateConnectionStatus);
   tool_bar_->addWidget(connection_notification_widget_);
 
   bringDockWidgetToFront(log_dock_widget_);
@@ -254,6 +256,22 @@ void VelesMainWindow::showLog() {
   }
 
   log_dock_widget_->window()->raise();
+}
+
+void VelesMainWindow::updateConnectionStatus(
+    client::NetworkClient::ConnectionStatus connection_status) {
+  if (connection_status
+      == client::NetworkClient::ConnectionStatus::NotConnected) {
+    auto main_windows = MainWindowWithDetachableDockWidgets::allMainWindows();
+    for (auto main_window : main_windows) {
+      auto docks = main_window->findChildren<DockWidget*>();
+      for(auto dock : docks) {
+        if(dock != log_dock_widget_ && dock != database_dock_widget_) {
+          dock->close();
+        }
+      }
+    }
+  }
 }
 
 void VelesMainWindow::createDb() {

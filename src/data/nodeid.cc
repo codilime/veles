@@ -72,6 +72,18 @@ bool NodeID::operator!=(const NodeID &other) const {
   return !(*this == other);
 }
 
+bool NodeID::operator<(const NodeID& other) const {
+  for(int i = 0; i < WIDTH; ++i) {
+    if(value[i] < other.value[i]) {
+      return true;
+    } else if(value[i] > other.value[i]) {
+      return false;
+    }
+  }
+
+  return false;
+}
+
 NodeID::operator bool() const {
   return memcmp(this->value, NIL_VALUE, WIDTH) != 0;
 }

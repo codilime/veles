@@ -249,6 +249,7 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
         DockWidget* dock_widget);
   static void hideAllRubberBands();
   static void setActiveDockWidget(DockWidget* dock_widget);
+  std::set<MainWindowWithDetachableDockWidgets*> allMainWindows();
 
  public slots:
   void dockLocationChanged(Qt::DockWidgetArea area);

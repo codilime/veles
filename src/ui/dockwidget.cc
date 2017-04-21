@@ -1034,6 +1034,11 @@ void MainWindowWithDetachableDockWidgets::setActiveDockWidget(
   }
 }
 
+std::set<MainWindowWithDetachableDockWidgets*>
+    MainWindowWithDetachableDockWidgets::allMainWindows() {
+  return main_windows_;
+}
+
 void MainWindowWithDetachableDockWidgets::dockLocationChanged(
     Qt::DockWidgetArea area) {
   QWidget* dock_widget = dynamic_cast<QWidget*>(sender());

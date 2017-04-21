@@ -28,6 +28,7 @@
 
 #include "dbif/promise.h"
 #include "dbif/types.h"
+#include "client/networkclient.h"
 
 #include "ui/dockwidget.h"
 #include "ui/optionsdialog.h"
@@ -61,6 +62,8 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   void updateParsers(dbif::PInfoReply replay);
   void showDatabase();
   void showLog();
+  void updateConnectionStatus(
+        client::NetworkClient::ConnectionStatus connection_status);
 
  signals:
   void shown();
