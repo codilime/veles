@@ -75,7 +75,7 @@ class LabelPositionMixer {
     QVector4D cp1 = interpolate(s0c0p1_, s0c1p1_, cyl);
 
     float f = 0.f;
-    if(sph + cyl != 0.f) {
+    if (sph + cyl != 0.f) {
       f = cyl / (sph + cyl);
     }
 
