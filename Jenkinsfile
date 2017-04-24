@@ -194,7 +194,7 @@ builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
           sh 'rm -Rf build'
         }
       } catch (error) {
-        sh "cat error_and_warnings.txt"
+        sh "cat build/error_and_warnings.txt"
         post_stage_failure(env.JOB_NAME, "ubuntu-16.04-amd64",error,env.BUILD_URL)
         throw error
       }
@@ -223,7 +223,7 @@ builders['macosx'] = { node ('macosx'){
           sh 'rm -Rf build'
         }
       } catch (error) {
-        sh "cat error_and_warnings.txt"
+        sh "cat build/error_and_warnings.txt"
         post_stage_failure(env.JOB_NAME, "macOS-10.12",error,env.BUILD_URL)
         throw error
       }
