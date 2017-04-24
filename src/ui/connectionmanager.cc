@@ -138,6 +138,14 @@ void ConnectionManager::startLocalServer() {
   connect(server_process_, &QIODevice::readyRead,
         this, &ConnectionManager::serverProcessReadyRead);
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+  connect(server_process_, &QProcess::errorOccurred,
+        this, &ConnectionManager::serverProcessErrorOccurred);
+#else
+  connect(server_process_, SIGNAL(error(QProcess::ProcessError)),
+        this, SLOT(serverProcessErrorOccurred(QProcess::ProcessError)));
+#endif
+
   QString server_file_path = connection_dialog_->serverScript();
   QFileInfo server_file(server_file_path);
   QString directory_path = server_file.absoluteDir().path();
@@ -217,6 +225,17 @@ void ConnectionManager::serverProcessReadyRead() {
     if(len > 0) {
       LogWidget::output()->write(buf, len);
     }
+  }
+}
+
+void ConnectionManager::serverProcessErrorOccurred(QProcess::ProcessError error) {
+  QTextStream out(veles::ui::LogWidget::output());
+
+  if (error == QProcess::FailedToStart) {
+      out << "*************************************" << endl
+          << "Failed to run python interpreter." << endl
+          << "Make sure that python >= 3.5 is installed." << endl
+          << "*************************************" << endl;
   }
 }
 
