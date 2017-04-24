@@ -67,6 +67,7 @@ class ConnectionManager : public QObject {
   void killLocalServer();
   void disconnect();
   void serverProcessReadyRead();
+  void serverProcessErrorOccurred(QProcess::ProcessError error);
   void updateConnectionStatus(
       client::NetworkClient::ConnectionStatus connection_status);
   void raiseConnectionDialog();
