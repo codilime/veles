@@ -50,16 +50,17 @@ class MsgpackWrapper {
     if (unp_.next(handle)) {
       return parseMessage(&handle);
     }
-    unp_.reserve_buffer(READ_SIZE_);
-    qint64 read = connection->read(unp_.buffer(), READ_SIZE_);
-    if (read == -1) {
+
+    while (1) {
+      unp_.reserve_buffer(READ_SIZE_);
+      qint64 read = connection->read(unp_.buffer(), READ_SIZE_);
+      if (read <= 0) {
         return nullptr;
-    }
-    unp_.buffer_consumed(read);
-    if (unp_.next(handle)) {
-      return parseMessage(&handle);
-    } else {
-      return nullptr;
+      }
+      unp_.buffer_consumed(read);
+      if (unp_.next(handle)) {
+        return parseMessage(&handle);
+      }
     }
   }
 };
