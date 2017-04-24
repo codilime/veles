@@ -148,7 +148,7 @@ QString serverScriptDefault() {
 #if defined(Q_OS_WIN)
   return qApp->applicationDirPath() + "/../veles-server/srv.py";
 #elif defined(Q_OS_LINUX)
-  return "/usr/share/veles-server/srv.py";
+  return qApp->applicationDirPath() + "/../share/veles-server/srv.py";
 #else
   return qApp->applicationDirPath() + "/../Resources/veles-server/srv.py";
 #endif
