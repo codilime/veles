@@ -130,6 +130,7 @@ class NCWrapper : public QObject {
   std::unordered_map<uint64_t, QSharedPointer<NCObjectHandle>> created_objs_waiting_for_ack_;
   typedef std::map<data::NodeID, NCObjectHandle> ChildrenMap;
   std::unordered_map<uint64_t, QSharedPointer<ChildrenMap>> children_maps_;
+  std::unordered_set<uint64_t> subchunk_data_requests_;
 
   bool detailed_debug_info_;
 };
