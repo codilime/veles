@@ -30,7 +30,7 @@ microsoft_pe_t::microsoft_pe_t(kaitai::kstream *p_io, kaitai::kstruct *p_parent,
     m__skip_me_optional_header = m__io->read_bytes(coff_header()->size_of_optional_header());
     m__io->popName();
     m__io->pushName("m__skip_me_optional_header" + 3);
-    m__io__skip_me_optional_header = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_optional_header.size(), veles_obj, m__io->pos());
+    m__io__skip_me_optional_header = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_optional_header.size(), veles_obj, m__io->pos(), m__io->error());
     m__io->popName();
     m__io->pushName("optional_header");
     m_optional_header = new optional_header_t(m__io__skip_me_optional_header, this, m__root);
@@ -360,7 +360,7 @@ std::vector<uint8_t> microsoft_pe_t::section_t::body() {
     m__io->pushName("body");
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;
-    m__io = new kaitai::kstream(saved_io->blob(), pointer_to_raw_data(), veles_obj);
+    m__io = new kaitai::kstream(saved_io->blob(), pointer_to_raw_data(), veles_obj, saved_io->error());
     veles_obj = m__io->startChunk(saved_io->currentName());
     m__io->pushName("body");
     m_body = m__io->read_bytes(size_of_raw_data());

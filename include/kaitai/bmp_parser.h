@@ -7,9 +7,11 @@ public:
     BmpParser() : parser::Parser("bmp (ksy)") {}
     void parse(dbif::ObjectHandle blob, uint64_t start = 0, 
     dbif::ObjectHandle parent_chunk = dbif::ObjectHandle()) override {
-        auto stream = kaitai::kstream(blob, start, parent_chunk);
-        auto parser = kaitai::bmp::bmp_t(&stream);
-        parser.image();
+        try {
+            auto stream = kaitai::kstream(blob, start, parent_chunk);
+            auto parser = kaitai::bmp::bmp_t(&stream);
+            parser.image();
+        } catch(std::exception) {}
     }
 };
 

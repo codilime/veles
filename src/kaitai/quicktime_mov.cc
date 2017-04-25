@@ -200,7 +200,7 @@ quicktime_mov_t::atom_t::atom_t(kaitai::kstream *p_io, quicktime_mov_t *p_parent
         m__skip_me_body = m__io->read_bytes(len());
         m__io->popName();
         m__io->pushName("m__skip_me_body" + 3);
-        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("body");
         m_body = new quicktime_mov_t(m__io__skip_me_body);
@@ -211,7 +211,7 @@ quicktime_mov_t::atom_t::atom_t(kaitai::kstream *p_io, quicktime_mov_t *p_parent
         m__skip_me_body = m__io->read_bytes(len());
         m__io->popName();
         m__io->pushName("m__skip_me_body" + 3);
-        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("body");
         m_body = new quicktime_mov_t(m__io__skip_me_body);
@@ -222,7 +222,7 @@ quicktime_mov_t::atom_t::atom_t(kaitai::kstream *p_io, quicktime_mov_t *p_parent
         m__skip_me_body = m__io->read_bytes(len());
         m__io->popName();
         m__io->pushName("m__skip_me_body" + 3);
-        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("body");
         m_body = new mvhd_body_t(m__io__skip_me_body, this, m__root);
@@ -233,7 +233,7 @@ quicktime_mov_t::atom_t::atom_t(kaitai::kstream *p_io, quicktime_mov_t *p_parent
         m__skip_me_body = m__io->read_bytes(len());
         m__io->popName();
         m__io->pushName("m__skip_me_body" + 3);
-        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("body");
         m_body = new quicktime_mov_t(m__io__skip_me_body);
@@ -244,7 +244,7 @@ quicktime_mov_t::atom_t::atom_t(kaitai::kstream *p_io, quicktime_mov_t *p_parent
         m__skip_me_body = m__io->read_bytes(len());
         m__io->popName();
         m__io->pushName("m__skip_me_body" + 3);
-        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("body");
         m_body = new quicktime_mov_t(m__io__skip_me_body);
@@ -255,7 +255,7 @@ quicktime_mov_t::atom_t::atom_t(kaitai::kstream *p_io, quicktime_mov_t *p_parent
         m__skip_me_body = m__io->read_bytes(len());
         m__io->popName();
         m__io->pushName("m__skip_me_body" + 3);
-        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("body");
         m_body = new quicktime_mov_t(m__io__skip_me_body);
@@ -266,7 +266,7 @@ quicktime_mov_t::atom_t::atom_t(kaitai::kstream *p_io, quicktime_mov_t *p_parent
         m__skip_me_body = m__io->read_bytes(len());
         m__io->popName();
         m__io->pushName("m__skip_me_body" + 3);
-        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("body");
         m_body = new quicktime_mov_t(m__io__skip_me_body);
@@ -277,7 +277,7 @@ quicktime_mov_t::atom_t::atom_t(kaitai::kstream *p_io, quicktime_mov_t *p_parent
         m__skip_me_body = m__io->read_bytes(len());
         m__io->popName();
         m__io->pushName("m__skip_me_body" + 3);
-        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("body");
         m_body = new ftyp_body_t(m__io__skip_me_body, this, m__root);
@@ -288,7 +288,7 @@ quicktime_mov_t::atom_t::atom_t(kaitai::kstream *p_io, quicktime_mov_t *p_parent
         m__skip_me_body = m__io->read_bytes(len());
         m__io->popName();
         m__io->pushName("m__skip_me_body" + 3);
-        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("body");
         m_body = new quicktime_mov_t(m__io__skip_me_body);
@@ -299,7 +299,7 @@ quicktime_mov_t::atom_t::atom_t(kaitai::kstream *p_io, quicktime_mov_t *p_parent
         m__skip_me_body = m__io->read_bytes(len());
         m__io->popName();
         m__io->pushName("m__skip_me_body" + 3);
-        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("body");
         m_body = new tkhd_body_t(m__io__skip_me_body, this, m__root);
@@ -310,7 +310,7 @@ quicktime_mov_t::atom_t::atom_t(kaitai::kstream *p_io, quicktime_mov_t *p_parent
         m__skip_me_body = m__io->read_bytes(len());
         m__io->popName();
         m__io->pushName("m__skip_me_body" + 3);
-        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+        m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("body");
         m_body = new quicktime_mov_t(m__io__skip_me_body);

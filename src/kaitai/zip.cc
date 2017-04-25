@@ -152,6 +152,8 @@ zip_t::pk_section_t::pk_section_t(kaitai::kstream *p_io, zip_t *p_parent, zip_t 
         m_body = new end_of_central_dir_t(m__io, this, m__root);
         m__io->popName();
         break;
+    default:
+        break;
     }
     m__io->endChunk();
 }

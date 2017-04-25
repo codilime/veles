@@ -76,7 +76,7 @@ bmp_t::dib_header_t::dib_header_t(kaitai::kstream *p_io, bmp_t *p_parent, bmp_t 
         m__skip_me_bitmap_core_header = m__io->read_bytes((dib_header_size() - 4));
         m__io->popName();
         m__io->pushName("m__skip_me_bitmap_core_header" + 3);
-        m__io__skip_me_bitmap_core_header = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_bitmap_core_header.size(), veles_obj, m__io->pos());
+        m__io__skip_me_bitmap_core_header = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_bitmap_core_header.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("bitmap_core_header");
         m_bitmap_core_header = new bitmap_core_header_t(m__io__skip_me_bitmap_core_header, this, m__root);
@@ -89,7 +89,7 @@ bmp_t::dib_header_t::dib_header_t(kaitai::kstream *p_io, bmp_t *p_parent, bmp_t 
         m__skip_me_bitmap_info_header = m__io->read_bytes((dib_header_size() - 4));
         m__io->popName();
         m__io->pushName("m__skip_me_bitmap_info_header" + 3);
-        m__io__skip_me_bitmap_info_header = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_bitmap_info_header.size(), veles_obj, m__io->pos());
+        m__io__skip_me_bitmap_info_header = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_bitmap_info_header.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("bitmap_info_header");
         m_bitmap_info_header = new bitmap_info_header_t(m__io__skip_me_bitmap_info_header, this, m__root);
@@ -102,7 +102,7 @@ bmp_t::dib_header_t::dib_header_t(kaitai::kstream *p_io, bmp_t *p_parent, bmp_t 
         m__skip_me_bitmap_v5_header = m__io->read_bytes((dib_header_size() - 4));
         m__io->popName();
         m__io->pushName("m__skip_me_bitmap_v5_header" + 3);
-        m__io__skip_me_bitmap_v5_header = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_bitmap_v5_header.size(), veles_obj, m__io->pos());
+        m__io__skip_me_bitmap_v5_header = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_bitmap_v5_header.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("bitmap_v5_header");
         m_bitmap_v5_header = new bitmap_core_header_t(m__io__skip_me_bitmap_v5_header, this, m__root);
@@ -209,7 +209,7 @@ std::vector<uint8_t> bmp_t::image() {
     m__io->pushName("image");
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;
-    m__io = new kaitai::kstream(saved_io->blob(), file_header()->bitmap_ofs(), veles_obj);
+    m__io = new kaitai::kstream(saved_io->blob(), file_header()->bitmap_ofs(), veles_obj, saved_io->error());
     veles_obj = m__io->startChunk(saved_io->currentName());
     m__io->pushName("image");
     m_image = m__io->read_bytes_full();

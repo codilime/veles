@@ -41,7 +41,7 @@ class kstream {
  public:
   kstream(veles::dbif::ObjectHandle blob, uint64_t start = 0,
           veles::dbif::ObjectHandle parent_chunk = veles::dbif::ObjectHandle(),
-          uint64_t max_size = 0);
+          uint64_t max_size = 0, bool error = false);
   ~kstream();
 
   /** Kaitai Struct Stream API methods */
@@ -94,6 +94,7 @@ class kstream {
   veles::dbif::ObjectHandle endChunk();
   veles::parser::StreamParser *parser() { return parser_; }
   veles::dbif::ObjectHandle blob() { return obj_; }
+  bool error() { return error_; }
 
  private:
   veles::dbif::ObjectHandle obj_;
