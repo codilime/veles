@@ -210,14 +210,17 @@ void NCWrapper::handleGetListReplyMessage(
     }
 
     const auto promise_iter = promises_.find(reply->qid);
-    if (promise_iter != promises_.end()) {
-      std::vector<dbif::ObjectHandle> objects;
+    if (promise_iter != promises_.end()  && promise_iter->second) {
+      auto iter_subscriptions = subscriptions_.find(reply->qid);
+      auto subchunk_iter = subchunk_data_requests_.find(reply->qid);
 
       auto children_map_iter = children_maps_.find(reply->qid);
       QSharedPointer<ChildrenMap> children_map;
       if (children_map_iter == children_maps_.end()) {
         children_map = QSharedPointer<ChildrenMap>::create();
-        children_maps_[reply->qid] = children_map;
+        if (iter_subscriptions != subscriptions_.end()) {
+          children_maps_[reply->qid] = children_map;
+        }
       } else {
         children_map = children_map_iter->second;
       }
@@ -231,13 +234,37 @@ void NCWrapper::handleGetListReplyMessage(
         children_map->erase(*child_gone);
       }
 
-      for (auto child : *children_map) {
-        objects.push_back(QSharedPointer<NCObjectHandle>::create(
-            child.second));
-      }
+      if (subchunk_iter == subchunk_data_requests_.end()) {
+        std::vector<dbif::ObjectHandle> objects;
 
-      emit promise_iter->second->gotInfo(
-          QSharedPointer<dbif::ChildrenRequest::ReplyType>::create(objects));
+        for (auto child : *children_map) {
+          objects.push_back(QSharedPointer<NCObjectHandle>::create(
+              child.second));
+        }
+
+        emit promise_iter->second->gotInfo(
+            QSharedPointer<dbif::ChildrenRequest::ReplyType>::create(objects));
+      } else {
+        if (iter_subscriptions == subscriptions_.end()) {
+          subchunk_data_requests_.erase(subchunk_iter);
+        }
+
+        std::vector<data::ChunkDataItem> items;
+
+        for (auto child : *children_map) {
+          // FIXME
+          if(child.second.type() == dbif::ObjectType::CHUNK) {
+            items.push_back(data::ChunkDataItem::subchunk(0, 0, "",
+                QSharedPointer<NCObjectHandle>::create(child.second)));
+          } else if(child.second.type() == dbif::ObjectType::SUB_BLOB) {
+            items.push_back(data::ChunkDataItem::subblob("",
+                QSharedPointer<NCObjectHandle>::create(child.second)));
+          }
+        }
+
+        emit promise_iter->second->gotInfo(
+            QSharedPointer<dbif::ChunkDataRequest::ReplyType>::create(items));
+      }
     }
   }
 }
@@ -251,7 +278,7 @@ void NCWrapper::handleRequestAckMessage(
     }
 
     const auto promise_iter = method_promises_.find(reply->rid);
-    if (promise_iter != method_promises_.end()) {
+    if (promise_iter != method_promises_.end()  && promise_iter->second) {
       auto id_iter = created_objs_waiting_for_ack_.find(reply->rid);
       if(id_iter != created_objs_waiting_for_ack_.end()) {
         if (nc_->output() && detailed_debug_info_) {
@@ -533,18 +560,23 @@ dbif::InfoPromise* NCWrapper::handleChunkDataRequest(data::NodeID id, bool sub) 
   uint64_t qid = nc_->nextQid();
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
-      *nc_->output() << QString("NCWrapper: Sending MsgGetData message.")
+      *nc_->output() << QString("NCWrapper: Sending MsgGetList message.")
           << endl;
     }
-    auto msg = std::make_shared<messages::MsgGetData>(
+    const auto null_pos = std::pair<bool, int64_t>(false, 0);
+    auto msg = std::make_shared<messages::MsgGetList>(
         qid,
         std::make_shared<data::NodeID>(id),
-        std::make_shared<std::string>("data"),
+        std::make_shared<std::unordered_set<std::shared_ptr<std::string>>>(),
+        std::make_shared<messages::PosFilter>(
+            null_pos, null_pos, null_pos, null_pos),
         sub);
     nc_->sendMessage(msg);
   }
 
-  return addInfoPromise(qid, sub);
+  auto promise = addInfoPromise(qid, sub);
+  subchunk_data_requests_.insert(qid);
+  return promise;
 }
 
 /*****************************************************************************/
@@ -706,8 +738,16 @@ dbif::MethodResultPromise* NCWrapper::handleChunkCreateRequest(data::NodeID id,
 dbif::MethodResultPromise* NCWrapper::handleChunkCreateSubBlobRequest(
     data::NodeID id, QSharedPointer<dbif::ChunkCreateSubBlobRequest>
     chunk_create_subblob_request) {
+  if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
+    if (nc_->output() && detailed_debug_info_) {
+      *nc_->output() << QString("NCWrapper: handleChunkCreateSubBlobRequest Sending MsgDelete message.")
+          << endl;
+    }
+  }
+
   // TODO
-  return nullptr;
+  // Unkept promise
+  return new dbif::MethodResultPromise;
 }
 
 dbif::MethodResultPromise* NCWrapper::handleDeleteRequest(data::NodeID id) {
@@ -788,7 +828,8 @@ dbif::MethodResultPromise* NCWrapper::handleSetCommentRequest(data::NodeID id,
 
 dbif::MethodResultPromise* NCWrapper::handleChangeDataRequest() {
   // TODO
-  return nullptr;
+  // Unkept promise
+  return new dbif::MethodResultPromise;
 }
 
 dbif::MethodResultPromise* NCWrapper::handleSetChunkBoundsRequest(
@@ -822,12 +863,14 @@ dbif::MethodResultPromise* NCWrapper::handleSetChunkBoundsRequest(
 
 dbif::MethodResultPromise* NCWrapper::handleSetChunkParseRequest() {
   // TODO
-  return nullptr;
+  // Unkept promise
+  return new dbif::MethodResultPromise;
 }
 
 dbif::MethodResultPromise* NCWrapper::handleBlobParseRequest() {
   // TODO
-  return nullptr;
+  // Unkept promise
+  return new dbif::MethodResultPromise;
 }
 
 void NCWrapper::updateConnectionStatus(client::NetworkClient::ConnectionStatus
@@ -839,6 +882,7 @@ void NCWrapper::updateConnectionStatus(client::NetworkClient::ConnectionStatus
     method_promises_.clear();
     created_objs_waiting_for_ack_.clear();
     children_maps_.clear();
+    subchunk_data_requests_.clear();
 
     const auto null_pos = std::pair<bool, int64_t>(false, 0);
 
