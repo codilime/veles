@@ -46,7 +46,7 @@ class CreateChunkDialog : public QDialog {
   void showEvent(QShowEvent* event) override;
 
  public slots:
-  virtual void accept();
+  virtual void accept() override;
   virtual void updateBinDataSize();
 
  private:
