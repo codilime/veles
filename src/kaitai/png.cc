@@ -90,7 +90,7 @@ png_t::chunk_t::chunk_t(kaitai::kstream *p_io, png_t *p_parent, png_t *p_root) :
             m__skip_me_body = m__io->read_bytes(len());
             m__io->popName();
             m__io->pushName("m__skip_me_body" + 3);
-            m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+            m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
             m__io->popName();
             m__io->pushName("body");
             m_body = new gama_chunk_t(m__io__skip_me_body, this, m__root);
@@ -101,7 +101,7 @@ png_t::chunk_t::chunk_t(kaitai::kstream *p_io, png_t *p_parent, png_t *p_root) :
             m__skip_me_body = m__io->read_bytes(len());
             m__io->popName();
             m__io->pushName("m__skip_me_body" + 3);
-            m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+            m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
             m__io->popName();
             m__io->pushName("body");
             m_body = new time_chunk_t(m__io__skip_me_body, this, m__root);
@@ -112,7 +112,7 @@ png_t::chunk_t::chunk_t(kaitai::kstream *p_io, png_t *p_parent, png_t *p_root) :
             m__skip_me_body = m__io->read_bytes(len());
             m__io->popName();
             m__io->pushName("m__skip_me_body" + 3);
-            m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+            m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
             m__io->popName();
             m__io->pushName("body");
             m_body = new plte_chunk_t(m__io__skip_me_body, this, m__root);
@@ -123,7 +123,7 @@ png_t::chunk_t::chunk_t(kaitai::kstream *p_io, png_t *p_parent, png_t *p_root) :
             m__skip_me_body = m__io->read_bytes(len());
             m__io->popName();
             m__io->pushName("m__skip_me_body" + 3);
-            m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+            m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
             m__io->popName();
             m__io->pushName("body");
             m_body = new bkgd_chunk_t(m__io__skip_me_body, this, m__root);
@@ -134,7 +134,7 @@ png_t::chunk_t::chunk_t(kaitai::kstream *p_io, png_t *p_parent, png_t *p_root) :
             m__skip_me_body = m__io->read_bytes(len());
             m__io->popName();
             m__io->pushName("m__skip_me_body" + 3);
-            m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+            m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
             m__io->popName();
             m__io->pushName("body");
             m_body = new phys_chunk_t(m__io__skip_me_body, this, m__root);
@@ -145,7 +145,7 @@ png_t::chunk_t::chunk_t(kaitai::kstream *p_io, png_t *p_parent, png_t *p_root) :
             m__skip_me_body = m__io->read_bytes(len());
             m__io->popName();
             m__io->pushName("m__skip_me_body" + 3);
-            m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+            m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
             m__io->popName();
             m__io->pushName("body");
             m_body = new text_chunk_t(m__io__skip_me_body, this, m__root);
@@ -156,7 +156,7 @@ png_t::chunk_t::chunk_t(kaitai::kstream *p_io, png_t *p_parent, png_t *p_root) :
             m__skip_me_body = m__io->read_bytes(len());
             m__io->popName();
             m__io->pushName("m__skip_me_body" + 3);
-            m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+            m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
             m__io->popName();
             m__io->pushName("body");
             m_body = new chrm_chunk_t(m__io__skip_me_body, this, m__root);
@@ -167,7 +167,7 @@ png_t::chunk_t::chunk_t(kaitai::kstream *p_io, png_t *p_parent, png_t *p_root) :
             m__skip_me_body = m__io->read_bytes(len());
             m__io->popName();
             m__io->pushName("m__skip_me_body" + 3);
-            m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos());
+            m__io__skip_me_body = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_body.size(), veles_obj, m__io->pos(), m__io->error());
             m__io->popName();
             m__io->pushName("body");
             m_body = new srgb_chunk_t(m__io__skip_me_body, this, m__root);
@@ -460,6 +460,8 @@ png_t::bkgd_chunk_t::bkgd_chunk_t(kaitai::kstream *p_io, png_t::chunk_t *p_paren
         m__io->pushName("bkgd");
         m_bkgd = new bkgd_truecolor_t(m__io, this, m__root);
         m__io->popName();
+        break;
+    default:
         break;
     }
     m__io->endChunk();

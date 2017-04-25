@@ -27,7 +27,7 @@ gif_t::gif_t(kaitai::kstream *p_io, kaitai::kstruct *p_parent, gif_t *p_root) : 
         m__skip_me_global_color_table = m__io->read_bytes((logical_screen_descriptor()->color_table_size() * 3));
         m__io->popName();
         m__io->pushName("m__skip_me_global_color_table" + 3);
-        m__io__skip_me_global_color_table = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_global_color_table.size(), veles_obj, m__io->pos());
+        m__io__skip_me_global_color_table = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_global_color_table.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("global_color_table");
         m_global_color_table = new global_color_table_t(m__io__skip_me_global_color_table, this, m__root);
@@ -284,6 +284,8 @@ gif_t::block_t::block_t(kaitai::kstream *p_io, gif_t *p_parent, gif_t *p_root) :
         m__io->pushName("body");
         m_body = new local_image_descriptor_t(m__io, this, m__root);
         m__io->popName();
+        break;
+    default:
         break;
     }
     m__io->endChunk();

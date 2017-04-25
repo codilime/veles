@@ -27,7 +27,7 @@ avi_t::avi_t(kaitai::kstream *p_io, kaitai::kstruct *p_parent, avi_t *p_root) : 
     m__skip_me_data = m__io->read_bytes((file_size() - 4));
     m__io->popName();
     m__io->pushName("m__skip_me_data" + 3);
-    m__io__skip_me_data = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_data.size(), veles_obj, m__io->pos());
+    m__io__skip_me_data = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_data.size(), veles_obj, m__io->pos(), m__io->error());
     m__io->popName();
     m__io->pushName("data");
     m_data = new blocks_t(m__io__skip_me_data, this, m__root);
@@ -178,7 +178,7 @@ avi_t::block_t::block_t(kaitai::kstream *p_io, avi_t::blocks_t *p_parent, avi_t 
         m__skip_me_data = m__io->read_bytes(block_size());
         m__io->popName();
         m__io->pushName("m__skip_me_data" + 3);
-        m__io__skip_me_data = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_data.size(), veles_obj, m__io->pos());
+        m__io__skip_me_data = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_data.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("data");
         m_data = new list_body_t(m__io__skip_me_data, this, m__root);
@@ -189,7 +189,7 @@ avi_t::block_t::block_t(kaitai::kstream *p_io, avi_t::blocks_t *p_parent, avi_t 
         m__skip_me_data = m__io->read_bytes(block_size());
         m__io->popName();
         m__io->pushName("m__skip_me_data" + 3);
-        m__io__skip_me_data = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_data.size(), veles_obj, m__io->pos());
+        m__io__skip_me_data = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_data.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("data");
         m_data = new avih_body_t(m__io__skip_me_data, this, m__root);
@@ -200,7 +200,7 @@ avi_t::block_t::block_t(kaitai::kstream *p_io, avi_t::blocks_t *p_parent, avi_t 
         m__skip_me_data = m__io->read_bytes(block_size());
         m__io->popName();
         m__io->pushName("m__skip_me_data" + 3);
-        m__io__skip_me_data = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_data.size(), veles_obj, m__io->pos());
+        m__io__skip_me_data = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_data.size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("data");
         m_data = new strh_body_t(m__io__skip_me_data, this, m__root);

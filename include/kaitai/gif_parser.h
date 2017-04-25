@@ -7,8 +7,10 @@ public:
     GifParser() : parser::Parser("gif (ksy)") {}
     void parse(dbif::ObjectHandle blob, uint64_t start = 0, 
     dbif::ObjectHandle parent_chunk = dbif::ObjectHandle()) override {
-        auto stream = kaitai::kstream(blob, start, parent_chunk);
-        auto parser = kaitai::gif::gif_t(&stream);
+        try {
+            auto stream = kaitai::kstream(blob, start, parent_chunk);
+            auto parser = kaitai::gif::gif_t(&stream);
+        } catch(std::exception) {}
     }
 };
 

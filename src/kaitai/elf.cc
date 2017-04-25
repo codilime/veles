@@ -90,6 +90,8 @@ elf_t::file_header_t::file_header_t(kaitai::kstream *p_io, elf_t *p_parent, elf_
         m_entry_point = m__io->read_u8le();
         m__io->popName();
         break;
+    default:
+        break;
     }
     switch (bits()) {
     case BITS_B32:
@@ -102,6 +104,8 @@ elf_t::file_header_t::file_header_t(kaitai::kstream *p_io, elf_t *p_parent, elf_
         m_program_header_offset = m__io->read_u8le();
         m__io->popName();
         break;
+    default:
+        break;
     }
     switch (bits()) {
     case BITS_B32:
@@ -113,6 +117,8 @@ elf_t::file_header_t::file_header_t(kaitai::kstream *p_io, elf_t *p_parent, elf_
         m__io->pushName("section_header_offset");
         m_section_header_offset = m__io->read_u8le();
         m__io->popName();
+        break;
+    default:
         break;
     }
     m__io->pushName("flags");
@@ -171,6 +177,8 @@ elf_t::program_header_t::program_header_t(kaitai::kstream *p_io, elf_t *p_parent
         m_offset = m__io->read_u8le();
         m__io->popName();
         break;
+    default:
+        break;
     }
     switch (_root()->file_header()->bits()) {
     case BITS_B32:
@@ -182,6 +190,8 @@ elf_t::program_header_t::program_header_t(kaitai::kstream *p_io, elf_t *p_parent
         m__io->pushName("vaddr");
         m_vaddr = m__io->read_u8le();
         m__io->popName();
+        break;
+    default:
         break;
     }
     switch (_root()->file_header()->bits()) {
@@ -195,6 +205,8 @@ elf_t::program_header_t::program_header_t(kaitai::kstream *p_io, elf_t *p_parent
         m_paddr = m__io->read_u8le();
         m__io->popName();
         break;
+    default:
+        break;
     }
     switch (_root()->file_header()->bits()) {
     case BITS_B32:
@@ -207,6 +219,8 @@ elf_t::program_header_t::program_header_t(kaitai::kstream *p_io, elf_t *p_parent
         m_filesz = m__io->read_u8le();
         m__io->popName();
         break;
+    default:
+        break;
     }
     switch (_root()->file_header()->bits()) {
     case BITS_B32:
@@ -218,6 +232,8 @@ elf_t::program_header_t::program_header_t(kaitai::kstream *p_io, elf_t *p_parent
         m__io->pushName("memsz");
         m_memsz = m__io->read_u8le();
         m__io->popName();
+        break;
+    default:
         break;
     }
     n_flags32 = true;
@@ -237,6 +253,8 @@ elf_t::program_header_t::program_header_t(kaitai::kstream *p_io, elf_t *p_parent
         m__io->pushName("align");
         m_align = m__io->read_u8le();
         m__io->popName();
+        break;
+    default:
         break;
     }
     m__io->endChunk();
@@ -272,6 +290,8 @@ elf_t::section_header_t::section_header_t(kaitai::kstream *p_io, elf_t *p_parent
         m_flags = m__io->read_u8le();
         m__io->popName();
         break;
+    default:
+        break;
     }
     switch (_root()->file_header()->bits()) {
     case BITS_B32:
@@ -283,6 +303,8 @@ elf_t::section_header_t::section_header_t(kaitai::kstream *p_io, elf_t *p_parent
         m__io->pushName("addr");
         m_addr = m__io->read_u8le();
         m__io->popName();
+        break;
+    default:
         break;
     }
     switch (_root()->file_header()->bits()) {
@@ -296,6 +318,8 @@ elf_t::section_header_t::section_header_t(kaitai::kstream *p_io, elf_t *p_parent
         m_offset = m__io->read_u8le();
         m__io->popName();
         break;
+    default:
+        break;
     }
     switch (_root()->file_header()->bits()) {
     case BITS_B32:
@@ -307,6 +331,8 @@ elf_t::section_header_t::section_header_t(kaitai::kstream *p_io, elf_t *p_parent
         m__io->pushName("size");
         m_size = m__io->read_u8le();
         m__io->popName();
+        break;
+    default:
         break;
     }
     m__io->pushName("linked_section_idx");
@@ -326,6 +352,8 @@ elf_t::section_header_t::section_header_t(kaitai::kstream *p_io, elf_t *p_parent
         m_align = m__io->read_u8le();
         m__io->popName();
         break;
+    default:
+        break;
     }
     switch (_root()->file_header()->bits()) {
     case BITS_B32:
@@ -337,6 +365,8 @@ elf_t::section_header_t::section_header_t(kaitai::kstream *p_io, elf_t *p_parent
         m__io->pushName("entry_size");
         m_entry_size = m__io->read_u8le();
         m__io->popName();
+        break;
+    default:
         break;
     }
     m__io->endChunk();
@@ -352,7 +382,7 @@ std::vector<uint8_t> elf_t::section_header_t::body() {
     kaitai::kstream *io = _root()->_io();
     auto saved_io = io;
     auto saved_veles_obj = veles_obj;
-    io = new kaitai::kstream(saved_io->blob(), offset(), veles_obj);
+    io = new kaitai::kstream(saved_io->blob(), offset(), veles_obj, saved_io->error());
     veles_obj = io->startChunk(saved_io->currentName());
     m__io->pushName("body");
     m_body = io->read_bytes(size());
@@ -373,7 +403,7 @@ std::string elf_t::section_header_t::name() {
     kaitai::kstream *io = _root()->strings()->_io();
     auto saved_io = io;
     auto saved_veles_obj = veles_obj;
-    io = new kaitai::kstream(saved_io->blob(), name_offset(), veles_obj);
+    io = new kaitai::kstream(saved_io->blob(), name_offset(), veles_obj, saved_io->error());
     veles_obj = io->startChunk(saved_io->currentName());
     m__io->pushName("name");
     m_name = io->read_strz("ASCII", 0, false, true, true);
@@ -414,7 +444,7 @@ std::vector<elf_t::program_header_t*>* elf_t::program_headers() {
     m__io->pushName("program_headers");
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;
-    m__io = new kaitai::kstream(saved_io->blob(), file_header()->program_header_offset(), veles_obj);
+    m__io = new kaitai::kstream(saved_io->blob(), file_header()->program_header_offset(), veles_obj, saved_io->error());
     veles_obj = m__io->startChunk(saved_io->currentName());
     int l_program_headers = file_header()->qty_program_header();
     m__skip_me_program_headers = new std::vector<std::vector<uint8_t>>();
@@ -426,7 +456,7 @@ std::vector<elf_t::program_header_t*>* elf_t::program_headers() {
         m__skip_me_program_headers->push_back(m__io->read_bytes(file_header()->program_header_entry_size()));
         m__io->popName();
         m__io->pushName("m__skip_me_program_headers->at(m__skip_me_program_headers->size() - 1)" + 3);
-        m__io__skip_me_program_headers = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_program_headers->at(m__skip_me_program_headers->size() - 1).size(), veles_obj, m__io->pos());
+        m__io__skip_me_program_headers = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_program_headers->at(m__skip_me_program_headers->size() - 1).size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("program_headers");
         m_program_headers->push_back(new program_header_t(m__io__skip_me_program_headers, this, m__root));
@@ -447,7 +477,7 @@ std::vector<elf_t::section_header_t*>* elf_t::section_headers() {
     m__io->pushName("section_headers");
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;
-    m__io = new kaitai::kstream(saved_io->blob(), file_header()->section_header_offset(), veles_obj);
+    m__io = new kaitai::kstream(saved_io->blob(), file_header()->section_header_offset(), veles_obj, saved_io->error());
     veles_obj = m__io->startChunk(saved_io->currentName());
     int l_section_headers = file_header()->qty_section_header();
     m__skip_me_section_headers = new std::vector<std::vector<uint8_t>>();
@@ -459,7 +489,7 @@ std::vector<elf_t::section_header_t*>* elf_t::section_headers() {
         m__skip_me_section_headers->push_back(m__io->read_bytes(file_header()->section_header_entry_size()));
         m__io->popName();
         m__io->pushName("m__skip_me_section_headers->at(m__skip_me_section_headers->size() - 1)" + 3);
-        m__io__skip_me_section_headers = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_section_headers->at(m__skip_me_section_headers->size() - 1).size(), veles_obj, m__io->pos());
+        m__io__skip_me_section_headers = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_section_headers->at(m__skip_me_section_headers->size() - 1).size(), veles_obj, m__io->pos(), m__io->error());
         m__io->popName();
         m__io->pushName("section_headers");
         m_section_headers->push_back(new section_header_t(m__io__skip_me_section_headers, this, m__root));
@@ -480,13 +510,13 @@ elf_t::strings_t* elf_t::strings() {
     m__io->pushName("strings");
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;
-    m__io = new kaitai::kstream(saved_io->blob(), section_headers()->at(file_header()->section_names_idx())->offset(), veles_obj);
+    m__io = new kaitai::kstream(saved_io->blob(), section_headers()->at(file_header()->section_names_idx())->offset(), veles_obj, saved_io->error());
     veles_obj = m__io->startChunk(saved_io->currentName());
     m__io->pushName("_skip_me_strings");
     m__skip_me_strings = m__io->read_bytes(section_headers()->at(file_header()->section_names_idx())->size());
     m__io->popName();
     m__io->pushName("m__skip_me_strings" + 3);
-    m__io__skip_me_strings = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_strings.size(), veles_obj, m__io->pos());
+    m__io__skip_me_strings = new kaitai::kstream(m__io->blob(), m__io->pos() - m__skip_me_strings.size(), veles_obj, m__io->pos(), m__io->error());
     m__io->popName();
     m__io->pushName("strings");
     m_strings = new strings_t(m__io__skip_me_strings, this, m__root);
