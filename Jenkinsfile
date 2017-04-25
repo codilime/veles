@@ -214,7 +214,7 @@ builders['macosx'] = { node ('macosx'){
             sh "cmake --build . --config ${buildConfiguration} > error_and_warnings.txt 2>&1"
             sh "cat error_and_warnings.txt"
             sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-osx -G \"DragNDrop;ZIP\" -C ${buildConfiguration}"
-            junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
+            junit allowEmptyResults: true, keepLongStdio: true, testResults: 'results.xml'
             step([$class: 'ArtifactArchiver', artifacts: 'veles-osx.*', fingerprint: true])
             step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
             excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
