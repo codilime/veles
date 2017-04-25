@@ -26,10 +26,10 @@ TEST(BinData, SimpleInline8) {
   BinData a(8, 1, d);
   EXPECT_EQ(a.rawData()[0], 0x12);
   EXPECT_EQ(a.rawData(0)[0], 0x12);
-  EXPECT_EQ(a.width(), 8);
-  EXPECT_EQ(a.size(), 1);
-  EXPECT_EQ(a.octetsPerElement(), 1);
-  EXPECT_EQ(a.octets(), 1);
+  EXPECT_EQ(a.width(), 8u);
+  EXPECT_EQ(a.size(), 1u);
+  EXPECT_EQ(a.octetsPerElement(), 1u);
+  EXPECT_EQ(a.octets(), 1u);
 }
 
 TEST(BinData, SimpleLong8) {
@@ -39,10 +39,10 @@ TEST(BinData, SimpleLong8) {
     EXPECT_EQ(a.rawData()[i], i+1);
   for (int i = 0; i < 10; i++)
     EXPECT_EQ(a.rawData(i)[0], i+1);
-  EXPECT_EQ(a.width(), 8);
-  EXPECT_EQ(a.size(), 10);
-  EXPECT_EQ(a.octetsPerElement(), 1);
-  EXPECT_EQ(a.octets(), 10);
+  EXPECT_EQ(a.width(), 8u);
+  EXPECT_EQ(a.size(), 10u);
+  EXPECT_EQ(a.octetsPerElement(), 1u);
+  EXPECT_EQ(a.octets(), 10u);
 }
 
 TEST(BinData, SimpleInit) {
@@ -51,10 +51,10 @@ TEST(BinData, SimpleInit) {
     EXPECT_EQ(a.rawData()[i], i+1);
   for (int i = 0; i < 10; i++)
     EXPECT_EQ(a.rawData(i)[0], i+1);
-  EXPECT_EQ(a.width(), 8);
-  EXPECT_EQ(a.size(), 10);
-  EXPECT_EQ(a.octetsPerElement(), 1);
-  EXPECT_EQ(a.octets(), 10);
+  EXPECT_EQ(a.width(), 8u);
+  EXPECT_EQ(a.size(), 10u);
+  EXPECT_EQ(a.octetsPerElement(), 1u);
+  EXPECT_EQ(a.octets(), 10u);
 }
 
 TEST(BinData, SimpleInline16) {
@@ -62,10 +62,10 @@ TEST(BinData, SimpleInline16) {
   BinData a(16, 1, d);
   EXPECT_EQ(a.rawData()[0], 1);
   EXPECT_EQ(a.rawData()[1], 2);
-  EXPECT_EQ(a.width(), 16);
-  EXPECT_EQ(a.size(), 1);
-  EXPECT_EQ(a.octetsPerElement(), 2);
-  EXPECT_EQ(a.octets(), 2);
+  EXPECT_EQ(a.width(), 16u);
+  EXPECT_EQ(a.size(), 1u);
+  EXPECT_EQ(a.octetsPerElement(), 2u);
+  EXPECT_EQ(a.octets(), 2u);
 }
 
 TEST(BinData, SimpleVec16) {
@@ -79,10 +79,10 @@ TEST(BinData, SimpleVec16) {
   EXPECT_EQ(a.rawData(0)[1], 2);
   EXPECT_EQ(a.rawData(1)[0], 3);
   EXPECT_EQ(a.rawData(1)[1], 4);
-  EXPECT_EQ(a.width(), 16);
-  EXPECT_EQ(a.size(), 2);
-  EXPECT_EQ(a.octetsPerElement(), 2);
-  EXPECT_EQ(a.octets(), 4);
+  EXPECT_EQ(a.width(), 16u);
+  EXPECT_EQ(a.size(), 2u);
+  EXPECT_EQ(a.octetsPerElement(), 2u);
+  EXPECT_EQ(a.octets(), 4u);
 }
 
 TEST(BinData, SimpleVec15) {
@@ -96,10 +96,10 @@ TEST(BinData, SimpleVec15) {
   EXPECT_EQ(a.rawData(0)[1], 2);
   EXPECT_EQ(a.rawData(1)[0], 3);
   EXPECT_EQ(a.rawData(1)[1], 4);
-  EXPECT_EQ(a.width(), 15);
-  EXPECT_EQ(a.size(), 2);
-  EXPECT_EQ(a.octetsPerElement(), 2);
-  EXPECT_EQ(a.octets(), 4);
+  EXPECT_EQ(a.width(), 15u);
+  EXPECT_EQ(a.size(), 2u);
+  EXPECT_EQ(a.octetsPerElement(), 2u);
+  EXPECT_EQ(a.octets(), 4u);
 }
 
 TEST(BinData, SimpleVec19) {
@@ -117,10 +117,10 @@ TEST(BinData, SimpleVec19) {
   EXPECT_EQ(a.rawData(1)[0], 4);
   EXPECT_EQ(a.rawData(1)[1], 5);
   EXPECT_EQ(a.rawData(1)[2], 6);
-  EXPECT_EQ(a.width(), 19);
-  EXPECT_EQ(a.size(), 2);
-  EXPECT_EQ(a.octetsPerElement(), 3);
-  EXPECT_EQ(a.octets(), 6);
+  EXPECT_EQ(a.width(), 19u);
+  EXPECT_EQ(a.size(), 2u);
+  EXPECT_EQ(a.octetsPerElement(), 3u);
+  EXPECT_EQ(a.octets(), 6u);
 }
 
 TEST(BinData, Simple128) {
@@ -128,47 +128,47 @@ TEST(BinData, Simple128) {
   BinData a(128, 1, d);
   for (int i = 0; i < 16; i++)
     EXPECT_EQ(a.rawData()[i], i+1);
-  EXPECT_EQ(a.width(), 128);
-  EXPECT_EQ(a.size(), 1);
-  EXPECT_EQ(a.octetsPerElement(), 16);
-  EXPECT_EQ(a.octets(), 16);
+  EXPECT_EQ(a.width(), 128u);
+  EXPECT_EQ(a.size(), 1u);
+  EXPECT_EQ(a.octetsPerElement(), 16u);
+  EXPECT_EQ(a.octets(), 16u);
 }
 
 TEST(BinData, SimpleZero13) {
   BinData a(13, 1);
   EXPECT_EQ(a.rawData()[0], 0);
   EXPECT_EQ(a.rawData()[1], 0);
-  EXPECT_EQ(a.width(), 13);
-  EXPECT_EQ(a.size(), 1);
-  EXPECT_EQ(a.octetsPerElement(), 2);
-  EXPECT_EQ(a.octets(), 2);
+  EXPECT_EQ(a.width(), 13u);
+  EXPECT_EQ(a.size(), 1u);
+  EXPECT_EQ(a.octetsPerElement(), 2u);
+  EXPECT_EQ(a.octets(), 2u);
 }
 
 TEST(BinData, SimpleZero129) {
   BinData a(129, 1);
   for (int i = 0; i < 17; i++)
     EXPECT_EQ(a.rawData()[i], 0);
-  EXPECT_EQ(a.width(), 129);
-  EXPECT_EQ(a.size(), 1);
-  EXPECT_EQ(a.octetsPerElement(), 17);
-  EXPECT_EQ(a.octets(), 17);
+  EXPECT_EQ(a.width(), 129u);
+  EXPECT_EQ(a.size(), 1u);
+  EXPECT_EQ(a.octetsPerElement(), 17u);
+  EXPECT_EQ(a.octets(), 17u);
 }
 
 TEST(BinData, CopyInline) {
   uint8_t d[] = {3, 2, 1};
   BinData a(17, 1, d);
   BinData b(a);
-  EXPECT_EQ(a.width(), 17);
-  EXPECT_EQ(a.size(), 1);
-  EXPECT_EQ(a.octetsPerElement(), 3);
-  EXPECT_EQ(a.octets(), 3);
+  EXPECT_EQ(a.width(), 17u);
+  EXPECT_EQ(a.size(), 1u);
+  EXPECT_EQ(a.octetsPerElement(), 3u);
+  EXPECT_EQ(a.octets(), 3u);
   EXPECT_EQ(a.rawData()[0], 3);
   EXPECT_EQ(a.rawData()[1], 2);
   EXPECT_EQ(a.rawData()[2], 1);
-  EXPECT_EQ(b.width(), 17);
-  EXPECT_EQ(b.size(), 1);
-  EXPECT_EQ(b.octetsPerElement(), 3);
-  EXPECT_EQ(b.octets(), 3);
+  EXPECT_EQ(b.width(), 17u);
+  EXPECT_EQ(b.size(), 1u);
+  EXPECT_EQ(b.octetsPerElement(), 3u);
+  EXPECT_EQ(b.octets(), 3u);
   EXPECT_EQ(b.rawData()[0], 3);
   EXPECT_EQ(b.rawData()[1], 2);
   EXPECT_EQ(b.rawData()[2], 1);
@@ -181,17 +181,17 @@ TEST(BinData, CopyNonInline) {
   uint8_t d[] = {3, 2, 1};
   BinData a(3, 3, d);
   BinData b(a);
-  EXPECT_EQ(a.width(), 3);
-  EXPECT_EQ(a.size(), 3);
-  EXPECT_EQ(a.octetsPerElement(), 1);
-  EXPECT_EQ(a.octets(), 3);
+  EXPECT_EQ(a.width(), 3u);
+  EXPECT_EQ(a.size(), 3u);
+  EXPECT_EQ(a.octetsPerElement(), 1u);
+  EXPECT_EQ(a.octets(), 3u);
   EXPECT_EQ(a.rawData()[0], 3);
   EXPECT_EQ(a.rawData()[1], 2);
   EXPECT_EQ(a.rawData()[2], 1);
-  EXPECT_EQ(b.width(), 3);
-  EXPECT_EQ(b.size(), 3);
-  EXPECT_EQ(b.octetsPerElement(), 1);
-  EXPECT_EQ(b.octets(), 3);
+  EXPECT_EQ(b.width(), 3u);
+  EXPECT_EQ(b.size(), 3u);
+  EXPECT_EQ(b.octetsPerElement(), 1u);
+  EXPECT_EQ(b.octets(), 3u);
   EXPECT_EQ(b.rawData()[0], 3);
   EXPECT_EQ(b.rawData()[1], 2);
   EXPECT_EQ(b.rawData()[2], 1);
@@ -206,17 +206,17 @@ TEST(BinData, SwapInline) {
   BinData a(17, 1, d);
   BinData b(19, 1, e);
   std::swap(a, b);
-  EXPECT_EQ(a.width(), 19);
-  EXPECT_EQ(a.size(), 1);
-  EXPECT_EQ(a.octetsPerElement(), 3);
-  EXPECT_EQ(a.octets(), 3);
+  EXPECT_EQ(a.width(), 19u);
+  EXPECT_EQ(a.size(), 1u);
+  EXPECT_EQ(a.octetsPerElement(), 3u);
+  EXPECT_EQ(a.octets(), 3u);
   EXPECT_EQ(a.rawData()[0], 6);
   EXPECT_EQ(a.rawData()[1], 5);
   EXPECT_EQ(a.rawData()[2], 4);
-  EXPECT_EQ(b.width(), 17);
-  EXPECT_EQ(b.size(), 1);
-  EXPECT_EQ(b.octetsPerElement(), 3);
-  EXPECT_EQ(b.octets(), 3);
+  EXPECT_EQ(b.width(), 17u);
+  EXPECT_EQ(b.size(), 1u);
+  EXPECT_EQ(b.octetsPerElement(), 3u);
+  EXPECT_EQ(b.octets(), 3u);
   EXPECT_EQ(b.rawData()[0], 3);
   EXPECT_EQ(b.rawData()[1], 2);
   EXPECT_EQ(b.rawData()[2], 1);
@@ -232,18 +232,18 @@ TEST(BinData, SwapNonInline) {
   std::swap(a, b);
   EXPECT_EQ(p1, b.rawData());
   EXPECT_EQ(p2, a.rawData());
-  EXPECT_EQ(a.width(), 3);
-  EXPECT_EQ(a.size(), 4);
-  EXPECT_EQ(a.octetsPerElement(), 1);
-  EXPECT_EQ(a.octets(), 4);
+  EXPECT_EQ(a.width(), 3u);
+  EXPECT_EQ(a.size(), 4u);
+  EXPECT_EQ(a.octetsPerElement(), 1u);
+  EXPECT_EQ(a.octets(), 4u);
   EXPECT_EQ(a.rawData()[0], 6);
   EXPECT_EQ(a.rawData()[1], 5);
   EXPECT_EQ(a.rawData()[2], 4);
   EXPECT_EQ(a.rawData()[3], 3);
-  EXPECT_EQ(b.width(), 2);
-  EXPECT_EQ(b.size(), 3);
-  EXPECT_EQ(b.octetsPerElement(), 1);
-  EXPECT_EQ(b.octets(), 3);
+  EXPECT_EQ(b.width(), 2u);
+  EXPECT_EQ(b.size(), 3u);
+  EXPECT_EQ(b.octetsPerElement(), 1u);
+  EXPECT_EQ(b.octets(), 3u);
   EXPECT_EQ(b.rawData()[0], 3);
   EXPECT_EQ(b.rawData()[1], 2);
   EXPECT_EQ(b.rawData()[2], 1);
@@ -257,18 +257,18 @@ TEST(BinData, SwapMixed) {
   uint8_t *p1 = b.rawData();
   std::swap(a, b);
   EXPECT_EQ(p1, a.rawData());
-  EXPECT_EQ(a.width(), 3);
-  EXPECT_EQ(a.size(), 4);
-  EXPECT_EQ(a.octetsPerElement(), 1);
-  EXPECT_EQ(a.octets(), 4);
+  EXPECT_EQ(a.width(), 3u);
+  EXPECT_EQ(a.size(), 4u);
+  EXPECT_EQ(a.octetsPerElement(), 1u);
+  EXPECT_EQ(a.octets(), 4u);
   EXPECT_EQ(a.rawData()[0], 6);
   EXPECT_EQ(a.rawData()[1], 5);
   EXPECT_EQ(a.rawData()[2], 4);
   EXPECT_EQ(a.rawData()[3], 3);
-  EXPECT_EQ(b.width(), 17);
-  EXPECT_EQ(b.size(), 1);
-  EXPECT_EQ(b.octetsPerElement(), 3);
-  EXPECT_EQ(b.octets(), 3);
+  EXPECT_EQ(b.width(), 17u);
+  EXPECT_EQ(b.size(), 1u);
+  EXPECT_EQ(b.octetsPerElement(), 3u);
+  EXPECT_EQ(b.octets(), 3u);
   EXPECT_EQ(b.rawData()[0], 3);
   EXPECT_EQ(b.rawData()[1], 2);
   EXPECT_EQ(b.rawData()[2], 1);
@@ -279,19 +279,19 @@ TEST(BinData, AssignInline) {
   uint8_t e[] = {6, 5, 4, 3};
   BinData a(17, 1, d);
   BinData b(28, 1, e);
-  EXPECT_EQ(b.width(), 28);
-  EXPECT_EQ(b.size(), 1);
-  EXPECT_EQ(b.octetsPerElement(), 4);
-  EXPECT_EQ(b.octets(), 4);
+  EXPECT_EQ(b.width(), 28u);
+  EXPECT_EQ(b.size(), 1u);
+  EXPECT_EQ(b.octetsPerElement(), 4u);
+  EXPECT_EQ(b.octets(), 4u);
   EXPECT_EQ(b.rawData()[0], 6);
   EXPECT_EQ(b.rawData()[1], 5);
   EXPECT_EQ(b.rawData()[2], 4);
   EXPECT_EQ(b.rawData()[3], 3);
   b = a;
-  EXPECT_EQ(b.width(), 17);
-  EXPECT_EQ(b.size(), 1);
-  EXPECT_EQ(b.octetsPerElement(), 3);
-  EXPECT_EQ(b.octets(), 3);
+  EXPECT_EQ(b.width(), 17u);
+  EXPECT_EQ(b.size(), 1u);
+  EXPECT_EQ(b.octetsPerElement(), 3u);
+  EXPECT_EQ(b.octets(), 3u);
   EXPECT_EQ(b.rawData()[0], 3);
   EXPECT_EQ(b.rawData()[1], 2);
   EXPECT_EQ(b.rawData()[2], 1);
@@ -302,19 +302,19 @@ TEST(BinData, AssignNonInline) {
   uint8_t e[] = {6, 5, 4, 3};
   BinData a(7, 3, d);
   BinData b(7, 4, e);
-  EXPECT_EQ(b.width(), 7);
-  EXPECT_EQ(b.size(), 4);
-  EXPECT_EQ(b.octetsPerElement(), 1);
-  EXPECT_EQ(b.octets(), 4);
+  EXPECT_EQ(b.width(), 7u);
+  EXPECT_EQ(b.size(), 4u);
+  EXPECT_EQ(b.octetsPerElement(), 1u);
+  EXPECT_EQ(b.octets(), 4u);
   EXPECT_EQ(b.rawData()[0], 6);
   EXPECT_EQ(b.rawData()[1], 5);
   EXPECT_EQ(b.rawData()[2], 4);
   EXPECT_EQ(b.rawData()[3], 3);
   b = a;
-  EXPECT_EQ(b.width(), 7);
-  EXPECT_EQ(b.size(), 3);
-  EXPECT_EQ(b.octetsPerElement(), 1);
-  EXPECT_EQ(b.octets(), 3);
+  EXPECT_EQ(b.width(), 7u);
+  EXPECT_EQ(b.size(), 3u);
+  EXPECT_EQ(b.octetsPerElement(), 1u);
+  EXPECT_EQ(b.octets(), 3u);
   EXPECT_EQ(b.rawData()[0], 3);
   EXPECT_EQ(b.rawData()[1], 2);
   EXPECT_EQ(b.rawData()[2], 1);
@@ -324,15 +324,15 @@ TEST(BinData, Data7) {
   BinData a(7, {1, 2, 3, 4, 5, 6});
   BinData b = a.data(2, 5);
   BinData c = a[5];
-  EXPECT_EQ(b.width(), 7);
-  EXPECT_EQ(b.size(), 3);
-  EXPECT_EQ(b.octets(), 3);
+  EXPECT_EQ(b.width(), 7u);
+  EXPECT_EQ(b.size(), 3u);
+  EXPECT_EQ(b.octets(), 3u);
   EXPECT_EQ(b.rawData()[0], 3);
   EXPECT_EQ(b.rawData()[1], 4);
   EXPECT_EQ(b.rawData()[2], 5);
-  EXPECT_EQ(c.width(), 7);
-  EXPECT_EQ(c.size(), 1);
-  EXPECT_EQ(c.octets(), 1);
+  EXPECT_EQ(c.width(), 7u);
+  EXPECT_EQ(c.size(), 1u);
+  EXPECT_EQ(c.octets(), 1u);
   EXPECT_EQ(c.rawData()[0], 6);
 }
 
@@ -340,18 +340,18 @@ TEST(BinData, Data23) {
   BinData a = BinData::fromRawData(23, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
   BinData b = a.data(2, 4);
   BinData c = a[1];
-  EXPECT_EQ(b.width(), 23);
-  EXPECT_EQ(b.size(), 2);
-  EXPECT_EQ(b.octets(), 6);
+  EXPECT_EQ(b.width(), 23u);
+  EXPECT_EQ(b.size(), 2u);
+  EXPECT_EQ(b.octets(), 6u);
   EXPECT_EQ(b.rawData()[0], 7);
   EXPECT_EQ(b.rawData()[1], 8);
   EXPECT_EQ(b.rawData()[2], 9);
   EXPECT_EQ(b.rawData()[3], 10);
   EXPECT_EQ(b.rawData()[4], 11);
   EXPECT_EQ(b.rawData()[5], 12);
-  EXPECT_EQ(c.width(), 23);
-  EXPECT_EQ(c.size(), 1);
-  EXPECT_EQ(c.octets(), 3);
+  EXPECT_EQ(c.width(), 23u);
+  EXPECT_EQ(c.size(), 1u);
+  EXPECT_EQ(c.octets(), 3u);
   EXPECT_EQ(c.rawData()[0], 4);
   EXPECT_EQ(c.rawData()[1], 5);
   EXPECT_EQ(c.rawData()[2], 6);
@@ -373,11 +373,11 @@ TEST(BinData, SetData23) {
 
 TEST(BinData, Bits64) {
   BinData a = BinData::fromRawData(23, {1, 2, 3, 4, 5, 6});
-  EXPECT_EQ(a.bits64(1, 0, 23), 0x060504);
-  EXPECT_EQ(a.bits64(1, 0, 16), 0x0504);
-  EXPECT_EQ(a.bits64(1, 8, 15), 0x0605);
+  EXPECT_EQ(a.bits64(1, 0, 23), 0x060504u);
+  EXPECT_EQ(a.bits64(1, 0, 16), 0x0504u);
+  EXPECT_EQ(a.bits64(1, 8, 15), 0x0605u);
   BinData b = BinData::fromRawData(120, {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff});
-  EXPECT_EQ(b.bits64(0, 0, 20), 0x32211);
+  EXPECT_EQ(b.bits64(0, 0, 20), 0x32211u);
   EXPECT_EQ(b.bits64(0, 0, 64), 0x8877665544332211ull);
   EXPECT_EQ(b.bits64(0, 56, 64), 0xffeeddccbbaa9988ull);
   EXPECT_EQ(b.bits64(0, 64, 56), 0xffeeddccbbaa99ull);
@@ -387,12 +387,12 @@ TEST(BinData, Bits64) {
 TEST(BinData, SetBits64) {
   BinData a = BinData::fromRawData(23, {1, 2, 3, 4, 5, 6});
   a.setBits64(0, 0, 23, 0x789abc);
-  EXPECT_EQ(a.bits64(0, 0, 23), 0x789abc);
+  EXPECT_EQ(a.bits64(0, 0, 23), 0x789abcu);
   a.setBits64(1, 0, 17, 0x11111);
-  EXPECT_EQ(a.bits64(1, 0, 23), 0x71111);
+  EXPECT_EQ(a.bits64(1, 0, 23), 0x71111u);
   BinData b = BinData::fromRawData(120, {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff});
   b.setBits64(0, 30, 60, 0x123456789abcdefull);
-  EXPECT_EQ(b.bits64(0, 0, 20), 0x32211);
+  EXPECT_EQ(b.bits64(0, 0, 20), 0x32211u);
   EXPECT_EQ(b.bits64(0, 0, 64), 0xe26af37bc4332211ull);
   EXPECT_EQ(b.bits64(0, 56, 64), 0xffeeddcc48d159e2ull);
   EXPECT_EQ(b.bits64(0, 64, 56), 0xffeeddcc48d159ull);
@@ -400,19 +400,19 @@ TEST(BinData, SetBits64) {
 
 TEST(BinData, Element64) {
   BinData a = BinData::fromRawData(23, {1, 2, 3, 4, 5, 6});
-  EXPECT_EQ(a.element64(1), 0x060504);
-  EXPECT_EQ(a.element64(0), 0x030201);
+  EXPECT_EQ(a.element64(1), 0x060504u);
+  EXPECT_EQ(a.element64(0), 0x030201u);
   BinData b = BinData::fromRawData(23, {0x11, 0x22, 0x33});
-  EXPECT_EQ(b.element64(), 0x332211);
+  EXPECT_EQ(b.element64(), 0x332211u);
 }
 
 TEST(BinData, SetElement64) {
   BinData a = BinData::fromRawData(23, {1, 2, 3, 4, 5, 6});
-  a.setElement64(0, 0x789abc);
-  EXPECT_EQ(a.bits64(0, 0, 23), 0x789abc);
+  a.setElement64(0, 0x789abcu);
+  EXPECT_EQ(a.bits64(0, 0, 23), 0x789abcu);
   BinData b = BinData::fromRawData(23, {0x11, 0x22, 0x33});
   b.setElement64(0xabcd);
-  EXPECT_EQ(b.element64(), 0xabcd);
+  EXPECT_EQ(b.element64(), 0xabcdu);
 }
 
 TEST(BinData, Bits) {
@@ -420,19 +420,19 @@ TEST(BinData, Bits) {
   BinData a1 = a.bits(1, 0, 23);
   BinData a2 = a.bits(1, 0, 16);
   BinData a3 = a.bits(1, 8, 15);
-  EXPECT_EQ(a1.size(), 1);
-  EXPECT_EQ(a2.size(), 1);
-  EXPECT_EQ(a3.size(), 1);
-  EXPECT_EQ(a1.width(), 23);
-  EXPECT_EQ(a2.width(), 16);
-  EXPECT_EQ(a3.width(), 15);
-  EXPECT_EQ(a1.bits64(0, 0, 23), 0x060504);
-  EXPECT_EQ(a2.bits64(0, 0, 16), 0x0504);
-  EXPECT_EQ(a3.bits64(0, 0, 15), 0x0605);
+  EXPECT_EQ(a1.size(), 1u);
+  EXPECT_EQ(a2.size(), 1u);
+  EXPECT_EQ(a3.size(), 1u);
+  EXPECT_EQ(a1.width(), 23u);
+  EXPECT_EQ(a2.width(), 16u);
+  EXPECT_EQ(a3.width(), 15u);
+  EXPECT_EQ(a1.bits64(0, 0, 23), 0x060504u);
+  EXPECT_EQ(a2.bits64(0, 0, 16), 0x0504u);
+  EXPECT_EQ(a3.bits64(0, 0, 15), 0x0605u);
   BinData b = BinData::fromRawData(120, {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff});
   BinData b1 = b.bits(0, 20, 80);
-  EXPECT_EQ(b1.size(), 1);
-  EXPECT_EQ(b1.width(), 80);
+  EXPECT_EQ(b1.size(), 1u);
+  EXPECT_EQ(b1.width(), 80u);
   EXPECT_EQ(b1.bits64(0, 0, 64), 0xbaa9988776655443ull);
   EXPECT_EQ(b1.bits64(0, 16, 64), 0xdccbbaa998877665ull);
 }
@@ -440,12 +440,12 @@ TEST(BinData, Bits) {
 TEST(BinData, SetBits) {
   BinData a = BinData::fromRawData(23, {1, 2, 3, 4, 5, 6});
   a.setBits(0, 0, 23, BinData(23, {0x789abc}));
-  EXPECT_EQ(a.bits64(0, 0, 23), 0x789abc);
+  EXPECT_EQ(a.bits64(0, 0, 23), 0x789abcu);
   a.setBits(1, 0, 17, BinData(17, {0x11111}));
-  EXPECT_EQ(a.bits64(1, 0, 23), 0x71111);
+  EXPECT_EQ(a.bits64(1, 0, 23), 0x71111u);
   BinData b = BinData::fromRawData(120, {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff});
   b.setBits(0, 20, 80, BinData::fromRawData(80, {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9}));
-  EXPECT_EQ(b.bits64(0, 0, 20), 0x32211);
+  EXPECT_EQ(b.bits64(0, 0, 20), 0x32211u);
   EXPECT_EQ(b.bits64(0, 0, 64), 0x5a4a3a2a1a032211ull);
   EXPECT_EQ(b.bits64(0, 56, 64), 0xffeeda9a8a7a6a5aull);
   EXPECT_EQ(b.bits64(0, 64, 56), 0xffeeda9a8a7a6aull);
@@ -455,11 +455,11 @@ TEST(BinData, OperatorPlus) {
   BinData a = BinData::fromRawData(8, {1});
   BinData b = BinData::fromRawData(8, {2, 3});
   BinData res = a + b;
-  EXPECT_EQ(res.width(), 8);
-  EXPECT_EQ(res.size(), 3);
-  EXPECT_EQ(res.element64(), 0x01);
-  EXPECT_EQ(res.element64(1), 0x02);
-  EXPECT_EQ(res.element64(2), 0x03);
+  EXPECT_EQ(res.width(), 8u);
+  EXPECT_EQ(res.size(), 3u);
+  EXPECT_EQ(res.element64(), 0x01u);
+  EXPECT_EQ(res.element64(1), 0x02u);
+  EXPECT_EQ(res.element64(2), 0x03u);
 }
 
 TEST(BinData, ToString) {

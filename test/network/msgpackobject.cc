@@ -299,9 +299,9 @@ TEST(MsgpackObject, TestUnpack) {
   oh = msgpack::unpack(sbuf.data(), sbuf.size());
   mo = oh.get();
   unp_obj = std::make_shared<MsgpackObject>(mo);
-  EXPECT_EQ(unp_obj->getArray()->size(), 5);
+  EXPECT_EQ(unp_obj->getArray()->size(), 5u);
   for (auto i : *unp_obj->getArray()) {
-    EXPECT_EQ(i->getUnsignedInt(), 30);
+    EXPECT_EQ(i->getUnsignedInt(), 30u);
   }
 
   sbuf.clear();
@@ -312,7 +312,7 @@ TEST(MsgpackObject, TestUnpack) {
   oh = msgpack::unpack(sbuf.data(), sbuf.size());
   mo = oh.get();
   unp_obj = std::make_shared<MsgpackObject>(mo);
-  EXPECT_EQ(unp_obj->getMap()->size(), 2);
+  EXPECT_EQ(unp_obj->getMap()->size(), 2u);
   EXPECT_EQ(*(*unp_obj->getMap())["foo"]->getString(), "foo");
   EXPECT_EQ(*(*unp_obj->getMap())["bar"]->getString(), "bar");
 
@@ -348,7 +348,7 @@ TEST(MsgpackObject, TestPack) {
   packer.pack(pos);
   oh = msgpack::unpack(sbuf.data(), sbuf.size());
   mo = oh.get();
-  EXPECT_EQ(mo.as<uint64_t>(), 42);
+  EXPECT_EQ(mo.as<uint64_t>(), 42u);
 
   sbuf.clear();
   MsgpackObject neg(INT64_C(-42));
@@ -393,7 +393,7 @@ TEST(MsgpackObject, TestPack) {
   packer.pack(map);
   oh = msgpack::unpack(sbuf.data(), sbuf.size());
   mo = oh.get();
-  EXPECT_EQ((mo.as<std::map<std::string, std::string>>().size()), 2);
+  EXPECT_EQ((mo.as<std::map<std::string, std::string>>().size()), 2u);
   EXPECT_EQ((mo.as<std::map<std::string, std::string>>()["foo"]), "foo");
   EXPECT_EQ((mo.as<std::map<std::string, std::string>>()["bar"]), "bar");
 
