@@ -118,6 +118,7 @@ class NCWrapper : public QObject {
  private:
   dbif::InfoPromise* addInfoPromise(uint64_t qid, bool sub);
   dbif::MethodResultPromise* addMethodPromise(uint64_t qid);
+  void wrongMessageType(QString name, QString expected_type);
   NetworkClient* nc_;
 
   std::unordered_map<std::string, MessageHandler> message_handlers_;
@@ -135,5 +136,5 @@ class NCWrapper : public QObject {
   bool detailed_debug_info_;
 };
 
-} // client
-} // veles
+} // namespace client
+} // namespace veles

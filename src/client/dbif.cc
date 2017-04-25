@@ -147,7 +147,7 @@ dbif::InfoPromise* NCWrapper::info(dbif::PInfoRequest req, data::NodeID id,
   }
 
   if (nc_->output()) {
-    *nc_->output() << QString("NCWrapper: unknown InfoRequest.") << endl;
+    *nc_->output() << "NCWrapper: unknown InfoRequest." << endl;
   }
 
   return new dbif::InfoPromise;
@@ -190,7 +190,7 @@ dbif::MethodResultPromise* NCWrapper::runMethod(
   }
 
   if (nc_->output()) {
-    *nc_->output() << QString("NCWrapper: unknown MethodRequest.") << endl;
+    *nc_->output() << "NCWrapper: unknown MethodRequest." << endl;
   }
 
   return new dbif::MethodResultPromise;
@@ -200,9 +200,9 @@ dbif::MethodResultPromise* NCWrapper::runMethod(
 /* NCWrapper - NetworkClient message handlers */
 /*****************************************************************************/
 
-void NCWrapper::handleGetListReplyMessage(
-    std::shared_ptr<proto::MsgpackMsg> message) {
+void NCWrapper::handleGetListReplyMessage(msg_ptr message) {
   auto reply = std::dynamic_pointer_cast<proto::MsgGetListReply>(message);
+
   if (reply) {
     if (nc_->output() && detailed_debug_info_) {
       *nc_->output() << QString("NCWrapper: received MsgGetListReply "
@@ -266,19 +266,21 @@ void NCWrapper::handleGetListReplyMessage(
             QSharedPointer<dbif::ChunkDataRequest::ReplyType>::create(items));
       }
     }
+  } else {
+    wrongMessageType("get_list_reply", "MsgGetListReply");
   }
 }
 
-void NCWrapper::handleRequestAckMessage(
-    std::shared_ptr<proto::MsgpackMsg> message) {
+void NCWrapper::handleRequestAckMessage(msg_ptr message) {
   auto reply = std::dynamic_pointer_cast<proto::MsgRequestAck>(message);
+
   if (reply) {
     if (nc_->output() && detailed_debug_info_) {
-      *nc_->output() << QString("NCWrapper: received MsgRequestAck.") << endl;
+      *nc_->output() << "NCWrapper: received MsgRequestAck." << endl;
     }
 
     const auto promise_iter = method_promises_.find(reply->rid);
-    if (promise_iter != method_promises_.end()  && promise_iter->second) {
+    if (promise_iter != method_promises_.end() && promise_iter->second) {
       auto id_iter = created_objs_waiting_for_ack_.find(reply->rid);
       if(id_iter != created_objs_waiting_for_ack_.end()) {
         if (nc_->output() && detailed_debug_info_) {
@@ -294,18 +296,19 @@ void NCWrapper::handleRequestAckMessage(
 
     // TODO Do we have other cases when we need to do something special when
     // MsgRequestAck is received?
+  } else {
+    wrongMessageType("request_ack", "MsgRequestAck");
   }
 }
 
 void getQStringAttr(std::shared_ptr<std::unordered_map<std::string,
     std::shared_ptr<messages::MsgpackObject>>> attr, std::string key,
-    QString& val) {
+    QString& val_out) {
   auto iter = attr->find(key);
   if (iter != attr->end()) {
-    std::shared_ptr<std::string> val_ptr;
-    messages::fromMsgpackObject(iter->second, val_ptr);
+    auto val_ptr = iter->second->getString();
     if (val_ptr) {
-      val = QString::fromStdString(*val_ptr);
+      val_out = QString::fromStdString(*val_ptr);
     }
   }
 }
@@ -331,17 +334,17 @@ template<class T> void getAttr(std::shared_ptr<std::unordered_map<std::string,
   }
 }
 
-void NCWrapper::handleGetReplyMessage(
-    std::shared_ptr<proto::MsgpackMsg> message) {
+void NCWrapper::handleGetReplyMessage(msg_ptr message) {
   auto reply = std::dynamic_pointer_cast<proto::MsgGetReply>(message);
+
   if (reply) {
     const auto promise_iter = promises_.find(reply->qid);
     if (promise_iter != promises_.end() && promise_iter->second) {
       QString name("");
       QString comment("");
 
-      getQStringAttr(reply->obj->attr, std::string("name"), name);
-      getQStringAttr(reply->obj->attr, std::string("comment"), comment);
+      getQStringAttr(reply->obj->attr, "name", name);
+      getQStringAttr(reply->obj->attr, "comment", comment);
 
       dbif::ObjectType node_type = typeFromTags(reply->obj->tags);
 
@@ -358,7 +361,7 @@ void NCWrapper::handleGetReplyMessage(
 
         if (node_type == dbif::ObjectType::FILE_BLOB) {
           QString path;
-          getQStringAttr(reply->obj->attr, std::string("path"), path);
+          getQStringAttr(reply->obj->attr, "path", path);
 
           if (nc_->output() && detailed_debug_info_) {
             *nc_->output() << QString("NCWrapper: received MsgGetReply "
@@ -388,7 +391,7 @@ void NCWrapper::handleGetReplyMessage(
         }
       } else if (node_type == dbif::ObjectType::CHUNK) {
         data::NodeID blob_id = *data::NodeID::getNilId();
-        getAttrSPtr<data::NodeID>(reply->obj->attr, std::string("blob"),
+        getAttrSPtr<data::NodeID>(reply->obj->attr, "blob",
             blob_id);
         auto blob = QSharedPointer<NCObjectHandle>::create(
             this, blob_id, dbif::ObjectType::FILE_BLOB); //FIXME
@@ -437,6 +440,8 @@ void NCWrapper::handleGetReplyMessage(
         promises_.erase(promise_iter);
       }
     }
+  } else {
+    wrongMessageType("get_reply", "MsgGetReply");
   }
 }
 
@@ -444,7 +449,7 @@ void NCWrapper::handleGetBinDataReplyMessage(msg_ptr message) {
   auto reply = std::dynamic_pointer_cast<proto::MsgGetBinDataReply>(message);
   if (reply) {
     if (nc_->output() && detailed_debug_info_) {
-      *nc_->output() << QString("NCWrapper: received MsgGetBinDataReply.")
+      *nc_->output() << "NCWrapper: received MsgGetBinDataReply."
       << endl;
     }
 
@@ -454,6 +459,8 @@ void NCWrapper::handleGetBinDataReplyMessage(msg_ptr message) {
       emit promise_iter->second->gotInfo(
           QSharedPointer<dbif::BlobDataRequest::ReplyType>::create(bindata));
     }
+  } else {
+    wrongMessageType("get_bindata_reply", "MsgGetBinDataReply");
   }
 }
 
@@ -461,11 +468,12 @@ void NCWrapper::handleGetDataReplyMessage(msg_ptr message) {
   auto reply = std::dynamic_pointer_cast<proto::MsgGetDataReply>(message);
   if (reply) {
     if (nc_->output() && detailed_debug_info_) {
-      *nc_->output() << QString("NCWrapper: received MsgGetDataReply.")
-      << endl;
+      *nc_->output() << "NCWrapper: received MsgGetDataReply." << endl;
     }
 
     //TODO
+  } else {
+    wrongMessageType("get_data_reply", "MsgGetDataReply");
   }
 }
 
@@ -474,10 +482,12 @@ void NCWrapper::handleQueryErrorMessage(msg_ptr message) {
   if (reply) {
     if (nc_->output() && detailed_debug_info_) {
       *nc_->output()
-          << QString("NCWrapper: received MsgQueryError.") << endl
+          << "NCWrapper: received MsgQueryError." << endl
           << "    code: " << QString::fromStdString(reply->err->code)
           << "  msg: " << QString::fromStdString(reply->err->msg) << endl;
     }
+  } else {
+    wrongMessageType("query_error", "MsgQueryError");
   }
 }
 
@@ -494,7 +504,7 @@ dbif::InfoPromise* NCWrapper::handleDescriptionRequest(data::NodeID id,
           "for node id \"%1\".").arg(id.toHexString()) << endl;
     }
 
-    auto msg = std::make_shared<messages::MsgGet>(
+    auto msg = std::make_shared<proto::MsgGet>(
         qid,
         std::make_shared<data::NodeID>(id),
         sub);
@@ -508,15 +518,14 @@ dbif::InfoPromise* NCWrapper::handleChildrenRequest(data::NodeID id, bool sub) {
   uint64_t qid = nc_->nextQid();
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
-      *nc_->output() << QString("NCWrapper: Sending MsgGetList message.")
-          << endl;
+      *nc_->output() << "NCWrapper: Sending MsgGetList message." << endl;
     }
     const auto null_pos = std::pair<bool, int64_t>(false, 0);
-    auto msg = std::make_shared<messages::MsgGetList>(
+    auto msg = std::make_shared<proto::MsgGetList>(
         qid,
         std::make_shared<data::NodeID>(id),
         std::make_shared<std::unordered_set<std::shared_ptr<std::string>>>(),
-        std::make_shared<messages::PosFilter>(
+        std::make_shared<proto::PosFilter>(
             null_pos, null_pos, null_pos, null_pos),
         sub);
     nc_->sendMessage(msg);
@@ -539,11 +548,10 @@ dbif::InfoPromise* NCWrapper::handleBlobDataRequest(
   uint64_t qid = nc_->nextQid();
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
-      *nc_->output() << QString("NCWrapper: Sending MsgGetBinData message.")
-          << endl;
+      *nc_->output() << "NCWrapper: Sending MsgGetBinData message." << endl;
     }
     const auto end_pos = std::pair<bool, int64_t>(true, end);
-    auto msg = std::make_shared<messages::MsgGetBinData>(
+    auto msg = std::make_shared<proto::MsgGetBinData>(
         qid,
         std::make_shared<data::NodeID>(id),
         std::make_shared<std::string>("data"),
@@ -560,15 +568,14 @@ dbif::InfoPromise* NCWrapper::handleChunkDataRequest(data::NodeID id, bool sub) 
   uint64_t qid = nc_->nextQid();
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
-      *nc_->output() << QString("NCWrapper: Sending MsgGetList message.")
-          << endl;
+      *nc_->output() << "NCWrapper: Sending MsgGetList message." << endl;
     }
     const auto null_pos = std::pair<bool, int64_t>(false, 0);
-    auto msg = std::make_shared<messages::MsgGetList>(
+    auto msg = std::make_shared<proto::MsgGetList>(
         qid,
         std::make_shared<data::NodeID>(id),
         std::make_shared<std::unordered_set<std::shared_ptr<std::string>>>(),
-        std::make_shared<messages::PosFilter>(
+        std::make_shared<proto::PosFilter>(
             null_pos, null_pos, null_pos, null_pos),
         sub);
     nc_->sendMessage(msg);
@@ -590,8 +597,8 @@ dbif::MethodResultPromise* NCWrapper::handleRootCreateFileBlobFromDataRequest(
 
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
-      *nc_->output() << QString("NCWrapper: Sending a request to create a file"
-          " blob (MsgTransaction).") << endl;
+      *nc_->output() << "NCWrapper: Sending a request to create a file"
+          " blob (MsgTransaction)." << endl;
     }
 
     auto tags = std::make_shared<std::unordered_set<std::shared_ptr<
@@ -603,19 +610,19 @@ dbif::MethodResultPromise* NCWrapper::handleRootCreateFileBlobFromDataRequest(
     auto attr = std::make_shared<std::unordered_map<
         std::string,std::shared_ptr<messages::MsgpackObject>>>();
     attr->insert(std::pair<std::string, std::shared_ptr<
-        messages::MsgpackObject>>(std::string("path"),
+        messages::MsgpackObject>>("path",
         std::make_shared<messages::MsgpackObject>(create_file_blob_request
         ->path.toStdString())));
     attr->insert(std::pair<std::string, std::shared_ptr<
-        messages::MsgpackObject>>(std::string("width"),
+        messages::MsgpackObject>>("width",
         std::make_shared<messages::MsgpackObject>(
         static_cast<uint64_t>(create_file_blob_request->data.width()))));
     attr->insert(std::pair<std::string, std::shared_ptr<
-        messages::MsgpackObject>>(std::string("base"),
+        messages::MsgpackObject>>("base",
         std::make_shared<messages::MsgpackObject>(
         static_cast<uint64_t>(0))));
     attr->insert(std::pair<std::string, std::shared_ptr<
-        messages::MsgpackObject>>(std::string("size"),
+        messages::MsgpackObject>>("size",
         std::make_shared<messages::MsgpackObject>(
         static_cast<uint64_t>(create_file_blob_request->data.size()))));
 
@@ -631,9 +638,12 @@ dbif::MethodResultPromise* NCWrapper::handleRootCreateFileBlobFromDataRequest(
         create_file_blob_request->data.rawData()
         + create_file_blob_request->data.size())));
 
+    auto triggers = std::make_shared<std::unordered_set<
+        std::shared_ptr<std::string>>>();
+
     auto new_id = std::make_shared<data::NodeID>();
 
-    auto operation = std::make_shared<messages::OperationCreate>(
+    auto operation = std::make_shared<proto::OperationCreate>(
         new_id,
         data::NodeID::getRootNodeId(),
         std::pair<bool, int64_t>(true, 0),
@@ -641,16 +651,17 @@ dbif::MethodResultPromise* NCWrapper::handleRootCreateFileBlobFromDataRequest(
         tags,
         attr,
         data,
-        bindata
+        bindata,
+        triggers
         );
 
     auto operations = std::make_shared<std::vector<std::shared_ptr<
-        messages::Operation>>>();
+        proto::Operation>>>();
     operations->push_back(operation);
 
-    auto msg = std::make_shared<messages::MsgTransaction>(
+    auto msg = std::make_shared<proto::MsgTransaction>(
         qid,
-        std::make_shared<std::vector<std::shared_ptr<messages::Check>>>(),
+        std::make_shared<std::vector<std::shared_ptr<proto::Check>>>(),
         operations);
     nc_->sendMessage(msg);
 
@@ -667,8 +678,8 @@ dbif::MethodResultPromise* NCWrapper::handleChunkCreateRequest(data::NodeID id,
 
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
-      *nc_->output() << QString("NCWrapper: Sending a request to create a "
-          "chunk (MsgTransaction).") << endl;
+      *nc_->output() << "NCWrapper: Sending a request to create a "
+          "chunk (MsgTransaction)." << endl;
     }
     auto new_id = std::make_shared<data::NodeID>();
 
@@ -689,15 +700,15 @@ dbif::MethodResultPromise* NCWrapper::handleChunkCreateRequest(data::NodeID id,
     auto attr = std::make_shared<std::unordered_map<
         std::string,std::shared_ptr<messages::MsgpackObject>>>();
     attr->insert(std::pair<std::string, std::shared_ptr<
-        messages::MsgpackObject>>(std::string("blob"),
+        messages::MsgpackObject>>("blob",
         messages::toMsgpackObject(
         std::make_shared<data::NodeID>(id))));
     attr->insert(std::pair<std::string, std::shared_ptr<
-        messages::MsgpackObject>>(std::string("name"),
+        messages::MsgpackObject>>("name",
         std::make_shared<messages::MsgpackObject>(chunk_create_request
         ->name.toStdString())));
     attr->insert(std::pair<std::string, std::shared_ptr<
-        messages::MsgpackObject>>(std::string("type"),
+        messages::MsgpackObject>>("type",
         std::make_shared<messages::MsgpackObject>(chunk_create_request
         ->chunk_type.toStdString())));
 
@@ -707,7 +718,10 @@ dbif::MethodResultPromise* NCWrapper::handleChunkCreateRequest(data::NodeID id,
     auto bindata = std::make_shared<std::unordered_map<
         std::string,std::shared_ptr<std::vector<uint8_t>>>>();
 
-    auto operation = std::make_shared<messages::OperationCreate>(
+    auto triggers = std::make_shared<std::unordered_set<
+        std::shared_ptr<std::string>>>();
+
+    auto operation = std::make_shared<proto::OperationCreate>(
         new_id,
         parent_id,
         std::pair<bool, int64_t>(true, chunk_create_request->start),
@@ -715,16 +729,17 @@ dbif::MethodResultPromise* NCWrapper::handleChunkCreateRequest(data::NodeID id,
         tags,
         attr,
         data,
-        bindata
+        bindata,
+        triggers
         );
 
     auto operations = std::make_shared<std::vector<std::shared_ptr<
-        messages::Operation>>>();
+        proto::Operation>>>();
     operations->push_back(operation);
 
-    auto msg = std::make_shared<messages::MsgTransaction>(
+    auto msg = std::make_shared<proto::MsgTransaction>(
         qid,
-        std::make_shared<std::vector<std::shared_ptr<messages::Check>>>(),
+        std::make_shared<std::vector<std::shared_ptr<proto::Check>>>(),
         operations);
     nc_->sendMessage(msg);
 
@@ -740,8 +755,8 @@ dbif::MethodResultPromise* NCWrapper::handleChunkCreateSubBlobRequest(
     chunk_create_subblob_request) {
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
-      *nc_->output() << QString("NCWrapper: handleChunkCreateSubBlobRequest Sending MsgDelete message.")
-          << endl;
+      *nc_->output() << "NCWrapper: handleChunkCreateSubBlobRequest Sending "
+          "MsgDelete message." << endl;
     }
   }
 
@@ -754,10 +769,9 @@ dbif::MethodResultPromise* NCWrapper::handleDeleteRequest(data::NodeID id) {
   uint64_t qid = nc_->nextQid();
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
-      *nc_->output() << QString("NCWrapper: Sending MsgDelete message.")
-          << endl;
+      *nc_->output() << "NCWrapper: Sending MsgDelete message." << endl;
     }
-    auto msg = std::make_shared<messages::MsgDelete>(
+    auto msg = std::make_shared<proto::MsgDelete>(
         qid,
         std::make_shared<data::NodeID>(id));
     nc_->sendMessage(msg);
@@ -772,23 +786,23 @@ dbif::MethodResultPromise* NCWrapper::handleSetNameRequest(data::NodeID id,
 
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
-      *nc_->output() << QString("NCWrapper: Sending a request to set a node's"
-          "name (MsgTransaction).") << endl;
+      *nc_->output() << "NCWrapper: Sending a request to set a node's"
+          " name (MsgTransaction)." << endl;
     }
 
-    auto operation = std::make_shared<messages::OperationSetAttr>(
+    auto operation = std::make_shared<proto::OperationSetAttr>(
         std::make_shared<data::NodeID>(id),
         std::make_shared<std::string>("name"),
         std::pair<bool, std::shared_ptr<messages::MsgpackObject>>(true,
             std::make_shared<messages::MsgpackObject>(name)));
 
     auto operations = std::make_shared<std::vector<std::shared_ptr<
-        messages::Operation>>>();
+        proto::Operation>>>();
     operations->push_back(operation);
 
-    auto msg = std::make_shared<messages::MsgTransaction>(
+    auto msg = std::make_shared<proto::MsgTransaction>(
         qid,
-        std::make_shared<std::vector<std::shared_ptr<messages::Check>>>(),
+        std::make_shared<std::vector<std::shared_ptr<proto::Check>>>(),
         operations);
     nc_->sendMessage(msg);
   }
@@ -802,23 +816,23 @@ dbif::MethodResultPromise* NCWrapper::handleSetCommentRequest(data::NodeID id,
 
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
-      *nc_->output() << QString("NCWrapper: Sending a request to set a node's"
-          "comment (MsgTransaction).") << endl;
+      *nc_->output() << "NCWrapper: Sending a request to set a node's"
+          "comment (MsgTransaction)." << endl;
     }
 
-    auto operation = std::make_shared<messages::OperationSetAttr>(
+    auto operation = std::make_shared<proto::OperationSetAttr>(
         std::make_shared<data::NodeID>(id),
         std::make_shared<std::string>("comment"),
         std::pair<bool, std::shared_ptr<messages::MsgpackObject>>(true,
             std::make_shared<messages::MsgpackObject>(comment)));
 
     auto operations = std::make_shared<std::vector<std::shared_ptr<
-        messages::Operation>>>();
+        proto::Operation>>>();
     operations->push_back(operation);
 
-    auto msg = std::make_shared<messages::MsgTransaction>(
+    auto msg = std::make_shared<proto::MsgTransaction>(
         qid,
-        std::make_shared<std::vector<std::shared_ptr<messages::Check>>>(),
+        std::make_shared<std::vector<std::shared_ptr<proto::Check>>>(),
         operations);
     nc_->sendMessage(msg);
   }
@@ -838,22 +852,22 @@ dbif::MethodResultPromise* NCWrapper::handleSetChunkBoundsRequest(
 
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
-      *nc_->output() << QString("NCWrapper: Sending a request to set chunk's"
-          "bounds (MsgTransaction).") << endl;
+      *nc_->output() << "NCWrapper: Sending a request to set chunk's"
+          "bounds (MsgTransaction)." << endl;
     }
 
-    auto operation = std::make_shared<messages::OperationSetPos>(
+    auto operation = std::make_shared<proto::OperationSetPos>(
         std::make_shared<data::NodeID>(id),
         std::pair<bool, int64_t>(true, pos_start),
         std::pair<bool, int64_t>(true, pos_end));
 
     auto operations = std::make_shared<std::vector<std::shared_ptr<
-        messages::Operation>>>();
+        proto::Operation>>>();
     operations->push_back(operation);
 
-    auto msg = std::make_shared<messages::MsgTransaction>(
+    auto msg = std::make_shared<proto::MsgTransaction>(
         qid,
-        std::make_shared<std::vector<std::shared_ptr<messages::Check>>>(),
+        std::make_shared<std::vector<std::shared_ptr<proto::Check>>>(),
         operations);
     nc_->sendMessage(msg);
   }
@@ -896,8 +910,8 @@ void NCWrapper::updateConnectionStatus(client::NetworkClient::ConnectionStatus
           true);
       nc_->sendMessage(msg);
       if (nc_->output() && detailed_debug_info_) {
-        *nc_->output() << QString("NCWrapper: Sending MsgGetList message for"
-            " the root node.") << endl;
+        *nc_->output() << "NCWrapper: Sending MsgGetList message for"
+            " the root node." << endl;
       }
       subscriptions_.insert(entry.first);
       promises_[entry.first] = entry.second;
@@ -937,6 +951,13 @@ dbif::MethodResultPromise* NCWrapper::addMethodPromise(uint64_t qid) {
   method_promises_[qid] = promise;
 
   return promise;
+}
+
+void NCWrapper::wrongMessageType(QString name, QString expected_type) {
+  if (nc_->output()) {
+    *nc_->output() << QString("NCWrapper: error - declared message type is \"%1\", but"
+        " it's actually not a %2.").arg(name).arg(expected_type) << endl;
+  }
 }
 
 } // client
