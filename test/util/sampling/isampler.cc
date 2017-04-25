@@ -59,7 +59,7 @@ TEST(ISamplerSmallData, basic) {
   auto data = prepare_data(100);
   testing::StrictMock<MockSampler> sampler(data);
   sampler.setSampleSize(120);
-  ASSERT_EQ(100, sampler.getSampleSize());
+  ASSERT_EQ(100u, sampler.getSampleSize());
   ASSERT_EQ(data[0], sampler[0]);
   ASSERT_EQ(data[10], sampler[10]);
   ASSERT_EQ(data[99], sampler[sampler.getSampleSize() - 1]);
@@ -70,9 +70,9 @@ TEST(ISamplerSmallData, setRange) {
   testing::StrictMock<MockSampler> sampler(data);
   sampler.setSampleSize(120);
   sampler.setRange(40, 50);
-  ASSERT_EQ(10, sampler.getSampleSize());
-  ASSERT_EQ(40, sampler.getRange().first);
-  ASSERT_EQ(50, sampler.getRange().second);
+  ASSERT_EQ(10u, sampler.getSampleSize());
+  ASSERT_EQ(40u, sampler.getRange().first);
+  ASSERT_EQ(50u, sampler.getRange().second);
   for (int i = 0; i < 10; ++i) {
     ASSERT_EQ(data[i + 40], sampler[i]);
   }
@@ -82,12 +82,12 @@ TEST(ISamplerSmallData, offsets) {
   auto data = prepare_data(100);
   testing::StrictMock<MockSampler> sampler(data);
   sampler.setSampleSize(120);
-  ASSERT_EQ(0, sampler.getFileOffset(0));
-  ASSERT_EQ(33, sampler.getFileOffset(33));
-  ASSERT_EQ(99, sampler.getFileOffset(99));
-  ASSERT_EQ(0, sampler.getSampleOffset(0));
-  ASSERT_EQ(33, sampler.getSampleOffset(33));
-  ASSERT_EQ(99, sampler.getSampleOffset(99));
+  ASSERT_EQ(0u, sampler.getFileOffset(0));
+  ASSERT_EQ(33u, sampler.getFileOffset(33));
+  ASSERT_EQ(99u, sampler.getFileOffset(99));
+  ASSERT_EQ(0u, sampler.getSampleOffset(0));
+  ASSERT_EQ(33u, sampler.getSampleOffset(33));
+  ASSERT_EQ(99u, sampler.getSampleOffset(99));
 }
 
 TEST(ISamplerSmallData, offsetsAfterSetRange) {
@@ -95,12 +95,12 @@ TEST(ISamplerSmallData, offsetsAfterSetRange) {
   testing::StrictMock<MockSampler> sampler(data);
   sampler.setSampleSize(120);
   sampler.setRange(40, 50);
-  ASSERT_EQ(40, sampler.getFileOffset(0));
-  ASSERT_EQ(45, sampler.getFileOffset(5));
-  ASSERT_EQ(49, sampler.getFileOffset(9));
-  ASSERT_EQ(0, sampler.getSampleOffset(40));
-  ASSERT_EQ(5, sampler.getSampleOffset(45));
-  ASSERT_EQ(9, sampler.getSampleOffset(49));
+  ASSERT_EQ(40u, sampler.getFileOffset(0));
+  ASSERT_EQ(45u, sampler.getFileOffset(5));
+  ASSERT_EQ(49u, sampler.getFileOffset(9));
+  ASSERT_EQ(0u, sampler.getSampleOffset(40));
+  ASSERT_EQ(5u, sampler.getSampleOffset(45));
+  ASSERT_EQ(9u, sampler.getSampleOffset(49));
 }
 
 /*****************************************************************************/
@@ -118,7 +118,7 @@ TEST(ISamplerWithSampling, basic) {
   EXPECT_CALL(sampler, getRealSampleSize())
     .After(init2)
     .WillRepeatedly(Return(10));
-  ASSERT_EQ(10, sampler.getSampleSize());
+  ASSERT_EQ(10u, sampler.getSampleSize());
   EXPECT_CALL(sampler, getSampleByte(0))
     .WillOnce(Return(0));
   ASSERT_EQ(data[0], sampler[0]);
@@ -139,16 +139,16 @@ TEST(ISamplerWithSampling, offsets) {
   EXPECT_CALL(sampler, getFileOffsetImpl(5))
     .Times(1)
     .WillOnce(Return(50));
-  ASSERT_EQ(0, sampler.getFileOffset(0));
-  ASSERT_EQ(99, sampler.getFileOffset(9));
-  ASSERT_EQ(50, sampler.getFileOffset(5));
+  ASSERT_EQ(0u, sampler.getFileOffset(0));
+  ASSERT_EQ(99u, sampler.getFileOffset(9));
+  ASSERT_EQ(50u, sampler.getFileOffset(5));
 
   EXPECT_CALL(sampler, getSampleOffsetImpl(50))
     .Times(1)
     .WillOnce(Return(5));
-  ASSERT_EQ(0, sampler.getSampleOffset(0));
-  ASSERT_EQ(9, sampler.getSampleOffset(99));
-  ASSERT_EQ(5, sampler.getSampleOffset(50));
+  ASSERT_EQ(0u, sampler.getSampleOffset(0));
+  ASSERT_EQ(9u, sampler.getSampleOffset(99));
+  ASSERT_EQ(5u, sampler.getSampleOffset(50));
   }
 
 TEST(ISamplerWithSampling, offsetsAfterSetRange) {
@@ -161,16 +161,16 @@ TEST(ISamplerWithSampling, offsetsAfterSetRange) {
   EXPECT_CALL(sampler, getFileOffsetImpl(5))
     .Times(1)
     .WillOnce(Return(10));
-  ASSERT_EQ(40, sampler.getFileOffset(0));
-  ASSERT_EQ(59, sampler.getFileOffset(9));
-  ASSERT_EQ(50, sampler.getFileOffset(5));
+  ASSERT_EQ(40u, sampler.getFileOffset(0));
+  ASSERT_EQ(59u, sampler.getFileOffset(9));
+  ASSERT_EQ(50u, sampler.getFileOffset(5));
 
   EXPECT_CALL(sampler, getSampleOffsetImpl(10))
     .Times(1)
     .WillOnce(Return(5));
-  ASSERT_EQ(0, sampler.getSampleOffset(40));
-  ASSERT_EQ(9, sampler.getSampleOffset(59));
-  ASSERT_EQ(5, sampler.getSampleOffset(50));
+  ASSERT_EQ(0u, sampler.getSampleOffset(40));
+  ASSERT_EQ(9u, sampler.getSampleOffset(59));
+  ASSERT_EQ(5u, sampler.getSampleOffset(50));
 }
 
 TEST(ISamplerWithSampling, getDataFromIsampler) {
@@ -180,7 +180,7 @@ TEST(ISamplerWithSampling, getDataFromIsampler) {
   Expectation init2 = EXPECT_CALL(sampler, applyResample(_))
     .After(init1);
   sampler.setSampleSize(10);
-  ASSERT_EQ(100, sampler.proxy_getDataSize());
+  ASSERT_EQ(100u, sampler.proxy_getDataSize());
   ASSERT_EQ(0, sampler.proxy_getDataByte(0));
   ASSERT_EQ(5, sampler.proxy_getDataByte(5));
   ASSERT_EQ(99, sampler.proxy_getDataByte(99));
@@ -189,7 +189,7 @@ TEST(ISamplerWithSampling, getDataFromIsampler) {
   Expectation update2 = EXPECT_CALL(sampler, applyResample(_))
     .After(update1);
   sampler.setRange(40, 60);
-  ASSERT_EQ(20, sampler.proxy_getDataSize());
+  ASSERT_EQ(20u, sampler.proxy_getDataSize());
   ASSERT_EQ(40, sampler.proxy_getDataByte(0));
   ASSERT_EQ(45, sampler.proxy_getDataByte(5));
   ASSERT_EQ(59, sampler.proxy_getDataByte(19));

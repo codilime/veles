@@ -25,7 +25,7 @@ TEST(UniformSampler, testGetData) {
   auto data = prepare_data(100);
   UniformSampler sampler(data);
   sampler.setSampleSize(20);
-  ASSERT_EQ(20, sampler.getSampleSize());
+  ASSERT_EQ(20u, sampler.getSampleSize());
   auto sample = sampler.data();
   char prev = sample[0], curr = sample[1];
   size_t i = 2;
@@ -44,14 +44,14 @@ TEST(UniformSampler, testOffsets) {
   auto data = prepare_data(100);
   UniformSampler sampler(data);
   sampler.setSampleSize(20);
-  ASSERT_EQ(20, sampler.getSampleSize());
-  ASSERT_EQ(0, sampler.getFileOffset(0));
+  ASSERT_EQ(20u, sampler.getSampleSize());
+  ASSERT_EQ(0u, sampler.getFileOffset(0));
   size_t prev = 0;
-  ASSERT_EQ(0, sampler.getSampleOffset(0));
+  ASSERT_EQ(0u, sampler.getSampleOffset(0));
   for (size_t i = 1; i < 20; ++i) {
     size_t curr = sampler.getFileOffset(i);
     ASSERT_LT(prev, curr);
-    ASSERT_LE(curr, 99);
+    ASSERT_LE(curr, 99u);
     ASSERT_EQ(i, sampler.getSampleOffset(curr));
     // ISampler interface doesn't require this condition to be true for
     // any value. However this should be true for UniformSampler
@@ -62,8 +62,8 @@ TEST(UniformSampler, testOffsets) {
   prev = 0;
   for (size_t i = 0; i < 99; ++i) {
     size_t curr = sampler.getSampleOffset(i);
-    ASSERT_GE(curr, 0);
-    ASSERT_LE(curr, 99);
+    ASSERT_GE(curr, 0u);
+    ASSERT_LE(curr, 99u);
     ASSERT_LE(prev, curr);
     prev = curr;
   }
