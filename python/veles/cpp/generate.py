@@ -55,6 +55,7 @@ def generate_cpp_code():
 #include <memory>
 
 #include "fwd_models.h"
+#include "data/bindata.h"
 #include "data/nodeid.h"
 #include "network/msgpackobject.h"
 '''

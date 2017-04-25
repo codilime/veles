@@ -43,7 +43,7 @@ class BinData {
   /** Constructs a BinData instance from given width, size, and pointer to
       raw data.  ceil(width/8) * size octets are read from init_data.
       If raw data is not given, the instance is initialized with zeros.  */
-  BinData(unsigned width, size_t size, const uint8_t *init_data = nullptr)
+  BinData(uint32_t width, size_t size, const uint8_t *init_data = nullptr)
     : width_(width), size_(size) {
     assert(width != 0);
     if (!isInline())
@@ -56,7 +56,7 @@ class BinData {
 
   /** Constructs a BinData instance from given width and data given as
       uint64_t elements.  width must be <= 64.  */
-  BinData(unsigned width, const std::initializer_list<uint64_t> &init)
+  BinData(uint32_t width, const std::initializer_list<uint64_t> &init)
     : BinData(width, init.size()) {
     assert(width <= 64);
     size_t pos = 0;
@@ -128,7 +128,7 @@ class BinData {
 
   /** Constructs a BinData instance from given width and raw data.  The length
       of raw data must be a multiple of ceil(width/8).  */
-  static BinData fromRawData(unsigned width, const std::initializer_list<uint8_t> &init) {
+  static BinData fromRawData(uint32_t width, const std::initializer_list<uint8_t> &init) {
     size_t size = init.size() / BinData(width, 0).octetsPerElement();
     BinData res(width, size);
     assert(res.octets() == init.size());
@@ -145,7 +145,7 @@ class BinData {
   }
 
   /** Returns element width, in bits.  */
-  unsigned width() const { return width_; }
+  uint32_t width() const { return width_; }
 
   /** Returns data size, in elements.  */
   size_t size() const { return size_; }
@@ -292,7 +292,7 @@ class BinData {
                        unsigned num_bits);
 
  private:
-  unsigned width_;
+  uint32_t width_;
   size_t size_;
   union {
     /** Pointer to raw data iff isInline() is false.  */

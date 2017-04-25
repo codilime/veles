@@ -19,6 +19,7 @@
 #include <msgpack.hpp>
 
 #include "fwd_models.h"
+#include "data/bindata.h"
 #include "data/nodeid.h"
 #include "proto/exceptions.h"
 
@@ -194,6 +195,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const double val);
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const data::NodeID& val);
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::NodeID> val);
+std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::BinData> val);
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<proto::VelesException> val);
 
 namespace details_ {
@@ -294,6 +296,7 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, int64_t& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, uint64_t& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, double& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<data::NodeID>& out);
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<data::BinData>& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<proto::VelesException>& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<MsgpackObject>& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<std::string>& out);

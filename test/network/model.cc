@@ -252,6 +252,38 @@ TEST(TestModel, TestNodeIDModel) {
   EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
 }
 
+TEST(TestModel, TestBinData) {
+  std::vector<uint8_t> bin(4, 0);
+  bin[0] = 8;
+  std::vector<uint8_t> raw_data({11, 12, 13, 14});
+  bin.insert(bin.end(), raw_data.begin(), raw_data.end());
+  auto obj = pack(std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_BINDATA), bin));
+  std::shared_ptr<BinDataModel> ptr;
+  std::shared_ptr<BinDataModelOptional> ptr2;
+  fromMsgpackObject(obj, ptr);
+  fromMsgpackObject(obj, ptr2);
+  EXPECT_EQ(ptr->a->width(), 8);
+  EXPECT_EQ(ptr2->a.first, true);
+  EXPECT_EQ(ptr2->a.second->width(), 8);
+  for (int i = 0; i < 4; ++i) {
+    EXPECT_EQ(ptr->a->rawData()[i], raw_data[i]);
+    EXPECT_EQ(ptr2->a.second->rawData()[i], raw_data[i]);
+  }
+
+  obj = pack(std::make_shared<MsgpackObject>());
+  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
+  fromMsgpackObject(obj, ptr2);
+  EXPECT_EQ(ptr2->a.first, false);
+
+  obj = pack(std::make_shared<MsgpackObject>(false));
+  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+
+  obj = pack(std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_BINDATA+1), bin));
+  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+}
+
 TEST(TestModel, TestList) {
   std::vector<std::shared_ptr<MsgpackObject>> data(5, std::make_shared<MsgpackObject>(INT64_C(30)));
   auto obj = pack(std::make_shared<MsgpackObject>(data));

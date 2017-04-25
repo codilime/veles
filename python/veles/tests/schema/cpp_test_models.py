@@ -84,7 +84,13 @@ class NodeIDModel(model.Model):
 class NodeIDModelOptional(model.Model):
     a = fields.NodeID(optional=True)
 
-# TODO BinData
+
+class BinDataModel(model.Model):
+    a = fields.BinData()
+
+
+class BinDataModelOptional(model.Model):
+    a = fields.BinData(optional=True)
 
 
 class List(model.Model):
