@@ -43,7 +43,7 @@ def post_build_finished(job,url){
 
 def builders = [:]
 
-builders['mingw32'] = { node('windows') {
+if (!buildConfiguration.equals("Debug")) builders['mingw32'] = { node('windows') {
     ws(getWorkspace("")){
       timestamps {
         try {
