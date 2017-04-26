@@ -23,7 +23,6 @@
 #include "dbif/universe.h"
 #include "parser/stream.h"
 #include "parser/utils.h"
-#include "data/field.h"
 #include "parser/unpyc.h"
 
 namespace veles {
@@ -222,13 +221,13 @@ bool parseMarshal(StreamParser &parser, const QString &name, const PycVersion &v
     break;
   case 'i': {
     // 32-bit signed int
-    parser.getLe32("value", data::FieldHighType::SIGNED);
+    parser.getLe32("value", proto::FieldSignMode::SIGNED);
     break;
   }
   case 'l': {
     // big int
     // XXX: annotate with bignum value
-    int32_t slen = parser.getLe32("len", data::FieldHighType::SIGNED);
+    int32_t slen = parser.getLe32("len", proto::FieldSignMode::SIGNED);
     uint32_t len = slen < 0 ? -slen : slen;
     parser.getLe16("digits", len);
     break;
@@ -343,7 +342,7 @@ std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> parseLnotab(dbif::ObjectHa
   if (!lnotabField)
     return res;
   auto firstlinenoField = findField(code, "firstlineno");
-  if (!firstlinenoField || firstlinenoField.raw_value.size() != 1 || firstlinenoField.raw_value.width() > 64)
+  if (!firstlinenoField || firstlinenoField->raw_value.size() != 1 || firstlinenoField->raw_value.width() > 64)
     return res;
   uint32_t firstlineno = firstlinenoField.raw_value.element64();
   auto lnotabBlob = makeSubBlob(code, "lnotab", lnotabField.raw_value);

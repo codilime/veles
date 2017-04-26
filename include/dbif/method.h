@@ -21,8 +21,8 @@
 #include <QString>
 
 #include "dbif/types.h"
-#include "data/field.h"
 #include "data/bindata.h"
+#include "models.h"
 
 namespace veles {
 namespace dbif {
@@ -113,9 +113,9 @@ struct SetChunkBoundsRequest : MethodRequest {
 struct SetChunkParseRequest : MethodRequest {
   uint64_t start;
   uint64_t end;
-  std::vector<data::ChunkDataItem> items;
+  std::vector<std::shared_ptr<proto::ChunkDataItem>> items;
   SetChunkParseRequest(uint64_t start, uint64_t end,
-    std::vector<data::ChunkDataItem> items) :
+    std::vector<std::shared_ptr<proto::ChunkDataItem>> items) :
     start(start), end(end), items(items) {}
   typedef NullReply ReplyType;
 };

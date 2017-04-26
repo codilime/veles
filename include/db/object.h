@@ -153,8 +153,8 @@ class ChunkObject : public LocalObject {
   uint64_t start_;
   uint64_t end_;
   QString chunk_type_;
-  std::vector<data::ChunkDataItem> items_;
-  std::vector<data::ChunkDataItem> parseReplyItems_;
+  std::vector<std::shared_ptr<proto::ChunkDataItem>> items_;
+  std::vector<std::shared_ptr<proto::ChunkDataItem>> parseReplyItems_;
   QSet<InfoGetter *> parse_watchers_;
 
   ChunkObject(PLocalObject blob, PLocalObject parent_chunk,
@@ -190,7 +190,7 @@ class ChunkObject : public LocalObject {
   uint64_t start() const { return start_; }
   uint64_t end() const { return end_; }
   QString chunkType() const { return chunk_type_; }
-  const std::vector<data::ChunkDataItem>& items() const { return items_; }
+  const std::vector<std::shared_ptr<proto::ChunkDataItem>>& items() const { return items_; }
 };
 
 }  // namespace db

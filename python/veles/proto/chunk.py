@@ -45,16 +45,22 @@ class FieldType(model.PolymorphicModel):
 
 
 class FieldTypeFixed(FieldType):
+    object_type = 'fixed'
+
     shift = fields.SmallInteger()
     sign_mode = fields.Enum(FieldSignMode)
 
 
 class FieldTypeFloat(FieldType):
+    object_type = 'float'
+
     mode = fields.Enum(FieldFloatMode)
     complex = fields.Boolean()
 
 
 class FieldTypeString(FieldType):
+    object_type = 'string'
+
     mode = fields.Enum(FieldStringMode)
     encoding = fields.Enum(FieldStringEncoding)
 
@@ -64,6 +70,8 @@ class ChunkDataItem(model.PolymorphicModel):
 
 
 class ChunkDataItemSubchunk(ChunkDataItem):
+    object_type = 'subchunk'
+
     name = fields.String()
     pos_start = fields.Integer()
     pos_end = fields.Integer()
@@ -71,11 +79,15 @@ class ChunkDataItemSubchunk(ChunkDataItem):
 
 
 class ChunkDataItemSubblob(ChunkDataItem):
+    object_type = 'subblob'
+
     name = fields.String()
     ref = fields.NodeID()
 
 
 class ChunkDataItemField(ChunkDataItem):
+    object_type = 'field'
+
     pos_start = fields.Integer()
     pos_end = fields.Integer()
     name = fields.String()
@@ -86,11 +98,15 @@ class ChunkDataItemField(ChunkDataItem):
 
 
 class ChunkDataItemComputed(ChunkDataItem):
+    object_type = 'computed'
+
     name = fields.String()
     type = fields.Object(FieldType)
     raw_value = fields.BinData()
 
 
 class ChunkDataItemPad(ChunkDataItem):
+    object_type = 'pad'
+
     pos_start = fields.Integer()
     pos_end = fields.Integer()

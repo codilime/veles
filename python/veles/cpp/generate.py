@@ -57,6 +57,7 @@ def generate_cpp_code():
 #include "fwd_models.h"
 #include "data/bindata.h"
 #include "data/nodeid.h"
+#include "data/bindata.h"
 #include "network/msgpackobject.h"
 '''
     source_code = license

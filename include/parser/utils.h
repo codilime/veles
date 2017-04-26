@@ -25,7 +25,7 @@ namespace veles {
 namespace parser {
 
 dbif::ObjectHandle findSubChunk(dbif::ObjectHandle parent, const QString &name);
-data::ChunkDataItem findField(dbif::ObjectHandle parent, const QString &name);
+std::shared_ptr<proto::ChunkDataItem> findField(dbif::ObjectHandle parent, const QString &name);
 dbif::ObjectHandle makeSubBlob(dbif::ObjectHandle parent, const QString &name,
                                const data::BinData &data);
 QList<Parser *> createAllParsers();

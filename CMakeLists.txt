@@ -183,7 +183,6 @@ add_library(veles_data
     ${MSGPACK_CPP_FWD_HEADER}
     ${MSGPACK_CPP_HEADER}
     ${INCLUDE_DIR}/data/bindata.h
-    ${INCLUDE_DIR}/data/field.h
     ${INCLUDE_DIR}/data/nodeid.h
     ${INCLUDE_DIR}/data/repack.h
     ${INCLUDE_DIR}/data/types.h
@@ -212,7 +211,7 @@ add_library(veles_dbif
 )
 
 qt5_use_modules(veles_dbif Core)
-target_link_libraries(veles_dbif veles_data)
+target_link_libraries(veles_dbif veles_models)
 
 file(GLOB kaitai_headers
     "${INCLUDE_DIR}/kaitai/*.h"
@@ -271,7 +270,7 @@ add_library(veles_client
     ${SRC_DIR}/client/networkclient.cc)
 
 qt5_use_modules(veles_client Core Network)
-target_link_libraries(veles_client veles_base veles_data veles_network)
+target_link_libraries(veles_client veles_base veles_models veles_network)
 
 qt5_use_modules(veles_db Core)
 add_dependencies(veles_db veles_network)

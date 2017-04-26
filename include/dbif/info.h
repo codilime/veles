@@ -21,8 +21,8 @@
 #include <QString>
 
 #include "dbif/types.h"
-#include "data/field.h"
 #include "data/bindata.h"
+#include "models.h"
 
 namespace veles {
 namespace dbif {
@@ -143,8 +143,8 @@ struct BlobDataReply : InfoReply {
 };
 
 struct ChunkDataReply : InfoReply {
-  std::vector<data::ChunkDataItem> items;
-  ChunkDataReply(std::vector<data::ChunkDataItem> &items) :
+  std::vector<std::shared_ptr<proto::ChunkDataItem>> items;
+  ChunkDataReply(std::vector<std::shared_ptr<proto::ChunkDataItem>> &items) :
     items(items) {}
 };
 
