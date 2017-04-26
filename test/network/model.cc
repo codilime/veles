@@ -269,6 +269,9 @@ TEST(TestModel, TestBinData) {
     EXPECT_EQ(ptr->a->rawData()[i], raw_data[i]);
     EXPECT_EQ(ptr2->a.second->rawData()[i], raw_data[i]);
   }
+  auto obj2 = ptr->serializeToMsgpackObject();
+  fromMsgpackObject(obj2, ptr2);
+  EXPECT_EQ(*ptr->a, *ptr2->a.second);
 
   obj = pack(std::make_shared<MsgpackObject>());
   EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
@@ -282,6 +285,7 @@ TEST(TestModel, TestBinData) {
   obj = pack(std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_BINDATA+1), bin));
   EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
   EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+
 }
 
 TEST(TestModel, TestList) {

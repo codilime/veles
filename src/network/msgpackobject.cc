@@ -16,6 +16,7 @@
  */
 #include "network/msgpackobject.h"
 #include "models.h"
+#include "util/misc.h"
 
 namespace veles {
 namespace messages {
@@ -429,10 +430,9 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::NodeI
 }
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::BinData> val) {
-  auto data = std::make_shared<std::vector<uint8_t>>();
-  for (int i = 0; i < 4; ++i) {
-    data->push_back((val->width() << i * 8) & 0xff);
-  }
+  uint8_t* p = util::intToBytesLe(val->width(), 4);
+  auto data = std::make_shared<std::vector<uint8_t>>(p, p+4);
+  delete[] p;
   data->insert(data->end(), val->rawData(), val->rawData() + val->octets());
   return std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_BINDATA), data);
 }
@@ -466,7 +466,10 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr
     throw proto::SchemaError("Wrong ext type for BinData");
   }
   auto data = obj->getExt().second;
-  uint32_t width = (data->at(3) << 24) | (data->at(2) << 16) | (data->at(1) << 8) | (data->at(0));
+  if (data->size() < 4) {
+    throw proto::SchemaError("Not enough data for BinData unpack");
+  }
+  uint32_t width = util::bytesToIntLe<uint32_t>(data->data(), 4);
   size_t size = (data->size() - 4) / data::BinData(width, 0).octetsPerElement();
   out = std::make_shared<data::BinData>(width, size, &data->data()[4]);
 }
