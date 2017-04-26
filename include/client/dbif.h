@@ -22,9 +22,12 @@
 
 #include <QObject>
 #include <QPointer>
+#include <QThread>
+#include <QSet>
 
 #include "network/msgpackwrapper.h"
 #include "client/networkclient.h"
+#include "db/universe.h"
 #include "dbif/universe.h"
 #include "data/nodeid.h"
 
@@ -57,6 +60,21 @@ class NCObjectHandle : public dbif::ObjectHandleBase {
 };
 
 /*****************************************************************************/
+/* ParsersThread */
+/*****************************************************************************/
+
+class ParserThread : public QThread {
+ public:
+  ParserThread(QObject* parent = nullptr)
+      : QThread(parent) {}
+
+ protected:
+  void run() {
+    exec();
+  }
+};
+
+/*****************************************************************************/
 /* NCWrapper */
 /*****************************************************************************/
 
@@ -86,7 +104,7 @@ class NCWrapper : public QObject {
 
   dbif::InfoPromise* handleDescriptionRequest(data::NodeID id, bool sub);
   dbif::InfoPromise* handleChildrenRequest(data::NodeID id, bool sub);
-  dbif::InfoPromise* handleParsersListRequest();
+  dbif::InfoPromise* handleParsersListRequest(bool sub);
   dbif::InfoPromise* handleBlobDataRequest(
       data::NodeID id, uint64_t start, uint64_t end, bool sub);
   dbif::InfoPromise* handleChunkDataRequest(data::NodeID id, bool sub);
@@ -114,6 +132,14 @@ class NCWrapper : public QObject {
   void updateConnectionStatus(NetworkClient::ConnectionStatus
       connection_status);
   void messageReceived(msg_ptr message);
+  void newParser(QString id);
+  void replyForParsersListRequest(QPointer<dbif::InfoPromise> promise);
+
+ signals:
+  void requestReplyForParsersListRequest(QPointer<dbif::InfoPromise> promise);
+  void parse( dbif::ObjectHandle blob, db::MethodRunner* runner,
+      QString parser_id, quint64 start = 0,
+      dbif::ObjectHandle parent_chunk = dbif::ObjectHandle());
 
  private:
   dbif::InfoPromise* addInfoPromise(uint64_t qid, bool sub);
@@ -134,6 +160,9 @@ class NCWrapper : public QObject {
   std::unordered_set<uint64_t> subchunk_data_requests_;
 
   bool detailed_debug_info_;
+
+  QStringList parser_ids_;
+  QList<QPointer<dbif::InfoPromise>> parser_promises_;
 };
 
 } // namespace client

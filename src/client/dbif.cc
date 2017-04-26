@@ -20,9 +20,11 @@
 
 #include <QSharedPointer>
 
+#include "db/getter.h"
 #include "data/types.h"
 #include "network/msgpackwrapper.h"
 #include "client/dbif.h"
+#include "parser/utils.h"
 
 namespace veles {
 namespace client {
@@ -84,6 +86,22 @@ NCWrapper::NCWrapper(NetworkClient* network_client, QObject* parent)
         this, &NCWrapper::updateConnectionStatus);
     connect(nc_, &NetworkClient::messageReceived,
         this, &NCWrapper::messageReceived);
+
+    db::ParserWorker* parser_worker = new db::ParserWorker;
+    ParserThread* parser_thr = new ParserThread(this);
+    parser_worker->moveToThread(parser_thr);
+    QObject::connect(parser_worker, &QObject::destroyed,
+        parser_thr, &QThread::quit);
+    QObject::connect(this, &NCWrapper::parse,
+        parser_worker, &db::ParserWorker::parse);
+    QObject::connect(parser_worker, &db::ParserWorker::newParser,
+        this, &NCWrapper::newParser);
+    QObject::connect(this, &NCWrapper::requestReplyForParsersListRequest,
+        this, &NCWrapper::replyForParsersListRequest, Qt::QueuedConnection);
+    for (auto parser : parser::createAllParsers()) {
+      parser_worker->registerParser(parser);
+    }
+    parser_thr->start();
   }
 }
 
@@ -137,7 +155,7 @@ dbif::InfoPromise* NCWrapper::info(dbif::PInfoRequest req, data::NodeID id,
   } else if (req.dynamicCast<dbif::ChildrenRequest>()) {
     return handleChildrenRequest(id, sub);
   } else if (req.dynamicCast<dbif::ParsersListRequest>()) {
-    return handleParsersListRequest();
+    return handleParsersListRequest(sub);
   } else if (auto blob_data_request
       = req.dynamicCast<dbif::BlobDataRequest>()) {
     return handleBlobDataRequest(id, blob_data_request->start,
@@ -538,9 +556,13 @@ dbif::InfoPromise* NCWrapper::handleChildrenRequest(data::NodeID id, bool sub) {
   return promise;
 }
 
-dbif::InfoPromise* NCWrapper::handleParsersListRequest() {
-  // TODO
-  return new dbif::InfoPromise;
+dbif::InfoPromise* NCWrapper::handleParsersListRequest(bool sub) {
+  auto promise = new dbif::InfoPromise;
+  if (sub) {
+    parser_promises_.push_back(promise);
+  }
+  emit requestReplyForParsersListRequest(QPointer<dbif::InfoPromise>(promise));
+  return promise;
 }
 
 dbif::InfoPromise* NCWrapper::handleBlobDataRequest(
@@ -933,6 +955,22 @@ void NCWrapper::messageReceived(msg_ptr message) {
   if(handler_iter != message_handlers_.end()) {
     MessageHandler handler = handler_iter->second;
     (this->*handler)(message);
+  }
+}
+
+void NCWrapper::newParser(QString id) {
+  parser_ids_.push_back(id);
+
+  for (auto promise : parser_promises_) {
+    replyForParsersListRequest(promise);
+  }
+}
+
+void NCWrapper::replyForParsersListRequest(
+    QPointer<dbif::InfoPromise> promise) {
+  if (promise) {
+    emit promise->gotInfo(QSharedPointer<dbif::ParsersListRequest::ReplyType>
+        ::create(parser_ids_));
   }
 }
 
