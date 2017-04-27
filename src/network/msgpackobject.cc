@@ -16,7 +16,7 @@
  */
 #include "network/msgpackobject.h"
 #include "models.h"
-#include "util/misc.h"
+#include "util/int_bytes.h"
 
 namespace veles {
 namespace messages {
