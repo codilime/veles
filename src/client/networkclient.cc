@@ -101,7 +101,7 @@ void NetworkClient::connect(
     QObject::connect(client_socket_, &QAbstractSocket::connected,
         this, &NetworkClient::socketConnected, Qt::QueuedConnection);
     QObject::connect(client_socket_, &QAbstractSocket::disconnected,
-        this, &NetworkClient::socketDisconnected);
+        this, &NetworkClient::socketDisconnected, Qt::QueuedConnection);
     QObject::connect(client_socket_, &QIODevice::readyRead,
         this, &NetworkClient::newDataAvailable);
     QObject::connect(client_socket_,
