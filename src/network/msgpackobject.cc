@@ -430,9 +430,8 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::NodeI
 }
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::BinData> val) {
-  uint8_t* p = util::intToBytesLe(val->width(), 4);
-  auto data = std::make_shared<std::vector<uint8_t>>(p, p+4);
-  delete[] p;
+  auto data = std::make_shared<std::vector<uint8_t>>(4, 0);
+  util::intToBytesLe(val->width(), 4, data->data());
   data->insert(data->end(), val->rawData(), val->rawData() + val->octets());
   return std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_BINDATA), data);
 }

@@ -23,20 +23,18 @@ template<typename T>
 T bytesToIntLe(const uint8_t* bytes, size_t num_bytes) {
   assert(num_bytes <= sizeof(T));
   T res = T();
-  for (int i = 0; i < num_bytes; ++i) {
+  for (size_t i = 0; i < num_bytes; ++i) {
     res |= static_cast<T>(bytes[i]) << (i * 8);
   }
   return res;
 }
 
 template<typename T>
-uint8_t* intToBytesLe(T val, size_t num_bytes) {
+void intToBytesLe(T val, size_t num_bytes, uint8_t* out) {
   assert(num_bytes <= sizeof(T));
-  uint8_t* res = new uint8_t[num_bytes];
-  for (int i = 0; i < num_bytes; ++i) {
-    res[i] = (val >> (i * 8)) & 0xff;
+  for (size_t i = 0; i < num_bytes; ++i) {
+    out[i] = (val >> (i * 8)) & 0xff;
   }
-  return res;
 }
 
 }  // namespace util

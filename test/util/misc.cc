@@ -16,7 +16,10 @@
  */
 
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 #include "util/misc.h"
+
+using namespace testing;
 
 namespace veles {
 namespace util {
@@ -31,18 +34,13 @@ TEST(TestMisc, TestBytesToIntLe) {
 }
 
 TEST(TestMisc, TestIntToBytesLe) {
-  auto res = intToBytesLe(0, 4);
-  uint8_t exp[] = { 0x00, 0x00, 0x00, 0x00 };
-  EXPECT_EQ(memcmp(res, exp, 4), 0);
-  delete[] res;
-  auto res2 = intToBytesLe(0x3412, 2);
-  uint8_t exp2[] = { 0x12, 0x34 };
-  EXPECT_EQ(memcmp(res2, exp2, 2), 0);
-  delete[] res2;
-  auto res3 = intToBytesLe(0xf0debc9a78563412, 8);
-  uint8_t exp3[] = { 0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0 };
-  EXPECT_EQ(memcmp(res3, exp3, 8), 0);
-  delete[] res3;
+  std::vector<uint8_t> res(8,0);
+  intToBytesLe(0, 4, res.data());
+  EXPECT_THAT(res, ContainerEq(std::vector<uint8_t>(8,0)));
+  intToBytesLe(0x3412, 2, res.data());
+  EXPECT_THAT(res, ContainerEq(std::vector<uint8_t>({ 0x12, 0x34, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 })));
+  intToBytesLe(0xf0debc9a78563412, 8, res.data());
+  EXPECT_THAT(res, ContainerEq(std::vector<uint8_t>({ 0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0 })));
 }
 
 }  // namespace util
