@@ -60,18 +60,26 @@ class NCObjectHandle : public dbif::ObjectHandleBase {
 };
 
 /*****************************************************************************/
-/* ParsersThread */
+/* ChunkDataItemQuery */
 /*****************************************************************************/
 
-class ParserThread : public QThread {
- public:
-  ParserThread(QObject* parent = nullptr)
-      : QThread(parent) {}
+struct ChunkDataItemQuery{
+  ChunkDataItemQuery(uint64_t children_qid, uint64_t data_items_qid,
+      QPointer<dbif::InfoPromise> promise, data::NodeID id, bool sub);
+  typedef std::map<data::NodeID, std::shared_ptr<proto::Node>> ChildrenMap;
 
- protected:
-  void run() {
-    exec();
-  }
+  bool ready();
+
+  uint64_t children_qid;
+  uint64_t data_items_qid;
+  bool children_loaded;
+  bool data_items_loaded;
+  QPointer<dbif::InfoPromise> promise;
+  data::NodeID id;
+  bool sub;
+
+  ChildrenMap children_map;
+  std::vector<data::ChunkDataItem> items;
 };
 
 /*****************************************************************************/
@@ -82,6 +90,7 @@ class NCWrapper : public QObject {
   Q_OBJECT
 
  public:
+  typedef std::map<data::NodeID, NCObjectHandle> ChildrenMap;
   typedef void (NCWrapper::*MessageHandler)(msg_ptr);
 
   NCWrapper(NetworkClient* network_client, QObject* parent = nullptr);
@@ -96,6 +105,13 @@ class NCWrapper : public QObject {
       data::NodeID id);
 
   void handleGetListReplyMessage(msg_ptr message);
+  void handleGetChildrenListReply(
+      std::shared_ptr<proto::MsgGetListReply> reply,
+      QPointer<dbif::InfoPromise> promise);
+  void handleGetChunkDataItemsReply(
+      std::shared_ptr<proto::MsgGetListReply> reply,
+      std::shared_ptr<ChunkDataItemQuery> chunk_data_item_query);
+
   void handleRequestAckMessage(msg_ptr message);
   void handleGetReplyMessage(msg_ptr message);
   void handleGetBinDataReplyMessage(msg_ptr message);
@@ -125,8 +141,25 @@ class NCWrapper : public QObject {
   dbif::MethodResultPromise* handleChangeDataRequest();
   dbif::MethodResultPromise* handleSetChunkBoundsRequest(
       data::NodeID id, int64_t pos_start, int64_t pos_end);
-  dbif::MethodResultPromise* handleSetChunkParseRequest();
-  dbif::MethodResultPromise* handleBlobParseRequest();
+  dbif::MethodResultPromise* handleSetChunkParseRequest(data::NodeID id,
+      QSharedPointer<dbif::SetChunkParseRequest> chunk_parse_request);
+  dbif::MethodResultPromise* handleBlobParseRequest(data::NodeID id,
+      QSharedPointer<dbif::BlobParseRequest> blob_parse_request);
+
+  std::shared_ptr<messages::MsgpackObject> chunkDataItemToMsgpack(
+      const data::ChunkDataItem& item);
+  data::ChunkDataItem msgpackToChunkDataItem(
+      std::shared_ptr<messages::MsgpackObject> msgo);
+  bool nodeToChunkDataItem(
+      std::shared_ptr<proto::Node> node,
+      data::ChunkDataItem& out_chunk_data_item);
+
+  void updateChildrenDataItems(ChunkDataItemQuery& query,
+      std::shared_ptr<std::vector<std::shared_ptr<proto::Node>>> children,
+      std::shared_ptr<std::vector<std::shared_ptr<veles::data::NodeID>>> gone);
+  void updateDataItems(ChunkDataItemQuery& query,
+      std::shared_ptr<messages::MsgpackObject> data_items);
+  std::vector<data::ChunkDataItem> resultDataItems(ChunkDataItemQuery& query);
 
  public slots:
   void updateConnectionStatus(NetworkClient::ConnectionStatus
@@ -155,14 +188,14 @@ class NCWrapper : public QObject {
   std::unordered_map<uint64_t, QPointer<dbif::InfoPromise>>
       root_children_promises_;
   std::unordered_map<uint64_t, QSharedPointer<NCObjectHandle>> created_objs_waiting_for_ack_;
-  typedef std::map<data::NodeID, NCObjectHandle> ChildrenMap;
   std::unordered_map<uint64_t, QSharedPointer<ChildrenMap>> children_maps_;
-  std::unordered_set<uint64_t> subchunk_data_requests_;
 
   bool detailed_debug_info_;
 
   QStringList parser_ids_;
   QList<QPointer<dbif::InfoPromise>> parser_promises_;
+  std::map<uint64_t, std::shared_ptr<ChunkDataItemQuery>>
+      chunk_data_item_queries_;
 };
 
 } // namespace client
