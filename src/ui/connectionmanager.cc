@@ -234,7 +234,8 @@ void ConnectionManager::serverProcessErrorOccurred(QProcess::ProcessError error)
   if (error == QProcess::FailedToStart) {
       out << "*************************************" << endl
           << "Failed to run python interpreter." << endl
-          << "Make sure that python >= 3.5 is installed." << endl
+          << "Make sure that python >= 3.5 is installed and" << endl
+          << "server script location is set correctly." << endl
           << "*************************************" << endl;
   }
 }
