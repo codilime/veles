@@ -320,8 +320,10 @@ void HexEditWidget::showVisualization() {
   panel->setWindowTitle(cur_file_path_);
   panel->setAttribute(Qt::WA_DeleteOnClose);
 
-  main_window_->addTab(panel,
+  auto dock_widget = main_window_->addTab(panel,
       data_model_->path().join(" : "));
+  connect(dock_widget, &DockWidget::visibilityChanged,
+          panel, &visualization::VisualizationPanel::visibilityChanged);
 }
 
 void HexEditWidget::showHexEditor() {

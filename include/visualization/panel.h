@@ -48,6 +48,10 @@ class VisualizationPanel : public ui::View {
 
   void setData(const QByteArray &data);
   void setRange(const size_t start, const size_t end);
+  bool eventFilter(QObject *watched, QEvent *event) override;
+
+ public slots:
+  void visibilityChanged(bool visibility);
 
  private slots:
   void setSamplingMethod(const QString &name);
@@ -71,8 +75,8 @@ class VisualizationPanel : public ui::View {
   static util::ISampler* getSampler(ESampler type,
                                     const QByteArray &data,
                                     int sample_size);
-  static VisualizationWidget* getVisualization(EVisualization type,
-                                               QWidget *parent = 0);
+  VisualizationWidget* getVisualization(EVisualization type,
+                                        QWidget *parent = 0);
   static QString prepareAddressString(size_t start, size_t end);
 
   void setVisualization(EVisualization type);
@@ -109,6 +113,8 @@ class VisualizationPanel : public ui::View {
 
   SamplingMethodDialog* sampling_method_dialog_;
   ui::MainWindowWithDetachableDockWidgets* main_window_;
+
+  bool visible_;
 };
 
 }  //  namespace visualization
