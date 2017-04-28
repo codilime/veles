@@ -15,8 +15,7 @@
  *
  */
 
-#ifndef VELES_PROTO_EXCEPTIONS_H
-#define VELES_PROTO_EXCEPTIONS_H
+#pragma once
 
 #include <string>
 
@@ -40,4 +39,3 @@ class SchemaError : public VelesException {
 }  // namespace proto
 }  // namespace veles
 
-#endif

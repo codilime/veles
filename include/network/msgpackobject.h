@@ -18,6 +18,7 @@
 
 #include <msgpack.hpp>
 
+#include "fwd_models.h"
 #include "data/nodeid.h"
 #include "proto/exceptions.h"
 

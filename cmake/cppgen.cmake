@@ -1,4 +1,5 @@
 set(VENV_DIR ${CMAKE_CURRENT_BINARY_DIR}/msgpack-venv)
+set(REQUIREMENTS ${CMAKE_SOURCE_DIR}/python/requirements.txt)
 
 if(WIN32)
   set(BASEPYEXE py.exe -3)
@@ -16,7 +17,7 @@ add_custom_command(
 
 add_custom_command(
   OUTPUT ${SIX_LOC}
-  COMMAND ${PYEXE} -m pip install six
+  COMMAND ${PYEXE} -m pip install -r ${REQUIREMENTS}
   DEPENDS ${PYEXE})
 
 add_custom_target(cpp_python_gen

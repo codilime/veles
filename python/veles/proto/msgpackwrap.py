@@ -22,7 +22,6 @@ from veles.compatibility.int_bytes import int_to_bytes, int_from_bytes
 from veles.util.bigint import bigint_encode, bigint_decode
 
 
-# TODO generate those to C++
 EXT_NODE_ID = 0
 EXT_BINDATA = 1
 EXT_BIGINT = 2

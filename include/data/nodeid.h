@@ -28,7 +28,6 @@ namespace data {
 class NodeID {
  public:
   static const size_t WIDTH = 24;
-  static const uint8_t EXT_ID;
 
  private:
   uint8_t value[WIDTH];

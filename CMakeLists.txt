@@ -198,19 +198,33 @@ qt5_use_modules(parser Core)
 add_dependencies(parser zlib)
 target_link_libraries(parser veles_db veles_dbif ${ZLIB_LIBRARIES})
 
-set(MSGPACK_CPP "${CMAKE_CURRENT_BINARY_DIR}/messages.h")
+set(MSGPACK_CPP_FWD_HEADER "${CMAKE_CURRENT_BINARY_DIR}/fwd_models.h")
+set(MSGPACK_CPP_HEADER "${CMAKE_CURRENT_BINARY_DIR}/models.h")
+set(MSGPACK_CPP_SOURCE "${CMAKE_CURRENT_BINARY_DIR}/models.cc")
 set(PYTHON_DIR ${CMAKE_SOURCE_DIR}/python)
 
-add_custom_command(OUTPUT ${MSGPACK_CPP}
-  COMMAND ${PYEXE} -m veles.cpp.generate > ${MSGPACK_CPP}
+add_custom_command(OUTPUT ${MSGPACK_CPP_HEADER} ${MSGPACK_CPP_SOURCE} ${MSGPACK_CPP_FWD_HEADER}
+  COMMAND ${PYEXE} -m veles.cpp.generate ${CMAKE_CURRENT_BINARY_DIR}
+    veles.proto.node
+    veles.proto.check
+    veles.proto.chunk
+    veles.proto.connection
+    veles.proto.operation
+    veles.proto.messages
+    veles.proto.msgpackwrap
+    veles.tests.schema.cpp_test_models
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python
   COMMENT "Generating msgpack C++ code from Python"
   DEPENDS cpp_python_gen
     ${PYTHON_DIR}/veles/cpp/generate.py
-    ${PYTHON_DIR}/veles/proto/node.py
-    ${PYTHON_DIR}/veles/proto/messages.py
-    ${PYTHON_DIR}/veles/proto/exceptions.py
+    ${PYTHON_DIR}/veles/proto/check.py
     ${PYTHON_DIR}/veles/proto/chunk.py
+    ${PYTHON_DIR}/veles/proto/connection.py
+    ${PYTHON_DIR}/veles/proto/exceptions.py
+    ${PYTHON_DIR}/veles/proto/messages.py
+    ${PYTHON_DIR}/veles/proto/msgpackwrap.py
+    ${PYTHON_DIR}/veles/proto/operation.py
+    ${PYTHON_DIR}/veles/proto/node.py
     ${PYTHON_DIR}/veles/schema/model.py
     ${PYTHON_DIR}/veles/schema/enumeration.py
     ${PYTHON_DIR}/veles/schema/fields.py
@@ -218,12 +232,13 @@ add_custom_command(OUTPUT ${MSGPACK_CPP}
   VERBATIM)
 
 add_library(veles_network
-    ${MSGPACK_CPP}
+    ${MSGPACK_CPP_FWD_HEADER}
+    ${MSGPACK_CPP_HEADER}
     ${INCLUDE_DIR}/proto/exceptions.h
     ${INCLUDE_DIR}/network/msgpackwrapper.h
     ${INCLUDE_DIR}/network/msgpackobject.h
+    ${MSGPACK_CPP_SOURCE}
     ${SRC_DIR}/network/msgpackobject.cc
-    ${SRC_DIR}/network/msgpackwrapper.cc
 )
 
 add_dependencies(veles_network msgpack-c)
@@ -245,7 +260,6 @@ add_library(veles_db
 
 # LIB: veles_client
 add_library(veles_client
-#    ${CMAKE_BINARY_DIR}/messages.h
     ${INCLUDE_DIR}/client/node.h
     ${INCLUDE_DIR}/client/nodetree.h
     ${INCLUDE_DIR}/client/networkclient.h

@@ -93,7 +93,7 @@ class Any(Field):
     value_type = object
 
     def cpp_type(self):
-        return 'MsgpackObject', False, 'nullptr'
+        return 'veles::messages::MsgpackObject', False, 'nullptr'
 
 
 class Empty(Field):
@@ -363,7 +363,7 @@ class Object(Field):
 
     def cpp_type(self):
         # TODO default value from self.default
-        return self.value_type.cpp_type(), False, 'nullptr'
+        return self.value_type.cpp_type()[1], False, 'nullptr'
 
 
 class Enum(Field):
@@ -384,8 +384,8 @@ class Enum(Field):
         return six.text_type(value.name)
 
     def cpp_type(self):
-        return (self.value_type.cpp_type(), True,
+        return (self.value_type.cpp_type()[1], True,
                 '{0}::{1}'.format(
-                   self.value_type.cpp_type(),
+                   self.value_type.cpp_type()[1],
                    (self.default.name if self.default is not None
                     else list(self.value_type.__members__)[0]).upper()))

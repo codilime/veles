@@ -62,7 +62,7 @@ class VelesException(Exception, NewObject):
 
     @classmethod
     def cpp_type(cls):
-        return 'veles::proto::VelesException'
+        return 'VelesException', 'veles::proto::VelesException'
 
     def __eq__(self, other):
         return (isinstance(other, VelesException)
