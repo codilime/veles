@@ -46,7 +46,8 @@ VisualizationPanel::VisualizationPanel(
     veles::ui::View("Visualization", ":/images/trigram_icon.png"),
     sampler_type_(k_default_sampler),
     visualization_type_(k_default_visualization), sample_size_(1024),
-    data_model_(data_model), main_window_(main_window) {
+    data_model_(data_model), main_window_(main_window),
+    visible_(true) {
   sampler_ = getSampler(sampler_type_, data_, sample_size_);
   sampler_->allowAsynchronousResampling(true);
   minimap_sampler_ = getSampler(ESampler::UNIFORM_SAMPLER, data_,
@@ -99,6 +100,19 @@ void VisualizationPanel::setRange(const size_t start, const size_t end) {
   sampler_->setRange(start, end);
 }
 
+bool VisualizationPanel::eventFilter(QObject *watched, QEvent *event) {
+  // filter out timer events for not visible visualisation so that we don't
+  // waste resources on rotating something that isn't visible.
+  if (!visible_ && event->type() == QEvent::Timer) {
+    return true;
+  }
+  return false;
+}
+
+void VisualizationPanel::visibilityChanged(bool visibility) {
+  visible_ = visibility;
+}
+
 /*****************************************************************************/
 /* Static factory methods */
 /*****************************************************************************/
@@ -126,10 +140,14 @@ VisualizationWidget* VisualizationPanel::getVisualization(EVisualization type,
   case EVisualization::TRIGRAM:
     trigram = new TrigramWidget(parent);
     trigram->setMode(TrigramWidget::EVisualizationMode::TRIGRAM);
-    return trigram;
+    break;
   case EVisualization::LAYERED_DIGRAM:
     trigram = new TrigramWidget(parent);
     trigram->setMode(TrigramWidget::EVisualizationMode::LAYERED_DIGRAM, false);
+    break;
+  }
+  if (trigram) {
+    trigram->installEventFilter(this);
     return trigram;
   }
   return nullptr;
