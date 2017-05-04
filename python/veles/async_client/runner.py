@@ -139,6 +139,26 @@ class QueryGetter:
         del self.proto.qids[id(self)]
 
 
+class ConnectionsGetter:
+    def __init__(self, proto):
+        self.proto = proto
+        self.future = asyncio.Future()
+        self.proto.qids[id(self)] = self
+        self.proto.send_msg(messages.MsgListConnections(
+            qid=id(self),
+        ))
+
+    def handle_reply(self, msg):
+        if not isinstance(msg, messages.MsgConnectionsReply):
+            raise SchemaError('weird reply to list_connections')
+        self.future.set_result(msg.connections)
+        del self.proto.qids[id(self)]
+
+    def handle_error(self, exc, checks):
+        self.future.set_exception(exc)
+        del self.proto.qids[id(self)]
+
+
 class Request:
     def __init__(self, proto):
         self.proto = proto

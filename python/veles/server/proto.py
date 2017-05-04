@@ -30,7 +30,10 @@ from veles.db.subscriber import (
     BaseSubscriberBinData,
     BaseSubscriberList,
 )
-from veles.async_conn.subscriber import BaseSubscriberQueryRaw
+from veles.async_conn.subscriber import (
+    BaseSubscriberQueryRaw,
+    BaseSubscriberConnections,
+)
 from veles.async_conn.plugin import (
     MethodHandler,
     QueryHandler,
@@ -149,6 +152,25 @@ class SubscriberQuery(BaseSubscriberQueryRaw):
         ))
 
 
+class SubscriberConnections(BaseSubscriberConnections):
+    def __init__(self, tracker, proto, qid):
+        self.proto = proto
+        self.qid = qid
+        super().__init__(tracker)
+
+    def connections_changed(self, connections):
+        self.proto.send_msg(messages.MsgConnectionsReply(
+            qid=self.qid,
+            connections=connections,
+        ))
+
+    def error(self, err):
+        self.proto.send_msg(messages.MsgQueryError(
+            qid=self.qid,
+            err=err,
+        ))
+
+
 class RemoteMethodRunner:
     def __init__(self):
         self.future = asyncio.Future()
@@ -250,7 +272,7 @@ class ServerProto(asyncio.Protocol):
         self.pqids = {}
         self.pbids = {}
         self.ptids = {}
-        self.server_key = prepare_auth_key(key)
+        self.server_key = key
         self.client_key = b''
         self.authorized = False
         self.connected = False
@@ -258,10 +280,10 @@ class ServerProto(asyncio.Protocol):
         self.client_version = None
         self.client_description = None
         self.client_type = None
+        self.cid = None
 
     def connection_made(self, transport):
         self.transport = transport
-        self.cid = self.conn.new_conn(self)
         wrapper = msgpackwrap.MsgpackWrapper()
         self.unpacker = wrapper.unpacker
         self.packer = wrapper.packer
@@ -352,7 +374,8 @@ class ServerProto(asyncio.Protocol):
             runner.future.set_result([])
         for runner in self.ptids.values():
             runner.future.set_exception(ConnectionLostError())
-        self.conn.remove_conn(self)
+        if self.connected:
+            self.conn.remove_conn(self)
 
     def send_msg(self, msg):
         self.transport.write(self.packer.pack(msg.dump()))
@@ -383,6 +406,7 @@ class ServerProto(asyncio.Protocol):
         self.client_description = msg.client_description
         self.client_type = msg.client_type
         self.connected = True
+        self.cid = self.conn.new_conn(self)
         self.send_msg(messages.MsgConnected(
             proto_version=PROTO_VERSION,
             server_name='server',
@@ -662,17 +686,33 @@ class ServerProto(asyncio.Protocol):
         self.send_msg(messages.MsgPluginHandlerUnregistered(phid=msg.phid))
 
     async def msg_list_connections(self, msg):
-        self.send_msg(messages.MsgConnectionsReply(
-            qid=msg.qid,
-            connections=[],
-        ))
+        if msg.qid in self.subs:
+            raise SubscriptionInUseError()
+        if not msg.sub:
+            try:
+                connections = await self.conn.get_connections()
+            except VelesException as err:
+                self.send_msg(messages.MsgQueryError(
+                    qid=msg.qid,
+                    err=err,
+                ))
+            else:
+                self.send_msg(messages.MsgConnectionsReply(
+                    qid=msg.qid,
+                    connections=connections,
+                ))
+        else:
+            self.subs[msg.qid] = SubscriberConnections(
+                self.conn, self, msg.qid)
 
 
 async def create_unix_server(conn, key, path):
+    key = prepare_auth_key(key)
     return await conn.loop.create_unix_server(
         lambda: ServerProto(conn, key), path)
 
 
 async def create_tcp_server(conn, key, ip, port):
+    key = prepare_auth_key(key)
     return await conn.loop.create_server(
         lambda: ServerProto(conn, key), ip, port)

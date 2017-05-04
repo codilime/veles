@@ -77,6 +77,7 @@ class ClientProto(asyncio.Protocol):
             'get_bindata_reply': self.msg_get_reply,
             'get_list_reply': self.msg_get_reply,
             'get_query_reply': self.msg_get_reply,
+            'connections_reply': self.msg_get_reply,
             'query_error': self.msg_query_error,
             'subscription_cancelled': self.msg_subscription_cancelled,
             'proto_error': self.msg_proto_error,

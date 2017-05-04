@@ -225,7 +225,6 @@ class MsgGetQueryReply(MsgpackMsg):
     checks = fields.List(fields.Object(Check))
 
 
-# XXX NYI
 class MsgListConnections(MsgpackMsg):
     object_type = 'list_connections'
 
@@ -233,7 +232,6 @@ class MsgListConnections(MsgpackMsg):
     sub = fields.Boolean(default=False)
 
 
-# XXX NYI
 class MsgConnectionsReply(MsgpackMsg):
     object_type = 'connections_reply'
 

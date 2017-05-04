@@ -25,6 +25,7 @@ from veles.util.future import done_future, bad_future
 from veles.db.tracker import DbTracker
 from veles.proto import check
 from veles.proto.node import PosFilter
+from veles.proto.connection import Connection
 from veles.proto.exceptions import (
     VelesException,
     RegistryNoMatchError,
@@ -33,7 +34,9 @@ from veles.proto.exceptions import (
 from veles.async_conn.plugin import (
     MethodHandler, QueryHandler, BroadcastHandler, TriggerHandler
 )
-from veles.async_conn.subscriber import BaseSubscriberQuery
+from veles.async_conn.subscriber import (
+    BaseSubscriberQueryRaw, BaseSubscriberConnections
+)
 from veles.async_conn.conn import AsyncConnection
 
 from .query import QueryManager
@@ -78,18 +81,38 @@ class AsyncLocalConnection(AsyncConnection):
         self.triggers = NameTagsRegistry()
         self.broadcasts = {}
         self.query_subs = {}
+        self.connections_subs = set()
         super().__init__()
+
+    def _connections(self):
+        return [
+            Connection(
+                client_id=k,
+                client_name=v.client_name,
+                client_version=v.client_version,
+                client_description=v.client_description,
+                client_type=v.client_type,
+            )
+            for k, v in self.conns.items()
+        ]
+
+    def _send_conn_subs(self):
+        conns = self._connections()
+        for sub in self.connections_subs:
+            sub.connections_changed(conns)
 
     def new_conn(self, conn):
         cid = self.next_cid
         self.next_cid += 1
         self.conns[cid] = conn
         print("Conn {} started.".format(cid))
+        self._send_conn_subs()
         return cid
 
     def remove_conn(self, conn):
         print("Conn {} gone.".format(conn.cid))
-        self.conns[conn.cid] = None
+        del self.conns[conn.cid]
+        self._send_conn_subs()
 
     # getters
 
@@ -207,14 +230,22 @@ class AsyncLocalConnection(AsyncConnection):
     # subscribers
 
     def register_subscriber(self, sub):
-        if isinstance(sub, BaseSubscriberQuery):
+        if isinstance(sub, BaseSubscriberQueryRaw):
             self.query_subs[sub] = QueryManager(sub)
+        elif isinstance(sub, BaseSubscriberConnections):
+            self.connections_subs.add(sub)
+            sub.connections_changed(self._connections())
         else:
             self.tracker.register_subscriber(sub)
 
     def unregister_subscriber(self, sub):
-        if isinstance(sub, BaseSubscriberQuery):
+        if isinstance(sub, BaseSubscriberQueryRaw):
             self.query_subs[sub].cancel()
             del self.query_subs[sub]
+        elif isinstance(sub, BaseSubscriberConnections):
+            self.connections_subs.remove(sub)
         else:
             self.tracker.unregister_subscriber(sub)
+
+    def get_connections(self):
+        return done_future(self._connections())

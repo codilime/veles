@@ -128,3 +128,17 @@ class QuerySubManager(BaseSubManager):
 
     def _handle_error(self, exc, checks):
         self.sub.error(exc, checks)
+
+
+class ConnectionsSubManager(BaseSubManager):
+    def __init__(self, sub):
+        super().__init__(sub)
+        self.proto.send_msg(messages.MsgListConnections(
+            qid=id(self),
+            sub=True,
+        ))
+
+    def _handle_reply(self, msg):
+        if not isinstance(msg, messages.MsgConnectionsReply):
+            raise SchemaError('weird reply to list_connections')
+        self.sub.connections_changed(msg.connections)

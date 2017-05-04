@@ -374,6 +374,36 @@ class Client(object):
             print(pkt)
             raise Exception('weird reply to run_broadcast')
 
+    def list_connections(self):
+        msg = messages.MsgListConnections(
+            qid=0,
+        )
+        self.send_msg(msg)
+        pkt = self.getpkt()
+        if isinstance(pkt, messages.MsgConnectionsReply) and pkt.qid == 0:
+            return pkt.connections
+        elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
+            raise pkt.err
+        else:
+            print(pkt)
+            raise Exception('weird reply to list_connections')
+
+    def list_connections_sub(self):
+        msg = messages.MsgListConnections(
+            qid=0,
+            sub=True
+        )
+        self.send_msg(msg)
+        while True:
+            pkt = self.getpkt()
+            if isinstance(pkt, messages.MsgConnectionsReply) and pkt.qid == 0:
+                yield pkt
+            elif isinstance(pkt, messages.MsgQueryError) and pkt.qid == 0:
+                raise pkt.err
+            else:
+                print(pkt)
+                raise Exception('weird reply to list_connections')
+
 
 class UnixClient(Client):
     def __init__(self, path, key):

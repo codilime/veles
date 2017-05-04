@@ -28,7 +28,8 @@ from veles.db.subscriber import (
     BaseSubscriberList,
 )
 from veles.async_conn.subscriber import (
-    BaseSubscriberQuery,
+    BaseSubscriberQueryRaw,
+    BaseSubscriberConnections,
 )
 from .runner import (
     NodeGetter,
@@ -36,6 +37,7 @@ from .runner import (
     BinDataGetter,
     ListGetter,
     QueryGetter,
+    ConnectionsGetter,
     Request,
     MethodRunner,
     BroadcastRunner,
@@ -46,6 +48,7 @@ from .subscriber import (
     BinDataSubManager,
     ListSubManager,
     QuerySubManager,
+    ConnectionsSubManager,
 )
 
 
@@ -86,6 +89,9 @@ class AsyncRemoteConnection(AsyncConnection):
 
     def get_query_raw(self, node, name, params, checks=None):
         return QueryGetter(self.proto, node, name, params, checks).future
+
+    def get_connections(self):
+        return ConnectionsGetter(self.proto).future
 
     # mutators
 
@@ -161,8 +167,10 @@ class AsyncRemoteConnection(AsyncConnection):
             manager = BinDataSubManager(sub)
         elif isinstance(sub, BaseSubscriberList):
             manager = ListSubManager(sub)
-        elif isinstance(sub, BaseSubscriberQuery):
+        elif isinstance(sub, BaseSubscriberQueryRaw):
             manager = QuerySubManager(sub)
+        elif isinstance(sub, BaseSubscriberConnections):
+            manager = ConnectionsSubManager(sub)
         else:
             raise TypeError('unknown type of subscription')
         self.subs[sub] = manager

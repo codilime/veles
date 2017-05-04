@@ -56,3 +56,15 @@ class BaseSubscriberQuery(BaseSubscriberQueryRaw):
             self.result_changed(self.sig.result.load(result))
         except VelesException as e:
             self.error(e, checks)
+
+
+class BaseSubscriberConnections(BaseSubscriber):
+    """
+    A subscriber of connection list.  ``connections_changed`` is called
+    whenever the result changes.
+    """
+    def connections_changed(self, connections):
+        raise NotImplementedError
+
+    def error(self, err):
+        raise NotImplementedError

@@ -193,3 +193,6 @@ class AsyncConnection:
                 MethodHandler, QueryHandler, BroadcastHandler, TriggerHandler
             )):
                 self.unregister_plugin_handler(v)
+
+    def get_connections(self):
+        raise NotImplementedError
