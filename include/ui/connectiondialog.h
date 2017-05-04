@@ -52,9 +52,14 @@ class ConnectionDialog : public QDialog {
   void serverFileSelected(const QString& file_name);
   void loadDefaultValues();
   void loadSettings();
+  void loadProfiles();
   void saveSettings();
-  void saveSettingsToggled(bool toggled);
   void dialogAccepted();
+  void profileChanged(int index);
+  void profileRemoved();
+  void newProfile();
+  void profileNameEdited(QString name);
+  void defaultProfile();
 
  protected:
   void showEvent(QShowEvent* event) override;

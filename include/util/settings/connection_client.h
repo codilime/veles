@@ -63,6 +63,8 @@ QString currentProfile();
 void setCurrentProfile(QString profile);
 QStringList profileList();
 void removeProfile(QString profile);
+QString uniqueProfileName(QString prefix);
+void setDefaultProfile(QString profile);
 
 }  // namespace connection
 }  // namespace settings
