@@ -22,6 +22,7 @@
 #include "ui/connectiondialog.h"
 #include "ui/connectionmanager.h"
 #include "util/version.h"
+#include "util/settings/connection_client.h"
 
 namespace veles {
 namespace ui {
@@ -325,15 +326,17 @@ void ConnectionNotificationWidget::updateConnectionStatus(
 
   switch (connection_status) {
   case client::NetworkClient::ConnectionStatus::NotConnected:
-    ui_->connection_status_text_label->setText("Not connected");
+    ui_->connection_status_text_label->setText("Not Connected");
     ui_->connection_status_icon_label->setPixmap(icon_not_connected_);
     break;
   case client::NetworkClient::ConnectionStatus::Connecting:
-    ui_->connection_status_text_label->setText("Connecting");
+    ui_->connection_status_text_label->setText("Connecting: " +
+        util::settings::connection::currentProfile());
     ui_->connection_status_icon_label->setPixmap(icon_not_connected_);
     break;
   case client::NetworkClient::ConnectionStatus::Connected:
-    ui_->connection_status_text_label->setText("Connected");
+    ui_->connection_status_text_label->setText("Connected: " +
+        util::settings::connection::currentProfile());
     ui_->connection_status_icon_label->setPixmap(icon_connected_);
     break;
   }

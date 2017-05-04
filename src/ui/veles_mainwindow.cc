@@ -145,7 +145,7 @@ void VelesMainWindow::init() {
   bringDockWidgetToFront(log_dock_widget_);
   log_dock_widget_->setFocus(Qt::OtherFocusReason);
 
-  connection_manager_->showConnectionDialogAction()->trigger();
+  connection_manager_->connectionDialogAccepted();
   connect(this, &VelesMainWindow::shown,
       connection_manager_, &ConnectionManager::raiseConnectionDialog,
       Qt::QueuedConnection);
