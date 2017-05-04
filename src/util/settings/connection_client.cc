@@ -68,8 +68,8 @@ QStringList profileList() {
 QVariant profileSettings(QString key, QVariant defaultValue) {
   QSettings settings;
   QMap<QString, QVariant> profiles = settings.value("profiles", QSettings::SettingsMap()).toMap();
-  QSettings::SettingsMap proefileSettings = profiles.value(currentProfile(), QSettings::SettingsMap()).toMap();
-  return proefileSettings.value(key, defaultValue);
+  QSettings::SettingsMap profile_settings = profiles.value(currentProfile(), QSettings::SettingsMap()).toMap();
+  return profile_settings.value(key, defaultValue);
 }
 
 void setProfileSettings(QString key, QVariant value) {
