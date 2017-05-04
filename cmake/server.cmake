@@ -1,9 +1,12 @@
 set(SERVER_DIR ${CMAKE_CURRENT_BINARY_DIR}/veles-server)
 set(SERVER_OUTPUT_STARTUP_SCRIPT_FILE ${SERVER_DIR}/srv.py)
 
+add_custom_target(copy-server-files ALL
+  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/python ${CMAKE_CURRENT_BINARY_DIR}/python)
+
 add_custom_command(OUTPUT ${SERVER_OUTPUT_STARTUP_SCRIPT_FILE}
   COMMAND ${CMAKE_COMMAND} -E copy_if_different
-  "${CMAKE_SOURCE_DIR}/python/srv.py"
+  "${CMAKE_CURRENT_BINARY_DIR}/python/srv.py"
   "${SERVER_OUTPUT_STARTUP_SCRIPT_FILE}"
   COMMENT "Copying server script")
 
@@ -26,7 +29,7 @@ if(WIN32)
   set(SERVER_OUTPUT_VELES_LIB_FILE ${SERVER_PYTHON_DIR}/veles/__init__.py)
 
   add_custom_command(OUTPUT ${SERVER_OUTPUT_REQUIRMENTS_FILE}
-    COMMAND ${BASEPYEXE} -m pip install -r ${CMAKE_SOURCE_DIR}/python/requirements.txt -t ${SERVER_DIR}/python
+    COMMAND ${BASEPYEXE} -m pip install -r ${CMAKE_CURRENT_BINARY_DIR}/python/requirements.txt -t ${SERVER_DIR}/python
     COMMENT "Installing veles python lib requirements")
 
   add_custom_command(OUTPUT ${SERVER_OUTPUT_EMBED_PYTHON_FILE}
@@ -36,7 +39,7 @@ if(WIN32)
 
   add_custom_command(OUTPUT ${SERVER_OUTPUT_VELES_LIB_FILE}
     COMMAND ${BASEPYEXE} setup.py install --install-lib ${SERVER_PYTHON_DIR_NATIVE}
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python/
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python/
     COMMENT "Installing veles python lib")
 
   add_custom_target(server
@@ -62,7 +65,7 @@ if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
 
   add_custom_command(OUTPUT ${SERVER_OUTPUT_REQUIRMENTS_FILE}
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${CMAKE_SOURCE_DIR}/python/requirements.txt"
+    "${CMAKE_CURRENT_BINARY_DIR}/python/requirements.txt"
     "${SERVER_DIR}/requirements.txt"
     COMMENT "Copying server script")
 
@@ -70,7 +73,7 @@ if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
 
   add_custom_command(OUTPUT ${SERVER_OUTPUT_VELES_LIB_FILE}
     COMMAND ${BASEPYEXE} setup.py sdist --dist-dir ${SERVER_DIR}
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python/
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python/
     COMMENT "Installing veles python lib")
 
   add_custom_target(server
@@ -94,14 +97,14 @@ if (CMAKE_HOST_APPLE)
   set(SERVER_OUTPUT_VELES_LIB_FILE ${SERVER_DIR}/veleslib)
   add_custom_command(OUTPUT ${SERVER_OUTPUT_VELES_LIB_FILE}
     COMMAND ${SERVER_OUTPUT_VELES_VENV_PYTHON} setup.py install
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python/
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python/
     DEPENDS ${SERVER_OUTPUT_VELES_VENV_PYTHON}
     COMMENT "Installing veles python lib")
 
   set(SERVER_OUTPUT_VELES_LIB_REQUIRMENTS ${SERVER_DIR}/requirements)
   add_custom_command(OUTPUT ${SERVER_OUTPUT_VELES_LIB_REQUIRMENTS}
     COMMAND ${SERVER_OUTPUT_VELES_VENV_PYTHON} -m pip install -r requirements.txt
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python/
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python/
     DEPENDS ${SERVER_OUTPUT_VELES_VENV_PYTHON}
     COMMENT "Installing veles python lib requirements")
 
