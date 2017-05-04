@@ -30,19 +30,67 @@ QString localhost("127.0.0.1");
 QString default_database_file("veles.vdb");
 int default_server_port = 3135;
 bool default_shut_down_server = true;
+QString default_profile("local server");
+
+QString currentProfile() {
+  QSettings settings;
+  return settings.value("profile", default_profile).toString();;
+}
+
+void setCurrentProfile(QString profile) {
+  QSettings settings;
+  settings.setValue("profile", profile);
+}
+
+void removeProfile(QString profile) {
+    QSettings settings;
+    QMap<QString, QVariant> profiles = settings.value("profiles").toMap();
+    profiles.remove(profile);
+    settings.setValue("profiles", profiles);
+    if (profile == currentProfile()) {
+      auto profiles = profileList();
+      if (profiles.empty()) {
+        setCurrentProfile(default_profile);
+      } else {
+        setCurrentProfile(profiles[0]);
+      }
+    }
+}
+
+QStringList profileList() {
+   QSettings settings;
+   QMap<QString, QVariant> default_profiles;
+   default_profiles[default_profile] = QSettings::SettingsMap();
+   QMap<QString, QVariant> profiles = settings.value("profiles", default_profiles).toMap();
+   return profiles.keys();
+}
+
+QVariant profileSettings(QString key, QVariant defaultValue) {
+  QSettings settings;
+  QMap<QString, QVariant> profiles = settings.value("profiles", QSettings::SettingsMap()).toMap();
+  QSettings::SettingsMap proefileSettings = profiles.value(currentProfile(), QSettings::SettingsMap()).toMap();
+  return proefileSettings.value(key, defaultValue);
+}
+
+void setProfileSettings(QString key, QVariant value) {
+  QSettings settings;
+  QMap<QString, QVariant> profiles = settings.value("profiles").toMap();
+  QSettings::SettingsMap profile = profiles[currentProfile()].toMap();
+  profile[key] = value;
+  profiles[currentProfile()] = profile;
+  settings.setValue("profiles", profiles);
+}
 
 bool runServerDefault() {
   return default_run_server;
 }
 
 bool runServer() {
-  QSettings settings;
-  return settings.value("conection.run_server", runServerDefault()).toBool();
+  return profileSettings("conection.run_server", runServerDefault()).toBool();
 }
 
 void setRunServer(bool run_server) {
-  QSettings settings;
-  settings.setValue("conection.run_server", run_server);
+  setProfileSettings("conection.run_server", run_server);
 }
 
 QString serverHostDefault() {
@@ -50,13 +98,11 @@ QString serverHostDefault() {
 }
 
 QString serverHost() {
-  QSettings settings;
-  return settings.value("conection.server", serverHostDefault()).toString();
+  return profileSettings("conection.server", serverHostDefault()).toString();
 }
 
 void setServerHost(QString server_host) {
-  QSettings settings;
-  settings.setValue("conection.server", server_host);
+  setProfileSettings("conection.server", server_host);
 }
 
 int serverPortDefault() {
@@ -64,13 +110,11 @@ int serverPortDefault() {
 }
 
 int serverPort() {
-  QSettings settings;
-  return settings.value("conection.server_port", serverPortDefault()).toInt();
+  return profileSettings("conection.server_port", serverPortDefault()).toInt();
 }
 
 void setServerPort(int server_port) {
-  QSettings settings;
-  settings.setValue("conection.server_port", server_port);
+  setProfileSettings("conection.server_port", server_port);
 }
 
 QString clientInterfaceDefault() {
@@ -78,19 +122,16 @@ QString clientInterfaceDefault() {
 }
 
 QString clientInterface() {
-  QSettings settings;
-  return settings.value("conection.client_interface",
+  return profileSettings("conection.client_interface",
       clientInterfaceDefault()).toString();
 }
 
 void setClientInterface(QString client_interface) {
-  QSettings settings;
-  settings.setValue("conection.client_interface", client_interface);
+  setProfileSettings("conection.client_interface", client_interface);
 }
 
 QString clientName() {
-  QSettings settings;
-  return settings.value("conection.client_name", clientNameDefault()).toString();
+  return profileSettings("conection.client_name", clientNameDefault()).toString();
 }
 
 QString clientNameDefault() {
@@ -111,8 +152,7 @@ QString clientNameDefault() {
 }
 
 void setClientName(QString client_name) {
-  QSettings settings;
-  settings.setValue("conection.client_name", client_name);
+  setProfileSettings("conection.client_name", client_name);
 }
 
 QString connectionKeyDefault() {
@@ -120,13 +160,12 @@ QString connectionKeyDefault() {
 }
 
 QString connectionKey() {
-  QSettings settings;
-  return settings.value("conection.key", connectionKeyDefault()).toString();
+  return profileSettings("conection.key", connectionKeyDefault()).toString();
 }
 
 void setConnectionKey(QString connection_key) {
   QSettings settings;
-  settings.setValue("conection.key", connection_key);
+  setProfileSettings("conection.key", connection_key);
 }
 
 QString databaseNameDefault() {
@@ -134,14 +173,12 @@ QString databaseNameDefault() {
 }
 
 QString databaseName() {
-  QSettings settings;
-  return settings.value("conection.database",
+  return profileSettings("conection.database",
       databaseNameDefault()).toString();
 }
 
 void setDatabaseName(QString database_name) {
-  QSettings settings;
-  settings.setValue("conection.database", database_name);
+  setProfileSettings("conection.database", database_name);
 }
 
 QString serverScriptDefault() {
@@ -155,14 +192,12 @@ QString serverScriptDefault() {
 }
 
 QString serverScript() {
-  QSettings settings;
-  return settings.value("connection.server_script",
+  return profileSettings("connection.server_script",
       serverScriptDefault()).toString();
 }
 
 void setServerScript(QString server_script) {
-  QSettings settings;
-  settings.setValue("connection.server_script", server_script);
+  setProfileSettings("connection.server_script", server_script);
 }
 
 bool shutDownServerOnQuitDefault() {
@@ -170,14 +205,12 @@ bool shutDownServerOnQuitDefault() {
 }
 
 bool shutDownServerOnQuit() {
-  QSettings settings;
-  return settings.value("connection.shut_down_server_on_quit",
+  return profileSettings("connection.shut_down_server_on_quit",
       shutDownServerOnQuitDefault()).toBool();
 }
 
 void setShutDownServerOnQuit(bool shut_down_server) {
-  QSettings settings;
-  settings.setValue("connection.shut_down_server_on_quit", shut_down_server);
+  setProfileSettings("connection.shut_down_server_on_quit", shut_down_server);
 }
 
 }  // namespace connection

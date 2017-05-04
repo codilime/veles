@@ -59,6 +59,11 @@ bool shutDownServerOnQuitDefault();
 bool shutDownServerOnQuit();
 void setShutDownServerOnQuit(bool shut_down_server);
 
+QString currentProfile();
+void setCurrentProfile(QString profile);
+QStringList profileList();
+void removeProfile(QString profile);
+
 }  // namespace connection
 }  // namespace settings
 }  // namespace util
