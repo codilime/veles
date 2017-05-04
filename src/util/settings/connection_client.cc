@@ -17,6 +17,7 @@
 #include <QSettings>
 #include <QApplication>
 #include <QStandardPaths>
+#include <QFileInfo>
 
 #include "util/settings/connection_client.h"
 
@@ -145,13 +146,19 @@ void setDatabaseName(QString database_name) {
 }
 
 QString serverScriptDefault() {
+  QString server_script;
 #if defined(Q_OS_WIN)
-  return qApp->applicationDirPath() + "/../veles-server/srv.py";
+  server_script = qApp->applicationDirPath() + "/../veles-server/srv.py";
 #elif defined(Q_OS_LINUX)
-  return qApp->applicationDirPath() + "/../share/veles-server/srv.py";
+  server_script = qApp->applicationDirPath() + "/../share/veles-server/srv.py";
 #else
-  return qApp->applicationDirPath() + "/../Resources/veles-server/srv.py";
+  server_script = qApp->applicationDirPath() + "/../Resources/veles-server/srv.py";
 #endif
+  QFileInfo check_file(server_script);
+  if (!check_file.exists()) {
+    server_script = qApp->applicationDirPath() + "/python/srv.py";
+  }
+  return server_script;
 }
 
 QString serverScript() {
