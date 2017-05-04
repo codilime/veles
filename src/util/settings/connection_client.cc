@@ -43,26 +43,26 @@ void setCurrentProfile(QString profile) {
 }
 
 void removeProfile(QString profile) {
-    QSettings settings;
-    QMap<QString, QVariant> profiles = settings.value("profiles").toMap();
-    profiles.remove(profile);
-    settings.setValue("profiles", profiles);
-    if (profile == currentProfile()) {
-      auto profiles = profileList();
-      if (profiles.empty()) {
-        setCurrentProfile(default_profile);
-      } else {
-        setCurrentProfile(profiles[0]);
-      }
+  QSettings settings;
+  QMap<QString, QVariant> profiles = settings.value("profiles").toMap();
+  profiles.remove(profile);
+  settings.setValue("profiles", profiles);
+  if (profile == currentProfile()) {
+    auto profiles = profileList();
+    if (profiles.empty()) {
+      setCurrentProfile(default_profile);
+    } else {
+      setCurrentProfile(profiles[0]);
     }
+  }
 }
 
 QStringList profileList() {
-   QSettings settings;
-   QMap<QString, QVariant> default_profiles;
-   default_profiles[default_profile] = QSettings::SettingsMap();
-   QMap<QString, QVariant> profiles = settings.value("profiles", default_profiles).toMap();
-   return profiles.keys();
+  QSettings settings;
+  QMap<QString, QVariant> default_profiles;
+  default_profiles[default_profile] = QSettings::SettingsMap();
+  QMap<QString, QVariant> profiles = settings.value("profiles", default_profiles).toMap();
+  return profiles.keys();
 }
 
 QVariant profileSettings(QString key, QVariant defaultValue) {
@@ -137,9 +137,9 @@ QString clientName() {
 QString clientNameDefault() {
   QString user_name;
 #if defined(Q_OS_LINUX) || defined(Q_OS_MAC)
-    user_name = qgetenv("USER");
+  user_name = qgetenv("USER");
 #elif defined(Q_OS_WIN)
-    user_name = qgetenv("USERNAME");
+  user_name = qgetenv("USERNAME");
 #else
     user_name = "Veles UI";
 #endif
