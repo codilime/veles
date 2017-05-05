@@ -46,7 +46,11 @@ void removeProfile(QString profile) {
   QSettings settings;
   QMap<QString, QVariant> profiles = settings.value("profiles").toMap();
   profiles.remove(profile);
-  settings.setValue("profiles", profiles);
+  if (profiles.size() == 0) {
+    settings.remove("profiles");
+  } else {
+    settings.setValue("profiles", profiles);
+  }
   if (profile == currentProfile()) {
     auto profiles = profileList();
     if (profiles.empty()) {

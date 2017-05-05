@@ -289,7 +289,7 @@
        <item>
         <widget class="QCheckBox" name="save_key_check_box">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="text">
           <string>save secret key</string>

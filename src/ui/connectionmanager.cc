@@ -319,25 +319,21 @@ void ConnectionNotificationWidget::updateConnectionStatus(
     last_status_change_ = frame_;
   }
 
-  QString status_text;
   switch (connection_status) {
   case client::NetworkClient::ConnectionStatus::NotConnected:
-    status_text = "Not connected";
+    ui_->connection_status_text_label->setText("Not Connected");
     ui_->connection_status_icon_label->setPixmap(icon_not_connected_);
     break;
   case client::NetworkClient::ConnectionStatus::Connecting:
-    status_text = "Connecting";
+    ui_->connection_status_text_label->setText("Connecting: " +
+        util::settings::connection::currentProfile());
     ui_->connection_status_icon_label->setPixmap(icon_not_connected_);
     break;
   case client::NetworkClient::ConnectionStatus::Connected:
-    status_text = "Connected";
+    ui_->connection_status_text_label->setText("Connected: " +
+        util::settings::connection::currentProfile());
     ui_->connection_status_icon_label->setPixmap(icon_connected_);
     break;
-  }
-
-  if (!status_text.isEmpty()) {
-    ui_->connection_status_text_label->setText(status_text + ": " +
-        util::settings::connection::currentProfile());
   }
 
   connection_status_ = connection_status;
