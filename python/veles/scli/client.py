@@ -24,7 +24,7 @@ from veles.util.helpers import prepare_auth_key
 
 class Client(object):
     def __init__(self, sock, key, name='scli', version='1.0',
-                 description='', type='scli'):
+                 description='', type='scli', quit_on_close=False):
         self.sock = sock
         wrapper = msgpackwrap.MsgpackWrapper()
         self.unpacker = wrapper.unpacker
@@ -33,6 +33,7 @@ class Client(object):
         self.client_version = version
         self.client_description = description
         self.client_type = type
+        self.quit_on_close = quit_on_close
         self._authorize(prepare_auth_key(key))
 
     def _authorize(self, key):
@@ -43,6 +44,7 @@ class Client(object):
             client_version=self.client_version,
             client_description=self.client_description,
             client_type=self.client_type,
+            quit_on_close=self.quit_on_close,
         ))
         pkt = self.getpkt()
         if isinstance(pkt, messages.MsgConnected):
@@ -406,21 +408,21 @@ class Client(object):
 
 
 class UnixClient(Client):
-    def __init__(self, path, key):
+    def __init__(self, path, key, **kwargs):
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         sock.connect(path)
-        super(UnixClient, self).__init__(sock, key)
+        super(UnixClient, self).__init__(sock, key, **kwargs)
 
 
 class TcpClient(Client):
-    def __init__(self, ip, port, key):
+    def __init__(self, ip, port, key, **kwargs):
         sock = socket.create_connection((ip, port))
-        super(TcpClient, self).__init__(sock, key)
+        super(TcpClient, self).__init__(sock, key, **kwargs)
 
 
-def create_client(addr, key):
+def create_client(addr, key, **kwargs):
     host, _, port = addr.rpartition(':')
     if host == 'UNIX':
-        return UnixClient(port, key)
+        return UnixClient(port, key, **kwargs)
     else:
-        return TcpClient(host, int(port), key)
+        return TcpClient(host, int(port), key, **kwargs)

@@ -280,6 +280,7 @@ class ServerProto(asyncio.Protocol):
         self.client_version = None
         self.client_description = None
         self.client_type = None
+        self.quit_on_close = False
         self.cid = None
 
     def connection_made(self, transport):
@@ -376,6 +377,9 @@ class ServerProto(asyncio.Protocol):
             runner.future.set_exception(ConnectionLostError())
         if self.connected:
             self.conn.remove_conn(self)
+        if self.quit_on_close:
+            loop = asyncio.get_event_loop()
+            loop.stop()
 
     def send_msg(self, msg):
         self.transport.write(self.packer.pack(msg.dump()))
@@ -405,6 +409,7 @@ class ServerProto(asyncio.Protocol):
         self.client_version = msg.client_version
         self.client_description = msg.client_description
         self.client_type = msg.client_type
+        self.quit_on_close = msg.quit_on_close
         self.connected = True
         self.cid = self.conn.new_conn(self)
         self.send_msg(messages.MsgConnected(

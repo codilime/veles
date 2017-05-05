@@ -40,6 +40,7 @@ class MsgConnect(MsgpackMsg):
     client_version = fields.String(optional=True)
     client_description = fields.String(optional=True)
     client_type = fields.String(optional=True)
+    quit_on_close = fields.Boolean(default=False)
 
 
 class MsgConnected(MsgpackMsg):
