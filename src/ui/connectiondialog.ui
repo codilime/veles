@@ -43,11 +43,22 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="remove_profile_button">
-       <property name="text">
-        <string>remove</string>
-       </property>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QPushButton" name="new_profile_button">
+         <property name="text">
+          <string>new</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="remove_profile_button">
+         <property name="text">
+          <string>remove</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">

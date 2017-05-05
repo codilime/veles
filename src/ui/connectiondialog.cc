@@ -75,9 +75,9 @@ ConnectionDialog::ConnectionDialog(QWidget* parent)
   connect(ui_->load_defaults_button, &QPushButton::clicked,
       this, &ConnectionDialog::loadDefaultValues);
   connect(this, &QDialog::accepted, this, &ConnectionDialog::dialogAccepted);
-  connect(ui_->profile, &QComboBox::currentTextChanged, this, &ConnectionDialog::profileChanged);
-  connect(ui_->profile, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged), this, &ConnectionDialog::profileChanged);
+  connect(ui_->profile, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ConnectionDialog::profileChanged);
   connect(ui_->remove_profile_button, &QPushButton::clicked, this, &ConnectionDialog::profileRemoved);
+  connect(ui_->new_profile_button, &QPushButton::clicked, this, &ConnectionDialog::newProfile);
 
   newServerToggled(ui_->new_server_radio_button->isChecked());
   loadProfiles();
@@ -191,15 +191,16 @@ void ConnectionDialog::loadDefaultValues() {
 
 void ConnectionDialog::loadProfiles() {
   QString current_profile = util::settings::connection::currentProfile();
+  QStringList profiles = util::settings::connection::profileList();
+
   ui_->profile->clear();
-  ui_->profile->addItems(util::settings::connection::profileList());
+  ui_->profile->addItems(profiles);
+  ui_->profile->setEditable(!profiles.contains(current_profile));
   ui_->profile->setCurrentText(current_profile);
   loadSettings();
 }
 
 void ConnectionDialog::loadSettings() {
-  QSettings settings;
-
   (util::settings::connection::runServer() ? ui_->new_server_radio_button
       : ui_->existing_server_radio_button)->setChecked(true);
   ui_->server_host_line_edit->setText(
@@ -219,7 +220,7 @@ void ConnectionDialog::loadSettings() {
 }
 
 void ConnectionDialog::saveSettings() {
-  QSettings settings;
+  util::settings::connection::setCurrentProfile(ui_->profile->currentText());
 
   util::settings::connection::setRunServer(
       ui_->new_server_radio_button->isChecked());
@@ -248,16 +249,28 @@ void ConnectionDialog::dialogAccepted() {
   saveSettings();
 }
 
-void ConnectionDialog::profileChanged(QString profile) {
-  if (profile != util::settings::connection::currentProfile()) {
-    util::settings::connection::setCurrentProfile(profile);
-    loadSettings();
-  }
+void ConnectionDialog::profileChanged(int index) {
+  ui_->profile->setEditable(false);
+  util::settings::connection::setCurrentProfile(ui_->profile->currentText());
+  loadSettings();
 }
 
 void ConnectionDialog::profileRemoved() {
   util::settings::connection::removeProfile(ui_->profile->currentText());
   loadProfiles();
+}
+
+void ConnectionDialog::newProfile() {
+  QString suffix = "";
+  QString name = "profile";
+  auto profile_list = util::settings::connection::profileList();
+  int next_id = 0;
+  while (profile_list.contains(name + suffix)) {
+    suffix = " (" + QString::number(next_id++) + ")";
+  }
+  util::settings::connection::setCurrentProfile(name + suffix);
+  loadProfiles();
+  loadDefaultValues();
 }
 
 void ConnectionDialog::showEvent(QShowEvent* event) {

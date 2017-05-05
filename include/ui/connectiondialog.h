@@ -55,8 +55,9 @@ class ConnectionDialog : public QDialog {
   void loadProfiles();
   void saveSettings();
   void dialogAccepted();
-  void profileChanged(QString profile);
+  void profileChanged(int index);
   void profileRemoved();
+  void newProfile();
 
  protected:
   void showEvent(QShowEvent* event) override;
