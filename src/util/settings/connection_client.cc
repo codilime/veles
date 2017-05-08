@@ -30,16 +30,24 @@ QString localhost("127.0.0.1");
 QString default_database_file("veles.vdb");
 int default_server_port = 3135;
 bool default_shut_down_server = true;
-QString default_profile("local server");
+QString default_default_profile("local server");
+QString current_profile;
+
+void setDefaultProfile(QString profile) {
+  QSettings settings;
+  settings.setValue("default_profile", profile);
+}
 
 QString currentProfile() {
-  QSettings settings;
-  return settings.value("profile", default_profile).toString();;
+  if (current_profile.isEmpty()) {
+    QSettings settings;
+    current_profile = settings.value("default_profile", default_default_profile).toString();
+  }
+  return current_profile;
 }
 
 void setCurrentProfile(QString profile) {
-  QSettings settings;
-  settings.setValue("profile", profile);
+  current_profile = profile;
 }
 
 void removeProfile(QString profile) {
@@ -54,17 +62,21 @@ void removeProfile(QString profile) {
   if (profile == currentProfile()) {
     auto profiles = profileList();
     if (profiles.empty()) {
-      setCurrentProfile(default_profile);
+      setCurrentProfile(default_default_profile);
     } else {
       setCurrentProfile(profiles[0]);
     }
+  }
+
+  if (profile == settings.value("default_profile")) {
+    settings.remove("default_profile");
   }
 }
 
 QStringList profileList() {
   QSettings settings;
   QMap<QString, QVariant> default_profiles;
-  default_profiles[default_profile] = QSettings::SettingsMap();
+  default_profiles[default_default_profile] = QSettings::SettingsMap();
   QMap<QString, QVariant> profiles = settings.value("profiles", default_profiles).toMap();
   return profiles.keys();
 }
@@ -83,6 +95,16 @@ void setProfileSettings(QString key, QVariant value) {
   profile[key] = value;
   profiles[currentProfile()] = profile;
   settings.setValue("profiles", profiles);
+}
+
+QString uniqueProfileName(QString prefix) {
+  auto profile_list = profileList();
+  int next_id = 0;
+  QString suffix;
+  while (profile_list.contains(prefix + suffix)) {
+    suffix = " (" + QString::number(next_id++) + ")";
+  }
+  return prefix + suffix;
 }
 
 bool runServerDefault() {

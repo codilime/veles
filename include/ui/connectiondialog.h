@@ -58,6 +58,8 @@ class ConnectionDialog : public QDialog {
   void profileChanged(int index);
   void profileRemoved();
   void newProfile();
+  void profileNameEdited(QString name);
+  void defaultProfile();
 
  protected:
   void showEvent(QShowEvent* event) override;

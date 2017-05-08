@@ -20,27 +20,46 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Profile</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="profile">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="editable">
-        <bool>true</bool>
-       </property>
-       <property name="currentText">
-        <string/>
-       </property>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_6">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>Profile</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="profile">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="editable">
+              <bool>true</bool>
+             </property>
+             <property name="currentText">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QPushButton" name="default_profile">
+         <property name="text">
+          <string>set as default</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_3">
