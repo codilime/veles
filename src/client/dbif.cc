@@ -855,8 +855,9 @@ dbif::MethodResultPromise* NCWrapper::handleChunkCreateSubBlobRequest(
 
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
-      *nc_->output() << "NCWrapper: handleChunkCreateSubBlobRequest Sending "
-          "MsgDelete message." << endl;
+      *nc_->output() << QString("NCWrapper: Sending "
+          "MsgTransaction message to handle ChunkCreateSubBlobRequest. "
+          "qid = %1").arg(qid) << endl;
     }
 
     auto tags = std::make_shared<std::unordered_set<std::shared_ptr<
@@ -878,6 +879,10 @@ dbif::MethodResultPromise* NCWrapper::handleChunkCreateSubBlobRequest(
         messages::MsgpackObject>>("size",
         std::make_shared<messages::MsgpackObject>(
         static_cast<uint64_t>(chunk_create_subblob_request->data.size()))));
+    attr->insert(std::pair<std::string, std::shared_ptr<
+        messages::MsgpackObject>>("name",
+        std::make_shared<messages::MsgpackObject>(chunk_create_subblob_request
+        ->name.toStdString())));
 
     auto data = std::make_shared<std::unordered_map<
             std::string,std::shared_ptr<messages::MsgpackObject>>>();
@@ -898,7 +903,7 @@ dbif::MethodResultPromise* NCWrapper::handleChunkCreateSubBlobRequest(
 
     auto operation = std::make_shared<proto::OperationCreate>(
         new_id,
-        data::NodeID::getRootNodeId(),
+        std::make_shared<data::NodeID>(id),
         std::pair<bool, int64_t>(true, 0),
         std::pair<bool, int64_t>(true,
             chunk_create_subblob_request->data.size()),
