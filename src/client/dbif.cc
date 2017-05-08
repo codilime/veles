@@ -1053,6 +1053,23 @@ dbif::MethodResultPromise* NCWrapper::handleSetChunkParseRequest(
           "data items (MsgTransaction). qid = " << qid << endl;
     }
 
+    uint64_t qid_bounds = nc_->nextQid();
+
+    auto operation = std::make_shared<proto::OperationSetPos>(
+        std::make_shared<data::NodeID>(id),
+        std::pair<bool, int64_t>(true, chunk_parse_request->start),
+        std::pair<bool, int64_t>(true, chunk_parse_request->end));
+
+    auto operations = std::make_shared<std::vector<std::shared_ptr<
+        proto::Operation>>>();
+    operations->push_back(operation);
+
+    auto msg_bounds = std::make_shared<proto::MsgTransaction>(
+        qid_bounds,
+        std::make_shared<std::vector<std::shared_ptr<proto::Check>>>(),
+        operations);
+    nc_->sendMessage(msg_bounds);
+
     auto data_items = std::make_shared<
         std::vector<std::shared_ptr<messages::MsgpackObject>>>();
 
