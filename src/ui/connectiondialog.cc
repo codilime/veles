@@ -122,7 +122,7 @@ QString ConnectionDialog::serverScript() {
   return ui_->server_executable_line_edit->text();
 }
 
-bool ConnectionDialog::shutDownServerOnClose() {
+bool ConnectionDialog::shutDownServerOnDisconnect() {
   return ui_->shut_down_server_check_box->isChecked();
 }
 
@@ -188,7 +188,7 @@ void ConnectionDialog::loadDefaultValues() {
   ui_->server_executable_line_edit->setText(
       util::settings::connection::serverScriptDefault());
   ui_->shut_down_server_check_box->setChecked(
-      util::settings::connection::shutDownServerOnQuitDefault());
+      util::settings::connection::shutDownServerOnDisconnectDefault());
 }
 
 void ConnectionDialog::loadProfiles() {
@@ -218,7 +218,7 @@ void ConnectionDialog::loadSettings() {
   ui_->server_executable_line_edit->setText(
       util::settings::connection::serverScript());
   ui_->shut_down_server_check_box->setChecked(
-      util::settings::connection::shutDownServerOnQuit());
+      util::settings::connection::shutDownServerOnDisconnect());
 }
 
 void ConnectionDialog::saveSettings() {
@@ -241,7 +241,7 @@ void ConnectionDialog::saveSettings() {
       ui_->database_line_edit->text());
   util::settings::connection::setServerScript(
       ui_->server_executable_line_edit->text());
-  util::settings::connection::setShutDownServerOnQuit(
+  util::settings::connection::setShutDownServerOnDisconnect(
       ui_->shut_down_server_check_box->isChecked());
 
   loadProfiles();

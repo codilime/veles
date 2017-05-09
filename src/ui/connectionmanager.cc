@@ -62,7 +62,7 @@ ConnectionManager::ConnectionManager(QWidget* parent)
 }
 
 ConnectionManager::~ConnectionManager() {
-  if (server_process_ && shut_down_server_on_close_) {
+  if (server_process_ && shut_down_server_on_disconnect_) {
     killLocalServer();
   }
 
@@ -102,7 +102,7 @@ void ConnectionManager::locallyCreatedServerFinished(int exit_code,
 
 void ConnectionManager::connectionDialogAccepted() {
   if(connection_dialog_->runANewServer()) {
-    shut_down_server_on_close_ = connection_dialog_->shutDownServerOnClose();
+    shut_down_server_on_disconnect_ = connection_dialog_->shutDownServerOnDisconnect();
     startLocalServer();
     QTextStream out(LogWidget::output());
     out << "Waiting for a new server to start..." << endl;
@@ -121,7 +121,8 @@ void ConnectionManager::startClient() {
       veles::util::version::string,
       "Veles UI",
       "Veles UI",
-      QByteArray::fromHex(connection_dialog_->authenticationKey().toUtf8()));
+      QByteArray::fromHex(connection_dialog_->authenticationKey().toUtf8()),
+      shut_down_server_on_disconnect_);
 }
 
 void ConnectionManager::startLocalServer() {

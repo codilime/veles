@@ -61,7 +61,8 @@ class NetworkClient : public QObject {
       QString client_version,
       QString client_description,
       QString client_type,
-      QByteArray authentication_key);
+      QByteArray authentication_key,
+      bool shut_down_on_disconnect);
   void disconnect();
   std::unique_ptr<NodeTree> const& nodeTree();
   uint64_t nextQid();
@@ -123,6 +124,7 @@ public slots:
   QString client_description_;
   QString client_type_;
   QByteArray authentication_key_;
+  bool shut_down_on_disconnect_;
 
   messages::MsgpackWrapper msgpack_wrapper_;
   std::unordered_map<std::string, MessageHandler> message_handlers_;
