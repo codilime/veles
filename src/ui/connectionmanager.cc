@@ -52,6 +52,7 @@ ConnectionManager::ConnectionManager(QWidget* parent)
 
   network_client_ = new client::NetworkClient(this);
   network_client_output_ = new QTextStream(LogWidget::output());
+  network_client_output_->setCodec("UTF-8");
   network_client_->setOutput(network_client_output_);
 
   connect(network_client_, &client::NetworkClient::connectionStatusChanged,
