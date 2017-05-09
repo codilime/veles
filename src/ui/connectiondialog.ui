@@ -307,7 +307,7 @@
      <item row="8" column="0" colspan="3">
       <widget class="QCheckBox" name="shut_down_server_check_box">
        <property name="text">
-        <string>Shut down the server on application termination</string>
+        <string>Shut down the server on connection lost</string>
        </property>
        <property name="checked">
         <bool>true</bool>

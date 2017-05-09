@@ -80,7 +80,7 @@ class ConnectionManager : public QObject {
   QAction* kill_locally_created_server_action_;
   QProcess* server_process_;
   ConnectionDialog* connection_dialog_;
-  bool shut_down_server_on_close_;
+  bool shut_down_server_on_disconnect_;
   client::NetworkClient* network_client_;
   QTextStream* network_client_output_;
 };

@@ -226,17 +226,17 @@ void setServerScript(QString server_script) {
   setProfileSettings("connection.server_script", server_script);
 }
 
-bool shutDownServerOnQuitDefault() {
+bool shutDownServerOnDisconnectDefault() {
   return default_shut_down_server;
 }
 
-bool shutDownServerOnQuit() {
-  return profileSettings("connection.shut_down_server_on_quit",
-      shutDownServerOnQuitDefault()).toBool();
+bool shutDownServerOnDisconnect() {
+  return profileSettings("connection.shut_down_server_on_disconnect",
+      shutDownServerOnDisconnectDefault()).toBool();
 }
 
-void setShutDownServerOnQuit(bool shut_down_server) {
-  setProfileSettings("connection.shut_down_server_on_quit", shut_down_server);
+void setShutDownServerOnDisconnect(bool shut_down_server) {
+  setProfileSettings("connection.shut_down_server_on_disconnect", shut_down_server);
 }
 
 }  // namespace connection
