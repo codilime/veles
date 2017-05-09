@@ -135,7 +135,11 @@ class ClientProto(asyncio.Protocol):
         raise msg.err
 
     async def msg_connected(self, msg):
-        print('Connected to server: {}'.format(msg.server_name))
+        # TODO: remove in next release
+        try:
+            print('Connected to server: {}'.format(msg.server_name))
+        except:
+            pass
 
     async def msg_plugin_method_run(self, msg):
         handler = self.handlers[msg.phid]

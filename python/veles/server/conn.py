@@ -105,12 +105,20 @@ class AsyncLocalConnection(AsyncConnection):
         cid = self.next_cid
         self.next_cid += 1
         self.conns[cid] = conn
-        print("Conn {} started.".format(cid))
+        # TODO: remove in next release
+        try:
+            print("Conn {} started.".format(cid))
+        except:
+            pass
         self._send_conn_subs()
         return cid
 
     def remove_conn(self, conn):
-        print("Conn {} gone.".format(conn.cid))
+        # TODO: remove in next release
+        try:
+            print("Conn {} gone.".format(conn.cid))
+        except:
+            pass
         del self.conns[conn.cid]
         self._send_conn_subs()
 
