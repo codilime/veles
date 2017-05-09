@@ -14,13 +14,11 @@
  * limitations under the License.
  *
  */
+#include "visualization/manipulator.h"
 
-#include <QWidget>
-#include <QMouseEvent>
-#include <QWheelEvent>
 #include <cmath>
 
-#include "visualization/manipulator.h"
+#include <QWidget>
 
 namespace veles {
 namespace visualization {
@@ -139,7 +137,8 @@ bool TrackballManipulator::mouseEvent(QWidget* widget, QMouseEvent* event) {
     }
   }
 
-  return false;
+  // Currently return value doesn't matter.
+  return true;
 }
 
 bool TrackballManipulator::wheelEvent(QWidget* widget, QWheelEvent* event) {
@@ -295,7 +294,8 @@ bool FreeManipulator::mouseEvent(QObject* watched, QMouseEvent* event) {
     }
   }
 
-  return false;
+  // Currently return value doesn't matter.
+  return true;
 }
 
 bool FreeManipulator::wheelEvent(QObject* watched, QWheelEvent* event) {

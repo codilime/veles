@@ -18,9 +18,11 @@
 
 #include <QEvent>
 #include <QMatrix4x4>
+#include <QMouseEvent>
 #include <QObject>
 #include <QQuaternion>
 #include <QVector3D>
+#include <QWheelEvent>
 
 namespace veles {
 namespace visualization {
