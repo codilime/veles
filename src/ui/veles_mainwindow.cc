@@ -149,6 +149,9 @@ void VelesMainWindow::init() {
   connect(this, &VelesMainWindow::shown,
       connection_manager_, &ConnectionManager::raiseConnectionDialog,
       Qt::QueuedConnection);
+
+  updateConnectionStatus(
+      client::NetworkClient::ConnectionStatus::NotConnected);
 }
 
 void VelesMainWindow::createActions() {
@@ -271,6 +274,13 @@ void VelesMainWindow::updateConnectionStatus(
         }
       }
     }
+
+    database_dock_widget_->widget()->setEnabled(false);
+    open_act_->setEnabled(false);
+  } else if (connection_status
+      == client::NetworkClient::ConnectionStatus::Connected) {
+    database_dock_widget_->widget()->setEnabled(true);
+    open_act_->setEnabled(true);
   }
 }
 
