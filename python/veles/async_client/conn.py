@@ -66,11 +66,19 @@ class AsyncRemoteConnection(AsyncConnection):
         cid = self.next_cid
         self.next_cid += 1
         self.conns[cid] = conn
-        print("Conn {} started.".format(cid))
+        # TODO: remove in next release
+        try:
+            print("Conn {} started.".format(cid))
+        except:
+            pass
         return cid
 
     def remove_conn(self, conn):
-        print("Conn {} gone.".format(conn.cid))
+        # TODO: remove in next release
+        try:
+            print("Conn {} gone.".format(conn.cid))
+        except:
+            pass
         self.conns[conn.cid] = None
 
     # getters
