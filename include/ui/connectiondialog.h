@@ -41,7 +41,6 @@ class ConnectionDialog : public QDialog {
   QString clientName();
   QString databaseFile();
   QString serverScript();
-  bool shutDownServerOnClose();
 
  public slots:
   void serverLocalhost();

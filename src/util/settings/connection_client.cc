@@ -30,7 +30,6 @@ bool default_run_server = true;
 QString localhost("127.0.0.1");
 QString default_database_file("veles.vdb");
 int default_server_port = 3135;
-bool default_shut_down_server = true;
 QString default_default_profile("local server");
 QString current_profile;
 
@@ -231,19 +230,6 @@ QString serverScript() {
 
 void setServerScript(QString server_script) {
   setProfileSettings("connection.server_script", server_script);
-}
-
-bool shutDownServerOnQuitDefault() {
-  return default_shut_down_server;
-}
-
-bool shutDownServerOnQuit() {
-  return profileSettings("connection.shut_down_server_on_quit",
-      shutDownServerOnQuitDefault()).toBool();
-}
-
-void setShutDownServerOnQuit(bool shut_down_server) {
-  setProfileSettings("connection.shut_down_server_on_quit", shut_down_server);
 }
 
 }  // namespace connection
