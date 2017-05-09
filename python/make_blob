@@ -13,12 +13,16 @@ with open(sys.argv[3], 'rb') as f:
     data = f.read()
 
 id = client.create(NodeID.root_id,
-    tags={'blob', 'fileblob'},
+    tags={'blob', 'blob.file', 'blob.stored',},
     attr={
         'name': sys.argv[3],
+        'path': sys.argv[3],
+        'width': 8,
+        'base': 0,
+        'size': len(data),
     },
     bindata={
-        'blob': data,
+        'data': data,
     }
 )
 print('CREATED', id)
