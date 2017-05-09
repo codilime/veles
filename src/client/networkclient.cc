@@ -58,8 +58,8 @@ NetworkClient::NetworkClient(QObject* parent) : QObject(parent),
     client_interface_name_("127.0.0.1"),
     protocol_version_(1), client_name_(""),
     client_version_("[unspecified version]"), client_description_(""),
-    client_type_(""), authentication_key_(""), output_stream_(nullptr),
-    qid_(0) {
+    client_type_(""), authentication_key_(""), quit_on_close_(false),
+    output_stream_(nullptr), qid_(0) {
   registerMessageHandlers();
 }
 
@@ -78,7 +78,8 @@ void NetworkClient::connect(
     QString client_version,
     QString client_description,
     QString client_type,
-    QByteArray authentication_key) {
+    QByteArray authentication_key,
+    bool quit_on_close) {
   server_name_ = server_name;
   server_port_ = server_port;
   client_interface_name_ = client_interface_name;
@@ -86,6 +87,7 @@ void NetworkClient::connect(
   client_version_ = client_version;
   client_description_ = client_description;
   client_type_ = client_type;
+  quit_on_close_ = quit_on_close;
 
   authentication_key_ = authentication_key;
   const int target_size = 64;
@@ -199,7 +201,7 @@ void NetworkClient::sendMsgConnect() {
       pair_str(true, client_version_ptr),
       pair_str(true, client_description_ptr),
       pair_str(true, client_type_ptr),
-      false
+      quit_on_close_
       ));
 
   sendMessage(msg);

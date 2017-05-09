@@ -122,10 +122,6 @@ QString ConnectionDialog::serverScript() {
   return ui_->server_executable_line_edit->text();
 }
 
-bool ConnectionDialog::shutDownServerOnClose() {
-  return ui_->shut_down_server_check_box->isChecked();
-}
-
 QString localhost("127.0.0.1");
 
 void ConnectionDialog::serverLocalhost() {
@@ -159,7 +155,6 @@ void ConnectionDialog::newServerToggled(bool toggled) {
   ui_->select_server_executable_button->setEnabled(toggled);
 
   ui_->random_key_button->setEnabled(toggled);
-  ui_->shut_down_server_check_box->setEnabled(toggled);
 }
 
 void ConnectionDialog::databaseFileSelected(const QString& file_name) {
@@ -187,8 +182,6 @@ void ConnectionDialog::loadDefaultValues() {
       util::settings::connection::databaseNameDefault());
   ui_->server_executable_line_edit->setText(
       util::settings::connection::serverScriptDefault());
-  ui_->shut_down_server_check_box->setChecked(
-      util::settings::connection::shutDownServerOnQuitDefault());
 }
 
 void ConnectionDialog::loadProfiles() {
@@ -217,8 +210,6 @@ void ConnectionDialog::loadSettings() {
       util::settings::connection::databaseName());
   ui_->server_executable_line_edit->setText(
       util::settings::connection::serverScript());
-  ui_->shut_down_server_check_box->setChecked(
-      util::settings::connection::shutDownServerOnQuit());
 }
 
 void ConnectionDialog::saveSettings() {
@@ -241,8 +232,6 @@ void ConnectionDialog::saveSettings() {
       ui_->database_line_edit->text());
   util::settings::connection::setServerScript(
       ui_->server_executable_line_edit->text());
-  util::settings::connection::setShutDownServerOnQuit(
-      ui_->shut_down_server_check_box->isChecked());
 
   loadProfiles();
 }

@@ -136,10 +136,24 @@
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout">
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="client_interface_line_edit">
+       <property name="placeholderText">
+        <string>Client network interface</string>
+       </property>
+      </widget>
+     </item>
      <item row="1" column="0">
       <widget class="QLabel" name="port_label">
        <property name="text">
         <string>Server port:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="authentication_key_label">
+       <property name="text">
+        <string>Authentication key:</string>
        </property>
       </widget>
      </item>
@@ -154,13 +168,6 @@
       <widget class="QLineEdit" name="client_name_line_edit">
        <property name="placeholderText">
         <string>Client name visible for other users</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="authentication_key_label">
-       <property name="text">
-        <string>Authentication key:</string>
        </property>
       </widget>
      </item>
@@ -198,24 +205,17 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="server_host_label">
-       <property name="text">
-        <string>Server host:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="client_interface_line_edit">
-       <property name="placeholderText">
-        <string>Client network interface</string>
-       </property>
-      </widget>
-     </item>
      <item row="3" column="2">
       <widget class="QPushButton" name="random_key_button">
        <property name="text">
         <string>random</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="server_host_label">
+       <property name="text">
+        <string>Server host:</string>
        </property>
       </widget>
      </item>
@@ -255,8 +255,8 @@
        </item>
       </layout>
      </item>
-     <item row="0" column="2">
-      <widget class="QPushButton" name="server_localhost_button">
+     <item row="2" column="2">
+      <widget class="QPushButton" name="client_localhost_button">
        <property name="text">
         <string>localhost</string>
        </property>
@@ -269,13 +269,6 @@
        </property>
       </widget>
      </item>
-     <item row="5" column="2">
-      <widget class="QPushButton" name="select_database_button">
-       <property name="text">
-        <string>browse...</string>
-       </property>
-      </widget>
-     </item>
      <item row="2" column="0">
       <widget class="QLabel" name="client_interface_label">
        <property name="text">
@@ -283,10 +276,17 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="2">
-      <widget class="QPushButton" name="client_localhost_button">
+     <item row="0" column="2">
+      <widget class="QPushButton" name="server_localhost_button">
        <property name="text">
         <string>localhost</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="2">
+      <widget class="QPushButton" name="select_database_button">
+       <property name="text">
+        <string>browse...</string>
        </property>
       </widget>
      </item>
@@ -305,16 +305,6 @@
       </widget>
      </item>
      <item row="8" column="0" colspan="3">
-      <widget class="QCheckBox" name="shut_down_server_check_box">
-       <property name="text">
-        <string>Shut down the server on application termination</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="0" colspan="3">
       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,5,0">
        <item>
         <widget class="QCheckBox" name="save_key_check_box">
@@ -430,7 +420,6 @@
   <tabstop>select_database_button</tabstop>
   <tabstop>server_executable_line_edit</tabstop>
   <tabstop>select_server_executable_button</tabstop>
-  <tabstop>shut_down_server_check_box</tabstop>
   <tabstop>save_key_check_box</tabstop>
   <tabstop>load_defaults_button</tabstop>
   <tabstop>ok_button</tabstop>

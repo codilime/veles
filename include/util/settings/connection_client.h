@@ -55,10 +55,6 @@ QString serverScriptDefault();
 QString serverScript();
 void setServerScript(QString server_script);
 
-bool shutDownServerOnQuitDefault();
-bool shutDownServerOnQuit();
-void setShutDownServerOnQuit(bool shut_down_server);
-
 QString currentProfile();
 void setCurrentProfile(QString profile);
 QStringList profileList();
