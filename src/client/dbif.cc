@@ -83,7 +83,7 @@ bool ChunkDataItemQuery::ready() {
 /*****************************************************************************/
 
 NCWrapper::NCWrapper(NetworkClient* network_client, QObject* parent)
-    : QObject(parent), nc_(network_client), detailed_debug_info_(true) {
+    : QObject(parent), nc_(network_client), detailed_debug_info_(false) {
   if (nc_) {
     message_handlers_["get_list_reply"]
         = &NCWrapper::handleGetListReplyMessage;
