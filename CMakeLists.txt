@@ -143,7 +143,11 @@ add_library(veles_visualization
     ${VISUALIZATION_SHADERS})
 
 qt5_use_modules(veles_visualization Core Gui Widgets)
-target_link_libraries(veles_visualization veles_base)
+# This a temporary "hack" to fix concurrent build fail - veles_visualization
+# actually depends on main_ui which also depends on veles_visualization
+# and veles_data, which in turn generates new C++ files - in future we should refactor
+# this file to avoid such cyclic dependency between veles_visualization and main_ui
+target_link_libraries(veles_visualization veles_data)
 
 set(MSGPACK_CPP_FWD_HEADER "${CMAKE_CURRENT_BINARY_DIR}/fwd_models.h")
 set(MSGPACK_CPP_HEADER "${CMAKE_CURRENT_BINARY_DIR}/models.h")
@@ -403,7 +407,6 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${GENERATED_M
 
 qt5_use_modules(main_ui Core Gui Widgets)
 
-target_link_libraries(veles_visualization veles_base)
 if(GTEST_FOUND AND GMOCK_FOUND)
     include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
     add_executable(run_test
