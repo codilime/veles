@@ -61,7 +61,7 @@ class NetworkClient : public QObject {
       QString client_version,
       QString client_description,
       QString client_type,
-      QByteArray authentication_key,
+      const QByteArray& authentication_key,
       bool quit_on_close);
   void disconnect();
   std::unique_ptr<NodeTree> const& nodeTree();

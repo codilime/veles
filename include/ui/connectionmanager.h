@@ -81,7 +81,7 @@ class ConnectionManager : public QObject {
   QAction* kill_locally_created_server_action_;
   QProcess* server_process_;
   ConnectionDialog* connection_dialog_;
-  bool local_server_;
+  bool is_local_server_;
   client::NetworkClient* network_client_;
   QTextStream* network_client_output_;
 };
