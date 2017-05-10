@@ -1161,14 +1161,19 @@ void MainWindowWithDetachableDockWidgets::updateActiveDockWidget() {
         && active_dock_widget_ == dynamic_cast<DockWidget*>(
         tabToDockWidget(tab_bar, tab_bar->currentIndex()))
         && active_dock_widget_) {
-      tab_bar->setStyleSheet(tab_bar_stylesheet +
+      QString stylesheet = tab_bar_stylesheet +
           QString("QTabBar::tab:selected {"
           "background : palette(highlight);"
           "color : palette(highlighted-text);"
           "border-bottom: 0px solid palette(shadow);"
-          "}"));
+          "}");
+      if (tab_bar->styleSheet() != stylesheet) {
+        tab_bar->setStyleSheet(stylesheet);
+      }
     } else {
-      tab_bar->setStyleSheet(tab_bar_stylesheet);
+      if (tab_bar->styleSheet() != tab_bar_stylesheet) {
+        tab_bar->setStyleSheet(tab_bar_stylesheet);
+      }
     }
   }
 
