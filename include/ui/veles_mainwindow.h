@@ -47,7 +47,7 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
 
  public:
   VelesMainWindow();
-  void addFile(QString path);
+  void addFile(const QString& path);
   QStringList parsersList() {return parsers_list_;}
 
  protected:
@@ -104,6 +104,8 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   ConnectionNotificationWidget* connection_notification_widget_;
 
   QToolBar* tool_bar_;
+
+  std::list<QString> files_to_upload_once_connected_;
 };
 
 }  // namespace ui

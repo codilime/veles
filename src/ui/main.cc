@@ -56,6 +56,8 @@ int main(int argc, char *argv[]) {
   veles::util::threadpool::createTopic("visualization", 3);
 
   qRegisterMetaType<veles::visualization::VisualizationWidget::AdditionalResampleDataPtr>("AdditionalResampleDataPtr");
+  qRegisterMetaType<veles::client::NetworkClient::ConnectionStatus>(
+      "veles::client::NetworkClient::ConnectionStatus");
 
   QCommandLineParser parser;
   parser.addHelpOption();
@@ -68,7 +70,6 @@ int main(int argc, char *argv[]) {
   auto files = parser.positionalArguments();
   for (auto file : files) {
     mainWin->addFile(file);
-    QApplication::processEvents();
   }
 
   return app.exec();

@@ -51,7 +51,9 @@ VelesMainWindow::VelesMainWindow() : MainWindowWithDetachableDockWidgets(),
   init();
 }
 
-void VelesMainWindow::addFile(QString path) { createFileBlob(path); }
+void VelesMainWindow::addFile(const QString& path) {
+  files_to_upload_once_connected_.push_back(path);
+}
 
 /*****************************************************************************/
 /* VelesMainWindow - Protected methods */
@@ -63,7 +65,7 @@ void VelesMainWindow::dropEvent(QDropEvent *ev) {
     if (!url.isLocalFile()) {
       continue;
     }
-    addFile(url.toLocalFile());
+    createFileBlob(url.toLocalFile());
   }
 }
 
@@ -139,7 +141,7 @@ void VelesMainWindow::init() {
       connection_notification_widget_,
       &ConnectionNotificationWidget::updateConnectionStatus);
   connect(connection_manager_, &ConnectionManager::connectionStatusChanged,
-      this, &VelesMainWindow::updateConnectionStatus);
+      this, &VelesMainWindow::updateConnectionStatus, Qt::QueuedConnection);
   tool_bar_->addWidget(connection_notification_widget_);
 
   bringDockWidgetToFront(log_dock_widget_);
@@ -281,6 +283,19 @@ void VelesMainWindow::updateConnectionStatus(
       == client::NetworkClient::ConnectionStatus::Connected) {
     database_dock_widget_->widget()->setEnabled(true);
     open_act_->setEnabled(true);
+
+    if (!files_to_upload_once_connected_.empty()) {
+      QTextStream out(LogWidget::output());
+      out << "Uploading files specified as command line arguments:" << endl;
+
+      for (const auto& path : files_to_upload_once_connected_) {
+        out << "    " << path << endl;
+        createFileBlob(path);
+        QApplication::processEvents();
+      }
+
+      files_to_upload_once_connected_.clear();
+    }
   }
 }
 
