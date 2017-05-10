@@ -106,8 +106,8 @@ void ConnectionManager::locallyCreatedServerFinished(int exit_code,
 }
 
 void ConnectionManager::connectionDialogAccepted() {
-  local_server_ = connection_dialog_->runANewServer();
-  if(local_server_) {
+  is_local_server_ = connection_dialog_->runANewServer();
+  if (is_local_server_) {
     startLocalServer();
     QTextStream out(LogWidget::output());
     out << "Waiting for a new server to start..." << endl;
@@ -127,7 +127,7 @@ void ConnectionManager::startClient() {
       "Veles UI",
       "Veles UI",
       QByteArray::fromHex(connection_dialog_->authenticationKey().toUtf8()),
-      local_server_);
+      is_local_server_);
 }
 
 void ConnectionManager::startLocalServer() {

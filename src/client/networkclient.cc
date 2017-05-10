@@ -78,7 +78,7 @@ void NetworkClient::connect(
     QString client_version,
     QString client_description,
     QString client_type,
-    QByteArray authentication_key,
+    const QByteArray &authentication_key,
     bool quit_on_close) {
   server_name_ = server_name;
   server_port_ = server_port;
