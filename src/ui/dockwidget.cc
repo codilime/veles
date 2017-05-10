@@ -680,7 +680,7 @@ MainWindowWithDetachableDockWidgets::MainWindowWithDetachableDockWidgets(
     setAttribute(Qt::WA_QuitOnClose, true);
     setWindowTitle("Veles");
     connect(qApp, &QApplication::focusChanged,
-        this, &MainWindowWithDetachableDockWidgets::focusChanged);
+        this, &MainWindowWithDetachableDockWidgets::focusChanged, Qt::QueuedConnection);
     auto activate_dock_event_filter = new ActivateDockEventFilter(this);
     qApp->installEventFilter(activate_dock_event_filter);
   } else {
