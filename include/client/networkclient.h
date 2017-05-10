@@ -135,3 +135,5 @@ public slots:
 
 }  // namespace client
 }  // namespace veles
+
+Q_DECLARE_METATYPE(veles::client::NetworkClient::ConnectionStatus)
