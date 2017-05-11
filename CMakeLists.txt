@@ -11,6 +11,10 @@ options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release
 RelWithDebInfo MinSizeRel.")
 ENDIF()
 
+if(APPLE)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
+endif(APPLE)
+
 project(VELES C CXX)
 if(WIN32)
   cmake_minimum_required(VERSION 3.7.0)
@@ -502,7 +506,6 @@ endif(WIN32)
 
 # Apple
 if(APPLE)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
   set(CPACK_INSTALL_PREFIX "/Applications")
   # Finding MacDeployQt
   find_program(MACDEPLOYQT_EXECUTABLE
