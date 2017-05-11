@@ -255,7 +255,6 @@ void NetworkClient::registerMessageHandlers() {
 }
 
 void NetworkClient::handleNodeTreeRelatedMessage(msg_ptr msg) {
-  nodeTree()->addRemoteNodeTreeRelatedMessage(msg);
 }
 
 void NetworkClient::handleConnectedMessage(msg_ptr msg) {
@@ -400,7 +399,7 @@ void NetworkClient::socketConnected() {
         "authentication key and \"connect\" message." << endl;
   }
 
-  node_tree_ = std::unique_ptr<NodeTree>(new NodeTree(this));
+  node_tree_ = std::unique_ptr<NodeTree>(new NodeTree(this, this));
   client_socket_->write(authentication_key_);
   sendMsgConnect();
 }

@@ -17,6 +17,10 @@
 
 #pragma once
 
+#include <list>
+
+#include <QObject>
+
 #include "data/nodeid.h"
 #include "node.h"
 #include "networkclient.h"
@@ -30,10 +34,39 @@ typedef std::shared_ptr<proto::MsgpackMsg> msg_ptr;
 /* NodeTree */
 /*****************************************************************************/
 
-class NodeTree {
+class NodeTree : public QObject {
+  Q_OBJECT
+
  public:
-  NodeTree(NetworkClient* network_client);
-  void addRemoteNodeTreeRelatedMessage(msg_ptr msg);
+  NodeTree(NetworkClient* network_client, QObject* parent = nullptr);
+  virtual ~NodeTree();
+
+  typedef void (NodeTree::*MessageHandler)(msg_ptr);
+
+  Node* node(data::NodeID id);
+  void applyRemoteMessages();
+  bool supportedMessage(msg_ptr msg);
+
+ public slots:
+  void messageReceived(msg_ptr msg);
+  void handleMessage(msg_ptr msg);
+  void updateConnectionStatus(NetworkClient::ConnectionStatus
+      connection_status);
+
+  void handleGetListReplyMessage(msg_ptr msg);
+  void handleGetReplyMessage(msg_ptr msg);
+  void handleGetDataReplyMessage(msg_ptr msg);
+  void handleGetBinDataReplyMessage(msg_ptr msg);
+  void handleRequestAckMessage(msg_ptr msg);
+  void handleQueryErrorMessage(msg_ptr msg);
+
+  void wrongMessageType(QString name, QString expected_type);
+
+ private:
+  NetworkClient* network_client_;
+  std::list<msg_ptr> remote_messages_;
+  std::unordered_map<std::string, MessageHandler> message_handlers_;
+  std::unordered_map<data::NodeID, Node*, data::NodeIDHash> nodes_;
 };
 
 } // client
