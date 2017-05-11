@@ -680,7 +680,9 @@ MainWindowWithDetachableDockWidgets::MainWindowWithDetachableDockWidgets(
     setAttribute(Qt::WA_QuitOnClose, true);
     setWindowTitle("Veles");
     connect(qApp, &QApplication::focusChanged,
-        this, &MainWindowWithDetachableDockWidgets::focusChanged, Qt::QueuedConnection);
+        this, &MainWindowWithDetachableDockWidgets::focusChanged);
+    connect(this, &MainWindowWithDetachableDockWidgets::updateFocus,
+        this, &MainWindowWithDetachableDockWidgets::delayedFocusChanged, Qt::QueuedConnection);
     auto activate_dock_event_filter = new ActivateDockEventFilter(this);
     qApp->installEventFilter(activate_dock_event_filter);
   } else {
@@ -1203,11 +1205,22 @@ void MainWindowWithDetachableDockWidgets::updateDocksAndTabs() {
 
 void MainWindowWithDetachableDockWidgets::focusChanged(
   QWidget* old, QWidget* now) {
+  if (now) {
+    emit updateFocus(now);
+  }
+}
+
+void MainWindowWithDetachableDockWidgets
+    ::delayedFocusChanged(QPointer<QWidget> now) {
+  if (!now) {
+    return;
+  }
+
   DockWidget* dock_widget = DockWidget::getParentDockWidget(now);
   if(dock_widget && dock_widget != active_dock_widget_) {
     setActiveDockWidget(dock_widget);
   } else {
-    QTabBar* tab_bar = dynamic_cast<QTabBar*>(now);
+    QTabBar* tab_bar = dynamic_cast<QTabBar*>(now.data());
     if (tab_bar) {
       auto main_window = MainWindowWithDetachableDockWidgets
           ::getParentMainWindow(tab_bar);

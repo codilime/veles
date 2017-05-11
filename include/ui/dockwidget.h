@@ -260,10 +260,12 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
   void updateActiveDockWidget();
   void updateDocksAndTabs();
   void focusChanged(QWidget* old, QWidget* now);
+  void delayedFocusChanged(QPointer<QWidget> now);
 
  signals:
   void childAdded(QObject* child);
   void childRemoved();
+  void updateFocus(QPointer<QWidget> now);
 
  protected:
   bool event(QEvent* event) Q_DECL_OVERRIDE;
