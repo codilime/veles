@@ -1,5 +1,39 @@
 # Veles changelog
 
+## 2017.05.0.Świtezianka (2017-05-12)
+
+### Major features and changes:
+
+  * Introduced client-server architecture:
+    * The server can run remotely and can be shared amongst many users.
+    * The server is currently written in Python 3.
+    * There's a possibility to script Veles using both Python 2 and 3, but currently without a support for any GUI operations.
+  * Created an instalator for Windows, added a support for DEB packages and a drag and drop installer for macOS.
+  * Dropped official 32-bit Windows support, due to problems with MessagePack.
+  * Keep current state in a database file.
+
+### Minor features and changes:
+
+  * Added more encoders in hex view ("Copy as" context menu).
+  * Added connection dialog.
+  * Lowered minimum macOS version to 10.10.
+  * Moved 3D view control panel to a horizontal bar.
+
+### Bugfixes:
+
+  * Fixed a glitch in 3D view mouse manipulation.
+  * 3D views which are not currently visible don't use CPU/GPU resources anymore.
+  * Fixed minor stability issues.
+
+### Caveats:
+
+  * Python3 (>= 3.5) is now needed to run Veles on macOS and has to be manually installed.
+  * To install Veles from DEB package on Ubuntu you need to enable "universe" repository (it is normally enabled by default, but not on live CD).
+  * Hotkeys from the top menu don't work on Ubuntu 16.\* due to a Qt bug:
+    * This is already fixed in Qt, but 16.\* have old Qt in repo.
+    * Bug description: https://bugs.launchpad.net/appmenu-qt5/+bug/1380702
+    * You can circumvent the bug by running Veles with the following environment variable set: UBUNTU_MENUPROXY=""
+
 ## 2017.02.0.YAGNI (2017-02-28)
 
 ### Minor features and changes:
