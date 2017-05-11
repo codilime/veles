@@ -1027,6 +1027,10 @@ void MainWindowWithDetachableDockWidgets::hideAllRubberBands() {
 
 void MainWindowWithDetachableDockWidgets::setActiveDockWidget(
     DockWidget* dock_widget) {
+  // TODO more in depth look into active dock marking
+  // In theory this condition can cause some degradation in drawing which dock is active,
+  // but currently it isn't working correctly despite it, and this condition
+  // fixes some more severe problems.
   if (active_dock_widget_ != dock_widget) {
     active_dock_widget_ = dock_widget;
 
