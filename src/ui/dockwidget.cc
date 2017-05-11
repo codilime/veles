@@ -1029,10 +1029,12 @@ void MainWindowWithDetachableDockWidgets::hideAllRubberBands() {
 
 void MainWindowWithDetachableDockWidgets::setActiveDockWidget(
     DockWidget* dock_widget) {
-  active_dock_widget_ = dock_widget;
+  if (active_dock_widget_ != dock_widget) {
+    active_dock_widget_ = dock_widget;
 
-  for (auto window : main_windows_) {
-    window->updateDocksAndTabs();
+    for (auto window : main_windows_) {
+      window->updateDocksAndTabs();
+    }
   }
 }
 
