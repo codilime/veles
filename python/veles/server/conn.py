@@ -18,6 +18,7 @@
 # And in the silver rain
 
 import asyncio
+import logging
 
 from collections import defaultdict
 
@@ -40,6 +41,8 @@ from veles.async_conn.subscriber import (
 from veles.async_conn.conn import AsyncConnection
 
 from .query import QueryManager
+
+logger = logging.getLogger('veles.server')
 
 
 class NameTagsRegistry:
@@ -105,20 +108,12 @@ class AsyncLocalConnection(AsyncConnection):
         cid = self.next_cid
         self.next_cid += 1
         self.conns[cid] = conn
-        # TODO: remove in next release
-        try:
-            print("Conn {} started.".format(cid))
-        except:
-            pass
+        logger.info("Conn {} started.".format(cid))
         self._send_conn_subs()
         return cid
 
     def remove_conn(self, conn):
-        # TODO: remove in next release
-        try:
-            print("Conn {} gone.".format(conn.cid))
-        except:
-            pass
+        logger.info("Conn {} gone.".format(conn.cid))
         del self.conns[conn.cid]
         self._send_conn_subs()
 

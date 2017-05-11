@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 from veles.proto import messages
 from veles.proto.node import PosFilter
 from veles.async_conn.conn import AsyncConnection
@@ -51,6 +53,8 @@ from .subscriber import (
     ConnectionsSubManager,
 )
 
+logger = logging.getLogger('veles.async_client')
+
 
 class AsyncRemoteConnection(AsyncConnection):
     def __init__(self, loop, proto):
@@ -66,20 +70,12 @@ class AsyncRemoteConnection(AsyncConnection):
         cid = self.next_cid
         self.next_cid += 1
         self.conns[cid] = conn
-        # TODO: remove in next release
-        try:
-            print("Conn {} started.".format(cid))
-        except:
-            pass
+        logger.info("Conn {} started.".format(cid))
         return cid
 
     def remove_conn(self, conn):
-        # TODO: remove in next release
-        try:
-            print("Conn {} gone.".format(conn.cid))
-        except:
-            pass
-        self.conns[conn.cid] = None
+        logger.info("Conn {} gone.".format(conn.cid))
+        del self.conns[conn.cid]
 
     # getters
 

@@ -18,6 +18,7 @@
 # Fire, walk with me
 
 import asyncio
+import logging
 
 import msgpack
 
@@ -25,6 +26,8 @@ from veles.proto import messages, msgpackwrap
 from veles.proto.exceptions import VelesException, SchemaError
 from veles.server.proto import PROTO_VERSION
 from veles.util.helpers import prepare_auth_key
+
+logger = logging.getLogger('veles.async_client')
 
 
 class ClientProto(asyncio.Protocol):
@@ -135,11 +138,7 @@ class ClientProto(asyncio.Protocol):
         raise msg.err
 
     async def msg_connected(self, msg):
-        # TODO: remove in next release
-        try:
-            print('Connected to server: {}'.format(msg.server_name))
-        except:
-            pass
+        logger.info('Connected to server: {}'.format(msg.server_name))
 
     async def msg_plugin_method_run(self, msg):
         handler = self.handlers[msg.phid]
