@@ -277,11 +277,17 @@ void VelesMainWindow::updateConnectionStatus(
       }
     }
 
-    database_dock_widget_->widget()->setEnabled(false);
+    if (database_dock_widget_) {
+      database_dock_widget_->widget()->setEnabled(false);
+    }
     open_act_->setEnabled(false);
   } else if (connection_status
       == client::NetworkClient::ConnectionStatus::Connected) {
-    database_dock_widget_->widget()->setEnabled(true);
+
+    if (database_dock_widget_) {
+      database_dock_widget_->widget()->setEnabled(true);
+    }
+
     open_act_->setEnabled(true);
 
     if (!files_to_upload_once_connected_.empty()) {
@@ -331,6 +337,10 @@ void VelesMainWindow::createDb() {
           });
 
   connect(database_info, &DatabaseInfo::newFile, [this]() { open(); });
+
+  database_info->setEnabled(
+      connection_manager_->networkClient()->connectionStatus()
+      == client::NetworkClient::ConnectionStatus::Connected);
 
   auto promise = database_->asyncSubInfo<dbif::ParsersListRequest>(this);
   connect(promise, &dbif::InfoPromise::gotInfo, this, &VelesMainWindow::updateParsers);
