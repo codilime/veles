@@ -280,6 +280,7 @@ add_library(veles_client
     ${INCLUDE_DIR}/client/nodetree.h
     ${INCLUDE_DIR}/client/networkclient.h
     ${INCLUDE_DIR}/client/dbif.h
+    ${SRC_DIR}/client/node.cc
     ${SRC_DIR}/client/nodetree.cc
     ${SRC_DIR}/client/networkclient.cc
     ${SRC_DIR}/client/dbif.cc)
