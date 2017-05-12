@@ -53,5 +53,9 @@ class NodeID {
   explicit operator bool() const;
 };
 
+struct NodeIDHash {
+  std::size_t operator()(const NodeID& id) const;
+};
+
 }  // namespace data
 }  // namespace veles
