@@ -78,5 +78,12 @@ NodeID::operator bool() const {
   return memcmp(this->value, NIL_VALUE, WIDTH) != 0;
 }
 
+std::size_t NodeIDHash::operator()(const NodeID& id) const {
+  static_assert(sizeof(std::size_t) <= NodeID::WIDTH, "Wrong NodeID::WIDTH");
+  std::size_t hash;
+  memcpy(&hash, id.asStdVector().data(), sizeof(std::size_t));
+  return hash;
+}
+
 }  // namespace data
 }  // namespace veles
