@@ -46,33 +46,67 @@ typedef std::shared_ptr<std::unordered_map<std::string,uint64_t>>
 
 class Node {
  public:
-  typedef std::unordered_set<Node*>::iterator ChildIterator;
   Node(NodeTree* node_tree, data::NodeID id);
-  virtual ~Node();
 
+ public:
   data::NodeID id() const;
   Node* parent() const;
   data::NodeID parentId() const;
   void setParent(Node* parent);
   const std::unordered_set<Node*>& children() const;
-  void addChild(Node* child);
-  void removeChild(Node* child);
-  int64_t start();
-  int64_t end();
+  const std::vector<Node*>& childrenVect() const;
+  int64_t start() const;
+  int64_t end() const;
   const Tags& tags() const;
-  bool hasTag(std::string tag);
+  bool hasTag(std::string tag) const;
 
-  template<class T> const T attribute(std::string name) {
-    // TODO
-    return T();
+  bool getQStringAttr(std::string key, QString& val_out) {
+    if (attributes_) {
+      auto iter = attributes_->find(key);
+      if (iter != attributes_->end()) {
+        auto val_ptr = iter->second->getString();
+        if (val_ptr) {
+          val_out = QString::fromStdString(*val_ptr);
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  template<class T> bool getAttrSPtr(std::string key, T& val) {
+    if (attributes_) {
+      auto iter = attributes_->find(key);
+      if (iter != attributes_->end()) {
+        std::shared_ptr<T> val_ptr;
+        messages::fromMsgpackObject(iter->second, val_ptr);
+        if (val_ptr) {
+          val = *val_ptr;
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  template<class T> bool getAttr(std::string key, T& val) {
+    if (attributes_) {
+      auto iter = attributes_->find(key);
+      if (iter != attributes_->end()) {
+        messages::fromMsgpackObject(iter->second, val);
+        return true;
+      }
+    }
+
+    return false;
   }
 
   uint64_t get(bool sub);
   uint64_t getList(bool sub);
   uint64_t deleteNode();
 
-  uint64_t lastGetQid();
-  void setLastGetQid(uint64_t qid);
   uint64_t lastGetListQid();
   void setLastGetListQid(uint64_t qid);
 
@@ -81,11 +115,22 @@ class Node {
   uint64_t expectedGetListQid();
   void setExpectedGetListQid(uint64_t qid);
 
+  bool operator<(const Node& other_node) const;
+  bool operator==(const Node& other_node) const;
+
+  uint64_t index();
+
  private:
+  virtual ~Node();
+  void addChildLocally(Node* child);
+  void removeChildLocally(Node* child);
+  void updateChildrenVect();
+
   NodeTree* node_tree_;
   data::NodeID id_;
   Node* parent_;
   std::unordered_set<Node*> children_;
+  std::vector<Node*> children_vect_;
   int64_t start_;
   int64_t end_;
   Tags tags_;
@@ -93,10 +138,13 @@ class Node {
   DataNamesSet data_names_;
   BindataNamesSet bindata_names_;
 
-  uint64_t last_get_qid_;
   uint64_t expected_get_qid_;
   uint64_t last_get_list_qid_;
   uint64_t expected_get_list_qid_;
+
+  uint64_t index_;
+
+  friend class NodeTree;
 };
 
 } // client

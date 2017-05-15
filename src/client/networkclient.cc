@@ -269,6 +269,12 @@ void NetworkClient::handleConnectedMessage(msg_ptr msg) {
     }
 
     setConnectionStatus(ConnectionStatus::Connected);
+
+    // FIXME
+    Node* root = node_tree_->node(*data::NodeID::getRootNodeId());
+    if (root) {
+      root->getList(true);
+    }
   }
 }
 
@@ -399,9 +405,9 @@ void NetworkClient::socketConnected() {
         "authentication key and \"connect\" message." << endl;
   }
 
-  node_tree_ = std::unique_ptr<NodeTree>(new NodeTree(this, this));
   client_socket_->write(authentication_key_);
   sendMsgConnect();
+  node_tree_ = std::unique_ptr<NodeTree>(new NodeTree(this, this));
 }
 
 void NetworkClient::socketDisconnected() {

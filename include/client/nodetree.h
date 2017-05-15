@@ -62,6 +62,13 @@ class NodeTree : public QObject {
 
   void wrongMessageType(QString name, QString expected_type);
 
+ signals:
+   void startNodeDataModification(QString id);
+   void endNodeDataModification(QString id);
+   void startChildrenModification(QString id);
+   void endChildrenModification(QString id);
+
+ public:
   void detachFromParent(data::NodeID id);
   void unregisterNode(data::NodeID id);
 
@@ -69,16 +76,21 @@ class NodeTree : public QObject {
   uint64_t getList(data::NodeID id, bool sub);
   uint64_t deleteNode(data::NodeID id);
 
+  void updateNode(std::shared_ptr<proto::Node> src_node, Node* dst_node);
+
   void printTree();
   void printNode(Node* node, QTextStream& out, int level);
 
  private:
+  void removeSubtreeLocally(Node* child);
+
   NetworkClient* network_client_;
   std::list<msg_ptr> remote_messages_;
   std::unordered_map<std::string, MessageHandler> message_handlers_;
   std::unordered_map<data::NodeID, Node*, data::NodeIDHash> nodes_;
   std::unordered_map<uint64_t, data::NodeID> queries_;
+  std::unordered_set<uint64_t> subscriptions_;
 };
 
-} // client
-} // veles
+} // namespace client
+} // namespace veles

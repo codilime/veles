@@ -27,17 +27,8 @@ namespace client {
 /*****************************************************************************/
 
 Node::Node(NodeTree* node_tree, data::NodeID id) : node_tree_(node_tree),
-    id_(id), parent_(nullptr), start_(0), end_(0), last_get_qid_(0),
-    expected_get_qid_(0), last_get_list_qid_(0), expected_get_list_qid_(0) {
-}
-
-Node::~Node() {
-  for (auto child : children_) {
-    child->setParent(nullptr);
-    delete child;
-  }
-
-  node_tree_->unregisterNode(id());
+    id_(id), parent_(nullptr), start_(0), end_(0), expected_get_qid_(0),
+    last_get_list_qid_(0), expected_get_list_qid_(0), index_(0) {
 }
 
 data::NodeID Node::id() const {
@@ -64,19 +55,15 @@ const std::unordered_set<Node*>& Node::children() const {
   return children_;
 }
 
-void Node::addChild(Node* child) {
-  children_.insert(child);
+const std::vector<Node*>& Node::childrenVect() const {
+  return children_vect_;
 }
 
-void Node::removeChild(Node* child) {
-  children_.erase(child);
-}
-
-int64_t Node::start() {
+int64_t Node::start() const {
   return start_;
 }
 
-int64_t Node::end() {
+int64_t Node::end() const {
   return end_;
 }
 
@@ -84,7 +71,7 @@ const Tags& Node::tags() const {
   return tags_;
 }
 
-bool Node::hasTag(std::string tag) {
+bool Node::hasTag(std::string tag) const {
   return tags_.find(tag) != tags_.end();
 }
 
@@ -98,14 +85,6 @@ uint64_t Node::getList(bool sub) {
 
 uint64_t Node::deleteNode() {
   return node_tree_->deleteNode(id());
-}
-
-uint64_t Node::lastGetQid() {
-  return last_get_qid_;
-}
-
-void Node::setLastGetQid(uint64_t qid) {
-  last_get_qid_ = qid;
 }
 
 uint64_t Node::lastGetListQid() {
@@ -130,6 +109,46 @@ uint64_t Node::expectedGetListQid() {
 
 void Node::setExpectedGetListQid(uint64_t qid) {
   expected_get_list_qid_ = qid;
+}
+
+bool Node::operator<(const Node& other_node) const {
+  if (start() != other_node.start()) {
+    return start() < other_node.start();
+  } else if (end() != other_node.end()) {
+    return end() < other_node.end();
+  }
+
+  return id() < other_node.id();
+}
+
+bool Node::operator==(const Node& other_node) const {
+  return id() == other_node.id();
+}
+
+uint64_t Node::index() {
+  return index_;
+}
+
+Node::~Node() {}
+
+void Node::addChildLocally(Node* child) {
+  children_.insert(child);
+}
+
+void Node::removeChildLocally(Node* child) {
+  children_.erase(child);
+}
+
+void Node::updateChildrenVect() {
+  children_vect_.clear();
+  children_vect_.insert(children_vect_.begin(),
+      children_.begin(), children_.end());
+  std::sort(children_vect_.begin(), children_vect_.end());
+
+  uint64_t i = 0;
+  for (auto child : children_vect_) {
+    child->index_ = i++;
+  }
 }
 
 } // client

@@ -46,6 +46,9 @@ NodeTree::NodeTree(NetworkClient* network_client, QObject* parent)
     message_handlers_["query_error"]
         = &NodeTree::handleQueryErrorMessage;
 
+    Node* root = new Node(this, *data::NodeID::getRootNodeId());
+    nodes_[root->id()] = root;
+
     connect(network_client_, &NetworkClient::messageReceived,
         this, &NodeTree::messageReceived);
     connect(network_client_, &NetworkClient::connectionStatusChanged,
@@ -85,7 +88,7 @@ void NodeTree::messageReceived(msg_ptr msg) {
     remote_messages_.push_back(msg);
   }
 
-  // this is temporary
+  // FIXME this is temporary
   applyRemoteMessages();
 }
 
@@ -108,7 +111,51 @@ void NodeTree::updateConnectionStatus(NetworkClient::ConnectionStatus
 void NodeTree::handleGetListReplyMessage(msg_ptr msg) {
   auto reply = std::dynamic_pointer_cast<proto::MsgGetListReply>(msg);
   if (reply) {
-    // TODO
+    auto queries_iter = queries_.find(reply->qid);
+    if (queries_iter != queries_.end()) {
+      auto node_id = queries_iter->second;
+      if (subscriptions_.find(reply->qid) == subscriptions_.end()) {
+        queries_.erase(reply->qid);
+      }
+
+      Node* n = node(node_id);
+      if (n && reply->qid == n->expectedGetListQid()) {
+        emit startChildrenModification(node_id.toHexString());
+
+        if (reply->qid != n->lastGetListQid()) {
+          n->setLastGetListQid(reply->qid);
+          std::list<Node*> children_list;
+          for (auto child : n->children()) {
+            removeSubtreeLocally(child);
+          }
+        }
+
+        for (auto new_child : *reply->objs) {
+          Node* new_node = new Node(this, *new_child->id);
+          nodes_[new_node->id()] = new_node;
+          new_node->setParent(n);
+          n->addChildLocally(new_node);
+          updateNode(new_child, new_node);
+
+          // FIXME
+          new_node->get(true);
+          new_node->getList(true);
+          printTree();
+
+          // TODO
+        }
+
+        for (auto removed_child_id : *reply->gone) {
+          Node* removed_child = node(*removed_child_id);
+          if (removed_child) {
+            removeSubtreeLocally(removed_child);
+          }
+        }
+
+        n->updateChildrenVect();
+        emit endChildrenModification(node_id.toHexString());
+      }
+    }
   } else {
     wrongMessageType("get_list_reply", "MsgGetListReply");
   }
@@ -117,18 +164,31 @@ void NodeTree::handleGetListReplyMessage(msg_ptr msg) {
 void NodeTree::handleGetReplyMessage(msg_ptr msg) {
   auto reply = std::dynamic_pointer_cast<proto::MsgGetReply>(msg);
   if (reply) {
-    // TODO
+    auto queries_iter = queries_.find(reply->qid);
+    if (queries_iter != queries_.end()) {
+      auto node_id = queries_iter->second;
+      if (subscriptions_.find(reply->qid) == subscriptions_.end()) {
+        queries_.erase(reply->qid);
+      }
+
+      Node* n = node(node_id);
+      if (n) {
+        emit startNodeDataModification(node_id.toHexString());
+        updateNode(reply->obj, n);
+        emit endNodeDataModification(node_id.toHexString());
+      }
+    }
   } else {
     wrongMessageType("get_reply", "MsgGetReply");
   }
 }
 
 void NodeTree::handleGetDataReplyMessage(msg_ptr msg) {
-  auto reply = std::dynamic_pointer_cast<proto::MsgGetListReply>(msg);
+  auto reply = std::dynamic_pointer_cast<proto::MsgGetDataReply>(msg);
   if (reply) {
 
   } else {
-    wrongMessageType("get_list_reply", "MsgGetListReply");
+    wrongMessageType("get_data_reply", "MsgGetDataReply");
   }
 }
 
@@ -172,12 +232,12 @@ void NodeTree::detachFromParent(data::NodeID id) {
   Node* parent = nullptr;
 
   if (child) {
-    child->setParent(nullptr);
     parent = child->parent();
+    child->setParent(nullptr);
   }
 
   if (parent) {
-    parent->removeChild(child);
+    parent->removeChildLocally(child);
   }
 }
 
@@ -190,6 +250,11 @@ uint64_t NodeTree::get(data::NodeID id, bool sub) {
   Node* n = node(id);
   if (n) {
     uint64_t qid = network_client_->nextQid();
+    queries_[qid] = id;
+    n->setExpectedGetQid(qid);
+    if (sub) {
+      subscriptions_.insert(qid);
+    }
 
     auto msg = std::make_shared<proto::MsgGet>(
         qid,
@@ -204,20 +269,30 @@ uint64_t NodeTree::get(data::NodeID id, bool sub) {
 }
 
 uint64_t NodeTree::getList(data::NodeID id, bool sub) {
-  uint64_t qid = network_client_->nextQid();
+  Node* n = node(id);
+  if (n) {
+    uint64_t qid = network_client_->nextQid();
+    queries_[qid] = id;
+    n->setExpectedGetListQid(qid);
+    if (sub) {
+      subscriptions_.insert(qid);
+    }
 
-  // TODO handle tags and pos filters here
-  const auto null_pos = std::pair<bool, int64_t>(false, 0);
-  auto msg = std::make_shared<proto::MsgGetList>(
-      qid,
-      std::make_shared<data::NodeID>(id),
-      std::make_shared<std::unordered_set<std::shared_ptr<std::string>>>(),
-      std::make_shared<proto::PosFilter>(
-          null_pos, null_pos, null_pos, null_pos),
-      sub);
-  network_client_->sendMessage(msg);
+    // TODO handle tags and pos filters here
+    const auto null_pos = std::pair<bool, int64_t>(false, 0);
+    auto msg = std::make_shared<proto::MsgGetList>(
+        qid,
+        std::make_shared<data::NodeID>(id),
+        std::make_shared<std::unordered_set<std::shared_ptr<std::string>>>(),
+        std::make_shared<proto::PosFilter>(
+            null_pos, null_pos, null_pos, null_pos),
+        sub);
+    network_client_->sendMessage(msg);
 
-  return qid;
+    return qid;
+  } else {
+    return 0;
+  }
 }
 
 uint64_t NodeTree::deleteNode(data::NodeID id) {
@@ -229,6 +304,30 @@ uint64_t NodeTree::deleteNode(data::NodeID id) {
   network_client_->sendMessage(msg);
 
   return rid;
+}
+
+void NodeTree::updateNode(
+    std::shared_ptr<proto::Node> src_node, Node* dst_node) {
+  dst_node->attributes_ = src_node->attr;
+
+  if (src_node->pos_start.first) {
+    dst_node->start_ = src_node->pos_start.second;
+  }
+
+  if (src_node->pos_end.first) {
+    dst_node->end_ = src_node->pos_end.second;
+  }
+
+  dst_node->tags_.clear();
+  for (auto tag_ptr : *src_node->tags) {
+    dst_node->tags_.insert(*tag_ptr);
+  }
+
+  dst_node->data_names_ = src_node->data;
+  dst_node->bindata_names_ = src_node->bindata;
+
+  // TODO triggers
+  // TODO changing parent
 }
 
 void NodeTree::printTree() {
@@ -244,16 +343,34 @@ void NodeTree::printTree() {
 }
 
 void NodeTree::printNode(Node* node, QTextStream& out, int level) {
-  auto name_ptr = node->attribute<std::shared_ptr<std::string>>("name");
+  QString name("[no name]");
+  node->getQStringAttr("name", name);
+
   for (int i = 0; i < level; ++i) {
     out << "  ";
   }
-  out << (name_ptr ? QString::fromStdString(*name_ptr) : "[na name]")
-      << "(" << node->id().toHexString() << ")" << endl;
-  for (auto child : node->children()) {
+
+  QString tags_str;
+  for (auto tag : node->tags_) {
+    tags_str += QString("%1, ").arg(QString::fromStdString(tag));
+  }
+
+  out << QString("\"%1\" (%2) [%3]").arg(name).arg(node->id().toHexString())
+      .arg(tags_str) << endl;
+  for (auto child : node->childrenVect()) {
     printNode(child, out, level + 1);
   }
 }
 
-} // veles
-} // client
+void NodeTree::removeSubtreeLocally(Node* child) {
+  unregisterNode(child->id());
+
+  for(auto node : child->children()) {
+    removeSubtreeLocally(node);
+  }
+
+  delete child;
+}
+
+} // namespace client
+} // namespace veles
