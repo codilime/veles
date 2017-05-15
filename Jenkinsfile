@@ -33,12 +33,12 @@ def getWorkspace = { buildType ->
 }
 
 @NonCPS
-def post_stage_failure(job, stage, error, url){
-  slackSend channel:"eax-builds", color: "danger", message: "Build ${job} failed in stage ${stage} with ${error}, see: <${url}|results>"
+def post_stage_failure(job, stage, build_id, url){
+  httpRequest url: "http://hubot.codilime.com:32768/hubot/jenkins-notify?room=eax-builds", httpMode: "POST", contentType: "APPLICATION_JSON", requestBody: "{\"build\": {\"phase\": \"FINISHED\", \"status\": \"FAILURE\", \"number\": ${build_id}, \"full_url\": \"${url}\"}, \"name\": \"${job} stage: ${stage} *FAIL* :red_circle: \" }"
 }
 @NonCPS
-def post_build_finished(job,url){
-  slackSend channel:"eax-builds", color: "good", message: "Build ${job} finished successfully: see <${url}|result>"
+def post_build_finished(job, build_id, url){
+  httpRequest url: "http://hubot.codilime.com:32768/hubot/jenkins-notify?room=eax-builds", httpMode: "POST", contentType: "APPLICATION_JSON", requestBody: "{\"build\": {\"phase\": \"FINISHED\", \"status\": \"SUCCESS\", \"number\": ${build_id}, \"full_url\": \"${url}\"}, \"name\": \"${job} :green_heart:\" }"
 }
 
 def builders = [:]
@@ -72,7 +72,7 @@ if (!buildConfiguration.equals("Debug")) builders['mingw32'] = { node('windows')
             bat(script: "rd /s /q build_mingw", returnStatus: true)
           }
         } catch (error) {
-          post_stage_failure(env.JOB_NAME, "windows-mingw32",error,env.BUILD_URL)
+          post_stage_failure(env.JOB_NAME, "windows-mingw32", env.BUILD_ID, env.BUILD_URL)
           throw error
         }
       }
@@ -120,7 +120,7 @@ builders['msvc2015_64'] = { node('windows'){
             }
           }
         }  catch (error) {
-          post_stage_failure(env.JOB_NAME, "windows-msvc2015-x64",error,env.BUILD_URL)
+          post_stage_failure(env.JOB_NAME, "windows-msvc2015-x64", env.BUILD_ID, env.BUILD_URL)
           bat script: "type build_${version}\\error_and_warnings.txt"
           throw error
         }
@@ -164,7 +164,7 @@ builders['msvc2015'] = {node('windows'){
             }
           }
         } catch (error) {
-          post_stage_failure(env.JOB_NAME, "windows-msvc2015-x86",error,env.BUILD_URL)
+          post_stage_failure(env.JOB_NAME, "windows-msvc2015-x86", env.BUILD_ID, env.BUILD_URL)
           throw error
         }
       }
@@ -195,7 +195,7 @@ builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
         }
       } catch (error) {
         sh "cat build/error_and_warnings.txt"
-        post_stage_failure(env.JOB_NAME, "ubuntu-16.04-amd64",error,env.BUILD_URL)
+        post_stage_failure(env.JOB_NAME, "ubuntu-16.04-amd64", env.BUILD_ID, env.BUILD_URL)
         throw error
       }
     }
@@ -224,7 +224,7 @@ builders['macosx'] = { node ('macosx'){
         }
       } catch (error) {
         sh "cat build/error_and_warnings.txt"
-        post_stage_failure(env.JOB_NAME, "macOS-10.12",error,env.BUILD_URL)
+        post_stage_failure(env.JOB_NAME, "macOS-10.12", env.BUILD_ID, env.BUILD_URL)
         throw error
       }
     }
@@ -241,7 +241,7 @@ builders['python-windows'] = { node ('windows'){    timestamps {
           }
         }
       } catch (error) {
-        post_stage_failure(env.JOB_NAME, "python-windows",error,env.BUILD_URL)
+        post_stage_failure(env.JOB_NAME, "python-windows", env.BUILD_ID, env.BUILD_URL)
         throw error
       }
     }
@@ -259,7 +259,7 @@ builders['python-ubuntu'] = { node ('ubuntu-16.04'){
           }
         }
       } catch (error) {
-        post_stage_failure(env.JOB_NAME, "python-ubuntu1604",error,env.BUILD_URL)
+        post_stage_failure(env.JOB_NAME, "python-ubuntu1604", env.BUILD_ID, env.BUILD_URL)
         throw error
       }
     }
@@ -277,7 +277,7 @@ builders['python-macosx'] = { node ('macosx'){
           }
         }
       } catch (error) {
-        post_stage_failure(env.JOB_NAME, "python-macosx",error,env.BUILD_URL)
+        post_stage_failure(env.JOB_NAME, "python-macosx", env.BUILD_ID, env.BUILD_URL)
         throw error
       }
     }
@@ -288,6 +288,6 @@ builders['python-macosx'] = { node ('macosx'){
 
 parallel(builders)
 node(){
-	post_build_finished(env.JOB_NAME, env.BUILD_URL)
+	post_build_finished(env.JOB_NAME, env.BUILD_ID, env.BUILD_URL)
 }
 
