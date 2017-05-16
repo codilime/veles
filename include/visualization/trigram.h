@@ -36,6 +36,7 @@
 #include <QToolBar>
 #include <QAction>
 
+#include "util/settings/shortcuts.h"
 #include "visualization/base.h"
 #include "visualization/manipulator.h"
 
@@ -147,8 +148,7 @@ class TrigramWidget : public VisualizationWidget {
   void initTextures();
   void initGeometry();
 
-  QAction* createAction(const QIcon& icon, Manipulator* manipulator,
-      const QList<QKeySequence>& sequences);
+  QAction* createAction(util::settings::shortcuts::ShortcutType type, const QIcon& icon, Manipulator* manipulator);
   QAbstractButton* createActionButton(QAction* action);
   virtual void prepareManipulatorToolbar(QMainWindow* visualization_window);
 

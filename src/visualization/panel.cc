@@ -24,11 +24,14 @@
 #include "util/icons.h"
 #include "util/sampling/fake_sampler.h"
 #include "util/sampling/uniform_sampler.h"
+#include "util/settings/shortcuts.h"
 #include "visualization/digram.h"
 #include "visualization/trigram.h"
 
 namespace veles {
 namespace visualization {
+
+using util::settings::shortcuts::ShortcutsModel;
 
 const std::map<QString, VisualizationPanel::ESampler>
   VisualizationPanel::k_sampler_map = {
@@ -277,8 +280,8 @@ void VisualizationPanel::initLayout() {
   ui::MainWindowWithDetachableDockWidgets::splitDockWidget2(this,
       node_tree_dock_, minimap_dock_, Qt::Horizontal);
 
-  connect(show_node_tree_act_, &QAction::toggled,
-      node_tree_dock_, &QDockWidget::setVisible);
+//  connect(show_node_tree_act_, &QAction::toggled,
+//      node_tree_dock_, &QDockWidget::setVisible);
   connect(show_minimap_act_, &QAction::toggled,
       minimap_dock_, &QDockWidget::setVisible);
 }
@@ -290,14 +293,15 @@ void VisualizationPanel::prepareVisualizationOptions() {
 void VisualizationPanel::initOptionsPanel() {
   /////////////////////////////////////
   // Node tree / minimap
-  show_node_tree_act_ = new QAction(QIcon(":/images/show_node_tree.png"),
-      tr("&Node tree"), this);
-  show_node_tree_act_->setToolTip(tr("Node tree"));
-  show_node_tree_act_->setEnabled(true);
-  show_node_tree_act_->setCheckable(true);
-  show_node_tree_act_->setChecked(false);
-  show_minimap_act_ = new QAction(QIcon(":/images/show_minimap.png"),
-      tr("&Minimap"), this);
+//  show_node_tree_act_ = new QAction(QIcon(":/images/show_node_tree.png"),
+//      tr("&Node tree"), this);
+//  show_node_tree_act_->setToolTip(tr("Node tree"));
+//  show_node_tree_act_->setEnabled(true);
+//  show_node_tree_act_->setCheckable(true);
+//  show_node_tree_act_->setChecked(false);
+  show_minimap_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::SHOW_MINIMAP, this,
+        QIcon(":/images/show_minimap.png"), Qt::WidgetWithChildrenShortcut);
   show_minimap_act_->setToolTip(tr("Minimap"));
   show_minimap_act_->setEnabled(true);
   show_minimap_act_->setCheckable(true);
@@ -305,6 +309,8 @@ void VisualizationPanel::initOptionsPanel() {
 
   tools_tool_bar_ = new QToolBar(tr("Tools"));
   tools_tool_bar_->setMovable(false);
+  addAction(show_minimap_act_);
+  //addAction(show_node_tree_act_);
   //tools_tool_bar_->addAction(show_node_tree_act_);
   tools_tool_bar_->addAction(show_minimap_act_);
   tools_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
@@ -315,27 +321,33 @@ void VisualizationPanel::initOptionsPanel() {
   /////////////////////////////////////
   // Modes: digram / trigrams
   QColor icon_color = palette().color(QPalette::WindowText);
-  digram_action_ = new QAction(util::getColoredIcon(
-      ":/images/digram_icon.png", icon_color), tr("&Digram"), this);
+  digram_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::VISUALIZATION_DIGRAM, this,
+        util::getColoredIcon(":/images/digram_icon.png", icon_color), Qt::WidgetWithChildrenShortcut);
   digram_action_->setToolTip("Digram Visualization");
   connect(digram_action_, SIGNAL(triggered()), this,
           SLOT(showDigramVisualization()));
 
-  trigram_action_ = new QAction(util::getColoredIcon(
-      ":/images/trigram_icon.png", icon_color), tr("&Trigram"), this);
+  trigram_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::VISUALIZATION_TRIGRAM, this,
+        util::getColoredIcon(":/images/trigram_icon.png", icon_color), Qt::WidgetWithChildrenShortcut);
   trigram_action_->setToolTip("Trigram Visualization");
   connect(trigram_action_, SIGNAL(triggered()), this,
           SLOT(showTrigramVisualization()));
 
-  layered_digram_action_ = new QAction(util::getColoredIcon(
-      ":/images/layered_digram_icon.png", icon_color, false),
-      tr("&Layered Digram"), this);
+
+  layered_digram_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::VISUALIZATION_LAYERED_DIGRAM, this,
+        util::getColoredIcon(":/images/layered_digram_icon.png", icon_color, false), Qt::WidgetWithChildrenShortcut);
   layered_digram_action_->setToolTip("Layered Digram Visualization");
   connect(layered_digram_action_, SIGNAL(triggered()), this,
           SLOT(showLayeredDigramVisualization()));
 
   modes_tool_bar_ = new QToolBar(tr("Modes"));
   modes_tool_bar_->setMovable(false);
+  addAction(digram_action_);
+  addAction(trigram_action_);
+  addAction(layered_digram_action_);
   modes_tool_bar_->addAction(digram_action_);
   modes_tool_bar_->addAction(trigram_action_);
   modes_tool_bar_->addAction(layered_digram_action_);
@@ -362,10 +374,13 @@ void VisualizationPanel::initOptionsPanel() {
 
   /////////////////////////////////////
   // Sampling
-  QAction* show_more_options_action = new QAction(QIcon(":/images/more.png"),
-      tr("More options"), this);
+
+  QAction* show_more_options_action = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::VISUALIZATION_OPTIONS, this,
+        QIcon(":/images/more.png"), Qt::WidgetWithChildrenShortcut);
   connect(show_more_options_action, &QAction::triggered,
       this, &VisualizationPanel::showMoreOptions);
+  addAction(show_more_options_action);
   selection_toolbar->addAction(show_more_options_action);
 
   /////////////////////////////////////

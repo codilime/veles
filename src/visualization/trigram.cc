@@ -41,6 +41,8 @@
 namespace veles {
 namespace visualization {
 
+using util::settings::shortcuts::ShortcutsModel;
+
 const int k_minimum_brightness = 25;
 const int k_maximum_brightness = 103;
 const double k_brightness_heuristic_threshold = 0.66;
@@ -133,23 +135,23 @@ void TrigramWidget::prepareOptions(QMainWindow* visualization_window) {
   // Shape
   QToolBar* shape_toolbar = new QToolBar("Shape", this);
   shape_toolbar->setMovable(false);
-  cube_action_ = new QAction(this);
-  cube_action_->setIcon(
-      util::getColoredIcon(":/images/cube.png", icon_color, false));
+  cube_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::TRIGRAM_CUBE, this,
+        util::getColoredIcon(":/images/cube.png", icon_color, false));
   connect(cube_action_, &QAction::triggered, std::bind(
       &TrigramWidget::setShape, this, EVisualizationShape::CUBE));
   shape_toolbar->addAction(cube_action_);
 
-  cylinder_action_ = new QAction(this);
-  cylinder_action_->setIcon(
-      util::getColoredIcon(":/images/cylinder.png", icon_color, false));
+  cylinder_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::TRIGRAM_CYLINDER, this,
+        util::getColoredIcon(":/images/cylinder.png", icon_color, false));
   connect(cylinder_action_, &QAction::triggered, std::bind(
       &TrigramWidget::setShape, this, EVisualizationShape::CYLINDER));
   shape_toolbar->addAction(cylinder_action_);
 
-  sphere_action_ = new QAction(this);
-  sphere_action_->setIcon(
-      util::getColoredIcon(":/images/sphere.png", icon_color));
+  sphere_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::TRIGRAM_SPHERE, this,
+        util::getColoredIcon(":/images/sphere.png", icon_color));
 
   connect(sphere_action_, &QAction::triggered,
       std::bind(&TrigramWidget::setShape, this, EVisualizationShape::SPHERE));
@@ -428,11 +430,10 @@ void TrigramWidget::initGeometry() {
   vao_.create();
 }
 
-QAction* TrigramWidget::createAction(const QIcon& icon,
-      Manipulator* manipulator, const QList<QKeySequence>& sequences) {
-  QAction* action = new QAction(icon, manipulator->manipulatorName(), this);
-  action->setShortcuts(sequences);
-  action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+QAction* TrigramWidget::createAction(util::settings::shortcuts::ShortcutType type, const QIcon& icon,
+      Manipulator* manipulator) {
+  auto action = ShortcutsModel::getShortcutsModel()->createQAction(
+        type, this, icon, Qt::WidgetWithChildrenShortcut);
   connect(action, &QAction::triggered, std::bind(
       &TrigramWidget::setManipulator, this, manipulator));
   action->setProperty("manipulator", QVariant(qintptr(manipulator)));
@@ -478,25 +479,22 @@ void TrigramWidget::prepareManipulatorToolbar(
   manipulator_toolbar->setMovable(false);
 
   {
-    QAction* action = createAction(
-        QIcon(":/images/manipulator_spin.png"), spin_manipulator_,
-        {QKeySequence(Qt::CTRL + Qt::Key_1), QKeySequence(Qt::Key_Escape)});
+    QAction* action = createAction(util::settings::shortcuts::VISUALIZATION_MANIPULATOR_SPIN,
+        QIcon(":/images/manipulator_spin.png"), spin_manipulator_);
     addAction(action);
     manipulator_toolbar->addAction(action);
   }
 
   {
-    QAction* action = createAction(
-        QIcon(":/images/manipulator_trackball.png"), trackball_manipulator_,
-        {QKeySequence(Qt::CTRL + Qt::Key_2)});
+    QAction* action = createAction(util::settings::shortcuts::VISUALIZATION_MANIPULATOR_TRACKBALL,
+        QIcon(":/images/manipulator_trackball.png"), trackball_manipulator_);
     addAction(action);
     manipulator_toolbar->addAction(action);
   }
 
   {
-    QAction* action = createAction(
-        QIcon(":/images/manipulator_free.png"), free_manipulator_,
-        {QKeySequence(Qt::CTRL + Qt::Key_3)});
+    QAction* action = createAction(util::settings::shortcuts::VISUALIZATION_MANIPULATOR_FREE,
+        QIcon(":/images/manipulator_free.png"), free_manipulator_);
     addAction(action);
     manipulator_toolbar->addAction(action);
   }

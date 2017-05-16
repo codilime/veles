@@ -32,6 +32,7 @@
 
 #include "ui/dockwidget.h"
 #include "ui/optionsdialog.h"
+#include "ui/shortcutssettings.h"
 #include "ui/connectiondialog.h"
 #include "ui/connectionmanager.h"
 
@@ -85,6 +86,7 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   QAction *open_act_;
   QAction *exit_act_;
   QAction *options_act_;
+  QAction *shortcuts_act_;
 
   QAction *about_act_;
   QAction *about_qt_act_;
@@ -94,6 +96,7 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
 
   dbif::ObjectHandle database_;
   OptionsDialog *options_dialog_;
+  ShortcutsDialog *shortcuts_dialog_;
 
   QStringList parsers_list_;
 

@@ -74,6 +74,7 @@ add_library(veles_base
     ${INCLUDE_DIR}/util/sampling/fake_sampler.h
     ${INCLUDE_DIR}/util/settings/connection_client.h
     ${INCLUDE_DIR}/util/settings/hexedit.h
+    ${INCLUDE_DIR}/util/settings/shortcuts.h
     ${INCLUDE_DIR}/util/settings/theme.h
     ${INCLUDE_DIR}/util/settings/visualization.h
 
@@ -98,6 +99,7 @@ add_library(veles_base
     ${SRC_DIR}/util/sampling/fake_sampler.cc
     ${SRC_DIR}/util/settings/connection_client.cc
     ${SRC_DIR}/util/settings/hexedit.cc
+    ${SRC_DIR}/util/settings/shortcuts.cc
     ${SRC_DIR}/util/settings/theme.cc
     ${SRC_DIR}/util/settings/visualization.cc
 
@@ -308,15 +310,17 @@ target_link_libraries(unpyc veles_db parser veles_network)
 # Resources
 qt5_add_resources(RESOURCES resources/veles.qrc)
 qt5_wrap_ui(FORMS
-    ${SRC_DIR}/ui/optionsdialog.ui
-    ${SRC_DIR}/ui/searchdialog.ui
-    ${SRC_DIR}/ui/gotoaddressdialog.ui
-    ${SRC_DIR}/ui/createchunkdialog.ui
-    ${SRC_DIR}/ui/databaseinfo.ui
-    ${SRC_DIR}/ui/logwidget.ui
-    ${SRC_DIR}/ui/connectiondialog.ui
-    ${SRC_DIR}/ui/connectionnotificationwidget.ui
-    )
+  ${SRC_DIR}/ui/connectiondialog.ui
+  ${SRC_DIR}/ui/connectionnotificationwidget.ui
+  ${SRC_DIR}/ui/createchunkdialog.ui
+  ${SRC_DIR}/ui/databaseinfo.ui
+  ${SRC_DIR}/ui/gotoaddressdialog.ui
+  ${SRC_DIR}/ui/logwidget.ui
+  ${SRC_DIR}/ui/optionsdialog.ui
+  ${SRC_DIR}/ui/searchdialog.ui
+  ${SRC_DIR}/ui/shortcutselection.ui
+  ${SRC_DIR}/ui/shortcutssettings.ui
+)
 
 if(WIN32)
   set(ICONS ${CMAKE_SOURCE_DIR}/resources/icons/veles.rc)
@@ -360,6 +364,8 @@ add_executable(main_ui
     ${INCLUDE_DIR}/ui/spinbox.h
     ${INCLUDE_DIR}/ui/spinboxvalidator.h
     ${INCLUDE_DIR}/ui/connectiondialog.h
+    ${INCLUDE_DIR}/ui/shortcutedit.h
+    ${INCLUDE_DIR}/ui/shortcutssettings.h
     ${SRC_DIR}/ui/main.cc
     ${SRC_DIR}/ui/logwidget.cc
     ${SRC_DIR}/ui/veles_mainwindow.cc
@@ -382,6 +388,8 @@ add_executable(main_ui
     ${SRC_DIR}/ui/spinbox.cc
     ${SRC_DIR}/ui/spinboxvalidator.cc
     ${SRC_DIR}/ui/connectiondialog.cc
+    ${SRC_DIR}/ui/shortcutedit.cc
+    ${SRC_DIR}/ui/shortcutssettings.cc
     ${RESOURCES}
     ${VISUALIZATION_SHADERS}
     ${FORMS}

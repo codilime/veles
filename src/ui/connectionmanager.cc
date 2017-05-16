@@ -23,9 +23,12 @@
 #include "ui/connectionmanager.h"
 #include "util/version.h"
 #include "util/settings/connection_client.h"
+#include "util/settings/shortcuts.h"
 
 namespace veles {
 namespace ui {
+
+using util::settings::shortcuts::ShortcutsModel;
 
 /*****************************************************************************/
 /* ConnectionManager */
@@ -35,10 +38,12 @@ ConnectionManager::ConnectionManager(QWidget* parent)
     : QObject(parent), server_process_(nullptr),
     network_client_output_(nullptr) {
   connection_dialog_ = new ConnectionDialog(parent);
-  show_connection_dialog_action_ = new QAction("Connect...", this);
-  disconnect_action_ = new QAction("Disconnect", this);
-  kill_locally_created_server_action_ = new QAction(
-      "Kill locally created server", this);
+  show_connection_dialog_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+      util::settings::shortcuts::SHOW_CONNECT_DIALOG, this, Qt::ApplicationShortcut);
+  disconnect_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::DISCONNECT_FROM_SERVER, this, Qt::ApplicationShortcut);
+  kill_locally_created_server_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::KILL_LOCAL_SERVER, this, Qt::ApplicationShortcut);
   kill_locally_created_server_action_->setEnabled(false);
   disconnect_action_->setEnabled(false);
 
