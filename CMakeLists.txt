@@ -280,10 +280,12 @@ add_library(veles_client
     ${INCLUDE_DIR}/client/nodetree.h
     ${INCLUDE_DIR}/client/networkclient.h
     ${INCLUDE_DIR}/client/dbif.h
+    ${INCLUDE_DIR}/client/models.h
     ${SRC_DIR}/client/node.cc
     ${SRC_DIR}/client/nodetree.cc
     ${SRC_DIR}/client/networkclient.cc
-    ${SRC_DIR}/client/dbif.cc)
+    ${SRC_DIR}/client/dbif.cc
+    ${SRC_DIR}/client/models.cc)
 
 qt5_use_modules(veles_client Core Network)
 target_link_libraries(veles_client veles_base veles_data veles_network)
