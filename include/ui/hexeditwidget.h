@@ -49,8 +49,11 @@ class HexEditWidget : public View {
   void reapplySettings() override;
   void setParserIds(QStringList ids);
   QString addressAsText(qint64 addr);
-  QAction* findAction() {return find_act_;};
-  QAction* findNextAction() {return find_next_act_;};
+  QAction* findAction() {return find_act_;}
+  QAction* findNextAction() {return find_next_act_;}
+  QAction* showVisualizationAction() {return visualization_act_;}
+  QAction* showHexEditAction() {return show_hex_edit_act_;}
+  QAction* showNodeTreeAction() {return show_node_tree_act_;}
 
  signals:
   void showNodeTree(bool show);

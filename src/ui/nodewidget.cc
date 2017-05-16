@@ -59,6 +59,9 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
       main_window, data_model, selection_model);
   addAction(hex_edit_widget_->findAction());
   addAction(hex_edit_widget_->findNextAction());
+  addAction(hex_edit_widget_->showVisualizationAction());
+  addAction(hex_edit_widget_->showHexEditAction());
+  addAction(hex_edit_widget_->showNodeTreeAction());
   setCentralWidget(hex_edit_widget_);
 
   node_tree_dock_ = new QDockWidget;

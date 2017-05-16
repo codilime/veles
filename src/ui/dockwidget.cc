@@ -29,9 +29,12 @@
 
 #include "ui/dockwidget.h"
 #include "ui/dockwidget_native.h"
+#include "util/settings/shortcuts.h"
 
 namespace veles {
 namespace ui {
+
+using util::settings::shortcuts::ShortcutsModel;
 
 /*****************************************************************************/
 /* QProxyStyleForDockWidgetWithIconOnTitleBar */
@@ -101,6 +104,7 @@ DockWidget::DockWidget() : QDockWidget(), timer_id_(0), ticks_(0),
   maximize_here_action_ = createMoveToNewWindowAndMaximizeAction();
   addAction(maximize_here_action_);
   detach_action_ = createMoveToNewWindowAction();
+  addAction(detach_action_);
   createSplitActions();
 
   connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
@@ -354,7 +358,8 @@ QMenu* DockWidget::createMoveToWindowMenu() {
 }
 
 QAction* DockWidget::createMoveToNewWindowAction() {
-  auto action = new QAction(tr("Move to new top level window"), this);
+  auto action = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::DOCK_MOVE_TO_TOP, this, Qt::WidgetWithChildrenShortcut);
   connect(action, SIGNAL(triggered()),
       this, SLOT(detachToNewTopLevelWindow()));
 
@@ -362,10 +367,9 @@ QAction* DockWidget::createMoveToNewWindowAction() {
 }
 
 QAction* DockWidget::createMoveToNewWindowAndMaximizeAction() {
-  auto action = new QAction(tr("Move to new top level window and maximize"), this);
-  action->setShortcut(QKeySequence(Qt::Key_F12));
-  action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-  action->setIcon(QIcon(":/images/maximize.png"));
+  auto action = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::DOCK_MOVE_TO_TOP_MAX, this,
+        QIcon(":/images/maximize.png"), Qt::WidgetWithChildrenShortcut);
   connect(action, SIGNAL(triggered()),
       this, SLOT(detachToNewTopLevelWindowAndMaximize()));
 
@@ -373,21 +377,19 @@ QAction* DockWidget::createMoveToNewWindowAndMaximizeAction() {
 }
 
 void DockWidget::createSplitActions() {
-  split_horizontally_action_ = new QAction(tr("Split horizontally"), this);
-  split_horizontally_action_->setShortcutContext(
-      Qt::WidgetWithChildrenShortcut);
-  split_horizontally_action_->setIcon(
-      QIcon(":/images/split_horizontally.png"));
+  split_horizontally_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::DOCK_SPLIT_HORIZ, this,
+        QIcon(":/images/split_horizontally.png"), Qt::WidgetWithChildrenShortcut);
   connect(split_horizontally_action_, SIGNAL(triggered()), this,
       SLOT(splitHorizontally()));
+  addAction(split_horizontally_action_);
 
-  split_vertically_action_ = new QAction(tr("Split vertically"), this);
-  split_vertically_action_->setShortcutContext(
-      Qt::WidgetWithChildrenShortcut);
-  split_vertically_action_->setIcon(
-      QIcon(":/images/split_vertically.png"));
+  split_vertically_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::DOCK_SPLIT_VERT, this,
+        QIcon(":/images/split_vertically.png"), Qt::WidgetWithChildrenShortcut);
   connect(split_vertically_action_, SIGNAL(triggered()), this,
       SLOT(splitVertically()));
+  addAction(split_vertically_action_);
 }
 
 /*****************************************************************************/

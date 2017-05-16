@@ -29,6 +29,7 @@
 #include "dbif/universe.h"
 #include "client/dbif.h"
 #include "util/version.h"
+#include "util/settings/shortcuts.h"
 #include "ui/databaseinfo.h"
 #include "ui/veles_mainwindow.h"
 #include "ui/hexeditwidget.h"
@@ -39,6 +40,8 @@
 
 namespace veles {
 namespace ui {
+
+using util::settings::shortcuts::ShortcutsModel;
 
 /*****************************************************************************/
 /* VelesMainWindow - Public methods */
@@ -154,56 +157,70 @@ void VelesMainWindow::init() {
 
   updateConnectionStatus(
       client::NetworkClient::ConnectionStatus::NotConnected);
+
+  shortcuts_dialog_ = new ShortcutsDialog(this);
 }
 
 void VelesMainWindow::createActions() {
-  new_file_act_ = new QAction(tr("&New..."), this);
-  new_file_act_->setShortcuts(QKeySequence::New);
-  new_file_act_->setStatusTip(tr("Open a new file"));
-  connect(new_file_act_, SIGNAL(triggered()), this, SLOT(newFile()));
+//  new_file_act_ = ShortcutsModel::getShortcutsModel()->createQAction(util::settings::shortcuts::NEW_FILE, this, Qt::ApplicationShortcut);
+//  new_file_act_->setStatusTip(tr("Open a new file"));
+//  connect(new_file_act_, SIGNAL(triggered()), this, SLOT(newFile()));
 
-  open_act_ = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
-  open_act_->setShortcuts(QKeySequence::Open);
+  open_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::OPEN_FILE, this, QIcon(":/images/open.png"), Qt::ApplicationShortcut);
   open_act_->setStatusTip(tr("Open an existing file"));
   connect(open_act_, SIGNAL(triggered()), this, SLOT(open()));
 
-  exit_act_ = new QAction(tr("E&xit"), this);
-  exit_act_->setShortcuts(QKeySequence::Quit);
+  exit_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::EXIT_APPLICATION, this, Qt::ApplicationShortcut);
   exit_act_->setStatusTip(tr("Exit the application"));
   connect(exit_act_, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
 
-  show_database_act_ = new QAction(tr("Show database view"), this);
+  show_database_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::SHOW_DATABASE, this, Qt::ApplicationShortcut);
   show_database_act_->setStatusTip(tr("Show database view"));
   connect(show_database_act_, SIGNAL(triggered()), this, SLOT(showDatabase()));
 
-  show_log_act_ = new QAction(tr("Show log"), this);
+  show_log_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::SHOW_LOG, this, Qt::ApplicationShortcut);
   show_log_act_->setStatusTip(tr("Show log"));
   connect(show_log_act_, SIGNAL(triggered()), this, SLOT(showLog()));
 
-  about_act_ = new QAction(tr("&About"), this);
+  about_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::SHOW_ABOUT, this, Qt::ApplicationShortcut);
   about_act_->setStatusTip(tr("Show the application's About box"));
   connect(about_act_, SIGNAL(triggered()), this, SLOT(about()));
 
-  about_qt_act_ = new QAction(tr("About &Qt"), this);
+  about_qt_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::SHOW_ABOUT_QT, this, Qt::ApplicationShortcut);
   about_qt_act_->setStatusTip(tr("Show the Qt library's About box"));
   connect(about_qt_act_, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
-  options_act_ = new QAction(tr("&Options"), this);
+  options_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::SHOW_OPTIONS, this, Qt::ApplicationShortcut);
   options_act_->setStatusTip(
-      tr("Show the Dialog to select applications options"));
+      tr("Show the dialog to select applications options"));
   connect(options_act_, &QAction::triggered, this,
           [this]() { options_dialog_->show(); });
+
+  shortcuts_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::SHOW_SHORTCUT_OPTIONS, this, Qt::ApplicationShortcut);
+  shortcuts_act_->setStatusTip(
+      tr("Show the dialog to customize keyboard shortcuts"));
+  connect(shortcuts_act_, &QAction::triggered, this,
+          [this]() { shortcuts_dialog_->exec(); });
 }
 
 void VelesMainWindow::createMenus() {
   file_menu_ = menuBar()->addMenu(tr("&File"));
 
   //Not implemented yet.
-  //fileMenu->addAction(newFileAct);
+  //fileMenu->addAction(new_file_act_);
 
   file_menu_->addAction(open_act_);
   file_menu_->addSeparator();
   file_menu_->addAction(options_act_);
+  file_menu_->addAction(shortcuts_act_);
   file_menu_->addSeparator();
   file_menu_->addAction(exit_act_);
 

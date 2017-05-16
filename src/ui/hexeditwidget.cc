@@ -37,6 +37,7 @@
 #include "ui/veles_mainwindow.h"
 
 #include "util/settings/hexedit.h"
+#include "util/settings/shortcuts.h"
 #include "util/settings/theme.h"
 #include "util/icons.h"
 
@@ -44,6 +45,8 @@
 
 namespace veles {
 namespace ui {
+
+using util::settings::shortcuts::ShortcutsModel;
 
 /*****************************************************************************/
 /* Public methods */
@@ -98,44 +101,43 @@ QString HexEditWidget::addressAsText(qint64 addr) {
 /*****************************************************************************/
 
 void HexEditWidget::createActions() {
-  upload_act_ = new QAction(QIcon(":/images/upload-32.ico"), tr("&Upload"),
-      this);
-  upload_act_->setShortcuts(QKeySequence::Save);
-  upload_act_->setStatusTip(tr("Upload changed to database"));
-  connect(upload_act_, SIGNAL(triggered()), this, SLOT(uploadChanges()));
-  upload_act_->setEnabled(false);
+//  Currently not implemented
+//  upload_act_ = new QAction(QIcon(":/images/upload-32.ico"), tr("&Upload"),
+//      this);
+//  upload_act_->setShortcuts(QKeySequence::Save);
+//  upload_act_->setStatusTip(tr("Upload changed to database"));
+//  connect(upload_act_, SIGNAL(triggered()), this, SLOT(uploadChanges()));
+//  upload_act_->setEnabled(false);
 
-  save_as_act_ = new QAction(QIcon(":/images/save.png"), tr("Save &As..."),
-      this);
-  save_as_act_->setShortcuts(QKeySequence::SaveAs);
-  save_as_act_->setStatusTip(tr("Save the document under a new name"));
-  connect(save_as_act_, SIGNAL(triggered()), this, SLOT(saveAs()));
-  save_as_act_->setEnabled(false);
+//  save_as_act_ = new QAction(QIcon(":/images/save.png"), tr("Save &As..."),
+//      this);
+//  save_as_act_->setShortcuts(QKeySequence::SaveAs);
+//  save_as_act_->setStatusTip(tr("Save the document under a new name"));
+//  connect(save_as_act_, SIGNAL(triggered()), this, SLOT(saveAs()));
+//  save_as_act_->setEnabled(false);
 
-  save_readable_ = new QAction(tr("Save &Readable..."), this);
-  save_readable_->setStatusTip(tr("Save document in readable form"));
+//  save_readable_ = new QAction(tr("Save &Readable..."), this);
+//  save_readable_->setStatusTip(tr("Save document in readable form"));
   // connect(save_readable_, SIGNAL(triggered()), this,
   // SLOT(saveToReadableFile()));
 
-  undo_act_ = new QAction(QIcon(":/images/undo.png"), tr("&Undo"), this);
-  undo_act_->setShortcuts(QKeySequence::Undo);
-  undo_act_->setEnabled(false);
+//  undo_act_ = new QAction(QIcon(":/images/undo.png"), tr("&Undo"), this);
+//  undo_act_->setShortcuts(QKeySequence::Undo);
+//  undo_act_->setEnabled(false);
 
-  redo_act_ = new QAction(QIcon(":/images/redo.png"), tr("&Redo"), this);
-  redo_act_->setShortcuts(QKeySequence::Redo);
-  redo_act_->setEnabled(false);
+//  redo_act_ = new QAction(QIcon(":/images/redo.png"), tr("&Redo"), this);
+//  redo_act_->setShortcuts(QKeySequence::Redo);
+//  redo_act_->setEnabled(false);
 
-  find_act_ = new QAction(QIcon(":/images/find.png"), tr("&Find/Replace"),
-      this);
-  find_act_->setShortcuts(QKeySequence::Find);
-  find_act_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-  find_act_->setStatusTip(tr("Show the Dialog for finding and replacing"));
+  find_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::HEX_FIND,
+        this, QIcon(":/images/find.png"), Qt::WidgetWithChildrenShortcut);
+  find_act_->setStatusTip(tr("Show the dialog for finding and replacing"));
   connect(find_act_, SIGNAL(triggered()), this, SLOT(showSearchDialog()));
 
-  find_next_act_ = new QAction(QIcon(":/images/find.png"), tr("Find &next"),
-      this);
-  find_next_act_->setShortcuts(QKeySequence::FindNext);
-  find_next_act_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+  find_next_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::HEX_FIND_NEXT,
+        this, QIcon(":/images/find.png"), Qt::WidgetWithChildrenShortcut);
   find_next_act_->setStatusTip(
       tr("Find next occurrence of the searched pattern"));
   find_next_act_->setEnabled(false);
@@ -144,16 +146,18 @@ void HexEditWidget::createActions() {
       this, SLOT(enableFindNext(bool)));
 
   QColor icon_color = palette().color(QPalette::WindowText);
-  visualization_act_ = new QAction(
-      util::getColoredIcon(":/images/trigram_icon.png", icon_color),
-      tr("&Visualization"), this);
+  visualization_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::OPEN_VISUALIZATION, this,
+        util::getColoredIcon(":/images/trigram_icon.png", icon_color),
+        Qt::WidgetWithChildrenShortcut);
   visualization_act_->setToolTip(tr("Visualization"));
   visualization_act_->setEnabled(data_model_->binData().size() > 0);
   connect(visualization_act_, SIGNAL(triggered()), this,
           SLOT(showVisualization()));
 
-  show_node_tree_act_ = new QAction(QIcon(":/images/show_node_tree.png"),
-      tr("&Node tree"), this);
+  show_node_tree_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::SHOW_NODE_TREE,
+        this, QIcon(":/images/show_node_tree.png"), Qt::WidgetWithChildrenShortcut);
   show_node_tree_act_->setToolTip(tr("Node tree"));
   show_node_tree_act_->setEnabled(true);
   show_node_tree_act_->setCheckable(true);
@@ -161,17 +165,20 @@ void HexEditWidget::createActions() {
   connect(show_node_tree_act_, SIGNAL(toggled(bool)),
       this, SIGNAL(showNodeTree(bool)));
 
-  show_minimap_act_ = new QAction(QIcon(":/images/show_minimap.png"),
-      tr("&Minimap"), this);
-  show_minimap_act_->setToolTip(tr("Minimap"));
-  show_minimap_act_->setEnabled(true);
-  show_minimap_act_->setCheckable(true);
-  show_minimap_act_->setChecked(false);
-  connect(show_minimap_act_, SIGNAL(toggled(bool)), this,
-      SIGNAL(showMinimap(bool)));
+//  Currently not implemented
+//  show_minimap_act_ = ShortcutsModel::ShortcutsModel::getShortcutsModel()->createQAction(
+//        util::settings::shortcuts::SHOW_MINIMAP,
+//        this, QIcon(":/images/show_minimap.png"), Qt::WidgetWithChildrenShortcut);
+//  show_minimap_act_->setToolTip(tr("Minimap"));
+//  show_minimap_act_->setEnabled(true);
+//  show_minimap_act_->setCheckable(true);
+//  show_minimap_act_->setChecked(false);
+//  connect(show_minimap_act_, SIGNAL(toggled(bool)), this,
+//      SIGNAL(showMinimap(bool)));
 
-  show_hex_edit_act_ = new QAction(QIcon(":/images/show_hex_edit.png"),
-      tr("Show &hex editor"), this);
+  show_hex_edit_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::OPEN_HEX,
+        this, QIcon(":/images/show_hex_edit.png"), Qt::WidgetWithChildrenShortcut);
   show_hex_edit_act_->setToolTip(tr("Hex editor"));
   show_hex_edit_act_->setEnabled(true);
   connect(show_hex_edit_act_, SIGNAL(triggered()),
@@ -180,8 +187,10 @@ void HexEditWidget::createActions() {
 
 void HexEditWidget::createToolBars() {
   tools_tool_bar_ = new QToolBar(tr("Tools"));
+  addAction(show_node_tree_act_);
   tools_tool_bar_->addAction(show_node_tree_act_);
   //Disabled until minimap does anything of value in hex-view
+  //addAction(show_minimap_act_);
   //tools_tool_bar_->addAction(show_minimap_act_);
 
   auto parser_tool_button = new QToolButton();
@@ -195,6 +204,8 @@ void HexEditWidget::createToolBars() {
   widget_action->setDefaultWidget(parser_tool_button);
   tools_tool_bar_->addAction(widget_action);
 
+  addAction(visualization_act_);
+  addAction(show_hex_edit_act_);
   tools_tool_bar_->addAction(visualization_act_);
   tools_tool_bar_->addAction(show_hex_edit_act_);
   tools_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);

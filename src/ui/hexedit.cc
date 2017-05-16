@@ -23,10 +23,13 @@
 
 #include "ui/hexedit.h"
 #include "util/encoders/factory.h"
+#include "util/settings/shortcuts.h"
 #include "util/settings/theme.h"
 
 namespace veles {
 namespace ui {
+
+using util::settings::shortcuts::ShortcutsModel;
 
 static const qint64 verticalAreaSpaceWidth_ = 15;
 static const qint64 horizontalAreaSpaceWidth_ = 5;
@@ -122,13 +125,15 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
 
   createChunkDialog_ = new CreateChunkDialog(dataModel_, chunkSelectionModel_, this);
 
-  createChunkAction_ = new QAction(tr("&Create chunk"), this);
+  createChunkAction_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::CREATE_CHUNK, this, Qt::WidgetWithChildrenShortcut);
   connect(createChunkAction_, &QAction::triggered, [this]() {
     createChunkDialog_->updateParent();
     createChunkDialog_->show();
   });
 
-  createChildChunkAction_ = new QAction(tr("&Create child chunk"), this);
+  createChildChunkAction_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::CREATE_CHILD_CHUNK, this, Qt::WidgetWithChildrenShortcut);
   connect(createChildChunkAction_, &QAction::triggered, [this]() {
     createChunkDialog_->updateParent(true);
     createChunkDialog_->show();
@@ -140,13 +145,18 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
   });
   goToAddressDialog_->setRange(startOffset_, startOffset_ + dataBytesCount_);
 
-  goToAddressAction_ = new QAction(tr("&Go to address"), this);
+  goToAddressAction_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::GO_TO_ADDRESS, this, Qt::WidgetWithChildrenShortcut);
   connect(goToAddressAction_, &QAction::triggered,
           [this]() { goToAddressDialog_->show(); });
 
-  removeChunkAction_ = new QAction("Remove chunk", this);
-  connect(removeChunkAction_, &QAction::triggered, [this]() {
+  removeChunkAction_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::REMOVE_CHUNK, this, Qt::WidgetWithChildrenShortcut);
+  auto remove_chunk_lambda = [this]() {
     auto selectedChunk = chunkSelectionModel_->currentIndex();
+    if (!selectedChunk.isValid()) {
+      return;
+    }
     auto result = QMessageBox::warning(
         this, tr("remove chunk"),
         tr("Remove chunk %1 ?").arg(selectedChunk.data().toString()),
@@ -155,14 +165,31 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
       return;
     }
     dataModel_->removeRow(selectedChunk.row(), selectedChunk.parent());
-  });
+  };
+  connect(removeChunkAction_, &QAction::triggered, remove_chunk_lambda);
   removeChunkAction_->setEnabled(false);
+  auto removeChunkPassiveAction = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::REMOVE_CHUNK, this, Qt::WidgetWithChildrenShortcut);
+  connect(removeChunkPassiveAction, &QAction::triggered, remove_chunk_lambda);
 
-  saveSelectionAction_ = new QAction(tr("&Save to file"), this);
+  saveSelectionAction_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::SAVE_SELECTION_TO_FILE, this, Qt::WidgetWithChildrenShortcut);
   connect(saveSelectionAction_, &QAction::triggered, [this]() {
     saveSelectionToFile(QFileDialog::getSaveFileName(this, tr("Save File")));
   });
 
+  auto action = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::COPY, this, Qt::WidgetWithChildrenShortcut);
+  connect(action, &QAction::triggered, [this] () {
+    copyToClipboard();
+  });
+
+  addAction(action);
+  addAction(createChunkAction_);
+  addAction(createChildChunkAction_);
+  addAction(goToAddressAction_);
+  addAction(removeChunkPassiveAction);
+  addAction(saveSelectionAction_);
   menu_.addAction(createChunkAction_);
   menu_.addAction(createChildChunkAction_);
   menu_.addAction(goToAddressAction_);
@@ -730,9 +757,6 @@ void HexEdit::processSelectionChangeEvent(QKeyEvent *event)
 }
 
 void HexEdit::keyPressEvent(QKeyEvent *event) {
-  if (event->matches(QKeySequence::Copy)) {
-    copyToClipboard();
-  }
   processMoveEvent(event);
   processSelectionChangeEvent(event);
 }

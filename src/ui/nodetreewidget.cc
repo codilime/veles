@@ -39,10 +39,13 @@
 #include "ui/veles_mainwindow.h"
 
 #include "util/settings/hexedit.h"
+#include "util/settings/shortcuts.h"
 #include "util/icons.h"
 
 namespace veles {
 namespace ui {
+
+using util::settings::shortcuts::ShortcutsModel;
 
 /*****************************************************************************/
 /* Public methods */
@@ -99,13 +102,14 @@ void NodeTreeWidget::setParserIds(QStringList ids) {
 /*****************************************************************************/
 
 void NodeTreeWidget::createActions() {
-  undo_act_ = new QAction(QIcon(":/images/undo.png"), tr("&Undo"), this);
-  undo_act_->setShortcuts(QKeySequence::Undo);
-  undo_act_->setEnabled(false);
+//  Not implemented yet.
+//  undo_act_ = new QAction(QIcon(":/images/undo.png"), tr("&Undo"), this);
+//  undo_act_->setShortcuts(QKeySequence::Undo);
+//  undo_act_->setEnabled(false);
 
-  redo_act_ = new QAction(QIcon(":/images/redo.png"), tr("&Redo"), this);
-  redo_act_->setShortcuts(QKeySequence::Redo);
-  redo_act_->setEnabled(false);
+//  redo_act_ = new QAction(QIcon(":/images/redo.png"), tr("&Redo"), this);
+//  redo_act_->setShortcuts(QKeySequence::Redo);
+//  redo_act_->setEnabled(false);
 }
 
 void NodeTreeWidget::createToolBars() {
@@ -126,10 +130,9 @@ void NodeTreeWidget::addChunk(QString name, QString type, QString comment,
 }
 
 void NodeTreeWidget::setupTreeViewHandlers() {
-
-  auto context_menu = new QMenu(tree_view_);
   tree_view_->setContextMenuPolicy(Qt::ActionsContextMenu);
-  remove_action_ = new QAction("remove chunk", context_menu);
+  remove_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::REMOVE_CHUNK, this, Qt::WidgetWithChildrenShortcut);
   tree_view_->addAction(remove_action_);
   remove_action_->setEnabled(false);
 
