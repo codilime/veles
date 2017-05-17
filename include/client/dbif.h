@@ -138,7 +138,7 @@ class NCWrapper : public QObject {
       std::string name);
   dbif::MethodResultPromise* handleSetCommentRequest(data::NodeID id,
       std::string comment);
-  dbif::MethodResultPromise* handleChangeDataRequest();
+  dbif::MethodResultPromise* handleChangeDataRequest(data::NodeID id, QSharedPointer<dbif::ChangeDataRequest> change_data_request);
   dbif::MethodResultPromise* handleSetChunkBoundsRequest(
       data::NodeID id, int64_t pos_start, int64_t pos_end);
   dbif::MethodResultPromise* handleSetChunkParseRequest(data::NodeID id,

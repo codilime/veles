@@ -21,6 +21,7 @@
 #include <QMenu>
 #include <QMouseEvent>
 #include <QStringList>
+#include <QMap>
 
 #include "ui/createchunkdialog.h"
 #include "ui/fileblobmodel.h"
@@ -48,6 +49,7 @@ class HexEdit : public QAbstractScrollArea {
   void setParserIds(QStringList ids);
   void processMoveEvent(QKeyEvent *event);
   void processSelectionChangeEvent(QKeyEvent *event);
+  void processEditEvent(QKeyEvent *event);
 
 public slots:
   void newBinData();
@@ -140,11 +142,14 @@ public slots:
   QTimer cursor_timer_;
   QScopedPointer<util::encoders::HexEncoder> hexEncoder_;
   QScopedPointer<util::encoders::TextEncoder> textEncoder_;
+  QMap<qint64, uint64_t> change_map_;
+  QVector<QPair<qint64, uint64_t>> edit_stack_;
 
+  void applyChanges();
   void recalculateValues();
   void initParseMenu();
   void adjustBytesPerRowToWindowSize();
-  QRect bytePosToRect(qint64 pos, bool ascii = false);
+  QRect bytePosToRect(qint64 pos, bool ascii = false,  qint64 char_pos = 0);
   qint64 pointToRowNum(QPoint pos);
   qint64 pointToColumnNum(QPoint pos);
   qint64 pointToBytePos(QPoint pos);
@@ -154,7 +159,8 @@ public slots:
   QString hexRepresentationFromBytePos(qint64 pos);
   QString asciiRepresentationFromBytePos(qint64 pos);
 
-  qint64 byteValue(qint64 pos);
+  uint64_t byteValue(qint64 pos, bool not_modified = false);
+  void setByteValue(qint64 pos, uint64_t byte_value);
   QColor byteTextColorFromPos(qint64 pos);
   QColor byteBackroundColorFromPos(qint64 pos);
 
@@ -177,7 +183,9 @@ public slots:
   void parse(QAction *action);
   void resetCursor();
 
- private slots:
+  void transferChanges(data::BinData &bin_data, qint64 offset_shift = 0, qint64 max_bytes = -1);
+
+private slots:
   void copyToClipboard(util::encoders::IEncoder *enc = nullptr);
 };
 

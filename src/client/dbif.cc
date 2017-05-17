@@ -206,7 +206,7 @@ dbif::MethodResultPromise* NCWrapper::runMethod(
         set_comment_request->comment.toStdString());
   } else if (auto change_data_request
       = req.dynamicCast<dbif::ChangeDataRequest>()) {
-    return handleChangeDataRequest();
+    return handleChangeDataRequest(id, change_data_request);
   } else if (auto set_chunk_bounds_request
       = req.dynamicCast<dbif::SetChunkBoundsRequest>()) {
     return handleSetChunkBoundsRequest(
@@ -1006,16 +1006,44 @@ dbif::MethodResultPromise* NCWrapper::handleSetCommentRequest(data::NodeID id,
   return addMethodPromise(qid);
 }
 
-dbif::MethodResultPromise* NCWrapper::handleChangeDataRequest() {
+dbif::MethodResultPromise* NCWrapper::handleChangeDataRequest(data::NodeID id,
+    QSharedPointer<dbif::ChangeDataRequest> change_data_request) {
+
+  uint64_t qid = nc_->nextQid();
+
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
-      *nc_->output() << "NCWrapper: NYI - handleChangeDataRequest." << endl;
+      *nc_->output() << "NCWrapper: Sending a request to set a node's"
+          " comment (MsgTransaction)." << endl;
     }
-  }
 
-  // TODO - it's not required in initial release.
+    auto bindata = std::make_shared<std::vector<uint8_t>>(
+        change_data_request->data.rawData(),
+        change_data_request->data.rawData()
+        + change_data_request->data.size());
 
-  return new dbif::MethodResultPromise;
+    auto operation = std::make_shared<proto::OperationSetBinData>(
+        std::make_shared<data::NodeID>(id),
+        std::make_shared<std::string>("data"),
+        change_data_request->start,
+        bindata,
+        false
+        );
+    auto operations = std::make_shared<std::vector<std::shared_ptr<
+        proto::Operation>>>();
+
+    operations->push_back(operation);
+
+    auto msg = std::make_shared<proto::MsgTransaction>(
+        qid,
+        std::make_shared<std::vector<std::shared_ptr<proto::Check>>>(),
+        operations);
+
+    nc_->sendMessage(msg);
+
+   }
+
+   return addMethodPromise(qid);
 }
 
 dbif::MethodResultPromise* NCWrapper::handleSetChunkBoundsRequest(

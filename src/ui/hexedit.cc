@@ -35,6 +35,7 @@ static const qint64 verticalAreaSpaceWidth_ = 15;
 static const qint64 horizontalAreaSpaceWidth_ = 5;
 static const qint64 startMargin_ = 10;
 static const qint64 endMargin_ = 10;
+static const qint64 edit_stack_limit_ = 100;
 
 void HexEdit::recalculateValues() {
   charWidht_ = fontMetrics().width(QLatin1Char('2'));
@@ -231,7 +232,7 @@ QModelIndex HexEdit::selectedChunk() {
   return chunkSelectionModel_->currentIndex();
 }
 
-QRect HexEdit::bytePosToRect(qint64 pos, bool ascii) {
+QRect HexEdit::bytePosToRect(qint64 pos, bool ascii, qint64 char_pos) {
   qint64 columnNum = pos % bytesPerRow_;
   qint64 rowNum = pos / bytesPerRow_ - startRow_;
 
@@ -247,8 +248,8 @@ QRect HexEdit::bytePosToRect(qint64 pos, bool ascii) {
     width = charWidht_ + 1;
   } else {
     xPos = (byteCharsCount_ * charWidht_ + spaceAfterByte_) * columnNum +
-           addressWidth_ + startMargin_ - startPosX_;
-    width = charWidht_ * byteCharsCount_ + spaceAfterByte_;
+           addressWidth_ + startMargin_ - startPosX_+ char_pos * charWidht_;
+    width = charWidht_ * (byteCharsCount_ - char_pos) + spaceAfterByte_;
   }
   qint64 yPos = (rowNum + 1) * charHeight_;
   return QRect(xPos - spaceAfterByte_ / 2,
@@ -326,7 +327,12 @@ HexEdit::WindowArea HexEdit::pointToWindowArea(QPoint pos) {
   return WindowArea::OUTSIDE;
 }
 
-qint64 HexEdit::byteValue(qint64 pos) {
+uint64_t HexEdit::byteValue(qint64 pos, bool not_modified) {
+
+  if (!not_modified && change_map_.contains(pos)) {
+    return change_map_[pos];
+  }
+
   return dataModel_->binData()[pos].element64();
 }
 
@@ -375,6 +381,10 @@ QColor HexEdit::byteBackroundColorFromPos(qint64 pos) {
 
   if (pos >= selectionStart() && pos < selectionEnd() && selectionSize() > 1) {
     return selectionColor;
+  }
+
+  if (byteValue(pos) != byteValue(pos, /*not_modified=*/true)) {
+    return util::settings::theme::editedBackground();
   }
 
   auto index = dataModel_->indexFromPos(pos, selectedChunk().parent());
@@ -552,8 +562,20 @@ void HexEdit::paintEvent(QPaintEvent *event) {
   // cursor
   if ((cursor_visible_ || !hasFocus()) && dataBytesCount_ > 0) {
     bool in_ascii_area = current_area_ == WindowArea::ASCII;
-    drawBorder(current_position_, 1, false, in_ascii_area);
     drawBorder(current_position_, 1, true, !in_ascii_area);
+    auto rect = bytePosToRect(current_position_, false, cursor_pos_in_byte_);
+    QPainter cursor_painter(viewport());
+    auto oldPen = cursor_painter.pen();
+    auto newPen = QPen(oldPen.color());
+    if (in_ascii_area) {
+      newPen.setStyle(Qt::DashLine);
+    }
+    cursor_painter.setPen(newPen);
+
+    if (!rect.isEmpty()) {
+        cursor_painter.drawRect(rect);
+    }
+    cursor_painter.setPen(oldPen);
   }
 }
 
@@ -605,6 +627,7 @@ void HexEdit::setSelection(qint64 start, qint64 size, bool set_visible) {
 
   selection_size_ = size;
   current_position_ = start;
+  cursor_pos_in_byte_ = 0;
   createChunkDialog_->setRange(selectionStart(), selectionEnd());
 
   if (set_visible ) {
@@ -686,6 +709,22 @@ void HexEdit::processMoveEvent(QKeyEvent *event) {
     setSelection(dataBytesCount_ - 1, selection_size_, /*set_visible=*/true);
   }
 
+  if (event->matches(QKeySequence::MoveToNextWord)) {
+    cursor_pos_in_byte_ += 1;
+    if (cursor_pos_in_byte_ >= byteCharsCount_) {
+      cursor_pos_in_byte_ = 0;
+    }
+    resetCursor();
+  }
+
+  if (event->matches(QKeySequence::MoveToPreviousWord)) {
+    cursor_pos_in_byte_ -= 1;
+    if (cursor_pos_in_byte_ < 0) {
+      cursor_pos_in_byte_ = byteCharsCount_ - 1;
+    }
+    resetCursor();
+  }
+
 }
 
 void HexEdit::processSelectionChangeEvent(QKeyEvent *event)
@@ -756,9 +795,120 @@ void HexEdit::processSelectionChangeEvent(QKeyEvent *event)
 
 }
 
+void HexEdit::setByteValue(qint64 pos, uint64_t byte_value) {
+
+  auto old_byte = byteValue(pos);
+
+  if (old_byte == byte_value) {
+    return;
+  }
+
+  QPair<qint64, uint64_t> old(pos, old_byte);
+
+  edit_stack_.append(old);
+  while (edit_stack_.size() >= edit_stack_limit_) {
+    edit_stack_.pop_front();
+  }
+
+  change_map_[pos] = byte_value;
+}
+
+void HexEdit::transferChanges(data::BinData &bin_data, qint64 offset_shift, qint64 max_bytes) {
+  for (auto change = change_map_.begin(); change != change_map_.end(); ++change) {
+
+    qint64 pos = change.key() - offset_shift;
+
+    if (pos < 0 || (max_bytes >= 0 && pos >= max_bytes)) {
+      continue;
+    }
+
+    uint64_t value = change.value();
+
+    data::BinData new_char = data::BinData(dataModel_->binData().width(), {value});
+    bin_data.setData(pos, pos + 1, new_char);
+  }
+}
+
+void HexEdit::applyChanges() {
+
+  qint64 min_pos = dataBytesCount_;
+  qint64 max_pos = -1;
+
+  for (auto change = change_map_.begin(); change != change_map_.end(); ++change) {
+     qint64 pos = change.key();
+     if (min_pos > pos) {
+       min_pos = pos;
+     }
+     if (max_pos < pos) {
+       max_pos = pos;
+     }
+  }
+
+  if (max_pos < 0) {
+    return;
+  }
+
+  auto copy_bin_data = dataModel_->binData().data(min_pos, max_pos + 1);
+  transferChanges(copy_bin_data, min_pos, max_pos - min_pos + 1);
+  change_map_.clear();
+  dataModel_->uploadNewData(copy_bin_data, min_pos);
+}
+
+void HexEdit::processEditEvent(QKeyEvent *event) {
+
+  if (event->matches(QKeySequence::Undo) && !edit_stack_.isEmpty()) {
+    auto item = edit_stack_.back();
+    edit_stack_.pop_back();
+    change_map_[item.first] = item.second;
+    setSelection(item.first, 1, /*set_visible=*/true);
+  }
+
+  if (event->matches(QKeySequence::Save)) {
+    applyChanges();
+  }
+
+
+  uint8_t key = (uint8_t)event->text()[0].toLatin1();
+
+  if (current_area_ == WindowArea::ASCII) {
+    if (key < 0x20 || key > 0x7e) {
+      return;
+    }
+    setByteValue(current_position_, key);
+    setSelection(current_position_ + 1, 0);
+  } else {
+    uint8_t nibble_val = 0;
+    if (key >= '0' && key <= '9') {
+      nibble_val = key - '0';
+    } else if (key >= 'a' && key <= 'f') {
+      nibble_val = key - 'a' + 10;
+    } else if (key >= 'A' && key <= 'F') {
+      nibble_val = key - 'A' + 10;
+    } else {
+      return;
+    }
+
+    auto current_val = byteValue(current_position_);
+    uint8_t shift = ((byteCharsCount_ - 1 - cursor_pos_in_byte_) * 4);
+    uint64_t new_val = current_val & ~(0xfULL << shift);
+    new_val = new_val | (nibble_val << shift);
+    setByteValue(current_position_, new_val);
+
+    cursor_pos_in_byte_ += 1;
+    if (cursor_pos_in_byte_ == byteCharsCount_) {
+      setSelection(current_position_ + 1, 0);
+    } else {
+      resetCursor();
+    }
+  }
+
+  viewport()->update();
+}
+
 void HexEdit::keyPressEvent(QKeyEvent *event) {
   processMoveEvent(event);
   processSelectionChangeEvent(event);
+  processEditEvent(event);
 }
 
 bool HexEdit::focusNextPrevChild(bool next) {
@@ -810,6 +960,9 @@ void HexEdit::copyToClipboard(util::encoders::IEncoder* enc) {
   }
   auto selectedData =
       dataModel_->binData().data(selectionStart(), selectionEnd());
+
+  transferChanges(selectedData, selectionStart(), selectionEnd() - selectionStart());
+
   QClipboard *clipboard = QApplication::clipboard();
   // TODO: convert encoders to use BinData
   clipboard->setText(enc->encode(QByteArray(
@@ -945,6 +1098,7 @@ void HexEdit::saveSelectionToFile(QString path) {
   }
 
   auto dataToSave = dataModel_->binData().data(byteOffset, byteOffset + size);
+  transferChanges(dataToSave, byteOffset, size);
 
   QFile file(path);
   if (!file.open(QIODevice::WriteOnly)) {
