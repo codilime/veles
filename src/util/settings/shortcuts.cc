@@ -69,6 +69,9 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[VISUALIZATION_MANIPULATOR_TRACKBALL] = {QKeySequence(Qt::CTRL + Qt::Key_2)};
     defaults[VISUALIZATION_MANIPULATOR_FREE] = {QKeySequence(Qt::CTRL + Qt::Key_3)};
     defaults[COPY] = QKeySequence::keyBindings(QKeySequence::Copy);
+    defaults[PASTE] = QKeySequence::keyBindings(QKeySequence::Paste);
+    defaults[UPLOAD] = QKeySequence::keyBindings(QKeySequence::Save);
+    defaults[UNDO] = QKeySequence::keyBindings(QKeySequence::Undo);
     defaults[HEX_MOVE_TO_NEXT_CHAR] = QKeySequence::keyBindings(QKeySequence::MoveToNextChar);
     defaults[HEX_MOVE_TO_PREV_CHAR] = QKeySequence::keyBindings(QKeySequence::MoveToPreviousChar);
     defaults[HEX_MOVE_TO_NEXT_LINE] = QKeySequence::keyBindings(QKeySequence::MoveToNextLine);
@@ -79,6 +82,8 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[HEX_MOVE_TO_END_OF_LINE] = QKeySequence::keyBindings(QKeySequence::MoveToEndOfLine);
     defaults[HEX_MOVE_TO_START_OF_FILE] = QKeySequence::keyBindings(QKeySequence::MoveToStartOfDocument);
     defaults[HEX_MOVE_TO_END_OF_FILE] = QKeySequence::keyBindings(QKeySequence::MoveToEndOfDocument);
+    defaults[HEX_MOVE_TO_NEXT_DIGIT] = QKeySequence::keyBindings(QKeySequence::MoveToNextWord);
+    defaults[HEX_MOVE_TO_PREV_DIGIT] = QKeySequence::keyBindings(QKeySequence::MoveToPreviousWord);
     defaults[HEX_REMOVE_SELECTION] = {QKeySequence(Qt::Key_Escape)};
     defaults[HEX_SELECT_ALL] = QKeySequence::keyBindings(QKeySequence::SelectAll);
     defaults[HEX_SELECT_NEXT_CHAR] = QKeySequence::keyBindings(QKeySequence::SelectNextChar);
@@ -371,6 +376,7 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
   addShortcutType(SHOW_NODE_TREE, global, tr("&Node tree"), tr("Open/close node tree for current dock"));
   addShortcutType(SHOW_MINIMAP, global, tr("&Minimap"), tr("Open/close minimap for current dock"));
   addShortcutType(COPY, global, tr("&Copy"), tr("Copy"));
+  addShortcutType(PASTE, global, tr("&Paste"), tr("Paste"));
 
   auto network = addCategory(tr("Network"), root_);
   addShortcutType(SHOW_CONNECT_DIALOG, network, tr("Connect..."), tr("Show connect dialog"));
@@ -389,6 +395,9 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
   addShortcutType(SAVE_SELECTION_TO_FILE, hex, tr("&Save to file"), tr("Save selection to file"));
   addShortcutType(HEX_FIND, hex, tr("&Find/Replace"), tr("Show the dialog for finding and replacing"));
   addShortcutType(HEX_FIND_NEXT, hex, tr("Find &next"), tr("Find next"));
+  addShortcutType(UPLOAD, hex, tr("&Upload"), tr("Upload"));
+  addShortcutType(UNDO, hex, tr("&Undo"), tr("Undo"));
+  addShortcutType(DISCARD, hex, tr("&Discard"), tr("Discard changes"));
 
   auto hex_move = addCategory(tr("Cursor movement"), hex);
   addShortcutType(HEX_MOVE_TO_NEXT_CHAR, hex_move, tr("Right"));
@@ -399,6 +408,8 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
   addShortcutType(HEX_MOVE_TO_PREV_PAGE, hex_move, tr("Page up"));
   addShortcutType(HEX_MOVE_TO_START_OF_LINE, hex_move, tr("Start of line"));
   addShortcutType(HEX_MOVE_TO_END_OF_LINE, hex_move, tr("End of line"));
+  addShortcutType(HEX_MOVE_TO_NEXT_DIGIT, hex_move, tr("Next digit"));
+  addShortcutType(HEX_MOVE_TO_PREV_DIGIT, hex_move, tr("Previous digit"));
   addShortcutType(HEX_MOVE_TO_START_OF_FILE, hex_move, tr("Start of file"));
   addShortcutType(HEX_MOVE_TO_END_OF_FILE, hex_move, tr("End of file"));
   addShortcutType(HEX_REMOVE_SELECTION, hex_move, tr("Remove selection"));

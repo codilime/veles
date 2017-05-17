@@ -30,21 +30,21 @@ TEST(Factory, keys) {
 }
 
 TEST(Factory, createHex) {
-  auto encoder = EncodersFactory::create("hex");
+  auto encoder = EncodersFactory::createEncoder("hex");
   EXPECT_NE(encoder, nullptr);
   EXPECT_NE(dynamic_cast<HexEncoder *>(encoder), nullptr);
   delete encoder;
 }
 
 TEST(Factory, createBase64) {
-  auto encoder = EncodersFactory::create("base64");
+  auto encoder = EncodersFactory::createEncoder("base64");
   EXPECT_NE(encoder, nullptr);
   EXPECT_NE(dynamic_cast<Base64Encoder *>(encoder), nullptr);
   delete encoder;
 }
 
 TEST(Factory, createNotExisting) {
-  auto encoder = EncodersFactory::create("notExisting");
+  auto encoder = EncodersFactory::createEncoder("notExisting");
   EXPECT_EQ(encoder, nullptr);
 }
 

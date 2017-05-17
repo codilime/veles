@@ -354,12 +354,10 @@ Qt::ItemFlags FileBlobModel::flags(const QModelIndex& index) const {
   return flags;
 }
 
-void FileBlobModel::uploadNewData(const QByteArray& buf) {
-  std::vector<uint8_t> data;
-  data.insert(data.begin(), buf.begin(), buf.end());
+void FileBlobModel::uploadNewData(const data::BinData& bindata, uint64_t offset) {
   fileBlob_->asyncRunMethod<dbif::ChangeDataRequest>(
-      this, 0, data.size(),
-      data::BinData(8, data.size(), reinterpret_cast<uint8_t*>(data.data())));
+      this, offset, bindata.size(),
+      bindata);
 }
 
 void FileBlobModel::parse(QString parser, qint64 offset,

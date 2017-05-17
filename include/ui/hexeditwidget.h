@@ -49,6 +49,9 @@ class HexEditWidget : public View {
   void reapplySettings() override;
   void setParserIds(QStringList ids);
   QString addressAsText(qint64 addr);
+  QAction* uploadAction() {return upload_act_;}
+  QAction* undoAction() {return undo_act_;}
+  QAction* discardAction() {return discard_act_;}
   QAction* findAction() {return find_act_;}
   QAction* findNextAction() {return find_next_act_;}
   QAction* showVisualizationAction() {return visualization_act_;}
@@ -67,13 +70,13 @@ class HexEditWidget : public View {
   void parse(QAction *action);
   void findNext();
   void showSearchDialog();
-  void uploadChanges();
   bool saveAs();
   void showVisualization();
   void showHexEditor();
   void newBinData();
   void enableFindNext(bool enable);
   void selectionChanged(qint64 start_addr, qint64 selection_size);
+  void editStateChanged(bool has_changes, bool has_undo);
 
  private:
   bool saveFile(const QString &file_name);
@@ -106,6 +109,7 @@ class HexEditWidget : public View {
   QAction *save_as_act_;
   QAction *save_readable_;
   QAction *undo_act_;
+  QAction *discard_act_;
   QAction *redo_act_;
   QAction *find_act_;
   QAction *find_next_act_;
