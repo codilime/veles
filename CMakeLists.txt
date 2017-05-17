@@ -88,6 +88,7 @@ add_library(veles_base
     ${INCLUDE_DIR}/util/encoders/url_encoder.h
 
     ${INCLUDE_DIR}/util/int_bytes.h
+    ${INCLUDE_DIR}/util/edit.h
     ${INCLUDE_DIR}/util/string_utils.h
     ${INCLUDE_DIR}/util/math.h
 
@@ -110,6 +111,7 @@ add_library(veles_base
     ${SRC_DIR}/util/encoders/text_encoder.cc
     ${SRC_DIR}/util/encoders/url_encoder.cc
 
+    ${SRC_DIR}/util/edit.cc
     ${SRC_DIR}/util/string_utils.cc
     ${SRC_DIR}/util/math.cc
     ${SRC_DIR}/util/version.cc)
@@ -440,6 +442,7 @@ if(GTEST_FOUND AND GMOCK_FOUND)
         ${TEST_DIR}/util/sampling/isampler.cc
         ${TEST_DIR}/util/sampling/uniform_sampler.cc
         ${TEST_DIR}/util/int_bytes.cc
+        ${TEST_DIR}/util/edit.cc
     )
 
     qt5_use_modules(run_test Core)

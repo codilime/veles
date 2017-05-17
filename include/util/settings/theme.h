@@ -33,6 +33,7 @@ QPalette pallete();
 QStyle* createStyle();
 QColor highlightingColor();
 QColor chunkBackground(int index);
+QColor editedBackground();
 QColor byteColor(uint8_t byte);
 QFont font();
 

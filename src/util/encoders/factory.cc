@@ -31,7 +31,7 @@ QStringList EncodersFactory::keys() {
   return {"text", "hex", "cstring", "cdata", "base64", "url"};
 }
 
-IEncoder* EncodersFactory::create(const QString& id) {
+IEncoder* EncodersFactory::createEncoder(const QString& id) {
   if (id == "text") {
     return new TextEncoder();
   } else if (id == "hex") {
@@ -42,6 +42,20 @@ IEncoder* EncodersFactory::create(const QString& id) {
     return new Base64Encoder();
   } else if (id == "cdata") {
     return new CDataEncoder();
+  } else if (id == "url") {
+    return new UrlEncoder();
+  }
+
+  return nullptr;
+}
+
+IDecoder* EncodersFactory::createDecoder(const QString& id) {
+  if (id == "text") {
+    return new TextEncoder();
+  } else if (id == "hex") {
+    return new HexEncoder();
+  } else if (id == "base64") {
+    return new Base64Encoder();
   } else if (id == "url") {
     return new UrlEncoder();
   }

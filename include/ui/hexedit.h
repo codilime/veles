@@ -27,6 +27,7 @@
 #include "ui/createchunkdialog.h"
 #include "ui/fileblobmodel.h"
 #include "ui/gotoaddressdialog.h"
+#include "util/edit.h"
 #include "util/encoders/hex_encoder.h"
 #include "util/encoders/text_encoder.h"
 #include "util/settings/shortcuts.h"
@@ -45,15 +46,20 @@ class HexEdit : public QAbstractScrollArea {
    *  turn on automatic mode which will adjust bytes per row to window size */
   void setBytesPerRow(int bytesCount, bool automatic = false);
   /** Scroll screen to make byte visible */
-  void scrollToByte(qint64 bytePos, bool doNothingIfVisable = false);
+  void scrollToByte(qint64 bytePos, bool minimal_change = false);
   void scrollRows(qint64 num_rows);
   FileBlobModel *dataModel() { return dataModel_;};
   void setParserIds(QStringList ids);
+  void processEditEvent(QKeyEvent *event);
+  uint64_t byteValue(qint64 pos, bool modified = true);
 
 public slots:
   void newBinData();
   void dataChanged();
   void modelSelectionChanged();
+  void applyChanges();
+  void undo();
+  void discardChanges();
 
  protected:
   void paintEvent(QPaintEvent *event) override;
@@ -62,10 +68,12 @@ public slots:
   void mouseMoveEvent(QMouseEvent *event) override;
   void mouseDoubleClickEvent(QMouseEvent *event) override;
   void contextMenuEvent(QContextMenuEvent *event) override;
+  void keyPressEvent(QKeyEvent *event) override;
   bool focusNextPrevChild(bool next) override;
 
  signals:
   void selectionChanged(qint64 start_addr, qint64 selection_size);
+  void editStateChanged(bool has_changes, bool has_undo);
 
  private:
   FileBlobModel *dataModel_;
@@ -86,6 +94,8 @@ public slots:
   qint64 rowsOnScreen_;
   /** Number of hex chars used to display one byte */
   qint64 byteCharsCount_;
+  /** maximum value of byte */
+  quint64 byte_max_value_;
   /** Number of pixels between two bytes in hex view (calculated from char width) */
   qint64 spaceAfterByte_;
   /** Width of single character in pixels */
@@ -140,11 +150,12 @@ public slots:
   QTimer cursor_timer_;
   QScopedPointer<util::encoders::HexEncoder> hexEncoder_;
   QScopedPointer<util::encoders::TextEncoder> textEncoder_;
+  util::EditEngine edit_engine_;
 
   void recalculateValues();
   void initParseMenu();
   void adjustBytesPerRowToWindowSize();
-  QRect bytePosToRect(qint64 pos, bool ascii = false);
+  QRect bytePosToRect(qint64 pos, bool ascii = false, qint64 char_pos = 0);
   qint64 pointToRowNum(QPoint pos);
   qint64 pointToColumnNum(QPoint pos);
   qint64 pointToBytePos(QPoint pos);
@@ -154,7 +165,7 @@ public slots:
   QString hexRepresentationFromBytePos(qint64 pos);
   QString asciiRepresentationFromBytePos(qint64 pos);
 
-  qint64 byteValue(qint64 pos);
+  void setByteValue(qint64 pos, uint64_t byte_value);
   QColor byteTextColorFromPos(qint64 pos);
   QColor byteBackroundColorFromPos(qint64 pos);
 
@@ -178,8 +189,11 @@ public slots:
   void parse(QAction *action);
   void resetCursor();
 
+  void transferChanges(data::BinData& bin_data, qint64 offset_shift = 0, qint64 max_bytes = -1);
+
  private slots:
   void copyToClipboard(util::encoders::IEncoder *enc = nullptr);
+  void pasteFromClipboard(util::encoders::IDecoder* enc = nullptr);
 };
 
 }  // namespace ui

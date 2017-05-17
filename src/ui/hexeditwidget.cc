@@ -69,6 +69,9 @@ HexEditWidget::HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
   createActions();
   createToolBars();
 
+  connect(hex_edit_, &HexEdit::editStateChanged,
+      this, &HexEditWidget::editStateChanged);
+
   setupDataModelHandlers();
 
   reapplySettings();
@@ -102,14 +105,27 @@ QString HexEditWidget::addressAsText(qint64 addr) {
 /*****************************************************************************/
 
 void HexEditWidget::createActions() {
-//  Currently not implemented
-//  upload_act_ = new QAction(QIcon(":/images/upload-32.ico"), tr("&Upload"),
-//      this);
-//  upload_act_->setShortcuts(QKeySequence::Save);
-//  upload_act_->setStatusTip(tr("Upload changed to database"));
-//  connect(upload_act_, SIGNAL(triggered()), this, SLOT(uploadChanges()));
-//  upload_act_->setEnabled(false);
 
+  upload_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+      util::settings::shortcuts::UPLOAD,
+      this, QIcon(":/images/upload-32.ico"), Qt::WidgetWithChildrenShortcut);
+  upload_act_->setStatusTip(tr("Upload changes to database"));
+  connect(upload_act_, SIGNAL(triggered()), hex_edit_, SLOT(applyChanges()));
+  upload_act_->setEnabled(false);
+
+  undo_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+      util::settings::shortcuts::UNDO,
+      this, QIcon(":/images/undo.png"), Qt::WidgetWithChildrenShortcut);
+  connect(undo_act_, SIGNAL(triggered()), hex_edit_, SLOT(undo()));
+  undo_act_->setEnabled(false);
+
+  discard_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+      util::settings::shortcuts::DISCARD,
+      this, style()->standardIcon(QStyle::SP_DialogDiscardButton), Qt::WidgetWithChildrenShortcut);
+  connect(discard_act_, SIGNAL(triggered()), hex_edit_, SLOT(discardChanges()));
+  discard_act_->setEnabled(false);
+
+//  Currently not implemented
 //  save_as_act_ = new QAction(QIcon(":/images/save.png"), tr("Save &As..."),
 //      this);
 //  save_as_act_->setShortcuts(QKeySequence::SaveAs);
@@ -122,23 +138,19 @@ void HexEditWidget::createActions() {
   // connect(save_readable_, SIGNAL(triggered()), this,
   // SLOT(saveToReadableFile()));
 
-//  undo_act_ = new QAction(QIcon(":/images/undo.png"), tr("&Undo"), this);
-//  undo_act_->setShortcuts(QKeySequence::Undo);
-//  undo_act_->setEnabled(false);
-
 //  redo_act_ = new QAction(QIcon(":/images/redo.png"), tr("&Redo"), this);
 //  redo_act_->setShortcuts(QKeySequence::Redo);
 //  redo_act_->setEnabled(false);
 
   find_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::HEX_FIND,
-        this, QIcon(":/images/find.png"), Qt::WidgetWithChildrenShortcut);
+      util::settings::shortcuts::HEX_FIND,
+      this, QIcon(":/images/find.png"), Qt::WidgetWithChildrenShortcut);
   find_act_->setStatusTip(tr("Show the dialog for finding and replacing"));
   connect(find_act_, SIGNAL(triggered()), this, SLOT(showSearchDialog()));
 
   find_next_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::HEX_FIND_NEXT,
-        this, QIcon(":/images/find.png"), Qt::WidgetWithChildrenShortcut);
+      util::settings::shortcuts::HEX_FIND_NEXT,
+      this, QIcon(":/images/find.png"), Qt::WidgetWithChildrenShortcut);
   find_next_act_->setStatusTip(
       tr("Find next occurrence of the searched pattern"));
   find_next_act_->setEnabled(false);
@@ -148,17 +160,17 @@ void HexEditWidget::createActions() {
 
   QColor icon_color = palette().color(QPalette::WindowText);
   visualization_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::OPEN_VISUALIZATION, this,
-        util::getColoredIcon(":/images/trigram_icon.png", icon_color),
-        Qt::WidgetWithChildrenShortcut);
+      util::settings::shortcuts::OPEN_VISUALIZATION, this,
+      util::getColoredIcon(":/images/trigram_icon.png", icon_color),
+      Qt::WidgetWithChildrenShortcut);
   visualization_act_->setToolTip(tr("Visualization"));
   visualization_act_->setEnabled(data_model_->binData().size() > 0);
   connect(visualization_act_, SIGNAL(triggered()), this,
           SLOT(showVisualization()));
 
   show_node_tree_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::SHOW_NODE_TREE,
-        this, QIcon(":/images/show_node_tree.png"), Qt::WidgetWithChildrenShortcut);
+      util::settings::shortcuts::SHOW_NODE_TREE,
+      this, QIcon(":/images/show_node_tree.png"), Qt::WidgetWithChildrenShortcut);
   show_node_tree_act_->setToolTip(tr("Node tree"));
   show_node_tree_act_->setEnabled(true);
   show_node_tree_act_->setCheckable(true);
@@ -178,8 +190,8 @@ void HexEditWidget::createActions() {
 //      SIGNAL(showMinimap(bool)));
 
   show_hex_edit_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::OPEN_HEX,
-        this, QIcon(":/images/show_hex_edit.png"), Qt::WidgetWithChildrenShortcut);
+      util::settings::shortcuts::OPEN_HEX,
+      this, QIcon(":/images/show_hex_edit.png"), Qt::WidgetWithChildrenShortcut);
   show_hex_edit_act_->setToolTip(tr("Hex editor"));
   show_hex_edit_act_->setEnabled(true);
   connect(show_hex_edit_act_, SIGNAL(triggered()),
@@ -212,16 +224,18 @@ void HexEditWidget::createToolBars() {
   tools_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
   addToolBar(tools_tool_bar_);
 
-  //Not implemented yet.
-  //file_tool_bar_ = new QToolBar(tr("File"));
-  //file_tool_bar_->addAction(upload_act_);
+  file_tool_bar_ = new QToolBar(tr("File"));
+  file_tool_bar_->addAction(upload_act_);
+  file_tool_bar_->addAction(undo_act_);
+  file_tool_bar_->addAction(discard_act_);
   //file_tool_bar_->addAction(save_as_act_);
-  //addToolBar(file_tool_bar_);
+  file_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
+  addToolBar(file_tool_bar_);
 
   edit_tool_bar_ = new QToolBar(tr("Edit"));
 
   //Not implemented yet.
-  //edit_tool_bar_->addAction(undo_act_);
+
   //edit_tool_bar_->addAction(redo_act_);
 
   edit_tool_bar_->addAction(find_act_);
@@ -313,9 +327,6 @@ void HexEditWidget::findNext() { search_dialog_->findNext(); }
 
 void HexEditWidget::showSearchDialog() { search_dialog_->show(); }
 
-void HexEditWidget::uploadChanges() {
-}
-
 bool HexEditWidget::saveAs() {
   QString file_name = QFileDialog::getSaveFileName(
       this, tr("Save As"), cur_file_);
@@ -366,6 +377,12 @@ void HexEditWidget::selectionChanged(qint64 start_addr,
       .arg(addressAsText(start_addr))
       .arg(addressAsText(start_addr + selection_size))
       .arg(QString::number(selection_size, 10).rightJustified(8, '0')));
+}
+
+void HexEditWidget::editStateChanged(bool has_changes, bool has_undo) {
+  upload_act_->setEnabled(has_changes);
+  discard_act_->setEnabled(has_changes);
+  undo_act_->setEnabled(has_undo);
 }
 
 void HexEditWidget::nodeTreeVisibilityChanged(bool visibility) {

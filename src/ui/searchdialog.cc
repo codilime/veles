@@ -55,7 +55,7 @@ qint64 SearchDialog::indexOf(const data::BinData &pattern, qint64 startPos) {
     while (numberOfMatches < pattern.size() &&
            numberOfMatches + index < data.size() &&
            pattern.element64(numberOfMatches) ==
-               data.element64(index + numberOfMatches)) {
+               _hexEdit->byteValue(index + numberOfMatches)) {
 
       ++numberOfMatches;
     }
@@ -83,7 +83,7 @@ qint64 SearchDialog::lastIndexOf(const data::BinData &pattern,
     while (numberOfMatches < pattern.size() &&
            numberOfMatches + index < data.size() &&
            pattern.element64(numberOfMatches) ==
-               data.element64(index + numberOfMatches)) {
+               _hexEdit->byteValue(index + numberOfMatches)) {
       ++numberOfMatches;
     }
 
