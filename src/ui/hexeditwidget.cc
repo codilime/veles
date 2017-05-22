@@ -54,10 +54,13 @@ using util::settings::shortcuts::ShortcutsModel;
 
 HexEditWidget::HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
     QSharedPointer<FileBlobModel>& data_model,
-    QSharedPointer<QItemSelectionModel>& selection_model)
+    QSharedPointer<QItemSelectionModel>& selection_model,
+    data::NodeID node,
+    QSharedPointer<client::NodeTreeModel> node_tree_model)
     : View("Hex editor", ":/images/show_hex_edit.png"),
-      main_window_(main_window), data_model_(data_model),
-      selection_model_(selection_model) {
+    main_window_(main_window), data_model_(data_model),
+    selection_model_(selection_model), node_(node),
+    node_tree_model_(node_tree_model) {
   hex_edit_ = new HexEdit(data_model_.data(), selection_model_.data(), this);
   setCentralWidget(hex_edit_);
   connect(hex_edit_, &HexEdit::selectionChanged,
@@ -325,7 +328,7 @@ bool HexEditWidget::saveAs() {
 
 void HexEditWidget::showVisualization() {
   auto *panel = new visualization::VisualizationPanel(main_window_,
-      data_model_);
+      data_model_, node_, node_tree_model_);
   panel->setData(QByteArray((const char *)data_model_->binData().rawData(),
     static_cast<int>(data_model_->binData().size())));
   panel->setWindowTitle(cur_file_path_);
@@ -341,7 +344,7 @@ void HexEditWidget::showHexEditor() {
   QSharedPointer<QItemSelectionModel> new_selection_model(
         new QItemSelectionModel(data_model_.data()));
   NodeWidget *node_edit = new NodeWidget(main_window_, data_model_,
-      new_selection_model);
+      new_selection_model, node_, node_tree_model_);
   auto sibling = DockWidget::getParentDockWidget(this);
   auto dock_widget = main_window_->addTab(node_edit,
       data_model_->path().join(" : "), sibling);

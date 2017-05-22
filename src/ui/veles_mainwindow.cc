@@ -47,6 +47,8 @@ using util::settings::shortcuts::ShortcutsModel;
 /* VelesMainWindow - Public methods */
 /*****************************************************************************/
 
+QPointer<ConnectionManager> VelesMainWindow::connection_manager_;
+
 VelesMainWindow::VelesMainWindow() : MainWindowWithDetachableDockWidgets(),
     database_dock_widget_(0), log_dock_widget_(0) {
   setAcceptDrops(true);
@@ -56,6 +58,10 @@ VelesMainWindow::VelesMainWindow() : MainWindowWithDetachableDockWidgets(),
 
 void VelesMainWindow::addFile(const QString& path) {
   files_to_upload_once_connected_.push_back(path);
+}
+
+QPointer<ConnectionManager> VelesMainWindow::connectionManager() {
+  return connection_manager_;
 }
 
 /*****************************************************************************/
@@ -414,7 +420,12 @@ void VelesMainWindow::createHexEditTab(QString fileName,
   QSharedPointer<QItemSelectionModel> selection_model(
       new QItemSelectionModel(data_model.data()));
 
-  NodeWidget* node_widget = new NodeWidget(this, data_model, selection_model);
+  //FIXME
+  data::NodeID node = *data::NodeID::getRootNodeId();
+  QSharedPointer<client::NodeTreeModel> node_tree_model;
+
+  NodeWidget* node_widget = new NodeWidget(this, data_model, selection_model,
+      node, node_tree_model);
   addTab(node_widget, data_model->path().join(" : "), nullptr);
 }
 

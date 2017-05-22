@@ -50,13 +50,15 @@ namespace ui {
 
 NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
     QSharedPointer<FileBlobModel>& data_model,
-    QSharedPointer<QItemSelectionModel>& selection_model)
+    QSharedPointer<QItemSelectionModel>& selection_model,
+    data::NodeID node,
+    QSharedPointer<client::NodeTreeModel> node_tree_model)
     : View("Hex editor", ":/images/show_hex_edit.png"),
       main_window_(main_window), minimap_(nullptr),
       minimap_dock_(nullptr), data_model_(data_model),
       selection_model_(selection_model), sampler_(nullptr) {
   hex_edit_widget_ = new HexEditWidget(
-      main_window, data_model, selection_model);
+      main_window, data_model, selection_model, node, node_tree_model);
   addAction(hex_edit_widget_->findAction());
   addAction(hex_edit_widget_->findNextAction());
   addAction(hex_edit_widget_->showVisualizationAction());
@@ -68,7 +70,7 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
   new DockWidgetVisibilityGuard(node_tree_dock_);
   node_tree_dock_->setWindowTitle("Node tree");
   node_tree_widget_ = new NodeTreeWidget(main_window, data_model,
-      selection_model);
+      selection_model, node, node_tree_model);
   node_tree_dock_->setWidget(node_tree_widget_);
   node_tree_dock_->setContextMenuPolicy(Qt::PreventContextMenu);
   node_tree_dock_->setAllowedAreas(

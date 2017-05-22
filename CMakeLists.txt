@@ -148,7 +148,7 @@ add_library(veles_visualization
     ${VISUALIZATION_FORMS}
     ${VISUALIZATION_SHADERS})
 
-qt5_use_modules(veles_visualization Core Gui Widgets)
+qt5_use_modules(veles_visualization Core Gui Widgets Network)
 # This a temporary "hack" to fix concurrent build fail - veles_visualization
 # actually depends on main_ui which also depends on veles_visualization
 # and veles_data, which in turn generates new C++ files - in future we should refactor

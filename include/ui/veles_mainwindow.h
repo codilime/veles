@@ -50,6 +50,7 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   VelesMainWindow();
   void addFile(const QString& path);
   QStringList parsersList() {return parsers_list_;}
+  static QPointer<ConnectionManager> connectionManager();
 
  protected:
   void dropEvent(QDropEvent* ev) override;
@@ -103,7 +104,8 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   QPointer<DockWidget> database_dock_widget_;
   QPointer<DockWidget> log_dock_widget_;
 
-  ConnectionManager* connection_manager_;
+  static QPointer<ConnectionManager> connection_manager_;
+
   ConnectionNotificationWidget* connection_notification_widget_;
 
   QToolBar* tool_bar_;

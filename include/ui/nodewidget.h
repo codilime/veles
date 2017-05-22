@@ -34,6 +34,7 @@
 #include "ui/dockwidget.h"
 #include "ui/hexeditwidget.h"
 #include "ui/nodetreewidget.h"
+#include "client/models.h"
 
 namespace veles {
 namespace ui {
@@ -44,7 +45,9 @@ class NodeWidget : public View {
  public:
   explicit NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
       QSharedPointer<FileBlobModel>& data_model,
-      QSharedPointer<QItemSelectionModel>& selection_model);
+      QSharedPointer<QItemSelectionModel>& selection_model,
+      data::NodeID node,
+      QSharedPointer<client::NodeTreeModel> node_tree_model);
   virtual ~NodeWidget();
 
  public slots:

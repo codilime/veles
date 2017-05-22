@@ -43,7 +43,10 @@ class VisualizationPanel : public ui::View {
  public:
   explicit VisualizationPanel(
       ui::MainWindowWithDetachableDockWidgets* main_window,
-      QSharedPointer<ui::FileBlobModel>& data_model, QWidget *parent = 0);
+      QSharedPointer<ui::FileBlobModel>& data_model,
+      data::NodeID node,
+      QSharedPointer<client::NodeTreeModel> node_tree_model,
+      QWidget *parent = 0);
   ~VisualizationPanel();
 
   void setData(const QByteArray &data);
@@ -115,6 +118,9 @@ class VisualizationPanel : public ui::View {
   ui::MainWindowWithDetachableDockWidgets* main_window_;
 
   bool visible_;
+
+  data::NodeID node_;
+  QSharedPointer<client::NodeTreeModel> node_tree_model_;
 };
 
 }  //  namespace visualization

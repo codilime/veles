@@ -30,9 +30,9 @@
 #include "ui/hexedit.h"
 #include "ui/searchdialog.h"
 #include "ui/dockwidget.h"
-
 #include "dbif/info.h"
 #include "dbif/types.h"
+#include "client/models.h"
 
 namespace veles {
 namespace ui {
@@ -43,7 +43,9 @@ class NodeTreeWidget : public View {
  public:
   explicit NodeTreeWidget(MainWindowWithDetachableDockWidgets *main_window,
       QSharedPointer<FileBlobModel>& data_model,
-      QSharedPointer<QItemSelectionModel>& selection_model);
+      QSharedPointer<QItemSelectionModel>& selection_model,
+      data::NodeID node,
+      QSharedPointer<client::NodeTreeModel> node_tree_model);
   void reapplySettings();
   void setParserIds(QStringList ids);
 
@@ -53,6 +55,7 @@ class NodeTreeWidget : public View {
   void removeChunk();
   void currentSelectionChanged(const QModelIndex &currentIndex);
   void newBinData();
+  void treeViewDoubleClicked(const QModelIndex &index);
 
  private:
   void initParsersMenu();
@@ -90,6 +93,8 @@ class NodeTreeWidget : public View {
 
   QSharedPointer<FileBlobModel> data_model_;
   QSharedPointer<QItemSelectionModel> selection_model_;
+  data::NodeID node_;
+  QSharedPointer<client::NodeTreeModel> node_tree_model_;
 
   QLineEdit *registered_line_edit_;
 

@@ -45,12 +45,15 @@ const std::map<QString, VisualizationPanel::ESampler>
 
 VisualizationPanel::VisualizationPanel(
     ui::MainWindowWithDetachableDockWidgets* main_window,
-    QSharedPointer<ui::FileBlobModel>& data_model, QWidget *parent) :
+    QSharedPointer<ui::FileBlobModel>& data_model,
+    data::NodeID node,
+    QSharedPointer<client::NodeTreeModel> node_tree_model,
+    QWidget *parent) :
     veles::ui::View("Visualization", ":/images/trigram_icon.png"),
     sampler_type_(k_default_sampler),
     visualization_type_(k_default_visualization), sample_size_(1024),
     data_model_(data_model), main_window_(main_window),
-    visible_(true) {
+    visible_(true), node_(node), node_tree_model_(node_tree_model) {
   sampler_ = getSampler(sampler_type_, data_, sample_size_);
   sampler_->allowAsynchronousResampling(true);
   minimap_sampler_ = getSampler(ESampler::UNIFORM_SAMPLER, data_,
@@ -261,7 +264,7 @@ void VisualizationPanel::initLayout() {
   QSharedPointer<QItemSelectionModel> new_selection_model(
             new QItemSelectionModel(data_model_.data()));
   node_tree_widget_ = new ui::NodeTreeWidget(main_window_, data_model_,
-      new_selection_model);
+      new_selection_model, node_, node_tree_model_);
   node_tree_dock_->setWidget(node_tree_widget_);
   node_tree_dock_->setContextMenuPolicy(Qt::PreventContextMenu);
   node_tree_dock_->setAllowedAreas(

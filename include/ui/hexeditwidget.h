@@ -32,9 +32,9 @@
 #include "ui/hexedit.h"
 #include "ui/searchdialog.h"
 #include "ui/dockwidget.h"
-
 #include "dbif/info.h"
 #include "dbif/types.h"
+#include "client/models.h"
 
 namespace veles {
 namespace ui {
@@ -45,7 +45,9 @@ class HexEditWidget : public View {
  public:
   explicit HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
       QSharedPointer<FileBlobModel>& data_model,
-      QSharedPointer<QItemSelectionModel>& selection_model);
+      QSharedPointer<QItemSelectionModel>& selection_model,
+      data::NodeID node,
+      QSharedPointer<client::NodeTreeModel> node_tree_model);
   void reapplySettings() override;
   void setParserIds(QStringList ids);
   QString addressAsText(qint64 addr);
@@ -119,6 +121,8 @@ class HexEditWidget : public View {
 
   QSharedPointer<FileBlobModel> data_model_;
   QSharedPointer<QItemSelectionModel> selection_model_;
+  data::NodeID node_;
+  QSharedPointer<client::NodeTreeModel> node_tree_model_;
 
   QStringList parsers_ids_;
   QMenu parsers_menu_;
