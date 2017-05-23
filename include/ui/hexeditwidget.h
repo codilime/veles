@@ -43,11 +43,11 @@ class HexEditWidget : public View {
   Q_OBJECT
 
  public:
-  explicit HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
-      QSharedPointer<FileBlobModel>& data_model,
-      QSharedPointer<QItemSelectionModel>& selection_model,
+  explicit HexEditWidget(
+      MainWindowWithDetachableDockWidgets *main_window,
       data::NodeID node,
-      QSharedPointer<client::NodeTreeModel> node_tree_model);
+      QSharedPointer<client::NodeTreeModel> node_tree_model,
+      QSharedPointer<QItemSelectionModel> selection_model);
   void reapplySettings() override;
   void setParserIds(QStringList ids);
   QString addressAsText(qint64 addr);
@@ -119,10 +119,9 @@ class HexEditWidget : public View {
   SearchDialog *search_dialog_;
   HexEdit *hex_edit_;
 
-  QSharedPointer<FileBlobModel> data_model_;
-  QSharedPointer<QItemSelectionModel> selection_model_;
   data::NodeID node_;
   QSharedPointer<client::NodeTreeModel> node_tree_model_;
+  QSharedPointer<QItemSelectionModel> selection_model_;
 
   QStringList parsers_ids_;
   QMenu parsers_menu_;

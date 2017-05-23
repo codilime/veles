@@ -49,16 +49,17 @@ namespace ui {
 /*****************************************************************************/
 
 NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
-    QSharedPointer<FileBlobModel>& data_model,
-    QSharedPointer<QItemSelectionModel>& selection_model,
     data::NodeID node,
-    QSharedPointer<client::NodeTreeModel> node_tree_model)
+    QSharedPointer<client::NodeTreeModel> node_tree_model,
+    QSharedPointer<QItemSelectionModel> selection_model)
     : View("Hex editor", ":/images/show_hex_edit.png"),
       main_window_(main_window), minimap_(nullptr),
-      minimap_dock_(nullptr), data_model_(data_model),
-      selection_model_(selection_model), sampler_(nullptr) {
-  hex_edit_widget_ = new HexEditWidget(
-      main_window, data_model, selection_model, node, node_tree_model);
+      minimap_dock_(nullptr), node_(node),
+      node_tree_model_(node_tree_model),
+      selection_model_(selection_model),
+      sampler_(nullptr) {
+  hex_edit_widget_ = new HexEditWidget(main_window,
+      node, node_tree_model, selection_model);
   addAction(hex_edit_widget_->findAction());
   addAction(hex_edit_widget_->findNextAction());
   addAction(hex_edit_widget_->showVisualizationAction());
@@ -69,8 +70,8 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
   node_tree_dock_ = new QDockWidget;
   new DockWidgetVisibilityGuard(node_tree_dock_);
   node_tree_dock_->setWindowTitle("Node tree");
-  node_tree_widget_ = new NodeTreeWidget(main_window, data_model,
-      selection_model, node, node_tree_model);
+  node_tree_widget_ = new NodeTreeWidget(main_window,
+      node, node_tree_model, selection_model);
   node_tree_dock_->setWidget(node_tree_widget_);
   node_tree_dock_->setContextMenuPolicy(Qt::PreventContextMenu);
   node_tree_dock_->setAllowedAreas(
@@ -124,8 +125,8 @@ NodeWidget::~NodeWidget() {
 void NodeWidget::loadBinDataToMinimap() {
   delete sampler_;
 
-  sampler_data_ = QByteArray((const char *)data_model_->binData().rawData(),
-          static_cast<int>(data_model_->binData().octets()));
+  sampler_data_ = QByteArray((const char *)node_tree_model_->binData(node_)->
+      rawData(), static_cast<int>(node_tree_model_->binData(node_)->octets()));
   sampler_ = new util::UniformSampler(sampler_data_);
   sampler_->setSampleSize(4096 * 1024);
   minimap_->setSampler(sampler_);

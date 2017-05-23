@@ -52,16 +52,17 @@ using util::settings::shortcuts::ShortcutsModel;
 /* Public methods */
 /*****************************************************************************/
 
-HexEditWidget::HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
-    QSharedPointer<FileBlobModel>& data_model,
-    QSharedPointer<QItemSelectionModel>& selection_model,
+HexEditWidget::HexEditWidget(
+    MainWindowWithDetachableDockWidgets *main_window,
     data::NodeID node,
-    QSharedPointer<client::NodeTreeModel> node_tree_model)
+    QSharedPointer<client::NodeTreeModel> node_tree_model,
+    QSharedPointer<QItemSelectionModel> selection_model)
     : View("Hex editor", ":/images/show_hex_edit.png"),
-    main_window_(main_window), data_model_(data_model),
-    selection_model_(selection_model), node_(node),
-    node_tree_model_(node_tree_model) {
-  hex_edit_ = new HexEdit(data_model_.data(), selection_model_.data(), this);
+    main_window_(main_window),
+    node_(node),
+    node_tree_model_(node_tree_model),
+    selection_model_(selection_model) {
+  hex_edit_ = new HexEdit(node, node_tree_model, selection_model, this);
   setCentralWidget(hex_edit_);
   connect(hex_edit_, &HexEdit::selectionChanged,
       this, &HexEditWidget::selectionChanged);
@@ -74,7 +75,12 @@ HexEditWidget::HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
   setupDataModelHandlers();
 
   reapplySettings();
-  setWindowTitle(data_model_->path().join(" : "));
+  client::Node* root = node_tree_model->nodeTree()->node(node_);
+  if (root) {
+    QString name("_");
+    root->getQStringAttr("name", name);
+    setWindowTitle(name);
+  }
 
   connect(&parsers_menu_, &QMenu::triggered, this, &HexEditWidget::parse);
   setParserIds(dynamic_cast<VelesMainWindow*>(
@@ -154,7 +160,10 @@ void HexEditWidget::createActions() {
         util::getColoredIcon(":/images/trigram_icon.png", icon_color),
         Qt::WidgetWithChildrenShortcut);
   visualization_act_->setToolTip(tr("Visualization"));
-  visualization_act_->setEnabled(data_model_->binData().size() > 0);
+
+  visualization_act_->setEnabled(
+      node_tree_model_->binData(node_)->size() > 0);
+
   connect(visualization_act_, SIGNAL(triggered()), this,
           SLOT(showVisualization()));
 
@@ -263,14 +272,19 @@ void HexEditWidget::createSelectionInfo() {
 }
 
 void HexEditWidget::addChunk(QString name, QString type, QString comment,
-                          uint64_t start, uint64_t end,
-                          const QModelIndex &index) {
-  data_model_->addChunk(name, type, comment, start, end, index);
+    uint64_t start, uint64_t end,
+    const QModelIndex &index) {
+  if (index.isValid()) {
+    node_tree_model_->addChunk(name, type, comment, start, end, index);
+  } else {
+    node_tree_model_->addChunk(name, type, comment, start, end,
+        node_tree_model_->indexFromId(node_));
+  }
 }
 
 void HexEditWidget::setupDataModelHandlers() {
-  connect(data_model_.data(), &FileBlobModel::newBinData,
-      this, &HexEditWidget::newBinData);
+  client::Node* n = node_tree_model_->nodeTree()->node(node_);
+  connect(n, &client::Node::binDataUpdated, this, &HexEditWidget::newBinData);
 }
 
 /*****************************************************************************/
@@ -282,9 +296,14 @@ bool HexEditWidget::saveFile(const QString &file_name) {
 
   QFile file(tmp_file_name);
   file.open(QIODevice::WriteOnly);
-  bool ok = file.write(QByteArray((const char *)data_model_->binData().rawData(),
-                                  static_cast<int>(data_model_->binData().size()))) != -1;
+  auto bin_data = node_tree_model_->binData(node_);
+  bool ok = false;
+  if (bin_data) {
+    ok = file.write(QByteArray((const char *)bin_data->rawData(),
+        static_cast<int>(bin_data->size()))) != -1;
+  }
   if (QFile::exists(file_name)) ok = QFile::remove(file_name);
+
   if (ok) {
     ok = file.copy(file_name);
     if (ok) ok = QFile::remove(tmp_file_name);
@@ -293,9 +312,10 @@ bool HexEditWidget::saveFile(const QString &file_name) {
 
   if (!ok) {
     QMessageBox::warning(this, tr("HexEdit"),
-                         tr("Cannot write file %1.").arg(file_name));
+        tr("Cannot write file %1.").arg(file_name));
     return false;
   }
+
   return true;
 }
 
@@ -305,9 +325,9 @@ bool HexEditWidget::saveFile(const QString &file_name) {
 
 void HexEditWidget::parse(QAction *action) {
   if (action->text() == "auto") {
-    data_model_->parse();
+    node_tree_model_->parse(node_);
   } else {
-    data_model_->parse(action->text());
+    node_tree_model_->parse(node_, action->text());
   }
 }
 
@@ -328,33 +348,44 @@ bool HexEditWidget::saveAs() {
 
 void HexEditWidget::showVisualization() {
   auto *panel = new visualization::VisualizationPanel(main_window_,
-      data_model_, node_, node_tree_model_);
-  panel->setData(QByteArray((const char *)data_model_->binData().rawData(),
-    static_cast<int>(data_model_->binData().size())));
+      node_, node_tree_model_);
+  panel->setData(QByteArray((const char *)node_tree_model_->binData(node_)
+      ->rawData(), static_cast<int>(node_tree_model_->binData(node_)
+      ->size())));
   panel->setWindowTitle(cur_file_path_);
   panel->setAttribute(Qt::WA_DeleteOnClose);
 
-  auto dock_widget = main_window_->addTab(panel,
-      data_model_->path().join(" : "));
+  QString name("_");
+  client::Node* root = node_tree_model_->nodeTree()->node(node_);
+  if (root) {
+      root->getQStringAttr("name", name);
+  }
+  auto dock_widget = main_window_->addTab(panel, name);
   connect(dock_widget, &DockWidget::visibilityChanged,
-          panel, &visualization::VisualizationPanel::visibilityChanged);
+      panel, &visualization::VisualizationPanel::visibilityChanged);
 }
 
 void HexEditWidget::showHexEditor() {
   QSharedPointer<QItemSelectionModel> new_selection_model(
-        new QItemSelectionModel(data_model_.data()));
-  NodeWidget *node_edit = new NodeWidget(main_window_, data_model_,
-      new_selection_model, node_, node_tree_model_);
+        new QItemSelectionModel(node_tree_model_.data()));
+  NodeWidget *node_edit = new NodeWidget(main_window_, node_,
+      node_tree_model_, new_selection_model);
+  QString name("_");
+  client::Node* root = node_tree_model_->nodeTree()->node(node_);
+  if (root) {
+      root->getQStringAttr("name", name);
+  }
   auto sibling = DockWidget::getParentDockWidget(this);
   auto dock_widget = main_window_->addTab(node_edit,
-      data_model_->path().join(" : "), sibling);
+      name, sibling);
   if (sibling == nullptr) {
     main_window_->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
   }
 }
 
 void HexEditWidget::newBinData() {
-  visualization_act_->setEnabled(data_model_->binData().size() > 0);
+  visualization_act_->setEnabled(node_tree_model_->binData(node_)
+      ->size() > 0);
 }
 
 void HexEditWidget::enableFindNext(bool enable) {

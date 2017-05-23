@@ -27,6 +27,7 @@
 #include "ui/gotoaddressdialog.h"
 #include "util/encoders/hex_encoder.h"
 #include "util/encoders/text_encoder.h"
+#include "client/models.h"
 
 namespace veles {
 namespace ui {
@@ -34,23 +35,29 @@ namespace ui {
 class HexEdit : public QAbstractScrollArea {
   Q_OBJECT
  public:
-  HexEdit(FileBlobModel *dataModel,
-          QItemSelectionModel *selectionModel = nullptr, QWidget *parent = 0);
-  /** Mark bytes as selected and optionally scroll screen to make these bytes visible */
+  HexEdit(
+      data::NodeID node_id,
+      QSharedPointer<client::NodeTreeModel> data_model,
+      QSharedPointer<QItemSelectionModel> chunk_selection_model,
+      QWidget *parent = 0);
+  /** Mark bytes as selected and optionally scroll screen to make these
+   *  bytes visible */
   void setSelection(qint64 start, qint64 size, bool set_visible = false);
-  /** Sets how many bytes should be displayed in the single hex row or optionaly
-   *  turn on automatic mode which will adjust bytes per row to window size */
+  /** Sets how many bytes should be displayed in the single hex row or
+   *  optionaly turn on automatic mode which will adjust bytes per row to
+   *  window size */
   void setBytesPerRow(int bytesCount, bool automatic = false);
   /** Scroll screen to make byte visible */
   void scrollToByte(qint64 bytePos, bool doNothingIfVisable = false);
   void scrollRows(qint64 num_rows);
-  FileBlobModel *dataModel() { return dataModel_;};
+  QSharedPointer<client::NodeTreeModel> dataModel() { return data_model_;};
+  data::NodeID nodeID() {return node_id_;}
   void setParserIds(QStringList ids);
   void processMoveEvent(QKeyEvent *event);
   void processSelectionChangeEvent(QKeyEvent *event);
 
 public slots:
-  void newBinData();
+  void newBinData(QString name);
   void dataChanged();
   void modelSelectionChanged();
 
@@ -68,8 +75,9 @@ public slots:
   void selectionChanged(qint64 start_addr, qint64 selection_size);
 
  private:
-  FileBlobModel *dataModel_;
-  QItemSelectionModel *chunkSelectionModel_;
+  data::NodeID node_id_;
+  QSharedPointer<client::NodeTreeModel> data_model_;
+  QSharedPointer<QItemSelectionModel> chunk_selection_model_;
 
   /** Total number of bytes in the blob */
   qint64 dataBytesCount_;

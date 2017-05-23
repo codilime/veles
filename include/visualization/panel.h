@@ -43,7 +43,6 @@ class VisualizationPanel : public ui::View {
  public:
   explicit VisualizationPanel(
       ui::MainWindowWithDetachableDockWidgets* main_window,
-      QSharedPointer<ui::FileBlobModel>& data_model,
       data::NodeID node,
       QSharedPointer<client::NodeTreeModel> node_tree_model,
       QWidget *parent = 0);

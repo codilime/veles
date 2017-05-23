@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 CodiLime
+ * Copyright 2017 CodiLime
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@
 #include <QVector>
 #include <QWidget>
 #include "data/types.h"
-#include "dbif/promise.h"
-#include "dbif/types.h"
+#include "client/models.h"
 
 namespace Ui {
 class DatabaseInfo;
@@ -35,26 +34,20 @@ class DatabaseInfo : public QWidget {
   Q_OBJECT
 
  public:
-  explicit DatabaseInfo(dbif::ObjectHandle database, QWidget *parent = 0);
+  explicit DatabaseInfo(
+      QSharedPointer<client::TopLevelResourcesModel> model,
+      QWidget *parent = 0);
   ~DatabaseInfo();
 
  private:
-  void subscribeChildren();
-
   Ui::DatabaseInfo *ui_;
-  dbif::ObjectHandle database_;
-  QMap<dbif::ObjectHandle, QModelIndex> objectToIndex_;
-  QVector<dbif::ObjectHandle> indexToObject_;
-  QStandardItemModel *model_;
-  QStandardItemModel *historyModel_;
-  dbif::InfoPromise *childrenPromise_;
+  QSharedPointer<client::TopLevelResourcesModel> model_;
 
  signals:
-  void goFile(dbif::ObjectHandle fileblob, QString fileName);
+  void goFile(QString id, QString file_name);
   void newFile();
 
  private slots:
-  void gotChildrenResponse(veles::dbif::PInfoReply reply);
   void goClicked();
   void newClicked();
 };

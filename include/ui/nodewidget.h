@@ -44,10 +44,9 @@ class NodeWidget : public View {
 
  public:
   explicit NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
-      QSharedPointer<FileBlobModel>& data_model,
-      QSharedPointer<QItemSelectionModel>& selection_model,
       data::NodeID node,
-      QSharedPointer<client::NodeTreeModel> node_tree_model);
+      QSharedPointer<client::NodeTreeModel> node_tree_model,
+      QSharedPointer<QItemSelectionModel> selection_model);
   virtual ~NodeWidget();
 
  public slots:
@@ -63,7 +62,8 @@ class NodeWidget : public View {
   QPointer<QDockWidget> node_tree_dock_;
   QPointer<QDockWidget> minimap_dock_;
 
-  QSharedPointer<FileBlobModel> data_model_;
+  data::NodeID node_;
+  QSharedPointer<client::NodeTreeModel> node_tree_model_;
   QSharedPointer<QItemSelectionModel> selection_model_;
 
   util::UniformSampler* sampler_;

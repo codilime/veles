@@ -51,6 +51,10 @@ void Node::setParent(Node* parent) {
   parent_ = parent;
 }
 
+void Node::setComment(QString comment) {
+  node_tree_->setQStrAttribute(id(), "comment", comment);
+}
+
 const std::unordered_set<Node*>& Node::children() const {
   return children_;
 }
@@ -81,6 +85,14 @@ uint64_t Node::get(bool sub) {
 
 uint64_t Node::getList(bool sub) {
   return node_tree_->getList(id(), sub);
+}
+
+uint64_t Node::getBinData(QString name, bool sub) {
+  return node_tree_->getBinData(id(), name, sub);
+}
+
+uint64_t Node::getData(QString name, bool sub) {
+  return node_tree_->getData(id(), name, sub);
 }
 
 uint64_t Node::deleteNode() {
@@ -129,6 +141,41 @@ uint64_t Node::index() {
   return index_;
 }
 
+std::shared_ptr<data::BinData> Node::binData(std::string name) {
+  auto iter = bin_data_.find(name);
+  if (iter == bin_data_.end()) {
+    return nullptr;
+  }
+
+  return iter->second;
+}
+
+std::shared_ptr<veles::messages::MsgpackObject> Node::data(std::string name) {
+  auto iter = data_.find(name);
+  if (iter == data_.end()) {
+    return nullptr;
+  }
+
+  return iter->second;
+}
+
+QString Node::nodePath() {
+  Node* n = this;
+  while(!n->hasTag("blob.file") && n->parent() != nullptr) {
+    n = n->parent();
+  }
+
+  QString path("[no path]");
+  n->getQStringAttr("path", path);
+  if (n != this) {
+    QString name("[no name]");
+    getQStringAttr("name", name);
+    path.append(QString(":%1").arg(name));
+  }
+
+  return path;
+}
+
 Node::~Node() {}
 
 void Node::addChildLocally(Node* child) {
@@ -143,7 +190,7 @@ void Node::updateChildrenVect() {
   children_vect_.clear();
   children_vect_.insert(children_vect_.begin(),
       children_.begin(), children_.end());
-  std::sort(children_vect_.begin(), children_vect_.end());
+  std::sort(children_vect_.begin(), children_vect_.end(), nodeIsSmaller);
 
   uint64_t i = 0;
   for (auto child : children_vect_) {

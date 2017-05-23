@@ -47,7 +47,8 @@ std::shared_ptr<NodeID> NodeID::fromHexString(QString& val) {
     return nullptr;
   }
   QByteArray arr = HexEncoder().decode(val);
-  return std::make_shared<NodeID>(arr.data());
+  return std::make_shared<NodeID>(
+      reinterpret_cast<const uint8_t*>(arr.data()));
 }
 
 std::vector<uint8_t> NodeID::asStdVector() const {

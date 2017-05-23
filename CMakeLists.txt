@@ -416,7 +416,9 @@ add_executable(main_ui
     ${CMAKE_SOURCE_DIR}/moc_manipulator.cpp
     ${CMAKE_SOURCE_DIR}/moc_connectiondialog.cpp
     ${CMAKE_SOURCE_DIR}/moc_networkclient.cpp
-    ${CMAKE_SOURCE_DIR}/moc_dbif.cpp)
+    ${CMAKE_SOURCE_DIR}/moc_dbif.cpp
+    ${CMAKE_SOURCE_DIR}/moc_nodetree.cpp
+    ${CMAKE_SOURCE_DIR}/moc_node.cpp)
 
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${GENERATED_MOC_FILES})
 

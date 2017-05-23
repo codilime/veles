@@ -55,7 +55,8 @@ int main(int argc, char *argv[]) {
 
   veles::util::threadpool::createTopic("visualization", 3);
 
-  qRegisterMetaType<veles::visualization::VisualizationWidget::AdditionalResampleDataPtr>("AdditionalResampleDataPtr");
+  qRegisterMetaType<veles::visualization::VisualizationWidget
+      ::AdditionalResampleDataPtr>("AdditionalResampleDataPtr");
   qRegisterMetaType<veles::client::NetworkClient::ConnectionStatus>(
       "veles::client::NetworkClient::ConnectionStatus");
 

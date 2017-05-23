@@ -16,6 +16,8 @@
  */
 #pragma once
 
+#include <unordered_set>
+
 #include <QDropEvent>
 #include <QDockWidget>
 #include <QMainWindow>
@@ -28,6 +30,7 @@
 
 #include "dbif/promise.h"
 #include "dbif/types.h"
+#include "client/dbif.h"
 #include "client/networkclient.h"
 
 #include "ui/dockwidget.h"
@@ -50,7 +53,6 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   VelesMainWindow();
   void addFile(const QString& path);
   QStringList parsersList() {return parsers_list_;}
-  static QPointer<ConnectionManager> connectionManager();
 
  protected:
   void dropEvent(QDropEvent* ev) override;
@@ -66,6 +68,7 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   void showLog();
   void updateConnectionStatus(
         client::NetworkClient::ConnectionStatus connection_status);
+  void nodeDiscovered(QString id);
 
  signals:
   void shown();
@@ -76,7 +79,7 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   void createMenus();
   void createDb();
   void createFileBlob(QString);
-  void createHexEditTab(QString, dbif::ObjectHandle);
+  void createHexEditTab(QString file_name, data::NodeID id);
   void createLogWindow();
 
   QMenu *file_menu_;
@@ -104,13 +107,18 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   QPointer<DockWidget> database_dock_widget_;
   QPointer<DockWidget> log_dock_widget_;
 
-  static QPointer<ConnectionManager> connection_manager_;
+  QPointer<ConnectionManager> connection_manager_;
 
   ConnectionNotificationWidget* connection_notification_widget_;
 
   QToolBar* tool_bar_;
 
   std::list<QString> files_to_upload_once_connected_;
+
+  // TODO This should be eventually removed once nobody is using dbif.
+  client::NCWrapper* nc_;
+
+  std::unordered_set<data::NodeID, data::NodeIDHash> awaited_nodes_;
 };
 
 }  // namespace ui

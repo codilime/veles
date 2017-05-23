@@ -20,6 +20,7 @@
 #include <unordered_set>
 #include <unordered_map>
 
+#include <QObject>
 #include <QString>
 
 #include "data/nodeid.h"
@@ -44,7 +45,9 @@ typedef std::shared_ptr<std::unordered_map<std::string,uint64_t>>
 /* Node */
 /*****************************************************************************/
 
-class Node {
+class Node : public QObject {
+  Q_OBJECT
+
  public:
   Node(NodeTree* node_tree, data::NodeID id);
 
@@ -53,6 +56,7 @@ class Node {
   Node* parent() const;
   data::NodeID parentId() const;
   void setParent(Node* parent);
+  void setComment(QString comment);
   const std::unordered_set<Node*>& children() const;
   const std::vector<Node*>& childrenVect() const;
   int64_t start() const;
@@ -105,6 +109,8 @@ class Node {
 
   uint64_t get(bool sub);
   uint64_t getList(bool sub);
+  uint64_t getBinData(QString name, bool sub);
+  uint64_t getData(QString name, bool sub);
   uint64_t deleteNode();
 
   uint64_t lastGetListQid();
@@ -119,6 +125,18 @@ class Node {
   bool operator==(const Node& other_node) const;
 
   uint64_t index();
+
+  std::shared_ptr<data::BinData> binData(std::string name);
+  std::shared_ptr<veles::messages::MsgpackObject> data(std::string name);
+  QString nodePath();
+
+  static bool nodeIsSmaller(Node* first, Node* second) {
+    return *first < *second;
+  }
+
+ signals:
+  void binDataUpdated(QString name);
+  void dataUpdated(QString name);
 
  private:
   virtual ~Node();
@@ -137,6 +155,8 @@ class Node {
   Attributes attributes_;
   DataNamesSet data_names_;
   BindataNamesSet bindata_names_;
+  std::unordered_map<std::string, std::shared_ptr<veles::messages::MsgpackObject>> data_;
+  std::unordered_map<std::string, std::shared_ptr<data::BinData>> bin_data_;
 
   uint64_t expected_get_qid_;
   uint64_t last_get_list_qid_;

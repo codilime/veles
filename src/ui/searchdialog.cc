@@ -45,17 +45,17 @@ SearchDialog::~SearchDialog() { delete ui; }
 
 qint64 SearchDialog::indexOf(const data::BinData &pattern, qint64 startPos) {
   // TODO: implement this as BinData method or as separate util
-  const data::BinData &data = _hexEdit->dataModel()->binData();
+  auto data = _hexEdit->dataModel()->binData(_hexEdit->nodeID());
   if (startPos == -1) {
     startPos = 0;
   }
   qint64 index = startPos;
-  while (index + pattern.size() <= data.size()) {
+  while (index + pattern.size() <= data->size()) {
     size_t numberOfMatches = 0;
     while (numberOfMatches < pattern.size() &&
-           numberOfMatches + index < data.size() &&
+           numberOfMatches + index < data->size() &&
            pattern.element64(numberOfMatches) ==
-               data.element64(index + numberOfMatches)) {
+               data->element64(index + numberOfMatches)) {
 
       ++numberOfMatches;
     }
@@ -73,17 +73,17 @@ qint64 SearchDialog::indexOf(const data::BinData &pattern, qint64 startPos) {
 qint64 SearchDialog::lastIndexOf(const data::BinData &pattern,
                                  qint64 startPos) {
   // TODO: implement this as BinData method or as separate util
-  const data::BinData &data = _hexEdit->dataModel()->binData();
+  auto data = _hexEdit->dataModel()->binData(_hexEdit->nodeID());
   if (startPos == -1) {
-    startPos = data.size();
+    startPos = data->size();
   }
   qint64 index = startPos - 1;
   while (index > 0) {
     size_t numberOfMatches = 0;
     while (numberOfMatches < pattern.size() &&
-           numberOfMatches + index < data.size() &&
+           numberOfMatches + index < data->size() &&
            pattern.element64(numberOfMatches) ==
-               data.element64(index + numberOfMatches)) {
+               data->element64(index + numberOfMatches)) {
       ++numberOfMatches;
     }
 
@@ -186,14 +186,17 @@ void SearchDialog::on_pbReplaceAll_clicked() {
 }
 
 bool SearchDialog::isHexStr(QString hexStr) {
-  auto hexCharsPerByte = _hexEdit->dataModel()->binData().width() / 4;
-  QRegExp hexMatcher(QString("^(([0-9A-F]{%1})|\\s)*$").arg(hexCharsPerByte), Qt::CaseInsensitive);
+  auto hexCharsPerByte = _hexEdit->dataModel()->binData(
+      _hexEdit->nodeID())->width() / 4;
+  QRegExp hexMatcher(QString("^(([0-9A-F]{%1})|\\s)*$").arg(hexCharsPerByte),
+      Qt::CaseInsensitive);
   return hexMatcher.exactMatch(hexStr);
 }
 
 data::BinData SearchDialog::getContent(int comboIndex, const QString &input) {
   std::vector<uint64_t> findBa;
-  int hexCharsPerByte = _hexEdit->dataModel()->binData().width() / 4;
+  int hexCharsPerByte = _hexEdit->dataModel()->binData(
+      _hexEdit->nodeID())->width() / 4;
   switch (comboIndex) {
     case 0:  // hex
       if (!isHexStr(input)) {

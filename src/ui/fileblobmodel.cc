@@ -369,7 +369,7 @@ void FileBlobModel::parse(QString parser, qint64 offset,
     parent_chunk = itemFromIndex(parent)->objectHandle();
   }
   fileBlob_->asyncRunMethod<dbif::BlobParseRequest>(this, parser, offset,
-                                                    parent_chunk);
+      parent_chunk);
 }
 
 bool FileBlobModel::isRemovable(const QModelIndex &index) {

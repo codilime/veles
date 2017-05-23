@@ -90,12 +90,15 @@ class NCWrapper : public QObject {
   Q_OBJECT
 
  public:
+  static NCWrapper* instance() {return ncw_;}
   typedef std::map<data::NodeID, NCObjectHandle> ChildrenMap;
   typedef void (NCWrapper::*MessageHandler)(msg_ptr);
 
   NCWrapper(NetworkClient* network_client, QObject* parent = nullptr);
   static dbif::ObjectType typeFromTags(
       std::shared_ptr<std::unordered_set<std::shared_ptr<std::string>>> tags);
+  static dbif::ObjectType typeFromTags(
+      const std::unordered_set<std::string>& tags);
 
   virtual dbif::InfoPromise* getInfo(dbif::PInfoRequest req, data::NodeID id);
   virtual dbif::InfoPromise* subInfo(dbif::PInfoRequest req, data::NodeID id);
@@ -196,6 +199,8 @@ class NCWrapper : public QObject {
   QList<QPointer<dbif::InfoPromise>> parser_promises_;
   std::map<uint64_t, std::shared_ptr<ChunkDataItemQuery>>
       chunk_data_item_queries_;
+
+  static NCWrapper* ncw_;
 };
 
 } // namespace client

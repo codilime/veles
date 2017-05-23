@@ -42,10 +42,9 @@ class NodeTreeWidget : public View {
 
  public:
   explicit NodeTreeWidget(MainWindowWithDetachableDockWidgets *main_window,
-      QSharedPointer<FileBlobModel>& data_model,
-      QSharedPointer<QItemSelectionModel>& selection_model,
       data::NodeID node,
-      QSharedPointer<client::NodeTreeModel> node_tree_model);
+      QSharedPointer<client::NodeTreeModel> node_tree_model,
+      QSharedPointer<QItemSelectionModel> selection_model);
   void reapplySettings();
   void setParserIds(QStringList ids);
 
@@ -56,6 +55,7 @@ class NodeTreeWidget : public View {
   void currentSelectionChanged(const QModelIndex &currentIndex);
   void newBinData();
   void treeViewDoubleClicked(const QModelIndex &index);
+  void resetRootNode();
 
  private:
   void initParsersMenu();
@@ -64,7 +64,6 @@ class NodeTreeWidget : public View {
   void addChunk(QString name, QString type, QString comment, uint64_t start,
                 uint64_t end, const QModelIndex &index = QModelIndex());
   void setupTreeViewHandlers();
-  void setupDataModelHandlers();
 
   void createActions();
   void createToolBars();
@@ -91,10 +90,9 @@ class NodeTreeWidget : public View {
 
   QTreeView *tree_view_;
 
-  QSharedPointer<FileBlobModel> data_model_;
-  QSharedPointer<QItemSelectionModel> selection_model_;
   data::NodeID node_;
   QSharedPointer<client::NodeTreeModel> node_tree_model_;
+  QSharedPointer<QItemSelectionModel> selection_model_;
 
   QLineEdit *registered_line_edit_;
 

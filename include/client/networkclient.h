@@ -21,7 +21,6 @@
 #include <random>
 #include <memory>
 #include <cstdint>
-#include <iostream>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -64,7 +63,7 @@ class NetworkClient : public QObject {
       const QByteArray& authentication_key,
       bool quit_on_close);
   void disconnect();
-  std::unique_ptr<NodeTree> const& nodeTree();
+  NodeTree* nodeTree();
   uint64_t nextQid();
 
   QString serverHostName();
@@ -111,7 +110,7 @@ public slots:
 
  private:
   QTcpSocket* client_socket_;
-  std::unique_ptr<NodeTree> node_tree_;
+  NodeTree* node_tree_;
   ConnectionStatus status_;
 
   QString server_name_;

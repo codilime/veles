@@ -23,6 +23,9 @@
 #include <QHostAddress>
 
 #include "proto/exceptions.h"
+#include "network/msgpackwrapper.h"
+#include "network/msgpackobject.h"
+
 #include "client/node.h"
 #include "client/nodetree.h"
 #include "client/networkclient.h"
@@ -52,7 +55,7 @@ QString NetworkClient::connStatusStr(ConnectionStatus status) {
 }
 
 NetworkClient::NetworkClient(QObject* parent) : QObject(parent),
-    client_socket_(nullptr), node_tree_(nullptr),
+    client_socket_(nullptr),
     status_(ConnectionStatus::NotConnected),
     server_name_("127.0.0.1"), server_port_(3135),
     client_interface_name_("127.0.0.1"),
@@ -61,6 +64,7 @@ NetworkClient::NetworkClient(QObject* parent) : QObject(parent),
     client_type_(""), authentication_key_(""), quit_on_close_(false),
     output_stream_(nullptr), qid_(0) {
   registerMessageHandlers();
+  node_tree_ = new NodeTree(this, this);
 }
 
 NetworkClient::~NetworkClient() {
@@ -145,7 +149,7 @@ void NetworkClient::disconnect() {
   }
 }
 
-std::unique_ptr<NodeTree> const& NetworkClient::nodeTree() {
+NodeTree* NetworkClient::nodeTree() {
   return node_tree_;
 }
 
@@ -407,17 +411,14 @@ void NetworkClient::socketConnected() {
 
   client_socket_->write(authentication_key_);
   sendMsgConnect();
-  node_tree_ = std::unique_ptr<NodeTree>(new NodeTree(this, this));
+  node_tree_->reset();
 }
 
 void NetworkClient::socketDisconnected() {
   setConnectionStatus(ConnectionStatus::NotConnected);
+  node_tree_->reset();
   if(output()) {
     *output() << "NetworkClient: TCP socket disconnected." << endl;
-  }
-
-  if (node_tree_) {
-    node_tree_.reset();
   }
 
   if (client_socket_) {

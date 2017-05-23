@@ -82,8 +82,11 @@ bool ChunkDataItemQuery::ready() {
 /* NCWrapper */
 /*****************************************************************************/
 
+NCWrapper* NCWrapper::ncw_ = nullptr;
+
 NCWrapper::NCWrapper(NetworkClient* network_client, QObject* parent)
     : QObject(parent), nc_(network_client), detailed_debug_info_(false) {
+  ncw_ = this;
   if (nc_) {
     message_handlers_["get_list_reply"]
         = &NCWrapper::handleGetListReplyMessage;
@@ -129,6 +132,35 @@ dbif::ObjectType NCWrapper::typeFromTags(
     } else if(*tag == "blob.file") {
       blob_file = true;
     } else if(*tag == "chunk.stored") {
+      chunk_stored = true;
+    }
+  }
+
+  if (blob_stored) {
+    if (blob_file) {
+      return dbif::ObjectType::FILE_BLOB;
+    } else {
+      return dbif::ObjectType::SUB_BLOB;
+    }
+  } else if (chunk_stored) {
+    return dbif::ObjectType::CHUNK;
+  } else {
+    return dbif::ObjectType::ROOT;
+  }
+}
+
+dbif::ObjectType NCWrapper::typeFromTags(
+    const std::unordered_set<std::string>& tags) {
+  bool blob_stored = false;
+  bool blob_file = false;
+  bool chunk_stored = false;
+
+  for (auto tag : tags) {
+    if(tag == "blob.stored") {
+      blob_stored = true;
+    } else if(tag == "blob.file") {
+      blob_file = true;
+    } else if(tag == "chunk.stored") {
       chunk_stored = true;
     }
   }

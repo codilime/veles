@@ -28,6 +28,7 @@
 #include <QScrollArea>
 
 #include "client/networkclient.h"
+#include "client/models.h"
 #include "ui/connectiondialog.h"
 #include "ui_connectionnotificationwidget.h"
 #include "network/msgpackwrapper.h"
@@ -50,6 +51,8 @@ class ConnectionManager : public QObject {
   QAction* showConnectionDialogAction();
   QAction* disconnectAction();
   QAction* killLocallyCreatedServerAction();
+  QSharedPointer<client::NodeTreeModel> nodeTreeModel();
+  QSharedPointer<client::TopLevelResourcesModel> resourcesModel();
 
  signals:
   void connectionStatusChanged(
@@ -84,6 +87,8 @@ class ConnectionManager : public QObject {
   bool is_local_server_;
   client::NetworkClient* network_client_;
   QTextStream* network_client_output_;
+  QSharedPointer<client::NodeTreeModel> node_tree_model_;
+  QSharedPointer<client::TopLevelResourcesModel> resources_model_;
 };
 
 /*****************************************************************************/

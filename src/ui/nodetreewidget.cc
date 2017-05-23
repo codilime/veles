@@ -56,51 +56,48 @@ using util::settings::shortcuts::ShortcutsModel;
 
 NodeTreeWidget::NodeTreeWidget(
     MainWindowWithDetachableDockWidgets *main_window,
-    QSharedPointer<FileBlobModel>& data_model,
-    QSharedPointer<QItemSelectionModel>& selection_model,
     data::NodeID node,
-    QSharedPointer<client::NodeTreeModel> node_tree_model)
+    QSharedPointer<client::NodeTreeModel> node_tree_model,
+    QSharedPointer<QItemSelectionModel> selection_model)
     : View("Node tree", ":/images/show_node_tree.png"),
-      main_window_(main_window), data_model_(data_model),
-      selection_model_(selection_model) {
+    main_window_(main_window),
+    node_(node),
+    node_tree_model_(node_tree_model),
+    selection_model_(selection_model) {
   tree_view_ = new QTreeView();
-
-  client::NodeTreeModel* node_tree_model__ = new client::NodeTreeModel(
-      VelesMainWindow::connectionManager()->networkClient()->nodeTree().get(),
-      *data::NodeID::getRootNodeId(),
-      this);
-  tree_view_->setModel(node_tree_model__);
-  tree_view_->setRootIndex(QModelIndex());
-  tree_view_->setSelectionModel(new QItemSelectionModel(node_tree_model__));
-  tree_view_->setRootIndex(node_tree_model__->indexFromId(
-      *data::NodeID::getRootNodeId()));
-
-  //tree_view_->setModel(data_model_.data());
-  //tree_view_->setSelectionModel(selection_model_.data());
+  tree_view_->setModel(node_tree_model_.data());
+  if (!selection_model_) {
+  tree_view_->setSelectionModel(
+      new QItemSelectionModel(node_tree_model_.data()));
+  } else {
+    tree_view_->setSelectionModel(selection_model_.data());
+  }
+  tree_view_->setRootIndex(node_tree_model_->indexFromId(node));
 
   createActions();
   createToolBars();
 
   this->setCentralWidget(tree_view_);
 
-  //setupDataModelHandlers();
-
   tree_view_->setColumnWidth(0, 190);
   tree_view_->setColumnWidth(1, 140);
   tree_view_->header()->setStretchLastSection(true);
 
-  //setupTreeViewHandlers();
+  setupTreeViewHandlers();
 
   registered_line_edit_ = nullptr;
 
   reapplySettings();
-  setWindowTitle(data_model_->path().join(" : "));
+  setWindowTitle("Node tree");
+
+  connect(node_tree_model_.data(), &QAbstractItemModel::modelReset, this,
+      &NodeTreeWidget::resetRootNode);
 
   // We don't need this now, but it might be useful in the future.
   //connect(&parsers_menu_, &QMenu::triggered, this, &NodeTreeWidget::parse);
   setParserIds(dynamic_cast<VelesMainWindow*>(
-        MainWindowWithDetachableDockWidgets::getFirstMainWindow())
-        ->parsersList());
+      MainWindowWithDetachableDockWidgets::getFirstMainWindow())
+      ->parsersList());
 }
 
 void NodeTreeWidget::reapplySettings() {
@@ -142,7 +139,7 @@ void NodeTreeWidget::createToolBars() {
 void NodeTreeWidget::addChunk(QString name, QString type, QString comment,
                           uint64_t start, uint64_t end,
                           const QModelIndex &index) {
-  data_model_->addChunk(name, type, comment, start, end, index);
+  node_tree_model_->addChunk(name, type, comment, start, end, index);
 }
 
 void NodeTreeWidget::setupTreeViewHandlers() {
@@ -162,27 +159,27 @@ void NodeTreeWidget::setupTreeViewHandlers() {
       this, &NodeTreeWidget::treeViewDoubleClicked);
 }
 
-void NodeTreeWidget::setupDataModelHandlers() {
-  connect(data_model_.data(), &FileBlobModel::newBinData,
-      this, &NodeTreeWidget::newBinData);
+void NodeTreeWidget::treeViewDoubleClicked(const QModelIndex &index) {
+  if (!index.isValid()) {
+    return;
+  }
+
+  data::NodeID new_root = node_tree_model_->idFromIndex(index);
+  client::Node* node_ptr = node_tree_model_->nodeTree()->node(new_root);
+
+  if (node_ptr && node_ptr->hasTag("blob")
+      && !(node_tree_model_->flags(index) & Qt::ItemIsEditable)) {
+    QSharedPointer<QItemSelectionModel> new_selection_model(
+        new QItemSelectionModel(node_tree_model_.data()));
+
+    NodeWidget* node_widget = new NodeWidget(main_window_, new_root,
+        node_tree_model_, new_selection_model);
+    main_window_->addTab(node_widget, node_ptr->nodePath(), nullptr);
+  }
 }
 
-void NodeTreeWidget::treeViewDoubleClicked(const QModelIndex &index) {
-  auto mainIndex = data_model_->index(
-      index.row(), FileBlobModel::COLUMN_INDEX_MAIN, index.parent());
-  dbif::ObjectHandle new_root = data_model_->blob(mainIndex);
-  if (new_root) {
-    auto new_path = data_model_->path();
-    new_path.append(mainIndex.data().toString());
-    QSharedPointer<FileBlobModel> new_model(
-        new FileBlobModel(new_root, new_path));
-    QSharedPointer<QItemSelectionModel> new_selection_model(
-        new QItemSelectionModel(new_model.data()));
-
-    NodeWidget* node_widget = new NodeWidget(main_window_, new_model,
-        new_selection_model, node_, node_tree_model_);
-    main_window_->addTab(node_widget, new_model->path().join(" : "), nullptr);
-  }
+void NodeTreeWidget::resetRootNode() {
+  tree_view_->setRootIndex(node_tree_model_->indexFromId(node_));
 }
 
 /*****************************************************************************/
@@ -204,9 +201,9 @@ void NodeTreeWidget::initParsersMenu() {
 
 void NodeTreeWidget::parse(QAction *action) {
   if (action->text() == "auto") {
-    data_model_->parse();
+    node_tree_model_->parse(node_);
   } else {
-    data_model_->parse(action->text());
+    node_tree_model_->parse(node_, action->text());
   }
 }
 
@@ -220,11 +217,11 @@ void NodeTreeWidget::removeChunk() {
     return;
   }
 
-  data_model_->removeRow(selectedChunk.row(), selectedChunk.parent());
+  node_tree_model_->removeRow(selectedChunk.row(), selectedChunk.parent());
 }
 
 void NodeTreeWidget::currentSelectionChanged(const QModelIndex &currentIndex) {
-  remove_action_->setEnabled(data_model_->isRemovable(currentIndex));
+  remove_action_->setEnabled(node_tree_model_->isRemovable(currentIndex));
 }
 
 void NodeTreeWidget::newBinData() {

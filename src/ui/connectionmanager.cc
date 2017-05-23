@@ -61,6 +61,11 @@ ConnectionManager::ConnectionManager(QWidget* parent)
   network_client_output_->setCodec("UTF-8");
   network_client_->setOutput(network_client_output_);
 
+  node_tree_model_ = QSharedPointer<client::NodeTreeModel>::create(
+      network_client_->nodeTree(), *data::NodeID::getRootNodeId(), this);
+  resources_model_ = QSharedPointer<client::TopLevelResourcesModel>::create(
+      network_client_->nodeTree(), *data::NodeID::getRootNodeId(), this);
+
   connect(network_client_, &client::NetworkClient::connectionStatusChanged,
       this, &ConnectionManager::updateConnectionStatus);
   connect(network_client_, &client::NetworkClient::messageReceived,
@@ -90,6 +95,15 @@ QAction* ConnectionManager::disconnectAction() {
 
 QAction* ConnectionManager::killLocallyCreatedServerAction() {
   return kill_locally_created_server_action_;
+}
+
+QSharedPointer<client::NodeTreeModel> ConnectionManager::nodeTreeModel() {
+  return node_tree_model_;
+}
+
+QSharedPointer<client::TopLevelResourcesModel>
+    ConnectionManager::resourcesModel() {
+  return resources_model_;
 }
 
 void ConnectionManager::locallyCreatedServerStarted() {

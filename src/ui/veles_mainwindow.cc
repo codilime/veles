@@ -47,10 +47,8 @@ using util::settings::shortcuts::ShortcutsModel;
 /* VelesMainWindow - Public methods */
 /*****************************************************************************/
 
-QPointer<ConnectionManager> VelesMainWindow::connection_manager_;
-
 VelesMainWindow::VelesMainWindow() : MainWindowWithDetachableDockWidgets(),
-    database_dock_widget_(0), log_dock_widget_(0) {
+    database_dock_widget_(0), log_dock_widget_(0), nc_(nullptr) {
   setAcceptDrops(true);
   resize(1024, 768);
   init();
@@ -58,10 +56,6 @@ VelesMainWindow::VelesMainWindow() : MainWindowWithDetachableDockWidgets(),
 
 void VelesMainWindow::addFile(const QString& path) {
   files_to_upload_once_connected_.push_back(path);
-}
-
-QPointer<ConnectionManager> VelesMainWindow::connectionManager() {
-  return connection_manager_;
 }
 
 /*****************************************************************************/
@@ -95,7 +89,9 @@ void VelesMainWindow::open() {
   }
 }
 
-void VelesMainWindow::newFile() { createFileBlob(""); }
+void VelesMainWindow::newFile() {
+  createFileBlob("");
+}
 
 void VelesMainWindow::about() {
   QMessageBox::about(
@@ -160,6 +156,10 @@ void VelesMainWindow::init() {
   connect(this, &VelesMainWindow::shown,
       connection_manager_, &ConnectionManager::raiseConnectionDialog,
       Qt::QueuedConnection);
+
+  connect(connection_manager_->networkClient()->nodeTree(),
+      &client::NodeTree::nodeDiscovered,
+      this, &VelesMainWindow::nodeDiscovered);
 
   updateConnectionStatus(
       client::NetworkClient::ConnectionStatus::NotConnected);
@@ -307,6 +307,8 @@ void VelesMainWindow::updateConnectionStatus(
   } else if (connection_status
       == client::NetworkClient::ConnectionStatus::Connected) {
 
+    awaited_nodes_.clear();
+
     if (database_dock_widget_) {
       database_dock_widget_->widget()->setEnabled(true);
     }
@@ -328,18 +330,41 @@ void VelesMainWindow::updateConnectionStatus(
   }
 }
 
+void VelesMainWindow::nodeDiscovered(QString id) {
+  auto id_ptr = data::NodeID::fromHexString(id);
+
+  if (id_ptr == nullptr) {
+    return;
+  }
+
+  data::NodeID node_id = *id_ptr;
+  if (awaited_nodes_.find(node_id) != awaited_nodes_.end()) {
+    client::Node* node_ptr = connection_manager_->networkClient()
+        ->nodeTree()->node(node_id);
+    if (node_ptr) {
+      QString name("[untitled]");
+      node_ptr->getQStringAttr("path", name);
+      createHexEditTab(name, node_id);
+    }
+    awaited_nodes_.erase(node_id);
+  }
+}
+
 void VelesMainWindow::createDb() {
   if (database_ == nullptr) {
 #if 0
     database_ = db::create_db();
 #else
-    auto nc = new client::NCWrapper(
-        connection_manager_->networkClient(), this);
+    if (nc_ == nullptr) {
+      nc_ = new client::NCWrapper(
+          connection_manager_->networkClient(), this);
+    }
     database_ = QSharedPointer<client::NCObjectHandle>::create(
-        nc, *data::NodeID::getRootNodeId(), dbif::ObjectType::ROOT);
+        nc_, *data::NodeID::getRootNodeId(), dbif::ObjectType::ROOT);
 #endif
   }
-  auto database_info = new DatabaseInfo(database_);
+  auto database_info = new DatabaseInfo(
+      connection_manager_->resourcesModel());
   DockWidget* dock_widget = new DockWidget;
   dock_widget->setAllowedAreas(Qt::AllDockWidgetAreas);
   dock_widget->setWindowTitle("Database");
@@ -355,11 +380,13 @@ void VelesMainWindow::createDb() {
   }
 
   connect(database_info, &DatabaseInfo::goFile,
-          [this](dbif::ObjectHandle fileBlob, QString fileName) {
-            createHexEditTab(fileName, fileBlob);
-          });
+      [this](QString id, QString file_name) {
+          createHexEditTab(file_name, *data::NodeID::fromHexString(id));
+      });
 
-  connect(database_info, &DatabaseInfo::newFile, [this]() { open(); });
+  connect(database_info, &DatabaseInfo::newFile, [this]() {
+    open();
+  });
 
   database_info->setEnabled(
       connection_manager_->networkClient()->connectionStatus()
@@ -395,38 +422,20 @@ void VelesMainWindow::createFileBlob(QString fileName) {
     data = data::BinData(8, bytes.size(),
                          reinterpret_cast<uint8_t *>(bytes.data()));
   }
-  auto promise =
-      database_->asyncRunMethod<dbif::RootCreateFileBlobFromDataRequest>(
-          this, data, fileName);
-  connect(promise, &dbif::MethodResultPromise::gotResult,
-      [this, fileName](dbif::PMethodReply reply) {
-    createHexEditTab(
-        fileName.isEmpty() ? "untitled" : fileName,
-        reply.dynamicCast<dbif::RootCreateFileBlobFromDataRequest::ReplyType>()
-        ->object);
-  });
 
-  connect(promise, &dbif::MethodResultPromise::gotError,
-          [this, fileName](dbif::PError error) {
-            QMessageBox::warning(this, tr("Veles"),
-                tr("Cannot load file %1.").arg(fileName));
-          });
+  data::NodeID id;
+  awaited_nodes_.insert(id);
+  connection_manager_->networkClient()->nodeTree()
+      ->addFileBlob(fileName, data, id);
 }
 
-void VelesMainWindow::createHexEditTab(QString fileName,
-    dbif::ObjectHandle fileBlob) {
-  QSharedPointer<FileBlobModel> data_model(
-      new FileBlobModel(fileBlob, {QFileInfo(fileName).fileName()}));
-  QSharedPointer<QItemSelectionModel> selection_model(
-      new QItemSelectionModel(data_model.data()));
+void VelesMainWindow::createHexEditTab(QString file_name, data::NodeID id) {
+  auto selection_model = QSharedPointer<QItemSelectionModel>::create(
+      connection_manager_->nodeTreeModel().data());
 
-  //FIXME
-  data::NodeID node = *data::NodeID::getRootNodeId();
-  QSharedPointer<client::NodeTreeModel> node_tree_model;
-
-  NodeWidget* node_widget = new NodeWidget(this, data_model, selection_model,
-      node, node_tree_model);
-  addTab(node_widget, data_model->path().join(" : "), nullptr);
+  NodeWidget* node_widget = new NodeWidget(this, id,
+      connection_manager_->nodeTreeModel(), selection_model);
+  addTab(node_widget, file_name, nullptr);
 }
 
 void VelesMainWindow::createLogWindow() {

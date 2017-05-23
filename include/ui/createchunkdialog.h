@@ -21,6 +21,8 @@
 #include <QtCore>
 #include <QShowEvent>
 
+#include "client/models.h"
+#include "data/nodeid.h"
 #include "ui/fileblobmodel.h"
 
 namespace Ui {
@@ -34,9 +36,11 @@ class CreateChunkDialog : public QDialog {
   Q_OBJECT
 
  public:
-  explicit CreateChunkDialog(FileBlobModel *chunksModel_,
-                             QItemSelectionModel *selectionModel = nullptr,
-                             QWidget *parent_ = 0);
+  explicit CreateChunkDialog(
+      data::NodeID blob_id,
+      QSharedPointer<client::NodeTreeModel> chunksModel,
+      QSharedPointer<QItemSelectionModel> selectionModel,
+      QWidget* parent = 0);
   ~CreateChunkDialog();
   Ui::CreateChunkDialog *ui;
   void updateParent(bool childOfSelected = false);
@@ -50,8 +54,9 @@ class CreateChunkDialog : public QDialog {
   virtual void updateBinDataSize();
 
  private:
-  FileBlobModel *chunksModel_;
-  QItemSelectionModel *chunkSelectionModel_;
+  data::NodeID blob_id_;
+  QSharedPointer<client::NodeTreeModel> chunksModel_;
+  QSharedPointer<QItemSelectionModel> chunkSelectionModel_;
   bool useChildOfSelected_;
   void init();
   void displayPath();
