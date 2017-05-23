@@ -2,21 +2,27 @@
 
 from __future__ import unicode_literals, print_function
 
-import sys
+import argparse
 
 from veles.scli import client
 from veles.schema.nodeid import NodeID
 
-client = client.create_client(sys.argv[1], sys.argv[2])
+parser = argparse.ArgumentParser()
+parser.add_argument('server', help='server address')
+parser.add_argument('auth_key', help='hex-encoded server auth-key')
+parser.add_argument('file', help='path to file to upload')
+args = parser.parse_args()
 
-with open(sys.argv[3], 'rb') as f:
+client = client.create_client(args.server, args.auth_key)
+
+with open(args.file, 'rb') as f:
     data = f.read()
 
 id = client.create(NodeID.root_id,
     tags={'blob', 'blob.file', 'blob.stored',},
     attr={
-        'name': sys.argv[3],
-        'path': sys.argv[3],
+        'name': args.file,
+        'path': args.file,
         'width': 8,
         'base': 0,
         'size': len(data),

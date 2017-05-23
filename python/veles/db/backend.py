@@ -96,7 +96,7 @@ def db_bigint_decode(val):
 
 class DbBackend:
     def __init__(self, path):
-        if path is None:
+        if not path:
             path = ':memory:'
         elif path.startswith(':'):
             path = './' + path

@@ -14,31 +14,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import logging
 import asyncio
 import importlib
 import signal
-import sys
 
 from veles.async_client.conn import AsyncRemoteConnection
 from veles.async_client.proto import create_unix_client, create_tcp_client
 
 logging.basicConfig(level=logging.INFO)
 
+parser = argparse.ArgumentParser()
+parser.add_argument('server', help='server address')
+parser.add_argument('auth_key', help='hex-encoded server auth-key')
+parser.add_argument('plugin', nargs='*', help='name plugin module to load')
+args = parser.parse_args()
+
 logging.info('Świtezianka plugin is starting up...')
 loop = asyncio.get_event_loop()
 
-host, _, port = sys.argv[1].rpartition(':')
+host, _, port = args.server.rpartition(':')
 if host == 'UNIX':
     logging.info('Connecting to UNIX server...')
-    proto = loop.run_until_complete(create_unix_client(loop, sys.argv[2], port))[1]
+    proto = loop.run_until_complete(create_unix_client(loop, args.auth_key, port))[1]
 else:
     logging.info('Connecting to TCP server...')
-    proto = loop.run_until_complete(create_tcp_client(loop, sys.argv[2], host, int(port)))[1]
+    proto = loop.run_until_complete(create_tcp_client(loop, args.auth_key, host, int(port)))[1]
 conn = AsyncRemoteConnection(loop, proto)
 
 logging.info('Loading plugins...')
-for pname in sys.argv[3:]:
+for pname in args.plugin:
     logging.info('{}...'.format(pname))
     mod = importlib.import_module('veles.plugins.' + pname)
     conn.register_plugin(mod)

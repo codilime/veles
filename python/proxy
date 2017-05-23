@@ -14,10 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import logging
 import asyncio
 import signal
-import sys
 
 from veles.server.proto import create_unix_server, create_tcp_server
 from veles.async_client.conn import AsyncRemoteConnection
@@ -25,25 +25,35 @@ from veles.async_client.proto import create_unix_client, create_tcp_client
 
 logging.basicConfig(level=logging.INFO)
 
+parser = argparse.ArgumentParser()
+parser.add_argument('server', help='server address')
+parser.add_argument('server_auth_key', help='hex-encoded server auth-key')
+parser.add_argument(
+    'url', help='either UNIX:<socket_path> or <ip>:<tcp port> to listen on')
+parser.add_argument(
+    'auth_key', help='hex-encoded up to 64bytes value that '
+                     'clients need to provide when connecting')
+args = parser.parse_args()
+
 logging.info('Świtezianka proxy is starting up...')
 loop = asyncio.get_event_loop()
 
-host, _, port = sys.argv[1].rpartition(':')
+host, _, port = args.server.rpartition(':')
 if host == 'UNIX':
     logging.info('Connecting to UNIX server...')
-    proto = loop.run_until_complete(create_unix_client(loop, sys.argv[2], port))[1]
+    proto = loop.run_until_complete(create_unix_client(loop, args.server_auth_key, port))[1]
 else:
     logging.info('Connecting to TCP server...')
-    proto = loop.run_until_complete(create_tcp_client(loop, sys.argv[2], host, int(port)))[1]
+    proto = loop.run_until_complete(create_tcp_client(loop, args.server_auth_key, host, int(port)))[1]
 conn = AsyncRemoteConnection(loop, proto)
 
-host, _, port = sys.argv[3].rpartition(':')
+host, _, port = args.url.rpartition(':')
 if host == 'UNIX':
     logging.info('Starting UNIX server...')
-    loop.run_until_complete(create_unix_server(conn, sys.argv[4], port))
+    loop.run_until_complete(create_unix_server(conn, args.auth_key, port))
 else:
     logging.info('Starting TCP server...')
-    loop.run_until_complete(create_tcp_server(conn, sys.argv[4], host, int(port)))
+    loop.run_until_complete(create_tcp_server(conn, args.auth_key, host, int(port)))
 logging.info('Ready.')
 try:
     loop.add_signal_handler(signal.SIGINT, loop.stop)
