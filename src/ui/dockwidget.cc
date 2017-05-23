@@ -1066,6 +1066,7 @@ void MainWindowWithDetachableDockWidgets::tabCloseRequested(int index) {
     if(dock_widget) {
       dock_widget->deleteLater();
     }
+    tab_bar->removeTab(index);
   }
 }
 
