@@ -25,10 +25,11 @@ def get_client_argparse():
     parser.add_argument('server_auth_key', help='hex-encoded server auth-key')
     return parser
 
+
 def get_logging_argparse():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--log-level', default='INFO',
         help='set log level to one of CRITICAL, ERROR, WARNING, INFO or DEBUG',
-        choices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG'])
+        choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG'])
     return parser
