@@ -90,12 +90,14 @@ builders['msvc2015_64'] = { node('windows'){
             checkout scm
             def branch = getBranch()
             def generator = "Visual Studio 14 2015"
+            def vcredist_binary = "vcredist_x64.exe"
             def cpack_generator = "ZIP"
             withEnv(["PATH+QT=${env.QT}\\Tools\\${version}\\bin;${env.QT}\\5.7\\${version}\\bin",
                      "PATH+CMAKE=${env.CMAKE}\\bin",
                      "CMAKE_PREFIX_PATH+QT=${env.QT}\\5.7\\${version}",
                      "GOOGLETEST_DIR=${tool 'googletest'}",
-                     "EMBED_PYTHON_ARCHIVE_PATH=${tool 'embed-python-64'}"
+                     "EMBED_PYTHON_ARCHIVE_PATH=${tool 'embed-python-64'}",
+                     "VCINSTALLDIR=${env.VS}\\VC\\"
                      ]){
               if(version.contains("64")){
                 generator = "${generator} Win64"
@@ -106,7 +108,7 @@ builders['msvc2015_64'] = { node('windows'){
               bat(script: "rd /s /q build_${version}", returnStatus: true)
               bat script: "md build_${version}", returnStatus: true
               dir ("build_${version}") {
-                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -G \"${generator}\" ..\\"
+                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -DVCREDIST_BINARY=\"${vcredist_binary}\" -G \"${generator}\" ..\\"
                 bat script: "cmake --build . --config ${buildConfiguration} > error_and_warnings.txt"
                 bat script: "type error_and_warnings.txt"
                 bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G \"${cpack_generator}\" -C ${buildConfiguration}"
@@ -139,12 +141,14 @@ builders['msvc2015'] = {node('windows'){
             checkout scm
             def branch = getBranch()
             def generator = "Visual Studio 14 2015"
+            def vcredist_binary = "vcredist_x86.exe"
             def cpack_generator = "ZIP"
             withEnv(["PATH+QT=${env.QT}\\Tools\\${version}\\bin;${env.QT}\\5.7\\${version}\\bin",
                      "PATH+CMAKE=${env.CMAKE}\\bin",
                      "CMAKE_PREFIX_PATH+QT=${env.QT}\\5.7\\${version}",
                      "GOOGLETEST_DIR=${tool 'googletest'}",
-                     "EMBED_PYTHON_ARCHIVE_PATH=${tool 'embed-python-32'}"]){
+                     "EMBED_PYTHON_ARCHIVE_PATH=${tool 'embed-python-32'}",
+                     "VCINSTALLDIR=${env.VS}\\VC\\"]){
               if(version.contains("64")){
                 generator = "${generator} Win64"
               }
@@ -154,7 +158,7 @@ builders['msvc2015'] = {node('windows'){
               bat(script: "rd /s /q build_${version}", returnStatus: true)
               bat script: "md build_${version}", returnStatus: true
               dir ("build_${version}") {
-                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -G \"${generator}\" ..\\"
+                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -DVCREDIST_BINARY=\"${vcredist_binary}\" -G \"${generator}\" ..\\"
                 bat script: "cmake --build . --config ${buildConfiguration}"
                 bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G \"${cpack_generator}\" -C ${buildConfiguration}"
               }
