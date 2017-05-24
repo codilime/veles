@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 import logging
 import asyncio
 import signal
@@ -22,10 +21,9 @@ import importlib
 
 from veles.server.conn import AsyncLocalConnection
 from veles.server.proto import create_unix_server, create_tcp_server
+from veles.util import helpers
 
-logging.basicConfig(level=logging.INFO)
-
-parser = argparse.ArgumentParser()
+parser = helpers.get_logging_argparse()
 parser.add_argument(
     'url', help='either UNIX:<socket_path> or [<ip>:]<tcp port> to listen on')
 parser.add_argument(
@@ -37,6 +35,8 @@ parser.add_argument(
 parser.add_argument('--plugin', action='append',
                     help='name plugin module to load')
 args = parser.parse_args()
+
+logging.basicConfig(level=logging.getLevelName(args.log_level))
 
 logging.info('Świtezianka server is starting up...')
 loop = asyncio.get_event_loop()

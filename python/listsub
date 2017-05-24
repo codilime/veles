@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import argparse
 from pprint import pprint
 
 from veles.schema.nodeid import NodeID

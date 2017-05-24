@@ -24,12 +24,13 @@ from veles.async_client.conn import AsyncRemoteConnection
 from veles.async_client.proto import create_unix_client, create_tcp_client
 from veles.util import helpers
 
-logging.basicConfig(level=logging.INFO)
-
-parser = helpers.get_client_argparse()
+parser = argparse.ArgumentParser(
+    parents=[helpers.get_client_argparse(), helpers.get_logging_argparse()])
 parser.add_argument('--plugin', action='append',
                     help='name plugin module to load')
 args = parser.parse_args()
+
+logging.basicConfig(level=logging.getLevelName(args.log_level))
 
 logging.info('Świtezianka plugin is starting up...')
 loop = asyncio.get_event_loop()

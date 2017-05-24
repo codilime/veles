@@ -2,8 +2,6 @@
 
 from __future__ import unicode_literals, print_function
 
-import argparse
-
 from veles.scli import client
 from veles.schema.nodeid import NodeID
 from veles.util import helpers
