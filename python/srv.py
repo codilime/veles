@@ -16,32 +16,46 @@
 
 import logging
 import asyncio
-import sys
 import signal
 import importlib
 
 from veles.server.conn import AsyncLocalConnection
 from veles.server.proto import create_unix_server, create_tcp_server
+from veles.util import helpers
 
-logging.basicConfig(level=logging.INFO)
+parser = helpers.get_logging_argparse()
+parser.add_argument(
+    'url', help='either UNIX:<socket_path> or [<ip>:]<tcp port> to listen on')
+parser.add_argument(
+    'auth_key', help='hex-encoded up to 64bytes value that '
+                     'clients need to provide when connecting')
+parser.add_argument(
+    'database', nargs='?',
+    help='path to database file, in-memory will be used if empty')
+parser.add_argument('--plugin', action='append',
+                    help='name plugin module to load')
+args = parser.parse_args()
+
+logging.basicConfig(level=logging.getLevelName(args.log_level))
 
 logging.info('Świtezianka server is starting up...')
 loop = asyncio.get_event_loop()
 logging.info('Opening database...')
-conn = AsyncLocalConnection(loop, sys.argv[1])
+conn = AsyncLocalConnection(loop, args.database)
 logging.info('Loading plugins...')
-for pname in sys.argv[4:]:
-    logging.info('{}...'.format(pname))
-    mod = importlib.import_module('veles.plugins.' + pname)
-    conn.register_plugin(mod)
-host, _, port = sys.argv[2].rpartition(':')
+if args.plugin is not None:
+    for pname in args.plugin:
+        logging.info('{}...'.format(pname))
+        mod = importlib.import_module('veles.plugins.' + pname)
+        conn.register_plugin(mod)
+host, _, port = args.url.rpartition(':')
 if host == 'UNIX':
     logging.info('Starting UNIX server...')
-    loop.run_until_complete(create_unix_server(conn, sys.argv[3], port))
+    loop.run_until_complete(create_unix_server(conn, args.auth_key, port))
 else:
     logging.info('Starting TCP server...')
     loop.run_until_complete(
-        create_tcp_server(conn, sys.argv[3], host, int(port)))
+        create_tcp_server(conn, args.auth_key, host, int(port)))
 logging.info('Ready.')
 try:
     loop.add_signal_handler(signal.SIGINT, loop.stop)

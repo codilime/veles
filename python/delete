@@ -2,14 +2,17 @@
 
 from __future__ import unicode_literals, print_function
 
-import sys
-
 from veles.schema import nodeid
 from veles.scli import client
+from veles.util import helpers
 
-client = client.create_client(sys.argv[1], sys.argv[2])
+parser = helpers.get_client_argparse()
+parser.add_argument('id', help='hex-encoded id of object to delete')
+args = parser.parse_args()
 
-obj = nodeid.NodeID.from_hex(sys.argv[3])
+client = client.create_client(args.server, args.server_auth_key)
+
+obj = nodeid.NodeID.from_hex(args.id)
 
 client.delete(obj)
 print('DELETED')
