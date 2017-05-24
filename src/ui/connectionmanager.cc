@@ -167,10 +167,10 @@ void ConnectionManager::startLocalServer() {
   QStringList arguments;
   arguments
       << server_file_name
-      << connection_dialog_->databaseFile()
       << QString("%1:%2").arg(connection_dialog_->serverHost())
       .arg(connection_dialog_->serverPort())
-      << connection_dialog_->authenticationKey();
+      << connection_dialog_->authenticationKey()
+      << connection_dialog_->databaseFile();
 
 #if defined(Q_OS_LINUX)
   QString python_interpreter_executable("/usr/share/veles-server/venv/bin/python3");

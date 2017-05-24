@@ -22,12 +22,11 @@ import signal
 from veles.server.proto import create_unix_server, create_tcp_server
 from veles.async_client.conn import AsyncRemoteConnection
 from veles.async_client.proto import create_unix_client, create_tcp_client
+from veles.util import helpers
 
 logging.basicConfig(level=logging.INFO)
 
-parser = argparse.ArgumentParser()
-parser.add_argument('server', help='server address')
-parser.add_argument('server_auth_key', help='hex-encoded server auth-key')
+parser = helpers.get_client_argparse()
 parser.add_argument(
     'url', help='either UNIX:<socket_path> or <ip>:<tcp port> to listen on')
 parser.add_argument(

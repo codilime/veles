@@ -12,6 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+
 
 def prepare_auth_key(key):
     return bytes(bytearray.fromhex(key) + b'\x00' * (64 - len(key)//2))
+
+
+def get_client_argparse():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('server', help='server address')
+    parser.add_argument('server_auth_key', help='hex-encoded server auth-key')
+    return parser

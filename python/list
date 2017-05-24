@@ -5,15 +5,15 @@ from pprint import pprint
 
 from veles.schema.nodeid import NodeID
 from veles.scli import client
+from veles.util import helpers
 
-parser = argparse.ArgumentParser()
-parser.add_argument('server', help='server address')
-parser.add_argument('auth_key', help='hex-encoded server auth-key')
+
+parser = helpers.get_client_argparse()
 parser.add_argument(
     'id', help='hex-encoded id of parent object', nargs='?', default=None)
 args = parser.parse_args()
 
-client = client.create_client(args.server, args.auth_key)
+client = client.create_client(args.server, args.server_auth_key)
 
 if args.id is not None:
     obj = NodeID.from_hex(args.id)

@@ -27,13 +27,15 @@ logging.basicConfig(level=logging.INFO)
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    'database', help='path to database file, in-memory will be used if empty')
-parser.add_argument(
-    'url', help='either UNIX:<socket_path> or <ip>:<tcp port> to listen on')
+    'url', help='either UNIX:<socket_path> or [<ip>:]<tcp port> to listen on')
 parser.add_argument(
     'auth_key', help='hex-encoded up to 64bytes value that '
                      'clients need to provide when connecting')
-parser.add_argument('plugin', nargs='*', help='name plugin module to load')
+parser.add_argument(
+    'database', nargs='?',
+    help='path to database file, in-memory will be used if empty')
+parser.add_argument('--plugin', action='append',
+                    help='name plugin module to load')
 args = parser.parse_args()
 
 logging.info('Świtezianka server is starting up...')
@@ -41,10 +43,11 @@ loop = asyncio.get_event_loop()
 logging.info('Opening database...')
 conn = AsyncLocalConnection(loop, args.database)
 logging.info('Loading plugins...')
-for pname in args.plugin:
-    logging.info('{}...'.format(pname))
-    mod = importlib.import_module('veles.plugins.' + pname)
-    conn.register_plugin(mod)
+if args.plugin is not None:
+    for pname in args.plugin:
+        logging.info('{}...'.format(pname))
+        mod = importlib.import_module('veles.plugins.' + pname)
+        conn.register_plugin(mod)
 host, _, port = args.url.rpartition(':')
 if host == 'UNIX':
     logging.info('Starting UNIX server...')
