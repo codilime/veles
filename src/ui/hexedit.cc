@@ -23,7 +23,6 @@
 
 #include "ui/hexedit.h"
 #include "util/encoders/factory.h"
-#include "util/settings/shortcuts.h"
 #include "util/settings/theme.h"
 
 namespace veles {
