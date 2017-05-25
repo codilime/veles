@@ -762,7 +762,7 @@ bool HexEdit::focusNextPrevChild(bool next) {
     current_area_ = WindowArea::ASCII;
   }
   resetCursor();
-  return false;
+  return true;
 }
 
 void HexEdit::setSelectionEnd(qint64 bytePos) {

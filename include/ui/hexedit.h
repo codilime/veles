@@ -16,6 +16,8 @@
  */
 #pragma once
 
+#include <functional>
+
 #include <QAbstractScrollArea>
 #include <QItemSelectionModel>
 #include <QMenu>
