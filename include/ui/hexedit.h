@@ -27,6 +27,7 @@
 #include "ui/gotoaddressdialog.h"
 #include "util/encoders/hex_encoder.h"
 #include "util/encoders/text_encoder.h"
+#include "util/settings/shortcuts.h"
 
 namespace veles {
 namespace ui {
@@ -46,8 +47,6 @@ class HexEdit : public QAbstractScrollArea {
   void scrollRows(qint64 num_rows);
   FileBlobModel *dataModel() { return dataModel_;};
   void setParserIds(QStringList ids);
-  void processMoveEvent(QKeyEvent *event);
-  void processSelectionChangeEvent(QKeyEvent *event);
 
 public slots:
   void newBinData();
@@ -61,7 +60,6 @@ public slots:
   void mouseMoveEvent(QMouseEvent *event) override;
   void mouseDoubleClickEvent(QMouseEvent *event) override;
   void contextMenuEvent(QContextMenuEvent *event) override;
-  void keyPressEvent(QKeyEvent *event) override;
   bool focusNextPrevChild(bool next) override;
 
  signals:
@@ -163,6 +161,7 @@ public slots:
   qint64 selectionSize();
 
   QModelIndex selectedChunk();
+  void createAction(util::settings::shortcuts::ShortcutType type, const std::function<void()>& f);
 
   void getRangeFromIndex(QModelIndex index, qint64 *begin, qint64 *size);
   void drawBorder(qint64 start, qint64 size, bool asciiArea = false,

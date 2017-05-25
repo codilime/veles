@@ -222,6 +222,125 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
   cursor_timer_.setInterval(700);
   cursor_timer_.start();
   connect(&cursor_timer_, &QTimer::timeout, this, &HexEdit::flipCursorVisibility);
+
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_NEXT_CHAR, [this] () {
+    setSelection(current_position_ + 1, selection_size_);
+    if (!isByteVisible(current_position_)) {
+      scrollRows(1);
+    }
+  });
+
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_PREV_CHAR, [this] () {
+    setSelection(current_position_ - 1, selection_size_);
+    if (!isByteVisible(current_position_)) {
+      scrollRows(-1);
+    }
+  });
+
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_NEXT_LINE, [this] () {
+    setSelection(current_position_ + bytesPerRow_, selection_size_);
+    if (!isByteVisible(current_position_)) {
+      scrollRows(1);
+}
+  });
+
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_PREV_LINE, [this] () {
+    setSelection(current_position_ - bytesPerRow_, selection_size_);
+    if (!isByteVisible(current_position_)) {
+      scrollRows(-1);
+}
+  });
+
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_NEXT_PAGE, [this] () {
+    setSelection(current_position_ + bytesPerRow_ * rowsOnScreen_, selection_size_);
+    scrollRows(rowsOnScreen_);
+  });
+
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_PREV_PAGE, [this] () {
+    setSelection(current_position_ - bytesPerRow_ * rowsOnScreen_, selection_size_);
+    scrollRows(-rowsOnScreen_);
+  });
+
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_START_OF_LINE, [this] () {
+    setSelection(current_position_ - current_position_ % bytesPerRow_, selection_size_);
+  });
+
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_END_OF_LINE, [this] () {
+    setSelection(current_position_ + bytesPerRow_ - (current_position_ % bytesPerRow_) - 1,
+                 selection_size_);
+  });
+
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_START_OF_FILE, [this] () {
+    setSelection(0, selection_size_, /*set_visible=*/true);
+  });
+
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_END_OF_FILE, [this] () {
+    setSelection(dataBytesCount_ - 1, selection_size_, /*set_visible=*/true);
+  });
+
+  createAction(util::settings::shortcuts::HEX_REMOVE_SELECTION, [this] () {
+    setSelection(current_position_, 0);
+  });
+
+  createAction(util::settings::shortcuts::HEX_SELECT_ALL, [this] () {
+    setSelection(0, dataBytesCount_);
+  });
+
+  createAction(util::settings::shortcuts::HEX_SELECT_NEXT_CHAR, [this] () {
+    setSelectionEnd(current_position_ + 1);
+    if (!isByteVisible(current_position_)) {
+      scrollRows(1);
+    }
+  });
+
+  createAction(util::settings::shortcuts::HEX_SELECT_PREV_CHAR, [this] () {
+    setSelectionEnd(current_position_ - 1);
+    if (!isByteVisible(current_position_)) {
+      scrollRows(-1);
+    }
+  });
+
+  createAction(util::settings::shortcuts::HEX_SELECT_NEXT_LINE, [this] () {
+    setSelectionEnd(current_position_ + bytesPerRow_);
+    if (!isByteVisible(current_position_)) {
+      scrollRows(1);
+    }
+  });
+
+  createAction(util::settings::shortcuts::HEX_SELECT_PREV_LINE, [this] () {
+    setSelectionEnd(current_position_ - bytesPerRow_);
+    if (!isByteVisible(current_position_)) {
+      scrollRows(-1);
+    }
+  });
+
+  createAction(util::settings::shortcuts::HEX_SELECT_NEXT_PAGE, [this] () {
+    setSelectionEnd(current_position_ + bytesPerRow_ * rowsOnScreen_);
+    scrollRows(rowsOnScreen_);
+  });
+
+  createAction(util::settings::shortcuts::HEX_SELECT_PREV_PAGE, [this] () {
+    setSelectionEnd(current_position_ - bytesPerRow_ * rowsOnScreen_);
+    scrollRows(-rowsOnScreen_);
+  });
+
+  createAction(util::settings::shortcuts::HEX_SELECT_START_OF_LINE, [this] () {
+    setSelectionEnd(current_position_ - (current_position_ % bytesPerRow_));
+  });
+
+  createAction(util::settings::shortcuts::HEX_SELECT_END_OF_LINE, [this] () {
+    setSelectionEnd(current_position_ + bytesPerRow_ - (current_position_ % bytesPerRow_) - 1);
+  });
+
+  createAction(util::settings::shortcuts::HEX_SELECT_START_OF_DOCUMENT, [this] () {
+    setSelectionEnd(0);
+    scrollToByte(current_position_, true);
+  });
+
+  createAction(util::settings::shortcuts::HEX_SELECT_END_OF_DOCUMENT, [this] () {
+    setSelectionEnd(dataBytesCount_ - 1);
+    scrollToByte(current_position_, true);
+  });
 }
 
 QModelIndex HexEdit::selectedChunk() {
@@ -229,6 +348,13 @@ QModelIndex HexEdit::selectedChunk() {
     return QModelIndex();
   }
   return chunkSelectionModel_->currentIndex();
+}
+
+void HexEdit::createAction(util::settings::shortcuts::ShortcutType type, const std::function<void ()>& f) {
+  auto action = ShortcutsModel::getShortcutsModel()->createQAction(
+        type, this, Qt::WidgetWithChildrenShortcut);
+  connect(action, &QAction::triggered, f);
+  addAction(action);
 }
 
 QRect HexEdit::bytePosToRect(qint64 pos, bool ascii) {
@@ -628,137 +754,6 @@ void HexEdit::contextMenuEvent(QContextMenuEvent *event) {
   parsers_menu_.setEnabled(selectionOrChunkActive);
 
   menu_.exec(event->globalPos());
-}
-
-void HexEdit::processMoveEvent(QKeyEvent *event) {
-  if (event->matches(QKeySequence::MoveToNextChar)) {
-    setSelection(current_position_ + 1, selection_size_);
-    if (!isByteVisible(current_position_)) {
-      scrollRows(1);
-    }
-  }
-
-  if (event->matches(QKeySequence::MoveToPreviousChar)) {
-    setSelection(current_position_ - 1, selection_size_);
-    if (!isByteVisible(current_position_)) {
-      scrollRows(-1);
-    }
-  }
-
-  if (event->matches(QKeySequence::MoveToNextLine)) {
-    setSelection(current_position_ + bytesPerRow_, selection_size_);
-    if (!isByteVisible(current_position_)) {
-      scrollRows(1);
-    }
-  }
-
-  if (event->matches(QKeySequence::MoveToPreviousLine)) {
-    setSelection(current_position_ - bytesPerRow_, selection_size_);
-    if (!isByteVisible(current_position_)) {
-      scrollRows(-1);
-    }
-  }
-
-  if (event->matches(QKeySequence::MoveToNextPage)) {
-    setSelection(current_position_ + bytesPerRow_ * rowsOnScreen_, selection_size_);
-    scrollRows(rowsOnScreen_);
-  }
-
-  if (event->matches(QKeySequence::MoveToPreviousPage)) {
-    setSelection(current_position_ - bytesPerRow_ * rowsOnScreen_, selection_size_);
-    scrollRows(-rowsOnScreen_);
-  }
-
-  if (event->matches(QKeySequence::MoveToStartOfLine)) {
-    setSelection(current_position_ - current_position_ % bytesPerRow_, selection_size_);
-  }
-
-  if (event->matches(QKeySequence::MoveToEndOfLine)) {
-    setSelection(current_position_ + bytesPerRow_ - (current_position_ % bytesPerRow_) - 1,
-                 selection_size_);
-  }
-
-  if (event->matches(QKeySequence::MoveToStartOfDocument)) {
-    setSelection(0, selection_size_, /*set_visible=*/true);
-  }
-
-  if (event->matches(QKeySequence::MoveToEndOfDocument)) {
-    setSelection(dataBytesCount_ - 1, selection_size_, /*set_visible=*/true);
-  }
-
-}
-
-void HexEdit::processSelectionChangeEvent(QKeyEvent *event)
-{
-  if (event->key() == Qt::Key_Escape) {
-     setSelection(current_position_, 0);
-  }
-
-  if (event->matches(QKeySequence::SelectAll)) {
-     setSelection(0, dataBytesCount_);
-  }
-
-  if (event->matches(QKeySequence::SelectNextChar)) {
-    setSelectionEnd(current_position_ + 1);
-    if (!isByteVisible(current_position_)) {
-      scrollRows(1);
-    }
-  }
-
-  if (event->matches(QKeySequence::SelectPreviousChar)) {
-    setSelectionEnd(current_position_ - 1);
-    if (!isByteVisible(current_position_)) {
-      scrollRows(-1);
-    }
-  }
-
-  if (event->matches(QKeySequence::SelectNextLine)) {
-    setSelectionEnd(current_position_ + bytesPerRow_);
-    if (!isByteVisible(current_position_)) {
-      scrollRows(1);
-    }
-  }
-
-  if (event->matches(QKeySequence::SelectPreviousLine)) {
-    setSelectionEnd(current_position_ - bytesPerRow_);
-    if (!isByteVisible(current_position_)) {
-      scrollRows(-1);
-    }
-  }
-
-  if (event->matches(QKeySequence::SelectNextPage)) {
-    setSelectionEnd(current_position_ + bytesPerRow_ * rowsOnScreen_);
-    scrollRows(rowsOnScreen_);
-  }
-
-  if (event->matches(QKeySequence::SelectPreviousPage)) {
-    setSelectionEnd(current_position_ - bytesPerRow_ * rowsOnScreen_);
-    scrollRows(-rowsOnScreen_);
-  }
-
-  if (event->matches(QKeySequence::SelectStartOfLine)) {
-    setSelectionEnd(current_position_ - (current_position_ % bytesPerRow_));
-  }
-
-  if (event->matches(QKeySequence::SelectEndOfLine)) {
-    setSelectionEnd(current_position_ + bytesPerRow_ - (current_position_ % bytesPerRow_) - 1);
-  }
-
-  if (event->matches(QKeySequence::SelectStartOfDocument)) {
-    setSelectionEnd(0);
-    scrollToByte(current_position_, true);
-  }
-
-  if (event->matches(QKeySequence::SelectEndOfDocument)) {
-    setSelectionEnd(dataBytesCount_ - 1);
-    scrollToByte(current_position_, true);
-  }
-
-}
-
-void HexEdit::keyPressEvent(QKeyEvent *event) {
-  processMoveEvent(event);
-  processSelectionChangeEvent(event);
 }
 
 bool HexEdit::focusNextPrevChild(bool next) {
