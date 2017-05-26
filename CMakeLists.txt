@@ -28,6 +28,7 @@ include("cmake/zlib.cmake")
 include("cmake/msgpack.cmake")
 include("cmake/cppgen.cmake")
 include("cmake/server.cmake")
+include("cmake/openssl.cmake")
 # Compiler flags
 set(CMAKE_CXX_STANDARD_REQUIRED 11) # Use c++11
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -418,6 +419,7 @@ add_executable(main_ui
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${GENERATED_MOC_FILES})
 
 qt5_use_modules(main_ui Core Gui Widgets)
+add_dependencies(main_ui openssl)
 
 if(GTEST_FOUND AND GMOCK_FOUND)
     include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
@@ -470,7 +472,7 @@ endif(WIN32 AND NOT MSVC)
 if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
   set(CPACK_PACKAGE_CONTACT "contact@veles.io")
   set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5core5a (>= 5.5.1), libqt5gui5 (>= 5.5.1), libqt5widgets5 (>= 5.5.1), libqt5network5 (>= 5.5.1), zlib1g (>= 1:1.2.8), g++, python3 (>= 3.5.0), python3-venv (>= 3.5.0), python3-dev (>= 3.5.0)")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5core5a (>= 5.5.1), libqt5gui5 (>= 5.5.1), libqt5widgets5 (>= 5.5.1), libqt5network5 (>= 5.5.1), zlib1g (>= 1:1.2.8), g++, python3 (>= 3.5.0), python3-venv (>= 3.5.0), python3-dev (>= 3.5.0), openssl (>= 1.0.0)")
   install(TARGETS main_ui RUNTIME DESTINATION bin COMPONENT "application")
 
   install(FILES "${PROJECT_SOURCE_DIR}/resources/install/veles.desktop" DESTINATION share/applications/ COMPONENT "application")
@@ -499,6 +501,13 @@ if(WIN32)
   else(NOT MSVC)
     set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "ExecWait '\\\"$INSTDIR\\\\${WINDOWS_APPLICATION_OUT_DIRECTORY}\\\\${VCREDIST_BINARY}\\\" /install /passive'")
   endif(NOT MSVC)
+  install(FILES "${OPENSSL_DLL_DIR}/libeay32.dll" "${OPENSSL_DLL_DIR}/ssleay32.dll" DESTINATION ${WINDOWS_APPLICATION_OUT_DIRECTORY} COMPONENT "application")
+  add_custom_command(TARGET main_ui POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "${OPENSSL_DLL_DIR}/libeay32.dll"
+      "${OPENSSL_DLL_DIR}/ssleay32.dll"
+      ${WINDOWS_APPLICATION_OUT_DIRECTORY}
+    COMMENT "Copying OpenSSL dlls")
   set(CPACK_NSIS_EXECUTABLES_DIRECTORY ${WINDOWS_APPLICATION_OUT_DIRECTORY})
   set(CPACK_NSIS_MUI_FINISHPAGE_RUN "veles")
   set(CPACK_NSIS_INSTALLED_ICON_NAME "${WINDOWS_APPLICATION_OUT_DIRECTORY}/veles.exe")
