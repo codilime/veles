@@ -22,6 +22,10 @@ Optional dependencies needed for running tests:
 
 - ``gtest``
 
+Additional Windows dependency:
+
+- ``perl``
+
 If your distribution has -dev or -devel packages, you'll also need ones
 corresponding to the dependencies above.
 
