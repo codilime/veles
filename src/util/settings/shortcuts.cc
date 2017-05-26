@@ -412,7 +412,7 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
   addShortcutType(HEX_SELECT_START_OF_LINE, hex_move, tr("Start of line with selection"));
   addShortcutType(HEX_SELECT_END_OF_LINE, hex_move, tr("End of line with selection"));
   addShortcutType(HEX_SELECT_START_OF_DOCUMENT, hex_move, tr("Start of file with selection"));
-  addShortcutType(HEX_SELECT_END_OF_DOCUMENT, hex_move, tr("end of file with selection"));
+  addShortcutType(HEX_SELECT_END_OF_DOCUMENT, hex_move, tr("End of file with selection"));
 
   auto visualization = addCategory(tr("Visualization"), root_);
   addShortcutType(VISUALIZATION_DIGRAM, visualization, tr("&Digram"), tr("Change visualizaton mode to digram"));

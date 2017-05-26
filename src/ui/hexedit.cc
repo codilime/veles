@@ -222,121 +222,121 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
   cursor_timer_.start();
   connect(&cursor_timer_, &QTimer::timeout, this, &HexEdit::flipCursorVisibility);
 
-  createAction(util::settings::shortcuts::HEX_MOVE_TO_NEXT_CHAR, [this] () {
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_NEXT_CHAR, [this]() {
     setSelection(current_position_ + 1, selection_size_);
     if (!isByteVisible(current_position_)) {
       scrollRows(1);
     }
   });
 
-  createAction(util::settings::shortcuts::HEX_MOVE_TO_PREV_CHAR, [this] () {
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_PREV_CHAR, [this]() {
     setSelection(current_position_ - 1, selection_size_);
     if (!isByteVisible(current_position_)) {
       scrollRows(-1);
     }
   });
 
-  createAction(util::settings::shortcuts::HEX_MOVE_TO_NEXT_LINE, [this] () {
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_NEXT_LINE, [this]() {
     setSelection(current_position_ + bytesPerRow_, selection_size_);
     if (!isByteVisible(current_position_)) {
       scrollRows(1);
 }
   });
 
-  createAction(util::settings::shortcuts::HEX_MOVE_TO_PREV_LINE, [this] () {
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_PREV_LINE, [this]() {
     setSelection(current_position_ - bytesPerRow_, selection_size_);
     if (!isByteVisible(current_position_)) {
       scrollRows(-1);
 }
   });
 
-  createAction(util::settings::shortcuts::HEX_MOVE_TO_NEXT_PAGE, [this] () {
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_NEXT_PAGE, [this]() {
     setSelection(current_position_ + bytesPerRow_ * rowsOnScreen_, selection_size_);
     scrollRows(rowsOnScreen_);
   });
 
-  createAction(util::settings::shortcuts::HEX_MOVE_TO_PREV_PAGE, [this] () {
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_PREV_PAGE, [this]() {
     setSelection(current_position_ - bytesPerRow_ * rowsOnScreen_, selection_size_);
     scrollRows(-rowsOnScreen_);
   });
 
-  createAction(util::settings::shortcuts::HEX_MOVE_TO_START_OF_LINE, [this] () {
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_START_OF_LINE, [this]() {
     setSelection(current_position_ - current_position_ % bytesPerRow_, selection_size_);
   });
 
-  createAction(util::settings::shortcuts::HEX_MOVE_TO_END_OF_LINE, [this] () {
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_END_OF_LINE, [this]() {
     setSelection(current_position_ + bytesPerRow_ - (current_position_ % bytesPerRow_) - 1,
                  selection_size_);
   });
 
-  createAction(util::settings::shortcuts::HEX_MOVE_TO_START_OF_FILE, [this] () {
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_START_OF_FILE, [this]() {
     setSelection(0, selection_size_, /*set_visible=*/true);
   });
 
-  createAction(util::settings::shortcuts::HEX_MOVE_TO_END_OF_FILE, [this] () {
+  createAction(util::settings::shortcuts::HEX_MOVE_TO_END_OF_FILE, [this]() {
     setSelection(dataBytesCount_ - 1, selection_size_, /*set_visible=*/true);
   });
 
-  createAction(util::settings::shortcuts::HEX_REMOVE_SELECTION, [this] () {
+  createAction(util::settings::shortcuts::HEX_REMOVE_SELECTION, [this]() {
     setSelection(current_position_, 0);
   });
 
-  createAction(util::settings::shortcuts::HEX_SELECT_ALL, [this] () {
+  createAction(util::settings::shortcuts::HEX_SELECT_ALL, [this]() {
     setSelection(0, dataBytesCount_);
   });
 
-  createAction(util::settings::shortcuts::HEX_SELECT_NEXT_CHAR, [this] () {
+  createAction(util::settings::shortcuts::HEX_SELECT_NEXT_CHAR, [this]() {
     setSelectionEnd(current_position_ + 1);
     if (!isByteVisible(current_position_)) {
       scrollRows(1);
     }
   });
 
-  createAction(util::settings::shortcuts::HEX_SELECT_PREV_CHAR, [this] () {
+  createAction(util::settings::shortcuts::HEX_SELECT_PREV_CHAR, [this]() {
     setSelectionEnd(current_position_ - 1);
     if (!isByteVisible(current_position_)) {
       scrollRows(-1);
     }
   });
 
-  createAction(util::settings::shortcuts::HEX_SELECT_NEXT_LINE, [this] () {
+  createAction(util::settings::shortcuts::HEX_SELECT_NEXT_LINE, [this]() {
     setSelectionEnd(current_position_ + bytesPerRow_);
     if (!isByteVisible(current_position_)) {
       scrollRows(1);
     }
   });
 
-  createAction(util::settings::shortcuts::HEX_SELECT_PREV_LINE, [this] () {
+  createAction(util::settings::shortcuts::HEX_SELECT_PREV_LINE, [this]() {
     setSelectionEnd(current_position_ - bytesPerRow_);
     if (!isByteVisible(current_position_)) {
       scrollRows(-1);
     }
   });
 
-  createAction(util::settings::shortcuts::HEX_SELECT_NEXT_PAGE, [this] () {
+  createAction(util::settings::shortcuts::HEX_SELECT_NEXT_PAGE, [this]() {
     setSelectionEnd(current_position_ + bytesPerRow_ * rowsOnScreen_);
     scrollRows(rowsOnScreen_);
   });
 
-  createAction(util::settings::shortcuts::HEX_SELECT_PREV_PAGE, [this] () {
+  createAction(util::settings::shortcuts::HEX_SELECT_PREV_PAGE, [this]() {
     setSelectionEnd(current_position_ - bytesPerRow_ * rowsOnScreen_);
     scrollRows(-rowsOnScreen_);
   });
 
-  createAction(util::settings::shortcuts::HEX_SELECT_START_OF_LINE, [this] () {
+  createAction(util::settings::shortcuts::HEX_SELECT_START_OF_LINE, [this]() {
     setSelectionEnd(current_position_ - (current_position_ % bytesPerRow_));
   });
 
-  createAction(util::settings::shortcuts::HEX_SELECT_END_OF_LINE, [this] () {
+  createAction(util::settings::shortcuts::HEX_SELECT_END_OF_LINE, [this]() {
     setSelectionEnd(current_position_ + bytesPerRow_ - (current_position_ % bytesPerRow_) - 1);
   });
 
-  createAction(util::settings::shortcuts::HEX_SELECT_START_OF_DOCUMENT, [this] () {
+  createAction(util::settings::shortcuts::HEX_SELECT_START_OF_DOCUMENT, [this]() {
     setSelectionEnd(0);
     scrollToByte(current_position_, true);
   });
 
-  createAction(util::settings::shortcuts::HEX_SELECT_END_OF_DOCUMENT, [this] () {
+  createAction(util::settings::shortcuts::HEX_SELECT_END_OF_DOCUMENT, [this]() {
     setSelectionEnd(dataBytesCount_ - 1);
     scrollToByte(current_position_, true);
   });
