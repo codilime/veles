@@ -35,7 +35,6 @@ static const qint64 verticalAreaSpaceWidth_ = 15;
 static const qint64 horizontalAreaSpaceWidth_ = 5;
 static const qint64 startMargin_ = 10;
 static const qint64 endMargin_ = 10;
-static const qint64 edit_stack_limit_ = 100;
 
 void HexEdit::recalculateValues() {
   charWidht_ = fontMetrics().width(QLatin1Char('2'));
@@ -329,8 +328,8 @@ HexEdit::WindowArea HexEdit::pointToWindowArea(QPoint pos) {
 
 uint64_t HexEdit::byteValue(qint64 pos, bool not_modified) {
 
-  if (!not_modified && change_map_.contains(pos)) {
-    return change_map_[pos];
+  if (!not_modified && edit_engine_.isChanged(pos)) {
+    return edit_engine_.byteValue(pos);
   }
 
   return dataModel_->binData()[pos].element64();
@@ -803,70 +802,30 @@ void HexEdit::setByteValue(qint64 pos, uint64_t byte_value) {
     return;
   }
 
-  QPair<qint64, uint64_t> old(pos, old_byte);
 
-  edit_stack_.append(old);
-  while (edit_stack_.size() >= edit_stack_limit_) {
-    edit_stack_.pop_front();
-  }
-
-  change_map_[pos] = byte_value;
+  edit_engine_.changeBytes(pos, {byte_value}, {old_byte});
 }
 
 void HexEdit::transferChanges(data::BinData &bin_data, qint64 offset_shift, qint64 max_bytes) {
-  for (auto change = change_map_.begin(); change != change_map_.end(); ++change) {
-
-    qint64 pos = change.key() - offset_shift;
-
-    if (pos < 0 || (max_bytes >= 0 && pos >= max_bytes)) {
-      continue;
-    }
-
-    uint64_t value = change.value();
-
-    data::BinData new_char = data::BinData(dataModel_->binData().width(), {value});
-    bin_data.setData(pos, pos + 1, new_char);
-  }
+  edit_engine_.applyChanges(bin_data, offset_shift, max_bytes);
 }
 
 void HexEdit::applyChanges() {
-
-  qint64 min_pos = dataBytesCount_;
-  qint64 max_pos = -1;
-
-  for (auto change = change_map_.begin(); change != change_map_.end(); ++change) {
-     qint64 pos = change.key();
-     if (min_pos > pos) {
-       min_pos = pos;
-     }
-     if (max_pos < pos) {
-       max_pos = pos;
-     }
+  while (edit_engine_.hasChanges()) {
+    auto change = edit_engine_.popFirstChange(dataModel_->binData().width());
+    dataModel_->uploadNewData(change.second, change.first);
   }
-
-  if (max_pos < 0) {
-    return;
-  }
-
-  auto copy_bin_data = dataModel_->binData().data(min_pos, max_pos + 1);
-  transferChanges(copy_bin_data, min_pos, max_pos - min_pos + 1);
-  change_map_.clear();
-  dataModel_->uploadNewData(copy_bin_data, min_pos);
 }
 
 void HexEdit::processEditEvent(QKeyEvent *event) {
 
-  if (event->matches(QKeySequence::Undo) && !edit_stack_.isEmpty()) {
-    auto item = edit_stack_.back();
-    edit_stack_.pop_back();
-    change_map_[item.first] = item.second;
-    setSelection(item.first, 1, /*set_visible=*/true);
+  if (event->matches(QKeySequence::Undo) && edit_engine_.hasUndo()) {
+    setSelection(edit_engine_.undo(), 1, /*set_visible=*/true);
   }
 
   if (event->matches(QKeySequence::Save)) {
     applyChanges();
   }
-
 
   uint8_t key = (uint8_t)event->text()[0].toLatin1();
 

@@ -29,29 +29,29 @@ namespace edit {
 
 class EditEngine {
  public:
-   EditEngine(size_t edit_stack_limit = 0) : edit_stack_limit_(edit_stack_limit) {}
+   EditEngine(int edit_stack_limit = 100) : edit_stack_limit_(edit_stack_limit) {}
 
-   void changeBytes(size_t pos, const QVector<uint64_t> &bytes, bool add_to_history = true);
+   void changeBytes(size_t pos, const QVector<uint64_t> &bytes,  const QVector<uint64_t> &old_bytes, bool add_to_history = true);
 
    bool hasUndo() const {return !edit_stack_.isEmpty();}
-   void undo();
+   size_t undo();
 
    void applyChanges(data::BinData &data, size_t offset = 0, int64_t max_bytes = -1) const;
-
-   void clearChanges() {changes_.clear();}
-   void clearEditStack() {edit_stack_.clear();}
+   QPair<size_t, data::BinData> popFirstChange(uint32_t bindata_width);
 
    bool isChanged(size_t byte_pos) const;
    uint64_t byteValue(size_t byte_pos) const;
+   bool hasChanges() const;
 
  private:
-   size_t edit_stack_limit_;
-   QVector<QMap<size_t, QVector<uint64_t>>> edit_stack_;
+   int edit_stack_limit_;
+   QVector<QVector<uint64_t>> edit_stack_data_;
+   QVector<QPair<size_t, size_t>> edit_stack_;
    QMap<size_t, QVector<uint64_t>> changes_;
-
 
    QMap<size_t, QVector<uint64_t>>::const_iterator itFromPos(size_t pos) const;
    QMap<size_t, QVector<uint64_t>> changesFromRange(size_t pos, size_t size) const;
+   void removeChanges(size_t pos, size_t size);
 
 };
 

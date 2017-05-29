@@ -28,6 +28,7 @@
 #include "ui/gotoaddressdialog.h"
 #include "util/encoders/hex_encoder.h"
 #include "util/encoders/text_encoder.h"
+#include "util/edit.h"
 
 namespace veles {
 namespace ui {
@@ -142,8 +143,7 @@ public slots:
   QTimer cursor_timer_;
   QScopedPointer<util::encoders::HexEncoder> hexEncoder_;
   QScopedPointer<util::encoders::TextEncoder> textEncoder_;
-  QMap<qint64, uint64_t> change_map_;
-  QVector<QPair<qint64, uint64_t>> edit_stack_;
+  util::edit::EditEngine edit_engine_;
 
   void applyChanges();
   void recalculateValues();
