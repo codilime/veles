@@ -43,43 +43,6 @@ def post_build_finished(job, build_id, url){
 
 def builders = [:]
 
-if (!buildConfiguration.equals("Debug")) builders['mingw32'] = { node('windows') {
-    ws(getWorkspace("")){
-      timestamps {
-        try {
-          stage('windows mingw') {
-            deleteDir()
-            checkout scm
-            def branch = getBranch()
-            def cpack_generator = "ZIP"
-            withEnv(["PATH+QT=${env.QT}\\Tools\\mingw530_32\\bin;${env.QT}\\5.7\\mingw53_32\\bin",
-                     "PATH+CMAKE=${env.CMAKE}\\bin",
-                     "GOOGLETEST_DIR=${tool 'googletest'}",
-                     "EMBED_PYTHON_ARCHIVE_PATH=${tool 'embed-python-32'}"]) {
-              if (!buildConfiguration.equals("Debug")) {
-                cpack_generator = "${cpack_generator};NSIS"
-              }
-              bat(script: "rd /s /q build_mingw", returnStatus: true)
-              bat script: "md build_mingw", returnStatus: true
-              dir('build_mingw') {
-                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -G \"MinGW Makefiles\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."
-                bat script: "cmake --build . --config ${buildConfiguration} -- -j3"
-                bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-mingw -G \"${cpack_generator}\" -C ${buildConfiguration}"
-              }
-            }
-            junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
-            step([$class: 'ArtifactArchiver', artifacts: 'build_mingw/veles-mingw.*', fingerprint: true])
-            bat(script: "rd /s /q build_mingw", returnStatus: true)
-          }
-        } catch (error) {
-          post_stage_failure(env.JOB_NAME, "windows-mingw32", env.BUILD_ID, env.BUILD_URL)
-          throw error
-        }
-      }
-    }
-  }
-}
-
 builders['msvc2015_64'] = { node('windows'){
     def version = 'msvc2015_64'
     ws(getWorkspace("")){
