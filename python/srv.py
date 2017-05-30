@@ -20,20 +20,27 @@ import signal
 import importlib
 
 from veles.server.conn import AsyncLocalConnection
-from veles.server.proto import create_unix_server, create_tcp_server
+from veles.server.proto import (create_unix_server, create_tcp_server,
+                                create_ssl_server)
 from veles.util import helpers
 
 parser = helpers.get_logging_argparse()
 parser.add_argument(
-    'url', help='either UNIX:<socket_path> or [<ip>:]<tcp port> to listen on')
-parser.add_argument(
-    'auth_key', help='hex-encoded up to 64bytes value that '
-                     'clients need to provide when connecting')
+    'url', help='URL that the server will listen on, in form of: '
+                'VELES[+SSL|+UNIX]://auth_key@([host]:port|path) '
+                'there are 3 supported schemas: VELES - TCP socket, '
+                'VELES+SSL - SSL socket '
+                'VELES+UNIX - UNIX socket (not available on Windows)')
 parser.add_argument(
     'database', nargs='?',
     help='path to database file, in-memory will be used if empty')
 parser.add_argument('--plugin', action='append',
                     help='name plugin module to load')
+parser.add_argument(
+    '--cert-dir', help='Directory in which server will look for certificate '
+                       'and key files (named veles.cert and veles.key '
+                       'respectively) and save generated ones if not found',
+    default='.')
 args = parser.parse_args()
 
 logging.basicConfig(level=logging.getLevelName(args.log_level))
@@ -48,14 +55,23 @@ if args.plugin is not None:
         logging.info('{}...'.format(pname))
         mod = importlib.import_module('veles.plugins.' + pname)
         conn.register_plugin(mod)
-host, _, port = args.url.rpartition(':')
-if host == 'UNIX':
+
+url = helpers.parse_url(args.url)
+if url.scheme == helpers.UrlScheme.UNIX_SCHEME:
     logging.info('Starting UNIX server...')
-    loop.run_until_complete(create_unix_server(conn, args.auth_key, port))
-else:
+    loop.run_until_complete(create_unix_server(conn, url.auth_key, url.path))
+elif url.scheme == helpers.UrlScheme.TCP_SCHEME:
     logging.info('Starting TCP server...')
     loop.run_until_complete(
-        create_tcp_server(conn, args.auth_key, host, int(port)))
+        create_tcp_server(conn, url.auth_key, url.host, url.port))
+elif url.scheme == helpers.UrlScheme.SSL_SCHEME:
+    logging.info('Starting SSL server...')
+    loop.run_until_complete(
+        create_ssl_server(
+            conn, url.auth_key, url.host, url.port, args.cert_dir))
+else:
+    raise ValueError('Wrong scheme provided!')
+
 logging.info('Ready.')
 try:
     loop.add_signal_handler(signal.SIGINT, loop.stop)

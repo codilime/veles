@@ -19,19 +19,20 @@
 
 import asyncio
 import logging
+import ssl
 
 import msgpack
 
 from veles.proto import messages, msgpackwrap
 from veles.proto.exceptions import VelesException, SchemaError
 from veles.proto.messages import PROTO_VERSION
-from veles.util.helpers import prepare_auth_key
+from veles.util import helpers
 
 logger = logging.getLogger('veles.async_client')
 
 
 class ClientProto(asyncio.Protocol):
-    def __init__(self, auth_key, name='acli',
+    def __init__(self, auth_key, fingerprint='', name='acli',
                  version='1.0', description='', type='acli'):
         wrapper = msgpackwrap.MsgpackWrapper()
         self.unpacker = wrapper.unpacker
@@ -41,11 +42,12 @@ class ClientProto(asyncio.Protocol):
         self.bids = {}
         self.rids = {}
         self.handlers = {}
-        self.auth_key = prepare_auth_key(auth_key)
+        self.auth_key = helpers.prepare_auth_key(auth_key)
         self.client_name = name
         self.client_version = version
         self.client_description = description
         self.client_type = type
+        self.fingerprint = fingerprint
 
     def _authorize(self):
         self.transport.write(self.auth_key)
@@ -58,6 +60,8 @@ class ClientProto(asyncio.Protocol):
         ))
 
     def connection_made(self, transport):
+        cert = transport.get_extra_info('ssl_object').getpeercert(True)
+        helpers.validate_cert(cert, self.fingerprint)
         self.transport = transport
         self._authorize()
 
@@ -206,9 +210,20 @@ class ClientProto(asyncio.Protocol):
         del self.handlers[msg.phid]
 
 
-async def create_unix_client(loop, key, path):
-    return await loop.create_unix_connection(lambda: ClientProto(key), path)
-
-
-async def create_tcp_client(loop, key, ip, port):
-    return await loop.create_connection(lambda: ClientProto(key), ip, port)
+async def create_client(loop, url):
+    url = helpers.parse_url(url)
+    if url.scheme == helpers.UrlScheme.UNIX_SCHEME:
+        return await loop.create_unix_connection(
+            lambda: ClientProto(url.auth_key, fingerprint=url.fingerprint),
+            url.path)
+    elif url.scheme == helpers.UrlScheme.TCP_SCHEME:
+        return await loop.create_connection(
+            lambda: ClientProto(url.auth_key, fingerprint=url.fingerprint),
+            url.host, url.port)
+    elif url.scheme == helpers.UrlScheme.SSL_SCHEME:
+        return await loop.create_connection(
+            lambda: ClientProto(url.auth_key, fingerprint=url.fingerprint),
+            url.host, url.port,
+            ssl=ssl.SSLContext())
+    else:
+        raise ValueError('Wrong scheme provided!')

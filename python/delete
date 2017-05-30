@@ -10,7 +10,7 @@ parser = helpers.get_client_argparse()
 parser.add_argument('id', help='hex-encoded id of object to delete')
 args = parser.parse_args()
 
-client = client.create_client(args.server, args.server_auth_key)
+client = client.create_client(args.server_url)
 
 obj = nodeid.NodeID.from_hex(args.id)
 

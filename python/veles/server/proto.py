@@ -19,8 +19,12 @@
 
 import asyncio
 import hmac
+import logging
+from os import path
+import ssl
 
 import msgpack
+from OpenSSL import crypto
 
 from veles.proto import messages, msgpackwrap
 from veles.proto.messages import PROTO_VERSION
@@ -50,7 +54,9 @@ from veles.proto.exceptions import (
     ProtocolMismatchError,
     AuthenticationError,
 )
+from veles.util import helpers
 
+logger = logging.getLogger(__name__)
 
 class SubscriberNode(BaseSubscriberNode):
     def __init__(self, tracker, node, proto, qid):
@@ -710,12 +716,33 @@ class ServerProto(asyncio.Protocol):
 
 
 async def create_unix_server(conn, key, path):
+    logger.info('Client url: VELES+UNIX://%s@%s', key, path)
     key = prepare_auth_key(key)
     return await conn.loop.create_unix_server(
         lambda: ServerProto(conn, key), path)
 
 
 async def create_tcp_server(conn, key, ip, port):
+    logger.info('Client url: VELES://%s@%s:%s', key, ip, port)
     key = prepare_auth_key(key)
     return await conn.loop.create_server(
         lambda: ServerProto(conn, key), ip, port)
+
+
+async def create_ssl_server(conn, key, ip, port, cert_dir):
+    cert_path = path.join(cert_dir, 'veles.cert')
+    key_path = path.join(cert_dir, 'veles.key')
+    if not path.isfile(cert_path) or not path.isfile(key_path):
+        helpers.generate_ssl_cert(cert_path, key_path)
+    with open(cert_path) as f:
+        cert = f.read()
+    cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert)
+    fingerprint = cert.digest('sha256').decode()
+
+    logger.info('Client url: VELES+SSL://%s:%s@%s:%s',
+                key, fingerprint, ip, port)
+    key = prepare_auth_key(key)
+    sc = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    sc.load_cert_chain(cert_path, key_path)
+    return await conn.loop.create_server(
+        lambda: ServerProto(conn, key), ip, port, ssl=sc)

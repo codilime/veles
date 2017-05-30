@@ -32,7 +32,7 @@ corresponding to the dependencies above.
 
 On Ubuntu it can be done like this::
 
-    apt-get install cmake zlib1g-dev qtbase5-dev g++ python3 python3-venv python3-dev
+    apt-get install cmake zlib1g-dev qtbase5-dev g++ python3 python3-venv python3-dev libffi-dev libssl-dev
 
 To build ::
 

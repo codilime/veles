@@ -12,7 +12,7 @@ parser.add_argument(
     'id', help='hex-encoded id of parent object', nargs='?', default=None)
 args = parser.parse_args()
 
-client = client.create_client(args.server, args.server_auth_key)
+client = client.create_client(args.server_url)
 
 if args.id is not None:
     obj = NodeID.from_hex(args.id)
