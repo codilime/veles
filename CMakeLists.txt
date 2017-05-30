@@ -283,6 +283,7 @@ add_library(veles_client
     ${SRC_DIR}/client/networkclient.cc
     ${SRC_DIR}/client/dbif.cc)
 
+add_dependencies(veles_client openssl)
 qt5_use_modules(veles_client Core Network)
 target_link_libraries(veles_client veles_base veles_data veles_network)
 
@@ -417,7 +418,6 @@ add_executable(main_ui
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${GENERATED_MOC_FILES})
 
 qt5_use_modules(main_ui Core Gui Widgets)
-add_dependencies(main_ui openssl)
 
 if(GTEST_FOUND AND GMOCK_FOUND)
     include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
@@ -489,6 +489,7 @@ if(WIN32)
   set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "ExecWait '\\\"$INSTDIR\\\\${WINDOWS_APPLICATION_OUT_DIRECTORY}\\\\${VCREDIST_BINARY}\\\" /install /passive'")
   install(FILES "${OPENSSL_DLL_DIR}/libeay32.dll" "${OPENSSL_DLL_DIR}/ssleay32.dll" DESTINATION ${WINDOWS_APPLICATION_OUT_DIRECTORY} COMPONENT "application")
   add_custom_command(TARGET main_ui POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${WINDOWS_APPLICATION_OUT_DIRECTORY}
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
       "${OPENSSL_DLL_DIR}/libeay32.dll"
       "${OPENSSL_DLL_DIR}/ssleay32.dll"
