@@ -351,7 +351,7 @@ QModelIndex HexEdit::selectedChunk() {
 
 void HexEdit::createAction(util::settings::shortcuts::ShortcutType type, const std::function<void ()>& f) {
   auto action = ShortcutsModel::getShortcutsModel()->createQAction(
-        type, this, Qt::WidgetWithChildrenShortcut);
+      type, this, Qt::WidgetWithChildrenShortcut);
   connect(action, &QAction::triggered, f);
   addAction(action);
 }
