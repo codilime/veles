@@ -187,6 +187,7 @@ public slots:
 
 private slots:
   void copyToClipboard(util::encoders::IEncoder *enc = nullptr);
+  void pasteFromClipboard(util::encoders::IDecoder* enc = nullptr);
 };
 
 }  // namespace ui

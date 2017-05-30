@@ -178,13 +178,20 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
     saveSelectionToFile(QFileDialog::getSaveFileName(this, tr("Save File")));
   });
 
-  auto action = ShortcutsModel::getShortcutsModel()->createQAction(
+  auto copy_action = ShortcutsModel::getShortcutsModel()->createQAction(
         util::settings::shortcuts::COPY, this, Qt::WidgetWithChildrenShortcut);
-  connect(action, &QAction::triggered, [this] () {
+  connect(copy_action, &QAction::triggered, [this] () {
     copyToClipboard();
   });
 
-  addAction(action);
+  auto paste_acton = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::PASTE, this, Qt::WidgetWithChildrenShortcut);
+  connect(paste_acton, &QAction::triggered, [this] () {
+    pasteFromClipboard();
+  });
+
+  addAction(copy_action);
+  addAction(paste_acton);
   addAction(createChunkAction_);
   addAction(createChildChunkAction_);
   addAction(goToAddressAction_);
@@ -202,13 +209,32 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
 
   for (auto &id : util::encoders::EncodersFactory::keys()) {
     QSharedPointer<util::encoders::IEncoder> encoder(
-        util::encoders::EncodersFactory::create(id));
+        util::encoders::EncodersFactory::createEncoder(id));
 
     auto copyAction = new QAction(encoder->encodingDisplayName(), this);
     connect(copyAction, &QAction::triggered,
             [this, encoder] { copyToClipboard(encoder.data()); });
 
     copyMenu->addAction(copyAction);
+  }
+
+  auto pasteMenu = menu_.addMenu("Paste as");
+
+  menu_.addSeparator();
+
+  for (auto &id : util::encoders::EncodersFactory::keys()) {
+    QSharedPointer<util::encoders::IDecoder> decoder(
+        util::encoders::EncodersFactory::createDecoder(id));
+
+    if (!decoder) {
+      continue;
+    }
+
+    auto pasteAction = new QAction(decoder->decodingDisplayName(), this);
+    connect(pasteAction, &QAction::triggered,
+            [this, decoder] { pasteFromClipboard(decoder.data()); });
+
+    pasteMenu->addAction(pasteAction);
   }
 
   hexEncoder_.reset(new util::encoders::HexEncoder());
@@ -926,6 +952,29 @@ void HexEdit::copyToClipboard(util::encoders::IEncoder* enc) {
   // TODO: convert encoders to use BinData
   clipboard->setText(enc->encode(QByteArray(
       (const char *)selectedData.rawData(), (int)selectedData.octets())));
+}
+
+
+void HexEdit::pasteFromClipboard(util::encoders::IDecoder* enc) {
+  if (enc == nullptr) {
+    if (current_area_ == WindowArea::ASCII) {
+      enc = textEncoder_.data();
+    } else {
+      enc = hexEncoder_.data();
+    }
+  }
+
+  QClipboard *clipboard = QApplication::clipboard();
+  auto data = enc->decode(clipboard->text());
+
+  QVector<uint64_t> new_data;
+  QVector<uint64_t> old_data;
+  for (int i=0; i < data.size() && i + current_position_ < dataBytesCount_; ++i) {
+    new_data.append(static_cast<unsigned char>(data[i]));
+    old_data.append(byteValue(current_position_ + i));
+  }
+
+  edit_engine_.changeBytes(current_position_, new_data, old_data);
 }
 
 void HexEdit::setSelectedChunk(QModelIndex newSelectedChunk) {

@@ -17,6 +17,7 @@
 #pragma once
 
 #include "util/encoders/iencoder.h"
+#include "util/encoders/idecoder.h"
 
 #include <QString>
 #include <QStringList>
@@ -28,7 +29,8 @@ namespace encoders {
 class EncodersFactory {
  public:
   static QStringList keys();
-  static IEncoder* create(const QString&);
+  static IEncoder* createEncoder(const QString&);
+  static IDecoder* createDecoder(const QString&);
 };
 
 }  // namespace encoders

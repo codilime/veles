@@ -69,6 +69,7 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[VISUALIZATION_MANIPULATOR_TRACKBALL] = {QKeySequence(Qt::CTRL + Qt::Key_2)};
     defaults[VISUALIZATION_MANIPULATOR_FREE] = {QKeySequence(Qt::CTRL + Qt::Key_3)};
     defaults[COPY] = QKeySequence::keyBindings(QKeySequence::Copy);
+    defaults[PASTE] = QKeySequence::keyBindings(QKeySequence::Paste);
   }
   return defaults;
 }
