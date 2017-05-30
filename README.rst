@@ -14,6 +14,7 @@ Dependencies:
 - ``qt`` >= 5.5
 - ``Python3.5+``
     - ``virtualenv``
+- ``OpenSSL`` >= 1.0.0, < 1.1.0
 
 Caveats:
 ``qt`` >= 5.6 is required if you want to rearrange tabs using drag&drop.
@@ -22,7 +23,7 @@ Optional dependencies needed for running tests:
 
 - ``gtest``
 
-Additional Windows dependency:
+Additional Windows dependency (only needed to compile OpenSSL):
 
 - ``perl``
 
