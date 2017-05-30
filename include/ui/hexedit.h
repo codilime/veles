@@ -143,7 +143,7 @@ public slots:
   QTimer cursor_timer_;
   QScopedPointer<util::encoders::HexEncoder> hexEncoder_;
   QScopedPointer<util::encoders::TextEncoder> textEncoder_;
-  util::edit::EditEngine edit_engine_;
+  util::EditEngine edit_engine_;
 
   void applyChanges();
   void recalculateValues();

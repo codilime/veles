@@ -25,13 +25,13 @@
 
 namespace veles {
 namespace util {
-namespace edit {
 
 class EditEngine {
  public:
    EditEngine(int edit_stack_limit = 100) : edit_stack_limit_(edit_stack_limit) {}
 
-   void changeBytes(size_t pos, const QVector<uint64_t> &bytes,  const QVector<uint64_t> &old_bytes, bool add_to_history = true);
+   void changeBytes(size_t pos, const QVector<uint64_t> &bytes,
+       const QVector<uint64_t> &old_bytes, bool add_to_history = true);
 
    bool hasUndo() const {return !edit_stack_.isEmpty();}
    size_t undo();
@@ -55,6 +55,5 @@ class EditEngine {
 
 };
 
-}  // namespace edit
 }  // namespace util
 }  // namespace veles

@@ -19,13 +19,12 @@
 
 namespace veles {
 namespace util {
-namespace edit {
 
 void EditEngine::changeBytes(size_t pos, const QVector<uint64_t> &bytes, const QVector<uint64_t> &old_bytes, bool add_to_history) {
   if (add_to_history) {
     edit_stack_data_.push_back(old_bytes);
     edit_stack_.push_back(QPair<size_t, size_t>(pos, bytes.size()));
-    if (edit_stack_.size() >= edit_stack_limit_) {
+    while (edit_stack_.size() > edit_stack_limit_) {
       edit_stack_data_.pop_front();
       edit_stack_.pop_front();
     }
@@ -103,7 +102,6 @@ size_t EditEngine::undo() {
 
 void EditEngine::applyChanges(data::BinData &bindata, size_t offset, int64_t max_bytes) const {
    auto changes = changesFromRange(offset, max_bytes);
-
    for (auto it = changes.begin(); it != changes.constEnd(); it++) {
      size_t pos = it.key();
      auto data = it.value();
@@ -180,9 +178,8 @@ QMap<size_t, QVector<uint64_t>> EditEngine::changesFromRange(size_t byte_pos, si
   QMap<size_t, QVector<uint64_t>> res;
 
   auto it = itFromPos(byte_pos);
-
   if (it == changes_.constEnd()) {
-    return res;
+    it = changes_.upperBound(byte_pos);
   }
 
   while (it != changes_.constEnd() && it.key() < byte_pos + size) {
@@ -204,7 +201,7 @@ QMap<size_t, QVector<uint64_t>> EditEngine::changesFromRange(size_t byte_pos, si
 
     if (pos + data.size() > byte_pos + size) {
       QVector<uint64_t> new_data;
-      size_t last_chunk_bytes_count = 2*data.size() + pos - byte_pos - size;
+      size_t last_chunk_bytes_count = byte_pos + size - pos;
       for (size_t i = 0; i < last_chunk_bytes_count; ++i) {
         new_data.append(data[static_cast<int>(i)]);
       }
@@ -219,6 +216,5 @@ QMap<size_t, QVector<uint64_t>> EditEngine::changesFromRange(size_t byte_pos, si
   return res;
 }
 
-}  // namespace edit
 }  // namespace util
 }  // namespace veles

@@ -442,6 +442,7 @@ if(GTEST_FOUND AND GMOCK_FOUND)
         ${TEST_DIR}/util/sampling/isampler.cc
         ${TEST_DIR}/util/sampling/uniform_sampler.cc
         ${TEST_DIR}/util/int_bytes.cc
+        ${TEST_DIR}/util/edit.cc
     )
 
     qt5_use_modules(run_test Core)
