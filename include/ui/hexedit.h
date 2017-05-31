@@ -21,7 +21,6 @@
 #include <QMenu>
 #include <QMouseEvent>
 #include <QStringList>
-#include <QMap>
 
 #include "ui/createchunkdialog.h"
 #include "ui/fileblobmodel.h"

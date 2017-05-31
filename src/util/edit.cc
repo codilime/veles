@@ -101,14 +101,19 @@ size_t EditEngine::undo() {
 }
 
 void EditEngine::applyChanges(data::BinData &bindata, size_t offset, int64_t max_bytes) const {
-   auto changes = changesFromRange(offset, max_bytes);
-   for (auto it = changes.begin(); it != changes.constEnd(); it++) {
-     size_t pos = it.key();
-     auto data = it.value();
-     for (int i = 0; i < data.size(); ++i) {
-       bindata.setElement64(pos - offset + i, data[i]);
-     }
-   }
+
+  if (max_bytes == -1) {
+    max_bytes = bindata.size();
+  }
+
+  auto changes = changesFromRange(offset, max_bytes);
+  for (auto it = changes.begin(); it != changes.constEnd(); it++) {
+    size_t pos = it.key();
+    auto data = it.value();
+    for (int i = 0; i < data.size(); ++i) {
+      bindata.setElement64(pos - offset + i, data[i]);
+    }
+  }
 }
 
 QPair<size_t, data::BinData> EditEngine::popFirstChange(uint32_t bindata_width) {
