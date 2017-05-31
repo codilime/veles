@@ -737,7 +737,7 @@ void HexEdit::setSelection(qint64 start, qint64 size, bool set_visible) {
   }
 
   resetCursor();
-  emit selectionChanged(selectionStart(), selectionSize());
+  emit selectionChanged(startOffset_ + selectionStart(), selectionSize());
 }
 
 void HexEdit::contextMenuEvent(QContextMenuEvent *event) {
@@ -905,7 +905,7 @@ void HexEdit::dataChanged() {
 void HexEdit::modelSelectionChanged() {
   scrollToCurrentChunk();
   viewport()->update();
-  emit selectionChanged(startOffset_ + selectionStart(), selection_size_);
+  emit selectionChanged(startOffset_ + selectionStart(), selectionSize());
 }
 
 void HexEdit::scrollToCurrentChunk() {
