@@ -1061,7 +1061,11 @@ void HexEdit::scrollRows(qint64 num_rows) {
 void HexEdit::newBinData() {
   recalculateValues();
   goToAddressDialog_->setRange(startOffset_, startOffset_ + dataBytesCount_);
-  setSelection(0, 1);
+  qint64 new_position = current_position_;
+  if (new_position >= dataBytesCount_) {
+    new_position = dataBytesCount_ - 1;
+  }
+  setSelection(new_position, 1);
   viewport()->update();
 }
 

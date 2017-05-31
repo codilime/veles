@@ -30,7 +30,7 @@ void EditEngine::changeBytes(size_t pos, const QVector<uint64_t> &bytes, const Q
     }
   }
 
-  QVector<size_t> overlaping;
+  QVector<size_t> overlapping;
   auto it = changes_.lowerBound(pos);
   if (!changes_.empty() && it != changes_.begin()) {
     it--;
@@ -42,15 +42,15 @@ void EditEngine::changeBytes(size_t pos, const QVector<uint64_t> &bytes, const Q
       continue;
     }
 
-    overlaping.append(it.key());
+    overlapping.append(it.key());
     ++it;
   }
 
   size_t new_pos = pos;
   QVector<uint64_t> new_bytes;
-  if (!overlaping.isEmpty()) {
-    size_t first_pos = overlaping.first();
-    size_t last_pos = overlaping.last();
+  if (!overlapping.isEmpty()) {
+    size_t first_pos = overlapping.first();
+    size_t last_pos = overlapping.last();
     auto first_chunk = changes_[first_pos];
     auto last_chunk = changes_[last_pos];
     size_t last_size = last_chunk.size();
@@ -76,7 +76,7 @@ void EditEngine::changeBytes(size_t pos, const QVector<uint64_t> &bytes, const Q
     new_bytes = bytes;
   }
 
-  for (auto pos: overlaping) {
+  for (auto pos: overlapping) {
     changes_.remove(pos);
   }
 

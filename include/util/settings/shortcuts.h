@@ -71,7 +71,7 @@ enum ShortcutType : uint32_t {
   VISUALIZATION_MANIPULATOR_TRACKBALL = 36,
   VISUALIZATION_MANIPULATOR_FREE = 37,
   COPY = 38,
-  PASTE = 30,
+  PASTE = 39,
 };
 
 QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts();
