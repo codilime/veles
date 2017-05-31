@@ -830,6 +830,7 @@ void HexEdit::setByteValue(qint64 pos, uint64_t byte_value) {
 
 
   edit_engine_.changeBytes(pos, {byte_value}, {old_byte});
+  emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
 }
 
 void HexEdit::transferChanges(data::BinData &bin_data, qint64 offset_shift, qint64 max_bytes) {
@@ -841,18 +842,18 @@ void HexEdit::applyChanges() {
     auto change = edit_engine_.popFirstChange(dataModel_->binData().width());
     dataModel_->uploadNewData(change.second, change.first);
   }
+  emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
+}
+
+void HexEdit::undo() {
+  if (!edit_engine_.hasUndo()) {
+    return;
+  }
+  setSelection(edit_engine_.undo(), 1, /*set_visible=*/true);
+  emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
 }
 
 void HexEdit::processEditEvent(QKeyEvent *event) {
-
-  if (event->matches(QKeySequence::Undo) && edit_engine_.hasUndo()) {
-    setSelection(edit_engine_.undo(), 1, /*set_visible=*/true);
-  }
-
-  if (event->matches(QKeySequence::Save)) {
-    applyChanges();
-  }
-
   uint8_t key = (uint8_t)event->text()[0].toLatin1();
 
   if (current_area_ == WindowArea::ASCII) {

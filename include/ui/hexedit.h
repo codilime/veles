@@ -56,6 +56,8 @@ public slots:
   void newBinData();
   void dataChanged();
   void modelSelectionChanged();
+  void applyChanges();
+  void undo();
 
  protected:
   void paintEvent(QPaintEvent *event) override;
@@ -69,6 +71,7 @@ public slots:
 
  signals:
   void selectionChanged(qint64 start_addr, qint64 selection_size);
+  void editStateChanged(bool has_changes, bool has_undo);
 
  private:
   FileBlobModel *dataModel_;
@@ -145,7 +148,6 @@ public slots:
   QScopedPointer<util::encoders::TextEncoder> textEncoder_;
   util::EditEngine edit_engine_;
 
-  void applyChanges();
   void recalculateValues();
   void initParseMenu();
   void adjustBytesPerRowToWindowSize();

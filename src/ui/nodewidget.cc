@@ -57,6 +57,8 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
       selection_model_(selection_model), sampler_(nullptr) {
   hex_edit_widget_ = new HexEditWidget(
       main_window, data_model, selection_model);
+  addAction(hex_edit_widget_->uploadAction());
+  addAction(hex_edit_widget_->undoAction());
   addAction(hex_edit_widget_->findAction());
   addAction(hex_edit_widget_->findNextAction());
   addAction(hex_edit_widget_->showVisualizationAction());

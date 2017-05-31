@@ -68,6 +68,9 @@ HexEditWidget::HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
   createActions();
   createToolBars();
 
+  connect(hex_edit_, &HexEdit::editStateChanged,
+      this, &HexEditWidget::editStateChanged);
+
   setupDataModelHandlers();
 
   reapplySettings();
@@ -101,14 +104,21 @@ QString HexEditWidget::addressAsText(qint64 addr) {
 /*****************************************************************************/
 
 void HexEditWidget::createActions() {
-//  Currently not implemented
-//  upload_act_ = new QAction(QIcon(":/images/upload-32.ico"), tr("&Upload"),
-//      this);
-//  upload_act_->setShortcuts(QKeySequence::Save);
-//  upload_act_->setStatusTip(tr("Upload changed to database"));
-//  connect(upload_act_, SIGNAL(triggered()), this, SLOT(uploadChanges()));
-//  upload_act_->setEnabled(false);
 
+  upload_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+          util::settings::shortcuts::UPLOAD,
+          this, QIcon(":/images/upload-32.ico"), Qt::WidgetWithChildrenShortcut);
+  upload_act_->setStatusTip(tr("Upload changed to database"));
+  connect(upload_act_, SIGNAL(triggered()), hex_edit_, SLOT(applyChanges()));
+  upload_act_->setEnabled(false);
+
+  undo_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+          util::settings::shortcuts::UNDO,
+          this, QIcon(":/images/undo.png"), Qt::WidgetWithChildrenShortcut);
+  connect(undo_act_, SIGNAL(triggered()), hex_edit_, SLOT(undo()));
+  undo_act_->setEnabled(false);
+
+//  Currently not implemented
 //  save_as_act_ = new QAction(QIcon(":/images/save.png"), tr("Save &As..."),
 //      this);
 //  save_as_act_->setShortcuts(QKeySequence::SaveAs);
@@ -120,10 +130,6 @@ void HexEditWidget::createActions() {
 //  save_readable_->setStatusTip(tr("Save document in readable form"));
   // connect(save_readable_, SIGNAL(triggered()), this,
   // SLOT(saveToReadableFile()));
-
-//  undo_act_ = new QAction(QIcon(":/images/undo.png"), tr("&Undo"), this);
-//  undo_act_->setShortcuts(QKeySequence::Undo);
-//  undo_act_->setEnabled(false);
 
 //  redo_act_ = new QAction(QIcon(":/images/redo.png"), tr("&Redo"), this);
 //  redo_act_->setShortcuts(QKeySequence::Redo);
@@ -211,16 +217,16 @@ void HexEditWidget::createToolBars() {
   tools_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
   addToolBar(tools_tool_bar_);
 
-  //Not implemented yet.
-  //file_tool_bar_ = new QToolBar(tr("File"));
-  //file_tool_bar_->addAction(upload_act_);
+  file_tool_bar_ = new QToolBar(tr("File"));
+  file_tool_bar_->addAction(upload_act_);
+  file_tool_bar_->addAction(undo_act_);
   //file_tool_bar_->addAction(save_as_act_);
-  //addToolBar(file_tool_bar_);
+  addToolBar(file_tool_bar_);
 
   edit_tool_bar_ = new QToolBar(tr("Edit"));
 
   //Not implemented yet.
-  //edit_tool_bar_->addAction(undo_act_);
+
   //edit_tool_bar_->addAction(redo_act_);
 
   edit_tool_bar_->addAction(find_act_);
@@ -312,9 +318,6 @@ void HexEditWidget::findNext() { search_dialog_->findNext(); }
 
 void HexEditWidget::showSearchDialog() { search_dialog_->show(); }
 
-void HexEditWidget::uploadChanges() {
-}
-
 bool HexEditWidget::saveAs() {
   QString file_name = QFileDialog::getSaveFileName(
       this, tr("Save As"), cur_file_);
@@ -365,6 +368,11 @@ void HexEditWidget::selectionChanged(qint64 start_addr,
       .arg(addressAsText(start_addr))
       .arg(addressAsText(start_addr + selection_size))
       .arg(QString::number(selection_size, 10).rightJustified(8, '0')));
+}
+
+void HexEditWidget::editStateChanged(bool has_changes, bool has_undo) {
+  upload_act_->setEnabled(has_changes);
+  undo_act_->setEnabled(has_undo);
 }
 
 void HexEditWidget::nodeTreeVisibilityChanged(bool visibility) {

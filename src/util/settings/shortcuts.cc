@@ -70,6 +70,8 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[VISUALIZATION_MANIPULATOR_FREE] = {QKeySequence(Qt::CTRL + Qt::Key_3)};
     defaults[COPY] = QKeySequence::keyBindings(QKeySequence::Copy);
     defaults[PASTE] = QKeySequence::keyBindings(QKeySequence::Paste);
+    defaults[UPLOAD] = QKeySequence::keyBindings(QKeySequence::Save);
+    defaults[UNDO] = QKeySequence::keyBindings(QKeySequence::Undo);
   }
   return defaults;
 }
@@ -277,7 +279,7 @@ QAction* ShortcutsModel::createQAction(
   return type_to_shortcut_[type]->createQAction(parent, context);
 }
 
-QAction* ShortcutsModel::createQAction(
+QAction* ShortcutsModel:: createQAction(
     ShortcutType type, QObject* parent, QIcon icon, Qt::ShortcutContext context) {
   return type_to_shortcut_[type]->createQAction(parent, icon, context);
 }
@@ -350,6 +352,7 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
   addShortcutType(SHOW_NODE_TREE, global, tr("&Node tree"), tr("Open/close node tree for current dock"));
   addShortcutType(SHOW_MINIMAP, global, tr("&Minimap"), tr("Open/close minimap for current dock"));
   addShortcutType(COPY, global, tr("&Copy"), tr("Copy"));
+  addShortcutType(PASTE, global, tr("&Paste"), tr("Paste"));
 
   auto network = addCategory(tr("Network"), root_);
   addShortcutType(SHOW_CONNECT_DIALOG, network, tr("Connect..."), tr("Show connect dialog"));
@@ -368,6 +371,8 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
   addShortcutType(SAVE_SELECTION_TO_FILE, hex, tr("&Save to file"), tr("Save selection to file"));
   addShortcutType(HEX_FIND, hex, tr("&Find/Replace"), tr("Show the dialog for finding and replacing"));
   addShortcutType(HEX_FIND_NEXT, hex, tr("Find &next"), tr("Find next"));
+  addShortcutType(UPLOAD, hex, tr("&Upload"), tr("Upload"));
+  addShortcutType(UNDO, hex, tr("&Undo"), tr("Undo"));
 
   auto visualization = addCategory(tr("Visualization"), root_);
   addShortcutType(VISUALIZATION_DIGRAM, visualization, tr("&Digram"), tr("Change visualizaton mode to digram"));
