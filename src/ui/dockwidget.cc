@@ -265,6 +265,12 @@ void DockWidget::centerTitleBarOnPosition(QPoint pos) {
   move(pos - startPos);
 }
 
+void DockWidget::focusInEvent(QFocusEvent * event) {
+  if (widget()) {
+    widget()->setFocus();
+  }
+}
+
 void DockWidget::moveEvent(QMoveEvent *event) {
   ticks_ = 0;
 
@@ -741,7 +747,7 @@ DockWidget* MainWindowWithDetachableDockWidgets::addTab(QWidget *widget,
   QApplication::processEvents();
   updateDocksAndTabs();
   bringDockWidgetToFront(dock_widget);
-  dock_widget->setFocus(Qt::OtherFocusReason);
+  setActiveDockWidget(dock_widget);
 
   return dock_widget;
 }
@@ -1041,6 +1047,7 @@ void MainWindowWithDetachableDockWidgets::setActiveDockWidget(
     for (auto window : main_windows_) {
       window->updateDocksAndTabs();
     }
+    dock_widget->setFocus();
   }
 }
 

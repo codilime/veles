@@ -63,6 +63,7 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
   addAction(hex_edit_widget_->showHexEditAction());
   addAction(hex_edit_widget_->showNodeTreeAction());
   setCentralWidget(hex_edit_widget_);
+  setFocusProxy(hex_edit_widget_);
 
   node_tree_dock_ = new QDockWidget;
   new DockWidgetVisibilityGuard(node_tree_dock_);

@@ -90,6 +90,7 @@ class DockWidget : public QDockWidget {
   void splitVertically();
 
  protected:
+  void focusInEvent(QFocusEvent * event) Q_DECL_OVERRIDE;
   void moveEvent(QMoveEvent *event) Q_DECL_OVERRIDE;
   void timerEvent(QTimerEvent* event) Q_DECL_OVERRIDE;
   QMenu* createMoveToDesktopMenu();
