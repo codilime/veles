@@ -60,6 +60,7 @@ HexEditWidget::HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
       selection_model_(selection_model) {
   hex_edit_ = new HexEdit(data_model_.data(), selection_model_.data(), this);
   setCentralWidget(hex_edit_);
+  setFocusProxy(hex_edit_);
   connect(hex_edit_, &HexEdit::selectionChanged,
       this, &HexEditWidget::selectionChanged);
 

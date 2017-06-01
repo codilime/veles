@@ -63,6 +63,7 @@ VisualizationPanel::VisualizationPanel(
   visualization_ = getVisualization(visualization_type_, this);
   visualization_root_ = new QMainWindow;
   visualization_root_->setCentralWidget(visualization_);
+  setFocusProxy(visualization_);
 
   sampling_method_dialog_ = new SamplingMethodDialog(this);
   sampling_method_dialog_->setSampleSize(sample_size_);
