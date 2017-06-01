@@ -69,6 +69,28 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[VISUALIZATION_MANIPULATOR_TRACKBALL] = {QKeySequence(Qt::CTRL + Qt::Key_2)};
     defaults[VISUALIZATION_MANIPULATOR_FREE] = {QKeySequence(Qt::CTRL + Qt::Key_3)};
     defaults[COPY] = QKeySequence::keyBindings(QKeySequence::Copy);
+    defaults[HEX_MOVE_TO_NEXT_CHAR] = QKeySequence::keyBindings(QKeySequence::MoveToNextChar);
+    defaults[HEX_MOVE_TO_PREV_CHAR] = QKeySequence::keyBindings(QKeySequence::MoveToPreviousChar);
+    defaults[HEX_MOVE_TO_NEXT_LINE] = QKeySequence::keyBindings(QKeySequence::MoveToNextLine);
+    defaults[HEX_MOVE_TO_PREV_LINE] = QKeySequence::keyBindings(QKeySequence::MoveToPreviousLine);
+    defaults[HEX_MOVE_TO_NEXT_PAGE] = QKeySequence::keyBindings(QKeySequence::MoveToNextPage);
+    defaults[HEX_MOVE_TO_PREV_PAGE] = QKeySequence::keyBindings(QKeySequence::MoveToPreviousPage);
+    defaults[HEX_MOVE_TO_START_OF_LINE] = QKeySequence::keyBindings(QKeySequence::MoveToStartOfLine);
+    defaults[HEX_MOVE_TO_END_OF_LINE] = QKeySequence::keyBindings(QKeySequence::MoveToEndOfLine);
+    defaults[HEX_MOVE_TO_START_OF_FILE] = QKeySequence::keyBindings(QKeySequence::MoveToStartOfDocument);
+    defaults[HEX_MOVE_TO_END_OF_FILE] = QKeySequence::keyBindings(QKeySequence::MoveToEndOfDocument);
+    defaults[HEX_REMOVE_SELECTION] = {QKeySequence(Qt::Key_Escape)};
+    defaults[HEX_SELECT_ALL] = QKeySequence::keyBindings(QKeySequence::SelectAll);
+    defaults[HEX_SELECT_NEXT_CHAR] = QKeySequence::keyBindings(QKeySequence::SelectNextChar);
+    defaults[HEX_SELECT_PREV_CHAR] = QKeySequence::keyBindings(QKeySequence::SelectPreviousChar);
+    defaults[HEX_SELECT_NEXT_LINE] = QKeySequence::keyBindings(QKeySequence::SelectNextLine);
+    defaults[HEX_SELECT_PREV_LINE] = QKeySequence::keyBindings(QKeySequence::SelectPreviousLine);
+    defaults[HEX_SELECT_NEXT_PAGE] = QKeySequence::keyBindings(QKeySequence::SelectNextPage);
+    defaults[HEX_SELECT_PREV_PAGE] = QKeySequence::keyBindings(QKeySequence::SelectPreviousPage);
+    defaults[HEX_SELECT_START_OF_LINE] = QKeySequence::keyBindings(QKeySequence::SelectStartOfLine);
+    defaults[HEX_SELECT_END_OF_LINE] = QKeySequence::keyBindings(QKeySequence::SelectEndOfLine);
+    defaults[HEX_SELECT_START_OF_DOCUMENT] = QKeySequence::keyBindings(QKeySequence::SelectStartOfDocument);
+    defaults[HEX_SELECT_END_OF_DOCUMENT] = QKeySequence::keyBindings(QKeySequence::SelectEndOfDocument);
   }
   return defaults;
 }
@@ -367,6 +389,30 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
   addShortcutType(SAVE_SELECTION_TO_FILE, hex, tr("&Save to file"), tr("Save selection to file"));
   addShortcutType(HEX_FIND, hex, tr("&Find/Replace"), tr("Show the dialog for finding and replacing"));
   addShortcutType(HEX_FIND_NEXT, hex, tr("Find &next"), tr("Find next"));
+
+  auto hex_move = addCategory(tr("Cursor movement"), hex);
+  addShortcutType(HEX_MOVE_TO_NEXT_CHAR, hex_move, tr("Right"));
+  addShortcutType(HEX_MOVE_TO_PREV_CHAR, hex_move, tr("Left"));
+  addShortcutType(HEX_MOVE_TO_NEXT_LINE, hex_move, tr("Down"));
+  addShortcutType(HEX_MOVE_TO_PREV_LINE, hex_move, tr("Up"));
+  addShortcutType(HEX_MOVE_TO_NEXT_PAGE, hex_move, tr("Page down"));
+  addShortcutType(HEX_MOVE_TO_PREV_PAGE, hex_move, tr("Page up"));
+  addShortcutType(HEX_MOVE_TO_START_OF_LINE, hex_move, tr("Start of line"));
+  addShortcutType(HEX_MOVE_TO_END_OF_LINE, hex_move, tr("End of line"));
+  addShortcutType(HEX_MOVE_TO_START_OF_FILE, hex_move, tr("Start of file"));
+  addShortcutType(HEX_MOVE_TO_END_OF_FILE, hex_move, tr("End of file"));
+  addShortcutType(HEX_REMOVE_SELECTION, hex_move, tr("Remove selection"));
+  addShortcutType(HEX_SELECT_ALL, hex_move, tr("Select all"));
+  addShortcutType(HEX_SELECT_NEXT_CHAR, hex_move, tr("Right with selecton"));
+  addShortcutType(HEX_SELECT_PREV_CHAR, hex_move, tr("Left with selection"));
+  addShortcutType(HEX_SELECT_NEXT_LINE, hex_move, tr("Down with selection"));
+  addShortcutType(HEX_SELECT_PREV_LINE, hex_move, tr("Up with selection"));
+  addShortcutType(HEX_SELECT_NEXT_PAGE, hex_move, tr("Page down with selection"));
+  addShortcutType(HEX_SELECT_PREV_PAGE, hex_move, tr("Page up with selection"));
+  addShortcutType(HEX_SELECT_START_OF_LINE, hex_move, tr("Start of line with selection"));
+  addShortcutType(HEX_SELECT_END_OF_LINE, hex_move, tr("End of line with selection"));
+  addShortcutType(HEX_SELECT_START_OF_DOCUMENT, hex_move, tr("Start of file with selection"));
+  addShortcutType(HEX_SELECT_END_OF_DOCUMENT, hex_move, tr("End of file with selection"));
 
   auto visualization = addCategory(tr("Visualization"), root_);
   addShortcutType(VISUALIZATION_DIGRAM, visualization, tr("&Digram"), tr("Change visualizaton mode to digram"));
