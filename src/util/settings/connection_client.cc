@@ -235,6 +235,45 @@ void setServerScript(QString server_script) {
   setProfileSettings("connection.server_script", server_script);
 }
 
+QString certDirectoryDefault() {
+  return QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+}
+
+QString certDirectory() {
+  return profileSettings("connection.cert_dir",
+      certDirectoryDefault()).toString();
+}
+
+void setCertDirectory(QString cert_directory) {
+  setProfileSettings("connection.cert_dir", cert_directory);
+}
+
+QString serverUrlDefault() {
+  return "";
+}
+
+QString serverUrl() {
+  return profileSettings("connection.server_url",
+      serverUrlDefault()).toString();
+}
+
+void setServerUrl(QString server_url) {
+  setProfileSettings("connection.server_url", server_url);
+}
+
+bool sslEnabledDefault() {
+  return true;
+}
+
+bool sslEnabled() {
+  return profileSettings("connection.ssl_enabled",
+      sslEnabledDefault()).toBool();
+}
+
+void setSslEnabled(bool ssl_enabled) {
+  setProfileSettings("connection.ssl_enabled", ssl_enabled);
+}
+
 }  // namespace connection
 }  // namespace settings
 }  // namespace util

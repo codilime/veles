@@ -200,90 +200,35 @@
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="client_interface_line_edit">
-       <property name="placeholderText">
-        <string>Client network interface</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="port_label">
+     <item row="8" column="0">
+      <widget class="QLabel" name="certificate_dir_label">
        <property name="text">
-        <string>Server port:</string>
+        <string>Certificate diectory:</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="authentication_key_label">
+     <item row="8" column="2">
+      <widget class="QPushButton" name="certificate_dir_button">
        <property name="text">
-        <string>Authentication key:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="client_name_label">
-       <property name="text">
-        <string>Client name:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLineEdit" name="client_name_line_edit">
-       <property name="placeholderText">
-        <string>Client name visible for other users</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="database_label">
-       <property name="text">
-        <string>Database:</string>
+        <string>browse...</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="server_host_line_edit">
+      <widget class="QLineEdit" name="server_url_line_edit">
        <property name="placeholderText">
-        <string>Host name or address</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="key_line_edit">
-       <property name="inputMask">
-        <string/>
-       </property>
-       <property name="maxLength">
-        <number>128</number>
-       </property>
-       <property name="placeholderText">
-        <string>Up to 128 hexadecimal digits. Keep it a secret!</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QLineEdit" name="database_line_edit">
-       <property name="placeholderText">
-        <string>Database file for a new server</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="2">
-      <widget class="QPushButton" name="random_key_button">
-       <property name="text">
-        <string>random</string>
+        <string>Server url</string>
        </property>
       </widget>
      </item>
      <item row="0" column="0">
-      <widget class="QLabel" name="server_host_label">
+      <widget class="QLabel" name="server_url_label">
        <property name="text">
-        <string>Server host:</string>
+        <string>Server url:</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="2" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
         <widget class="QSpinBox" name="port_spin_box">
@@ -319,42 +264,49 @@
        </item>
       </layout>
      </item>
-     <item row="2" column="2">
+     <item row="3" column="2">
       <widget class="QPushButton" name="client_localhost_button">
        <property name="text">
         <string>localhost</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="1">
+     <item row="7" column="1">
       <widget class="QLineEdit" name="server_executable_line_edit">
        <property name="placeholderText">
         <string>Server Python script</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
+     <item row="1" column="0">
+      <widget class="QLabel" name="server_host_label">
+       <property name="text">
+        <string>Server host:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="2">
+      <widget class="QPushButton" name="select_server_executable_button">
+       <property name="text">
+        <string>browse...</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
       <widget class="QLabel" name="client_interface_label">
        <property name="text">
         <string>Client interface:</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="2">
+     <item row="1" column="2">
       <widget class="QPushButton" name="server_localhost_button">
        <property name="text">
         <string>localhost</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="2">
-      <widget class="QPushButton" name="select_database_button">
-       <property name="text">
-        <string>browse...</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="0">
+     <item row="7" column="0">
       <widget class="QLabel" name="server_executable_label">
        <property name="text">
         <string>Server script:</string>
@@ -362,13 +314,13 @@
       </widget>
      </item>
      <item row="6" column="2">
-      <widget class="QPushButton" name="select_server_executable_button">
+      <widget class="QPushButton" name="select_database_button">
        <property name="text">
         <string>browse...</string>
        </property>
       </widget>
      </item>
-     <item row="8" column="0" colspan="3">
+     <item row="9" column="0" colspan="3">
       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,5,0">
        <item>
         <widget class="QCheckBox" name="save_key_check_box">
@@ -404,6 +356,99 @@
         </widget>
        </item>
       </layout>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="client_interface_line_edit">
+       <property name="placeholderText">
+        <string>Client network interface</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="port_label">
+       <property name="text">
+        <string>Server port:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="client_name_label">
+       <property name="text">
+        <string>Client name:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="authentication_key_label">
+       <property name="text">
+        <string>Authentication key:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="database_label">
+       <property name="text">
+        <string>Database:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="client_name_line_edit">
+       <property name="placeholderText">
+        <string>Client name visible for other users</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2">
+      <widget class="QPushButton" name="random_key_button">
+       <property name="text">
+        <string>random</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLineEdit" name="database_line_edit">
+       <property name="placeholderText">
+        <string>Database file for a new server</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="server_host_line_edit">
+       <property name="placeholderText">
+        <string>Host name or address</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="key_line_edit">
+       <property name="inputMask">
+        <string/>
+       </property>
+       <property name="maxLength">
+        <number>128</number>
+       </property>
+       <property name="placeholderText">
+        <string>Up to 128 hexadecimal digits. Keep it a secret!</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="QLineEdit" name="certificate_dir_line_edit">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="placeholderText">
+        <string>Server certificate directory</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QCheckBox" name="ssl_checkbox">
+       <property name="text">
+        <string>Enable ssl</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

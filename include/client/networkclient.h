@@ -26,13 +26,17 @@
 #include <unordered_set>
 
 #include <QString>
-#include <QTcpSocket>
+#include <QSslSocket>
 
 #include "network/msgpackwrapper.h"
 #include "data/nodeid.h"
 
 namespace veles {
 namespace client {
+
+const QString SCHEME_UNIX("veles+unix");
+const QString SCHEME_TCP("veles");
+const QString SCHEME_SSL("veles+ssl");
 
 class NodeTree;
 
@@ -54,14 +58,12 @@ class NetworkClient : public QObject {
   virtual ~NetworkClient();
   ConnectionStatus connectionStatus();
   void connect(
-      QString server_name,
-      int server_port,
+      QString server_url,
       QString client_interface_name,
       QString client_name,
       QString client_version,
       QString client_description,
       QString client_type,
-      const QByteArray& authentication_key,
       bool quit_on_close);
   void disconnect();
   std::unique_ptr<NodeTree> const& nodeTree();
@@ -108,9 +110,10 @@ public slots:
   void socketDisconnected();
   void newDataAvailable();
   void socketError(QAbstractSocket::SocketError socketError);
+  void checkFingerprint(const QList<QSslError> &errors);
 
  private:
-  QTcpSocket* client_socket_;
+  QSslSocket* client_socket_;
   std::unique_ptr<NodeTree> node_tree_;
   ConnectionStatus status_;
 
@@ -124,7 +127,9 @@ public slots:
   QString client_description_;
   QString client_type_;
   QByteArray authentication_key_;
+  QString fingerprint_;
   bool quit_on_close_;
+  bool ssl_enabled_;
 
   messages::MsgpackWrapper msgpack_wrapper_;
   std::unordered_map<std::string, MessageHandler> message_handlers_;

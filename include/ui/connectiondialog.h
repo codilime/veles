@@ -41,14 +41,19 @@ class ConnectionDialog : public QDialog {
   QString clientName();
   QString databaseFile();
   QString serverScript();
+  QString certificateDir();
+  QString serverUrl();
+  bool sslEnabled();
 
  public slots:
   void serverLocalhost();
   void clientLocalhost();
   void randomKey();
   void newServerToggled(bool toggled);
+  void sslEnabledToggled(bool toggled);
   void databaseFileSelected(const QString& file_name);
   void serverFileSelected(const QString& file_name);
+  void certificateDirSelected(const QString& dir_name);
   void loadDefaultValues();
   void loadSettings();
   void loadProfiles();
@@ -67,6 +72,7 @@ class ConnectionDialog : public QDialog {
   Ui::ConnectionDialog* ui_;
   QFileDialog* db_file_dialog_;
   QFileDialog* server_file_dialog_;
+  QFileDialog* certificate_dir_dialog_;
 };
 
 }  // namespace ui

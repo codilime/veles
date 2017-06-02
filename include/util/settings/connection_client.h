@@ -55,6 +55,18 @@ QString serverScriptDefault();
 QString serverScript();
 void setServerScript(QString server_script);
 
+QString certDirectoryDefault();
+QString certDirectory();
+void setCertDirectory(QString cert_directory);
+
+QString serverUrlDefault();
+QString serverUrl();
+void setServerUrl(QString server_url);
+
+bool sslEnabledDefault();
+bool sslEnabled();
+void setSslEnabled(bool ssl_enabled);
+
 QString currentProfile();
 void setCurrentProfile(QString profile);
 QStringList profileList();

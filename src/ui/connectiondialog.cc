@@ -72,6 +72,15 @@ ConnectionDialog::ConnectionDialog(QWidget* parent)
       server_file_dialog_, &QFileDialog::show);
   connect(server_file_dialog_, &QFileDialog::fileSelected,
       this, &ConnectionDialog::serverFileSelected);
+
+  certificate_dir_dialog_ = new QFileDialog(this);
+  certificate_dir_dialog_->setFileMode(QFileDialog::Directory);
+
+  connect(ui_->select_database_button, &QPushButton::clicked,
+        certificate_dir_dialog_, &QFileDialog::show);
+  connect(certificate_dir_dialog_, &QFileDialog::fileSelected,
+      this, &ConnectionDialog::databaseFileSelected);
+
   connect(ui_->load_defaults_button, &QPushButton::clicked,
       this, &ConnectionDialog::loadDefaultValues);
   connect(this, &QDialog::accepted, this, &ConnectionDialog::dialogAccepted);
@@ -80,8 +89,10 @@ ConnectionDialog::ConnectionDialog(QWidget* parent)
   connect(ui_->remove_profile_button, &QPushButton::clicked, this, &ConnectionDialog::profileRemoved);
   connect(ui_->new_profile_button, &QPushButton::clicked, this, &ConnectionDialog::newProfile);
   connect(ui_->default_profile, &QPushButton::clicked, this, &ConnectionDialog::defaultProfile);
+  connect(ui_->ssl_checkbox, &QCheckBox::toggled, this, &ConnectionDialog::sslEnabledToggled);
 
   newServerToggled(ui_->new_server_radio_button->isChecked());
+  sslEnabledToggled(ui_->ssl_checkbox->isChecked());
   loadProfiles();
 }
 
@@ -122,6 +133,18 @@ QString ConnectionDialog::serverScript() {
   return ui_->server_executable_line_edit->text();
 }
 
+QString ConnectionDialog::certificateDir() {
+  return ui_->certificate_dir_line_edit->text();
+}
+
+QString ConnectionDialog::serverUrl() {
+  return ui_->server_url_line_edit->text();
+}
+
+bool ConnectionDialog::sslEnabled() {
+  return ui_->ssl_checkbox->isChecked();
+}
+
 QString localhost("127.0.0.1");
 
 void ConnectionDialog::serverLocalhost() {
@@ -150,11 +173,32 @@ void ConnectionDialog::newServerToggled(bool toggled) {
   ui_->database_line_edit->setEnabled(toggled);
   ui_->select_database_button->setEnabled(toggled);
 
+  ui_->server_host_label->setEnabled(toggled);
+  ui_->server_host_line_edit->setEnabled(toggled);
+  ui_->server_localhost_button->setEnabled(toggled);
+  ui_->port_label->setEnabled(toggled);
+  ui_->port_spin_box->setEnabled(toggled);
+  ui_->authentication_key_label->setEnabled(toggled);
+  ui_->key_line_edit->setEnabled(toggled);
+
+  ui_->server_url_label->setEnabled(!toggled);
+  ui_->server_url_line_edit->setEnabled(!toggled);
   ui_->server_executable_label->setEnabled(toggled);
   ui_->server_executable_line_edit->setEnabled(toggled);
   ui_->select_server_executable_button->setEnabled(toggled);
 
+  ui_->ssl_checkbox->setEnabled(toggled);
+  ui_->certificate_dir_label->setEnabled(toggled);
+  ui_->certificate_dir_line_edit->setEnabled(toggled);
+  ui_->certificate_dir_button->setEnabled(toggled);
+
   ui_->random_key_button->setEnabled(toggled);
+}
+
+void ConnectionDialog::sslEnabledToggled(bool toggled) {
+  ui_->certificate_dir_label->setEnabled(toggled);
+  ui_->certificate_dir_line_edit->setEnabled(toggled);
+  ui_->certificate_dir_button->setEnabled(toggled);
 }
 
 void ConnectionDialog::databaseFileSelected(const QString& file_name) {
@@ -163,6 +207,10 @@ void ConnectionDialog::databaseFileSelected(const QString& file_name) {
 
 void ConnectionDialog::serverFileSelected(const QString& file_name) {
   ui_->server_executable_line_edit->setText(file_name);
+}
+
+void ConnectionDialog::certificateDirSelected(const QString& dir_name) {
+  ui_->certificate_dir_line_edit->setText(dir_name);
 }
 
 void ConnectionDialog::loadDefaultValues() {
@@ -182,6 +230,12 @@ void ConnectionDialog::loadDefaultValues() {
       util::settings::connection::databaseNameDefault());
   ui_->server_executable_line_edit->setText(
       util::settings::connection::serverScriptDefault());
+  ui_->certificate_dir_line_edit->setText(
+      util::settings::connection::certDirectoryDefault());
+  ui_->server_url_line_edit->setText(
+      util::settings::connection::serverUrlDefault());
+  ui_->ssl_checkbox->setChecked(
+      util::settings::connection::sslEnabledDefault());
 }
 
 void ConnectionDialog::loadProfiles() {
@@ -210,6 +264,12 @@ void ConnectionDialog::loadSettings() {
       util::settings::connection::databaseName());
   ui_->server_executable_line_edit->setText(
       util::settings::connection::serverScript());
+  ui_->certificate_dir_line_edit->setText(
+      util::settings::connection::certDirectory());
+  ui_->server_url_line_edit->setText(
+      util::settings::connection::serverUrl());
+  ui_->ssl_checkbox->setChecked(
+      util::settings::connection::sslEnabled());
 }
 
 void ConnectionDialog::saveSettings() {
@@ -231,6 +291,12 @@ void ConnectionDialog::saveSettings() {
       ui_->database_line_edit->text());
   util::settings::connection::setServerScript(
       ui_->server_executable_line_edit->text());
+  util::settings::connection::setCertDirectory(
+      ui_->certificate_dir_line_edit->text());
+  util::settings::connection::setServerUrl(
+      ui_->server_url_line_edit->text());
+  util::settings::connection::setSslEnabled(
+      ui_->ssl_checkbox->isChecked());
 
   loadProfiles();
 }
