@@ -90,6 +90,15 @@ ConnectionDialog::ConnectionDialog(QWidget* parent)
   connect(ui_->new_profile_button, &QPushButton::clicked, this, &ConnectionDialog::newProfile);
   connect(ui_->default_profile, &QPushButton::clicked, this, &ConnectionDialog::defaultProfile);
   connect(ui_->ssl_checkbox, &QCheckBox::toggled, this, &ConnectionDialog::sslEnabledToggled);
+  connect(ui_->server_url_line_edit, &QLineEdit::textChanged, [this](const QString &text) {
+    QString url = text.section("://",1);
+    QString auth = url.section("@", 0, 0);
+    QString loc = url.section("@", 1);
+
+    ui_->server_host_line_edit->setText(loc.section(":", 0, -2));
+    ui_->port_spin_box->setValue(loc.section(":", -1, -1).toInt());
+    ui_->key_line_edit->setText(auth.section(":", 0, 0));
+  });
 
   newServerToggled(ui_->new_server_radio_button->isChecked());
   sslEnabledToggled(ui_->ssl_checkbox->isChecked());

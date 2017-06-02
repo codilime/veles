@@ -15,6 +15,7 @@
 import argparse
 import collections
 from enum import Enum
+import os
 
 from OpenSSL import crypto
 
@@ -77,9 +78,8 @@ def generate_ssl_cert(cert_path, key_path):
     key.generate_key(crypto.TYPE_RSA, 2048)
 
     cert = crypto.X509()
-    cert.get_subject().C = "PL"
-    cert.get_subject().O = "Codilime"
-    cert.get_subject().OU = "Codisec"
+    cert.get_subject().C = "RE"
+    cert.get_subject().O = "VELES"
     cert.set_serial_number(1000)
     cert.gmtime_adj_notBefore(0)
     cert.gmtime_adj_notAfter(10 * 365 * 24 * 60 * 60)
@@ -89,7 +89,9 @@ def generate_ssl_cert(cert_path, key_path):
 
     with open(cert_path, 'w') as f:
         f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode())
-    with open(key_path, 'w') as f:
+
+    with os.fdopen(
+            os.open(key_path, os.O_WRONLY | os.O_CREAT, 0o400), 'w') as f:
         f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key).decode())
 
 

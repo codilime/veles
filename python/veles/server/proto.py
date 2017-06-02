@@ -58,6 +58,7 @@ from veles.util import helpers
 
 logger = logging.getLogger(__name__)
 
+
 class SubscriberNode(BaseSubscriberNode):
     def __init__(self, tracker, node, proto, qid):
         self.proto = proto
@@ -737,7 +738,7 @@ async def create_ssl_server(conn, key, ip, port, cert_dir):
     with open(cert_path) as f:
         cert = f.read()
     cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert)
-    fingerprint = cert.digest('sha256').decode()
+    fingerprint = cert.digest('sha256').decode().replace(':', '')
 
     logger.info('Client url: VELES+SSL://%s:%s@%s:%s',
                 key, fingerprint, ip, port)
