@@ -160,7 +160,7 @@ public slots:
   QString hexRepresentationFromBytePos(qint64 pos);
   QString asciiRepresentationFromBytePos(qint64 pos);
 
-  uint64_t byteValue(qint64 pos, bool modified = false);
+  uint64_t byteValue(qint64 pos, bool modified = true);
   void setByteValue(qint64 pos, uint64_t byte_value);
   QColor byteTextColorFromPos(qint64 pos);
   QColor byteBackroundColorFromPos(qint64 pos);
