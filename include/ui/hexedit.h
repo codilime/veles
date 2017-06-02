@@ -43,7 +43,7 @@ class HexEdit : public QAbstractScrollArea {
    *  turn on automatic mode which will adjust bytes per row to window size */
   void setBytesPerRow(int bytesCount, bool automatic = false);
   /** Scroll screen to make byte visible */
-  void scrollToByte(qint64 bytePos, bool doNothingIfVisable = false);
+  void scrollToByte(qint64 bytePos, bool minimal_change = false);
   void scrollRows(qint64 num_rows);
   FileBlobModel *dataModel() { return dataModel_;};
   void setParserIds(QStringList ids);

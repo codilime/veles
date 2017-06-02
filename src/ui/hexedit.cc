@@ -883,7 +883,7 @@ void HexEdit::processEditEvent(QKeyEvent *event) {
 
     cursor_pos_in_byte_ += 1;
     if (cursor_pos_in_byte_ == byteCharsCount_) {
-      setSelection(current_position_ + 1, 0);
+      setSelection(current_position_ + 1, 0, /*set_visible=*/true);
     } else {
       resetCursor();
     }
@@ -1052,12 +1052,20 @@ bool HexEdit::isByteVisible(qint64 bytePos) {
   return isRangeVisible(bytePos, 1);
 }
 
-void HexEdit::scrollToByte(qint64 bytePos, bool doNothingIfVisable) {
-  if (isByteVisible(bytePos) && doNothingIfVisable) {
+void HexEdit::scrollToByte(qint64 bytePos, bool minimal_change) {
+  if (isByteVisible(bytePos) && minimal_change) {
     return;
   }
 
-  verticalScrollBar()->setValue(bytePos / bytesPerRow_);
+  auto byte_row = bytePos / bytesPerRow_;
+  auto current_top_row = verticalScrollBar()->value();
+
+  auto new_top_row = byte_row;
+  if (minimal_change && byte_row > current_top_row) {
+     new_top_row = byte_row - current_top_row - rowsOnScreen_ + 1;
+  }
+
+  verticalScrollBar()->setValue(new_top_row);
   recalculateValues();
 
   viewport()->update();
