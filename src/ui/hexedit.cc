@@ -35,6 +35,7 @@ static const qint64 verticalAreaSpaceWidth_ = 15;
 static const qint64 horizontalAreaSpaceWidth_ = 5;
 static const qint64 startMargin_ = 10;
 static const qint64 endMargin_ = 10;
+static const qint64 cursor_blink_time_ = 500;
 
 void HexEdit::recalculateValues() {
   charWidht_ = fontMetrics().width(QLatin1Char('2'));
@@ -245,7 +246,7 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
 
   connect(&parsers_menu_, &QMenu::triggered, this, &HexEdit::parse);
 
-  cursor_timer_.setInterval(700);
+  cursor_timer_.setInterval(cursor_blink_time_);
   cursor_timer_.start();
   connect(&cursor_timer_, &QTimer::timeout, this, &HexEdit::flipCursorVisibility);
 }
@@ -973,14 +974,19 @@ void HexEdit::pasteFromClipboard(util::encoders::IDecoder* enc) {
     paste_start_position = selectionStart();
   }
 
+  auto paste_size = data.size();
+  if (dataBytesCount_ - paste_start_position < paste_size) {
+    paste_size = dataBytesCount_ - paste_start_position;
+  }
+
   QVector<uint64_t> new_data;
   QVector<uint64_t> old_data;
-  for (int i=0; i < data.size() && i + paste_start_position < dataBytesCount_; ++i) {
+  for (int i=0; i < paste_size; ++i) {
     new_data.append(static_cast<unsigned char>(data[i]));
     old_data.append(byteValue(paste_start_position + i));
   }
-
   edit_engine_.changeBytes(paste_start_position, new_data, old_data);
+  setSelection(paste_start_position, paste_size);
 }
 
 void HexEdit::setSelectedChunk(QModelIndex newSelectedChunk) {
@@ -1157,8 +1163,10 @@ void HexEdit::parse(QAction *action) {
 }
 
 void HexEdit::flipCursorVisibility() {
-  cursor_visible_ = !cursor_visible_;
-  viewport()->update();
+  if (hasFocus() || !cursor_visible_) {
+    cursor_visible_ = !cursor_visible_;
+    viewport()->update();
+  }
 }
 
 }  // namespace ui
