@@ -23,11 +23,11 @@
 #include <QStringList>
 
 #include "ui/createchunkdialog.h"
-#include "ui/fileblobmodel.h"
-#include "ui/gotoaddressdialog.h"
+#include "util/edit.h"
 #include "util/encoders/hex_encoder.h"
 #include "util/encoders/text_encoder.h"
-#include "util/edit.h"
+#include "ui/fileblobmodel.h"
+#include "ui/gotoaddressdialog.h"
 
 namespace veles {
 namespace ui {
@@ -150,7 +150,7 @@ public slots:
   void recalculateValues();
   void initParseMenu();
   void adjustBytesPerRowToWindowSize();
-  QRect bytePosToRect(qint64 pos, bool ascii = false,  qint64 char_pos = 0);
+  QRect bytePosToRect(qint64 pos, bool ascii = false, qint64 char_pos = 0);
   qint64 pointToRowNum(QPoint pos);
   qint64 pointToColumnNum(QPoint pos);
   qint64 pointToBytePos(QPoint pos);
@@ -160,7 +160,7 @@ public slots:
   QString hexRepresentationFromBytePos(qint64 pos);
   QString asciiRepresentationFromBytePos(qint64 pos);
 
-  uint64_t byteValue(qint64 pos, bool not_modified = false);
+  uint64_t byteValue(qint64 pos, bool modified = false);
   void setByteValue(qint64 pos, uint64_t byte_value);
   QColor byteTextColorFromPos(qint64 pos);
   QColor byteBackroundColorFromPos(qint64 pos);
@@ -184,7 +184,7 @@ public slots:
   void parse(QAction *action);
   void resetCursor();
 
-  void transferChanges(data::BinData &bin_data, qint64 offset_shift = 0, qint64 max_bytes = -1);
+  void transferChanges(data::BinData& bin_data, qint64 offset_shift = 0, qint64 max_bytes = -1);
 
 private slots:
   void copyToClipboard(util::encoders::IEncoder *enc = nullptr);

@@ -180,13 +180,13 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
 
   auto copy_action = ShortcutsModel::getShortcutsModel()->createQAction(
         util::settings::shortcuts::COPY, this, Qt::WidgetWithChildrenShortcut);
-  connect(copy_action, &QAction::triggered, [this] () {
+  connect(copy_action, &QAction::triggered, [this]() {
     copyToClipboard();
   });
 
   auto paste_acton = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::PASTE, this, Qt::WidgetWithChildrenShortcut);
-  connect(paste_acton, &QAction::triggered, [this] () {
+      util::settings::shortcuts::PASTE, this, Qt::WidgetWithChildrenShortcut);
+  connect(paste_acton, &QAction::triggered, [this]() {
     pasteFromClipboard();
   });
 
@@ -203,9 +203,9 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
   menu_.addAction(removeChunkAction_);
   menu_.addAction(saveSelectionAction_);
 
-  auto copyMenu = menu_.addMenu("Copy as");
-
   menu_.addSeparator();
+
+  auto copyMenu = menu_.addMenu("Copy as");
 
   for (auto &id : util::encoders::EncodersFactory::keys()) {
     QSharedPointer<util::encoders::IEncoder> encoder(
@@ -218,11 +218,11 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
     copyMenu->addAction(copyAction);
   }
 
-  auto pasteMenu = menu_.addMenu("Paste as");
+  auto paste_menu = menu_.addMenu("Paste from");
 
   menu_.addSeparator();
 
-  for (auto &id : util::encoders::EncodersFactory::keys()) {
+  for (const auto &id : util::encoders::EncodersFactory::keys()) {
     QSharedPointer<util::encoders::IDecoder> decoder(
         util::encoders::EncodersFactory::createDecoder(id));
 
@@ -230,11 +230,11 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
       continue;
     }
 
-    auto pasteAction = new QAction(decoder->decodingDisplayName(), this);
-    connect(pasteAction, &QAction::triggered,
+    auto paste_action = new QAction(decoder->decodingDisplayName(), this);
+    connect(paste_action, &QAction::triggered,
             [this, decoder] { pasteFromClipboard(decoder.data()); });
 
-    pasteMenu->addAction(pasteAction);
+    paste_menu->addAction(paste_action);
   }
 
   hexEncoder_.reset(new util::encoders::HexEncoder());
@@ -273,7 +273,7 @@ QRect HexEdit::bytePosToRect(qint64 pos, bool ascii, qint64 char_pos) {
     width = charWidht_ + 1;
   } else {
     xPos = (byteCharsCount_ * charWidht_ + spaceAfterByte_) * columnNum +
-           addressWidth_ + startMargin_ - startPosX_+ char_pos * charWidht_;
+           addressWidth_ + startMargin_ - startPosX_ + char_pos * charWidht_;
     width = charWidht_ * (byteCharsCount_ - char_pos) + spaceAfterByte_;
   }
   qint64 yPos = (rowNum + 1) * charHeight_;
@@ -352,9 +352,9 @@ HexEdit::WindowArea HexEdit::pointToWindowArea(QPoint pos) {
   return WindowArea::OUTSIDE;
 }
 
-uint64_t HexEdit::byteValue(qint64 pos, bool not_modified) {
+uint64_t HexEdit::byteValue(qint64 pos, bool modified) {
 
-  if (!not_modified && edit_engine_.isChanged(pos)) {
+  if (modified && edit_engine_.isChanged(pos)) {
     return edit_engine_.byteValue(pos);
   }
 
@@ -408,7 +408,7 @@ QColor HexEdit::byteBackroundColorFromPos(qint64 pos) {
     return selectionColor;
   }
 
-  if (byteValue(pos) != byteValue(pos, /*not_modified=*/true)) {
+  if (byteValue(pos) != byteValue(pos, /*modified=*/false)) {
     return util::settings::theme::editedBackground();
   }
 
@@ -590,17 +590,17 @@ void HexEdit::paintEvent(QPaintEvent *event) {
     drawBorder(current_position_, 1, true, !in_ascii_area);
     auto rect = bytePosToRect(current_position_, false, cursor_pos_in_byte_);
     QPainter cursor_painter(viewport());
-    auto oldPen = cursor_painter.pen();
-    auto newPen = QPen(oldPen.color());
+    auto old_pen = cursor_painter.pen();
+    auto new_pen = QPen(old_pen.color());
     if (in_ascii_area) {
-      newPen.setStyle(Qt::DashLine);
+      new_pen.setStyle(Qt::DashLine);
     }
-    cursor_painter.setPen(newPen);
+    cursor_painter.setPen(new_pen);
 
     if (!rect.isEmpty()) {
         cursor_painter.drawRect(rect);
     }
-    cursor_painter.setPen(oldPen);
+    cursor_painter.setPen(old_pen);
   }
 }
 
@@ -833,7 +833,7 @@ void HexEdit::setByteValue(qint64 pos, uint64_t byte_value) {
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
 }
 
-void HexEdit::transferChanges(data::BinData &bin_data, qint64 offset_shift, qint64 max_bytes) {
+void HexEdit::transferChanges(data::BinData& bin_data, qint64 offset_shift, qint64 max_bytes) {
   edit_engine_.applyChanges(bin_data, offset_shift, max_bytes);
 }
 
@@ -875,7 +875,7 @@ void HexEdit::processEditEvent(QKeyEvent *event) {
     }
 
     auto current_val = byteValue(current_position_);
-    uint8_t shift = ((byteCharsCount_ - 1 - cursor_pos_in_byte_) * 4);
+    uint8_t shift = (byteCharsCount_ - 1 - cursor_pos_in_byte_) * 4;
     uint64_t new_val = current_val & ~(0xfULL << shift);
     new_val = new_val | (nibble_val << shift);
     setByteValue(current_position_, new_val);
@@ -965,7 +965,7 @@ void HexEdit::pasteFromClipboard(util::encoders::IDecoder* enc) {
     }
   }
 
-  QClipboard *clipboard = QApplication::clipboard();
+  QClipboard* clipboard = QApplication::clipboard();
   auto data = enc->decode(clipboard->text());
 
   QVector<uint64_t> new_data;

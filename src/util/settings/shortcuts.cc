@@ -279,7 +279,7 @@ QAction* ShortcutsModel::createQAction(
   return type_to_shortcut_[type]->createQAction(parent, context);
 }
 
-QAction* ShortcutsModel:: createQAction(
+QAction* ShortcutsModel::createQAction(
     ShortcutType type, QObject* parent, QIcon icon, Qt::ShortcutContext context) {
   return type_to_shortcut_[type]->createQAction(parent, icon, context);
 }

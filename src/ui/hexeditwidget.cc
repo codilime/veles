@@ -108,7 +108,7 @@ void HexEditWidget::createActions() {
   upload_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
           util::settings::shortcuts::UPLOAD,
           this, QIcon(":/images/upload-32.ico"), Qt::WidgetWithChildrenShortcut);
-  upload_act_->setStatusTip(tr("Upload changed to database"));
+  upload_act_->setStatusTip(tr("Upload changes to database"));
   connect(upload_act_, SIGNAL(triggered()), hex_edit_, SLOT(applyChanges()));
   upload_act_->setEnabled(false);
 
@@ -221,6 +221,7 @@ void HexEditWidget::createToolBars() {
   file_tool_bar_->addAction(upload_act_);
   file_tool_bar_->addAction(undo_act_);
   //file_tool_bar_->addAction(save_as_act_);
+  file_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
   addToolBar(file_tool_bar_);
 
   edit_tool_bar_ = new QToolBar(tr("Edit"));

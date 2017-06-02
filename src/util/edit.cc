@@ -20,7 +20,7 @@
 namespace veles {
 namespace util {
 
-void EditEngine::changeBytes(size_t pos, const QVector<uint64_t> &bytes, const QVector<uint64_t> &old_bytes, bool add_to_history) {
+void EditEngine::changeBytes(size_t pos, const QVector<uint64_t>& bytes, const QVector<uint64_t>& old_bytes, bool add_to_history) {
   if (add_to_history) {
     edit_stack_data_.push_back(old_bytes);
     edit_stack_.push_back(QPair<size_t, size_t>(pos, bytes.size()));
@@ -33,12 +33,12 @@ void EditEngine::changeBytes(size_t pos, const QVector<uint64_t> &bytes, const Q
   QVector<size_t> overlapping;
   auto it = changes_.lowerBound(pos);
   if (!changes_.empty() && it != changes_.begin()) {
-    it--;
+    --it;
   }
   while (it != changes_.constEnd() && it.key() <= pos + bytes.size()) {
 
     if (it.key() + it.value().size() < pos) {
-      it++;
+      ++it;
       continue;
     }
 
@@ -54,7 +54,6 @@ void EditEngine::changeBytes(size_t pos, const QVector<uint64_t> &bytes, const Q
     auto first_chunk = changes_[first_pos];
     auto last_chunk = changes_[last_pos];
     size_t last_size = last_chunk.size();
-
 
     if (new_pos > first_pos) {
       new_pos = first_pos;
@@ -76,7 +75,7 @@ void EditEngine::changeBytes(size_t pos, const QVector<uint64_t> &bytes, const Q
     new_bytes = bytes;
   }
 
-  for (auto pos: overlapping) {
+  for (auto pos : overlapping) {
     changes_.remove(pos);
   }
 
@@ -107,7 +106,7 @@ void EditEngine::applyChanges(data::BinData &bindata, size_t offset, int64_t max
   }
 
   auto changes = changesFromRange(offset, max_bytes);
-  for (auto it = changes.begin(); it != changes.constEnd(); it++) {
+  for (auto it = changes.begin(); it != changes.constEnd(); ++it) {
     size_t pos = it.key();
     auto data = it.value();
     for (int i = 0; i < data.size(); ++i) {
@@ -141,7 +140,7 @@ QMap<size_t, QVector<uint64_t>>::const_iterator EditEngine::itFromPos(size_t byt
   auto it = changes_.upperBound(byte_pos);
 
   if (it != changes_.begin()) {
-    it--;
+    --it;
   }
 
   size_t pos = it.key();
@@ -215,7 +214,7 @@ QMap<size_t, QVector<uint64_t>> EditEngine::changesFromRange(size_t byte_pos, si
     }
 
     res[pos] = data;
-    it++;
+    ++it;
   }
 
   return res;
