@@ -16,8 +16,8 @@
  */
 #pragma once
 
-#include "util/encoders/iencoder.h"
 #include "util/encoders/idecoder.h"
+#include "util/encoders/iencoder.h"
 
 #include <QString>
 #include <QStringList>
