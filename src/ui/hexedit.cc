@@ -968,14 +968,19 @@ void HexEdit::pasteFromClipboard(util::encoders::IDecoder* enc) {
   QClipboard* clipboard = QApplication::clipboard();
   auto data = enc->decode(clipboard->text());
 
-  QVector<uint64_t> new_data;
-  QVector<uint64_t> old_data;
-  for (int i=0; i < data.size() && i + current_position_ < dataBytesCount_; ++i) {
-    new_data.append(static_cast<unsigned char>(data[i]));
-    old_data.append(byteValue(current_position_ + i));
+  qint64 paste_start_position = current_position_;
+  if (selectionSize() > 1) {
+    paste_start_position = selectionStart();
   }
 
-  edit_engine_.changeBytes(current_position_, new_data, old_data);
+  QVector<uint64_t> new_data;
+  QVector<uint64_t> old_data;
+  for (int i=0; i < data.size() && i + paste_start_position < dataBytesCount_; ++i) {
+    new_data.append(static_cast<unsigned char>(data[i]));
+    old_data.append(byteValue(paste_start_position + i));
+  }
+
+  edit_engine_.changeBytes(paste_start_position, new_data, old_data);
 }
 
 void HexEdit::setSelectedChunk(QModelIndex newSelectedChunk) {
