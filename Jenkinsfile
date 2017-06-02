@@ -71,7 +71,7 @@ builders['msvc2015_64'] = { node('windows'){
               bat(script: "rd /s /q build_${version}", returnStatus: true)
               bat script: "md build_${version}", returnStatus: true
               dir ("build_${version}") {
-                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -DVCREDIST_BINARY=\"${vcredist_binary}\" -G \"${generator}\" ..\\"
+                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -DVCREDIST_BINARY=\"${vcredist_binary}\" -DOPENSSL_DLL_DIR=${tool 'openssl-64'} -G \"${generator}\" ..\\"
                 bat script: "cmake --build . --config ${buildConfiguration} > error_and_warnings.txt"
                 bat script: "type error_and_warnings.txt"
                 bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G \"${cpack_generator}\" -C ${buildConfiguration}"
@@ -121,7 +121,7 @@ builders['msvc2015'] = {node('windows'){
               bat(script: "rd /s /q build_${version}", returnStatus: true)
               bat script: "md build_${version}", returnStatus: true
               dir ("build_${version}") {
-                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -DVCREDIST_BINARY=\"${vcredist_binary}\" -G \"${generator}\" ..\\"
+                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -DVCREDIST_BINARY=\"${vcredist_binary}\" -DOPENSSL_DLL_DIR=${tool 'openssl-32'} -G \"${generator}\" ..\\"
                 bat script: "cmake --build . --config ${buildConfiguration}"
                 bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G \"${cpack_generator}\" -C ${buildConfiguration}"
               }
