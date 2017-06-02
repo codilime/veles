@@ -1062,7 +1062,7 @@ void HexEdit::scrollToByte(qint64 bytePos, bool minimal_change) {
 
   auto new_top_row = byte_row;
   if (minimal_change && byte_row > current_top_row) {
-     new_top_row = byte_row - current_top_row - rowsOnScreen_ + 1;
+     new_top_row = byte_row - rowsOnScreen_ + 1;
   }
 
   verticalScrollBar()->setValue(new_top_row);
