@@ -138,7 +138,7 @@ static QColor colorInvertedIfDark(QColor color) {
 }
 
 QColor editedBackground() {
-  return colorInvertedIfDark(QColor("#AFAF00"));
+  return colorInvertedIfDark(QColor("#bc7874"));
 }
 
 }  // namespace theme
