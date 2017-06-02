@@ -2,12 +2,14 @@
 
 from __future__ import unicode_literals, print_function
 
+from six import text_type
+
 from veles.scli import client
 from veles.schema.nodeid import NodeID
 from veles.util import helpers
 
 parser = helpers.get_client_argparse()
-parser.add_argument('file', help='path to file to upload')
+parser.add_argument('file', help='path to file to upload', type=text_type)
 args = parser.parse_args()
 
 client = client.create_client(args.server, args.server_auth_key)
