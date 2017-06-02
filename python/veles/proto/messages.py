@@ -22,6 +22,8 @@ from veles.proto.connection import Connection
 from veles.schema import model, fields
 from veles.schema.nodeid import NodeID
 
+PROTO_VERSION = 1
+
 
 class MsgpackMsg(model.PolymorphicModel):
     pass

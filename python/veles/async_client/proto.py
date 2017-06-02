@@ -24,7 +24,7 @@ import msgpack
 
 from veles.proto import messages, msgpackwrap
 from veles.proto.exceptions import VelesException, SchemaError
-from veles.server.proto import PROTO_VERSION
+from veles.proto.messages import PROTO_VERSION
 from veles.util.helpers import prepare_auth_key
 
 logger = logging.getLogger('veles.async_client')

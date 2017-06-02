@@ -17,8 +17,8 @@ import socket
 import msgpack
 
 from veles.proto import messages, msgpackwrap
+from veles.proto.messages import PROTO_VERSION
 from veles.schema import nodeid
-from veles.server.proto import PROTO_VERSION
 from veles.util.helpers import prepare_auth_key
 
 

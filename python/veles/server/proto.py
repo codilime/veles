@@ -23,6 +23,7 @@ import hmac
 import msgpack
 
 from veles.proto import messages, msgpackwrap
+from veles.proto.messages import PROTO_VERSION
 from veles.util.helpers import prepare_auth_key
 from veles.db.subscriber import (
     BaseSubscriberNode,
@@ -49,9 +50,6 @@ from veles.proto.exceptions import (
     ProtocolMismatchError,
     AuthenticationError,
 )
-
-# TODO generate this as a constant in C++
-PROTO_VERSION = 1
 
 
 class SubscriberNode(BaseSubscriberNode):
