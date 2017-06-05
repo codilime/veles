@@ -987,6 +987,7 @@ void HexEdit::pasteFromClipboard(util::encoders::IDecoder* enc) {
   }
   edit_engine_.changeBytes(paste_start_position, new_data, old_data);
   setSelection(paste_start_position, paste_size);
+  emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
 }
 
 void HexEdit::setSelectedChunk(QModelIndex newSelectedChunk) {
