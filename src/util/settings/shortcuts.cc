@@ -62,9 +62,12 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[EXIT_APPLICATION] = QKeySequence::keyBindings(QKeySequence::Quit);
     defaults[OPEN_FILE] = QKeySequence::keyBindings(QKeySequence::Open);
     defaults[NEW_FILE] = QKeySequence::keyBindings(QKeySequence::New);
+    defaults[SHOW_OPTIONS] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_K)};
     defaults[DOCK_MOVE_TO_TOP_MAX] = {QKeySequence(Qt::Key_F12)};
     defaults[HEX_FIND] = QKeySequence::keyBindings(QKeySequence::Find);
     defaults[HEX_FIND_NEXT] = QKeySequence::keyBindings(QKeySequence::FindNext);
+    defaults[OPEN_VISUALIZATION] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_V)};
+    defaults[OPEN_HEX] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H)};
     defaults[VISUALIZATION_MANIPULATOR_SPIN] = {QKeySequence(Qt::CTRL | Qt::Key_1), QKeySequence(Qt::Key_Escape)};
     defaults[VISUALIZATION_MANIPULATOR_TRACKBALL] = {QKeySequence(Qt::CTRL + Qt::Key_2)};
     defaults[VISUALIZATION_MANIPULATOR_FREE] = {QKeySequence(Qt::CTRL + Qt::Key_3)};
