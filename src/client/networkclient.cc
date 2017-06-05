@@ -60,8 +60,9 @@ NetworkClient::NetworkClient(QObject* parent) : QObject(parent),
     client_interface_name_("127.0.0.1"),
     protocol_version_(1), client_name_(""),
     client_version_("[unspecified version]"), client_description_(""),
-    client_type_(""), authentication_key_(""), quit_on_close_(false),
-    output_stream_(nullptr), qid_(0), ssl_enabled_(true), fingerprint_("") {
+    client_type_(""), authentication_key_(""), fingerprint_(""),
+    quit_on_close_(false), ssl_enabled_(true),
+    output_stream_(nullptr), qid_(0) {
   registerMessageHandlers();
 }
 
