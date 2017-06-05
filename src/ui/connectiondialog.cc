@@ -16,7 +16,6 @@
  */
 #include "ui/connectiondialog.h"
 #include "ui_connectiondialog.h"
-#include "util/settings/connection_client.h"
 
 #include <climits>
 #include <cstdint>
@@ -28,6 +27,9 @@
 #include <QSettings>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
+
+#include "client/networkclient.h"
+#include "util/settings/connection_client.h"
 
 namespace veles {
 namespace ui {
@@ -91,6 +93,19 @@ ConnectionDialog::ConnectionDialog(QWidget* parent)
   connect(ui_->default_profile, &QPushButton::clicked, this, &ConnectionDialog::defaultProfile);
   connect(ui_->ssl_checkbox, &QCheckBox::toggled, this, &ConnectionDialog::sslEnabledToggled);
   connect(ui_->server_url_line_edit, &QLineEdit::textChanged, [this](const QString &text) {
+    QString scheme = text.section("://", 0, 0).toLower();
+    if (scheme == client::SCHEME_SSL) {
+      ui_->ssl_checkbox->setChecked(true);
+    } else if (scheme == client::SCHEME_TCP) {
+      ui_->ssl_checkbox->setChecked(false);
+    } else {
+      ui_->ssl_checkbox->setChecked(false);
+      ui_->server_host_line_edit->setText("");
+      ui_->port_spin_box->setValue(0);
+      ui_->key_line_edit->setText("");
+      return;
+    }
+
     QString url = text.section("://",1);
     QString auth = url.section("@", 0, 0);
     QString loc = url.section("@", 1);
