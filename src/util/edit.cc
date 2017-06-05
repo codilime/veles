@@ -121,10 +121,10 @@ QPair<size_t, data::BinData> EditEngine::popFirstChange(uint32_t bindata_width) 
 
   if (!changes_.isEmpty()) {
     pos = changes_.firstKey();
-    auto fist_chunk = changes_[pos];
-    bindata = data::BinData(bindata_width, fist_chunk.size());
-    for (int i=0; i < fist_chunk.size(); i++) {
-      bindata.setElement64(i, fist_chunk[i]);
+    auto first_chunk = changes_[pos];
+    bindata = data::BinData(bindata_width, first_chunk.size());
+    for (int i=0; i < first_chunk.size(); i++) {
+      bindata.setElement64(i, first_chunk[i]);
     }
     changes_.remove(pos);
   }
