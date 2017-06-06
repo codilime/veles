@@ -99,6 +99,7 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[HEX_SELECT_END_OF_LINE] = QKeySequence::keyBindings(QKeySequence::SelectEndOfLine);
     defaults[HEX_SELECT_START_OF_DOCUMENT] = QKeySequence::keyBindings(QKeySequence::SelectStartOfDocument);
     defaults[HEX_SELECT_END_OF_DOCUMENT] = QKeySequence::keyBindings(QKeySequence::SelectEndOfDocument);
+    defaults[DOCK_CLOSE] = QKeySequence::keyBindings(QKeySequence::Close);
   }
   return defaults;
 }
@@ -373,6 +374,7 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
   addShortcutType(DOCK_MOVE_TO_TOP_MAX, docks, tr("Move to new top level window and maximize"));
   addShortcutType(DOCK_SPLIT_HORIZ, docks, tr("Split horizontally"));
   addShortcutType(DOCK_SPLIT_VERT, docks, tr("Split vertically"));
+  addShortcutType(DOCK_CLOSE, docks, tr("Close current dock"));
 
   addShortcutType(OPEN_VISUALIZATION, global, tr("&Visualization"), tr("Open visualization for current file"));
   addShortcutType(OPEN_HEX, global, tr("Show &hex editor"), tr("Open hex editor for current file"));

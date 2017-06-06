@@ -76,6 +76,7 @@ class DockWidget : public QDockWidget {
   virtual ~DockWidget();
   const QAction* maximizeHereAction();
   static DockWidget* getParentDockWidget(QObject* obj);
+  void addCloseAction();
 
  public slots:
   void displayContextMenu(const QPoint& pos);
@@ -111,6 +112,7 @@ class DockWidget : public QDockWidget {
   QAction* split_horizontally_action_;
   QAction* split_vertically_action_;
   QWidget* empty_title_bar_;
+  QAction* dock_close_action_;
 };
 
 /*****************************************************************************/
@@ -230,7 +232,7 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
   void setDockWidgetsWithNoTitleBars(bool no_title_bars);
   bool dockWidgetsWithNoTitleBars();
   QDockWidget* tabToDockWidget(QTabBar* tab_bar, int index);
-  QTabBar* dockWidgetToTab(QDockWidget* dock_widget);
+  QPair<QTabBar*, int> dockWidgetToTab(QDockWidget* dock_widget);
   void splitDockWidget2(QDockWidget* first, QDockWidget* second,
       Qt::Orientation orientation);
   void showRubberBand(bool show);

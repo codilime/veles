@@ -99,6 +99,7 @@ enum ShortcutType : uint32_t {
   HEX_SELECT_END_OF_LINE = 64,
   HEX_SELECT_START_OF_DOCUMENT = 65,
   HEX_SELECT_END_OF_DOCUMENT = 66,
+  DOCK_CLOSE = 67,
 };
 
 QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts();

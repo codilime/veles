@@ -88,7 +88,8 @@ bool ActivateDockEventFilter::eventFilter(QObject *watched, QEvent *event) {
 /*****************************************************************************/
 
 DockWidget::DockWidget() : QDockWidget(), timer_id_(0), ticks_(0),
-    context_menu_(nullptr), empty_title_bar_(new QWidget(this)) {
+    context_menu_(nullptr), empty_title_bar_(new QWidget(this)),
+    dock_close_action_(nullptr) {
   QStyle* style = new QProxyStyleForDockWidgetWithIconOnTitleBar(this->style());
   setStyle(style);
 
@@ -138,6 +139,29 @@ DockWidget* DockWidget::getParentDockWidget(QObject* obj) {
   }
 
   return nullptr;
+}
+
+void DockWidget::addCloseAction() {
+  if (!dock_close_action_) {
+    dock_close_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+          util::settings::shortcuts::DOCK_CLOSE, this,
+          Qt::WidgetWithChildrenShortcut);
+    connect(dock_close_action_, &QAction::triggered, [this]() {
+      deleteLater();
+      auto parent = MainWindowWithDetachableDockWidgets
+          ::getOwnerOfDockWidget(this);
+
+      if (parent) {
+        auto tab_pair = parent->dockWidgetToTab(this);
+        if (tab_pair.first) {
+          tab_pair.first->tabCloseRequested(tab_pair.second);
+        } else {
+          deleteLater();
+        }
+      }
+    });
+    addAction(dock_close_action_);
+  }
 }
 
 void DockWidget::displayContextMenu(const QPoint& pos) {
@@ -732,6 +756,7 @@ DockWidget* MainWindowWithDetachableDockWidgets::addTab(QWidget *widget,
       QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable);
   dock_widget->setWidget(widget);
   dock_widget->setWindowIcon(widget ? widget->windowIcon() : QIcon());
+  dock_widget->addCloseAction();
 
   if (sibling != nullptr) {
     tabifyDockWidget(sibling, dock_widget);
@@ -886,17 +911,17 @@ QDockWidget* MainWindowWithDetachableDockWidgets::tabToDockWidget(
   return nullptr;
 }
 
-QTabBar* MainWindowWithDetachableDockWidgets::dockWidgetToTab(
+QPair<QTabBar*, int> MainWindowWithDetachableDockWidgets::dockWidgetToTab(
     QDockWidget* dock_widget) {
   for (auto tab_bar : findChildren<QTabBar*>()) {
     for (int i = 0; i < tab_bar->count(); ++i) {
       if (tabToDockWidget(tab_bar, i) == dock_widget) {
-        return tab_bar;
+        return qMakePair(tab_bar, i);
       }
     }
   }
 
-  return nullptr;
+  return qMakePair(nullptr, -1);
 }
 
 void MainWindowWithDetachableDockWidgets::splitDockWidget2(
