@@ -44,6 +44,8 @@ class EditEngine {
   uint64_t byteValue(size_t byte_pos) const;
   bool hasChanges() const;
 
+  void clear();
+
  private:
   int edit_stack_limit_;
   QList<QVector<uint64_t>> edit_stack_data_;

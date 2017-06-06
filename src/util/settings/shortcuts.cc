@@ -373,6 +373,7 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
   addShortcutType(HEX_FIND_NEXT, hex, tr("Find &next"), tr("Find next"));
   addShortcutType(UPLOAD, hex, tr("&Upload"), tr("Upload"));
   addShortcutType(UNDO, hex, tr("&Undo"), tr("Undo"));
+  addShortcutType(DISCARD, hex, tr("&Discard"), tr("Discard changes"));
 
   auto visualization = addCategory(tr("Visualization"), root_);
   addShortcutType(VISUALIZATION_DIGRAM, visualization, tr("&Digram"), tr("Change visualizaton mode to digram"));

@@ -220,5 +220,11 @@ QMap<size_t, QVector<uint64_t>> EditEngine::changesFromRange(size_t byte_pos, si
   return res;
 }
 
+void EditEngine::clear() {
+  changes_.clear();
+  edit_stack_data_.clear();
+  edit_stack_.clear();
+}
+
 }  // namespace util
 }  // namespace veles

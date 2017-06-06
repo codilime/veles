@@ -51,6 +51,7 @@ class HexEditWidget : public View {
   QString addressAsText(qint64 addr);
   QAction* uploadAction() {return upload_act_;}
   QAction* undoAction() {return undo_act_;}
+  QAction* discardAction() {return discard_act_;}
   QAction* findAction() {return find_act_;}
   QAction* findNextAction() {return find_next_act_;}
   QAction* showVisualizationAction() {return visualization_act_;}
@@ -108,6 +109,7 @@ class HexEditWidget : public View {
   QAction *save_as_act_;
   QAction *save_readable_;
   QAction *undo_act_;
+  QAction *discard_act_;
   QAction *redo_act_;
   QAction *find_act_;
   QAction *find_next_act_;

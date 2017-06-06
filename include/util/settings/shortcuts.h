@@ -74,6 +74,7 @@ enum ShortcutType : uint32_t {
   PASTE = 39,
   UPLOAD = 40,
   UNDO = 41,
+  DISCARD = 42,
 };
 
 QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts();

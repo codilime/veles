@@ -58,6 +58,7 @@ public slots:
   void modelSelectionChanged();
   void applyChanges();
   void undo();
+  void discardChanges();
 
  protected:
   void paintEvent(QPaintEvent *event) override;

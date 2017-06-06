@@ -118,6 +118,12 @@ void HexEditWidget::createActions() {
   connect(undo_act_, SIGNAL(triggered()), hex_edit_, SLOT(undo()));
   undo_act_->setEnabled(false);
 
+  discard_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+          util::settings::shortcuts::DISCARD,
+          this, style()->standardIcon(QStyle::SP_DialogDiscardButton), Qt::WidgetWithChildrenShortcut);
+  connect(discard_act_, SIGNAL(triggered()), hex_edit_, SLOT(discardChanges()));
+  discard_act_->setEnabled(false);
+
 //  Currently not implemented
 //  save_as_act_ = new QAction(QIcon(":/images/save.png"), tr("Save &As..."),
 //      this);
@@ -220,6 +226,7 @@ void HexEditWidget::createToolBars() {
   file_tool_bar_ = new QToolBar(tr("File"));
   file_tool_bar_->addAction(upload_act_);
   file_tool_bar_->addAction(undo_act_);
+  file_tool_bar_->addAction(discard_act_);
   //file_tool_bar_->addAction(save_as_act_);
   file_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
   addToolBar(file_tool_bar_);
@@ -373,6 +380,7 @@ void HexEditWidget::selectionChanged(qint64 start_addr,
 
 void HexEditWidget::editStateChanged(bool has_changes, bool has_undo) {
   upload_act_->setEnabled(has_changes);
+  discard_act_->setEnabled(has_changes);
   undo_act_->setEnabled(has_undo);
 }
 

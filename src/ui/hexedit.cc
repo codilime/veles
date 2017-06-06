@@ -362,6 +362,12 @@ uint64_t HexEdit::byteValue(qint64 pos, bool modified) {
   return dataModel_->binData()[pos].element64();
 }
 
+void HexEdit::discardChanges() {
+  edit_engine_.clear();
+  emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
+  viewport()->update();
+}
+
 qint64 HexEdit::selectionStart() {
   if (selection_size_ < 0) {
     return current_position_ + selection_size_ + 1;
