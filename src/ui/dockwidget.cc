@@ -29,7 +29,9 @@
 
 #include "ui/dockwidget.h"
 #include "ui/dockwidget_native.h"
+#include "ui/nodewidget.h"
 #include "util/settings/shortcuts.h"
+#include "visualization/panel.h"
 
 namespace veles {
 namespace ui {
@@ -700,6 +702,46 @@ void View::deleteIcons() {
     delete icon.second;
   }
   icons_.clear();
+}
+
+void View::createVisualization(MainWindowWithDetachableDockWidgets* main_window,
+                          QSharedPointer<FileBlobModel> data_model) {
+  auto *panel = new visualization::VisualizationPanel(main_window, data_model);
+  panel->setData(QByteArray((const char *)data_model->binData().rawData(),
+    static_cast<int>(data_model->binData().size())));
+  panel->setAttribute(Qt::WA_DeleteOnClose);
+
+  // FIXME: main_window_ needs to be updated when docks are moved around,
+  // then we can use this behaviour without any weird effects
+  // auto sibling = DockWidget::getParentDockWidget(this);
+  DockWidget* sibling = nullptr;
+
+  auto dock_widget = main_window->addTab(
+        panel, data_model->path().join(" : "), sibling);
+  connect(dock_widget, &DockWidget::visibilityChanged,
+          panel, &visualization::VisualizationPanel::visibilityChanged);
+//  if (sibling == nullptr) {
+//    main_window->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
+//  }
+}
+
+void View::createHexEditor(MainWindowWithDetachableDockWidgets* main_window,
+                      QSharedPointer<FileBlobModel> data_model) {
+  QSharedPointer<QItemSelectionModel> new_selection_model(
+        new QItemSelectionModel(data_model.data()));
+  NodeWidget *node_edit = new NodeWidget(main_window, data_model,
+      new_selection_model);
+
+  // FIXME: main_window_ needs to be updated when docks are moved around,
+  // then we can use this behaviour without any weird effects
+  // auto sibling = DockWidget::getParentDockWidget(this);
+  DockWidget* sibling = nullptr;
+
+  auto dock_widget = main_window->addTab(
+        node_edit, data_model->path().join(" : "), sibling);
+//  if (sibling == nullptr) {
+//    main_window->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
+//  }
 }
 
 /*****************************************************************************/

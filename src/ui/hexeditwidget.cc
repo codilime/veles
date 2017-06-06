@@ -41,8 +41,6 @@
 #include "util/settings/theme.h"
 #include "util/icons.h"
 
-#include "visualization/panel.h"
-
 namespace veles {
 namespace ui {
 
@@ -336,29 +334,11 @@ bool HexEditWidget::saveAs() {
 }
 
 void HexEditWidget::showVisualization() {
-  auto *panel = new visualization::VisualizationPanel(main_window_,
-      data_model_);
-  panel->setData(QByteArray((const char *)data_model_->binData().rawData(),
-    static_cast<int>(data_model_->binData().size())));
-  panel->setAttribute(Qt::WA_DeleteOnClose);
-
-  auto dock_widget = main_window_->addTab(panel,
-      data_model_->path().join(" : "));
-  connect(dock_widget, &DockWidget::visibilityChanged,
-          panel, &visualization::VisualizationPanel::visibilityChanged);
+  createVisualization(main_window_, data_model_);
 }
 
 void HexEditWidget::showHexEditor() {
-  QSharedPointer<QItemSelectionModel> new_selection_model(
-        new QItemSelectionModel(data_model_.data()));
-  NodeWidget *node_edit = new NodeWidget(main_window_, data_model_,
-      new_selection_model);
-  auto sibling = DockWidget::getParentDockWidget(this);
-  auto dock_widget = main_window_->addTab(node_edit,
-      data_model_->path().join(" : "), sibling);
-  if (sibling == nullptr) {
-    main_window_->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
-  }
+  createHexEditor(main_window_, data_model_);
 }
 
 void HexEditWidget::newBinData() {
