@@ -100,6 +100,8 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[HEX_SELECT_START_OF_DOCUMENT] = QKeySequence::keyBindings(QKeySequence::SelectStartOfDocument);
     defaults[HEX_SELECT_END_OF_DOCUMENT] = QKeySequence::keyBindings(QKeySequence::SelectEndOfDocument);
     defaults[DOCK_CLOSE] = QKeySequence::keyBindings(QKeySequence::Close);
+    defaults[SWITCH_TAB_NEXT] = {QKeySequence(Qt::CTRL | Qt::Key_Tab)};
+    defaults[SWITCH_TAB_PREV] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Tab)};
   }
   return defaults;
 }
@@ -375,6 +377,8 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
   addShortcutType(DOCK_SPLIT_HORIZ, docks, tr("Split horizontally"));
   addShortcutType(DOCK_SPLIT_VERT, docks, tr("Split vertically"));
   addShortcutType(DOCK_CLOSE, docks, tr("Close current dock"));
+  addShortcutType(SWITCH_TAB_NEXT, docks, tr("Switch to the next Tab"));
+  addShortcutType(SWITCH_TAB_PREV, docks, tr("Switch to the previous Tab"));
 
   addShortcutType(OPEN_VISUALIZATION, global, tr("&Visualization"), tr("Open visualization for current file"));
   addShortcutType(OPEN_HEX, global, tr("Show &hex editor"), tr("Open hex editor for current file"));

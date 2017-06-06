@@ -113,6 +113,8 @@ class DockWidget : public QDockWidget {
   QAction* split_vertically_action_;
   QWidget* empty_title_bar_;
   QAction* dock_close_action_;
+  QAction* next_tab_action_;
+  QAction* prev_tab_action_;
 };
 
 /*****************************************************************************/
@@ -252,6 +254,7 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
         DockWidget* dock_widget);
   static void hideAllRubberBands();
   static void setActiveDockWidget(DockWidget* dock_widget);
+  static void focusNextPrevDock(DockWidget* dock_widget, bool next);
   std::set<MainWindowWithDetachableDockWidgets*> allMainWindows();
 
  public slots:

@@ -112,6 +112,22 @@ DockWidget::DockWidget() : QDockWidget(), timer_id_(0), ticks_(0),
         this, SLOT(displayContextMenu(const QPoint&)));
   connect(this, SIGNAL(topLevelChanged(bool)),
       this, SLOT(topLevelChangedNotify(bool)), Qt::QueuedConnection);
+
+  next_tab_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::SWITCH_TAB_NEXT, this,
+        Qt::WidgetWithChildrenShortcut);
+  connect(next_tab_action_, &QAction::triggered, [this]() {
+    MainWindowWithDetachableDockWidgets::focusNextPrevDock(this, true);
+  });
+  addAction(next_tab_action_);
+
+  prev_tab_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::SWITCH_TAB_PREV, this,
+        Qt::WidgetWithChildrenShortcut);
+  connect(prev_tab_action_, &QAction::triggered, [this]() {
+    MainWindowWithDetachableDockWidgets::focusNextPrevDock(this, false);
+  });
+  addAction(prev_tab_action_);
 }
 
 DockWidget::~DockWidget() {
@@ -1073,6 +1089,23 @@ void MainWindowWithDetachableDockWidgets::setActiveDockWidget(
       window->updateDocksAndTabs();
     }
     dock_widget->setFocus();
+  }
+}
+
+void MainWindowWithDetachableDockWidgets::focusNextPrevDock(DockWidget* dock_widget, bool next) {
+  auto parent = getOwnerOfDockWidget(dock_widget);
+
+  if (parent) {
+    auto tab_pair = parent->dockWidgetToTab(dock_widget);
+    if (tab_pair.first) {
+      int index;
+      if (next) {
+        index = (tab_pair.second + 1) % tab_pair.first->count();
+      } else {
+        index = (tab_pair.second - 1 + tab_pair.first->count())  % tab_pair.first->count();
+      }
+      tab_pair.first->setCurrentIndex(index);
+    }
   }
 }
 

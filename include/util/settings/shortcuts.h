@@ -100,6 +100,8 @@ enum ShortcutType : uint32_t {
   HEX_SELECT_START_OF_DOCUMENT = 65,
   HEX_SELECT_END_OF_DOCUMENT = 66,
   DOCK_CLOSE = 67,
+  SWITCH_TAB_NEXT = 68,
+  SWITCH_TAB_PREV = 69,
 };
 
 QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts();
