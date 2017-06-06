@@ -329,7 +329,7 @@ void HexEditWidget::showSearchDialog() { search_dialog_->show(); }
 
 bool HexEditWidget::saveAs() {
   QString file_name = QFileDialog::getSaveFileName(
-      this, tr("Save As"), cur_file_);
+      this, tr("Save As"));
   if (file_name.isEmpty()) return false;
 
   return saveFile(file_name);
@@ -340,7 +340,6 @@ void HexEditWidget::showVisualization() {
       data_model_);
   panel->setData(QByteArray((const char *)data_model_->binData().rawData(),
     static_cast<int>(data_model_->binData().size())));
-  panel->setWindowTitle(cur_file_path_);
   panel->setAttribute(Qt::WA_DeleteOnClose);
 
   auto dock_widget = main_window_->addTab(panel,
