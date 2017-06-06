@@ -64,6 +64,7 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[NEW_FILE] = QKeySequence::keyBindings(QKeySequence::New);
     defaults[SHOW_OPTIONS] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_K)};
     defaults[DOCK_MOVE_TO_TOP_MAX] = {QKeySequence(Qt::Key_F12)};
+    defaults[REMOVE_CHUNK] = {QKeySequence(Qt::Key_Delete)};
     defaults[HEX_FIND] = QKeySequence::keyBindings(QKeySequence::Find);
     defaults[HEX_FIND_NEXT] = QKeySequence::keyBindings(QKeySequence::FindNext);
     defaults[OPEN_VISUALIZATION] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_V)};
