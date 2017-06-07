@@ -92,8 +92,10 @@ ConnectionDialog::ConnectionDialog(QWidget* parent)
   connect(ui_->new_profile_button, &QPushButton::clicked, this, &ConnectionDialog::newProfile);
   connect(ui_->default_profile, &QPushButton::clicked, this, &ConnectionDialog::defaultProfile);
   connect(ui_->ssl_checkbox, &QCheckBox::toggled, this, &ConnectionDialog::sslEnabledToggled);
-  connect(ui_->server_url_line_edit, &QLineEdit::textChanged, [this](const QString &text) {
-    QString scheme = text.section("://", 0, 0).toLower();
+  connect(ui_->server_url_line_edit, &QLineEdit::textEdited, [this](const QString &text) {
+    QString trimmed_text = text.trimmed();
+    ui_->server_url_line_edit->setText(trimmed_text);
+    QString scheme = trimmed_text.section("://", 0, 0).toLower();
     if (scheme == client::SCHEME_SSL) {
       ui_->ssl_checkbox->setChecked(true);
     } else if (scheme == client::SCHEME_TCP) {
@@ -106,7 +108,7 @@ ConnectionDialog::ConnectionDialog(QWidget* parent)
       return;
     }
 
-    QString url = text.section("://",1);
+    QString url = trimmed_text.section("://",1);
     QString auth = url.section("@", 0, 0);
     QString loc = url.section("@", 1);
 
@@ -274,12 +276,21 @@ void ConnectionDialog::loadProfiles() {
 }
 
 void ConnectionDialog::loadSettings() {
-  (util::settings::connection::runServer() ? ui_->new_server_radio_button
-      : ui_->existing_server_radio_button)->setChecked(true);
-  ui_->server_host_line_edit->setText(
-      util::settings::connection::serverHost());
-  ui_->port_spin_box->setValue(util::settings::connection::serverPort());
-  ui_->key_line_edit->setText(util::settings::connection::connectionKey());
+  if (util::settings::connection::runServer()) {
+    ui_->new_server_radio_button->setChecked(true);
+    ui_->server_host_line_edit->setText(
+        util::settings::connection::serverHost());
+    ui_->port_spin_box->setValue(util::settings::connection::serverPort());
+    ui_->key_line_edit->setText(util::settings::connection::connectionKey());
+    ui_->ssl_checkbox->setChecked(
+        util::settings::connection::sslEnabled());
+  } else {
+    ui_->existing_server_radio_button->setChecked(true);
+    ui_->server_url_line_edit->setText(
+        util::settings::connection::serverUrl());
+    emit ui_->server_url_line_edit->textEdited(
+          util::settings::connection::serverUrl());
+  }
   ui_->client_interface_line_edit->setText(
       util::settings::connection::clientInterface());
   QString client_name = util::settings::connection::clientName();
@@ -290,10 +301,6 @@ void ConnectionDialog::loadSettings() {
       util::settings::connection::serverScript());
   ui_->certificate_dir_line_edit->setText(
       util::settings::connection::certDirectory());
-  ui_->server_url_line_edit->setText(
-      util::settings::connection::serverUrl());
-  ui_->ssl_checkbox->setChecked(
-      util::settings::connection::sslEnabled());
 }
 
 void ConnectionDialog::saveSettings() {
