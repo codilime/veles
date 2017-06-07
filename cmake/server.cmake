@@ -11,7 +11,11 @@ add_custom_command(OUTPUT ${SERVER_OUTPUT_STARTUP_SCRIPT_FILE}
   COMMENT "Copying server script")
 
 if(WIN32)
-  set(BASEPYEXE py.exe -3)
+  if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+    set(BASEPYEXE py.exe -3)
+  else("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+    set(BASEPYEXE py.exe -3.6-32)
+  endif("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
   set(SERVER_PYTHON_DIR ${SERVER_DIR}/python)
   set(SERVER_DIR_DESTINATION "/")
   file(TO_NATIVE_PATH ${SERVER_PYTHON_DIR} SERVER_PYTHON_DIR_NATIVE)
