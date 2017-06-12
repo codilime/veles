@@ -61,10 +61,12 @@ class HexEditWidget : public View {
  signals:
   void showNodeTree(bool show);
   void showMinimap(bool show);
+  void updateMinimap(qint64 start_addr, qint64 region_size);
 
  public slots:
   void nodeTreeVisibilityChanged(bool visibility);
   void minimapVisibilityChanged(bool visibility);
+  void minimapSelectionChanged(size_t start, size_t end);
 
  private slots:
   void parse(QAction *action);

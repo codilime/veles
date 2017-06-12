@@ -22,6 +22,7 @@
 #include <QToolButton>
 #include <QMainWindow>
 #include <QSharedPointer>
+#include <QTimer>
 
 #include "util/sampling/uniform_sampler.h"
 
@@ -50,6 +51,10 @@ class NodeWidget : public View {
  public slots:
   void loadBinDataToMinimap();
 
+ private slots:
+  void updateMinimap();
+  void showMinimap(bool show);
+
  private:
   MainWindowWithDetachableDockWidgets *main_window_;
 
@@ -65,6 +70,11 @@ class NodeWidget : public View {
 
   util::UniformSampler* sampler_;
   QByteArray sampler_data_;
+
+  QTimer update_minimap_timer_;
+  qint64 update_minimap_start_;
+  qint64 update_minimap_size_;
+  bool ignore_update_minimap_;
 };
 
 }  // namespace ui

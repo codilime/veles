@@ -48,10 +48,11 @@ class VisualizationMinimap : public QOpenGLWidget,
     ENTROPY
   };
 
-  explicit VisualizationMinimap(QWidget *parent = 0);
+  explicit VisualizationMinimap(bool size_control = true, QWidget *parent = 0);
   ~VisualizationMinimap();
 
   void setSampler(util::ISampler * sampler);
+  QPair<size_t, size_t> getRange();
   void setRange(size_t start, size_t end, bool reset_selection = true);
   QPair<size_t, size_t> getSelectedRange();
   void setSelectedRange(size_t start_address, size_t end_address);
@@ -153,6 +154,8 @@ class VisualizationMinimap : public QOpenGLWidget,
 
   QOpenGLBuffer square_vertex_;
   QOpenGLVertexArrayObject vao_;
+
+  bool size_control_;
 };
 
 

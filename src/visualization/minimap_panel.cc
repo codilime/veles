@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  */
+#include <algorithm>
 #include <cmath>
 #include <functional>
 
@@ -23,7 +24,6 @@
 
 #include "visualization/minimap_panel.h"
 
-
 namespace veles {
 namespace visualization {
 
@@ -31,16 +31,17 @@ const float k_minimum_auto_selection_size = 0.1f;
 
 typedef VisualizationMinimap::MinimapMode MinimapMode;
 
-MinimapPanel::MinimapPanel(QWidget *parent) :
-    QWidget(parent), mode_(MinimapMode::VALUE),
+MinimapPanel::MinimapPanel(QWidget *parent, bool size_control) :
+    QWidget(parent), size_control_(size_control), mode_(MinimapMode::VALUE),
     select_range_dialog_(new SelectRangeDialog(this)) {
-  minimaps_.push_back(new VisualizationMinimap(this));
+  minimaps_.push_back(new VisualizationMinimap(size_control_, this));
   connect(minimaps_[0], &VisualizationMinimap::selectionChanged,
           std::bind(&MinimapPanel::updateSelection, this,
                     0, std::placeholders::_1,
                     std::placeholders::_2));
-  connect(select_range_dialog_, &SelectRangeDialog::accepted,
-          this, &MinimapPanel::selectRange);
+  connect(select_range_dialog_, &SelectRangeDialog::accepted, [this] () {
+    selectRange(select_range_dialog_->getStartAddress(), select_range_dialog_->getEndAddress());
+  });
   initLayout();
 }
 
@@ -82,32 +83,40 @@ void MinimapPanel::initLayout() {
   }
   layout_->addLayout(minimaps_layout_);
 
-  select_range_button_ = new QPushButton("select range", this);
+  select_range_button_ = new QPushButton("select range");
   connect(select_range_button_, SIGNAL(released()),
           this, SLOT(showSelectRangeDialog()));
-  layout_->addWidget(select_range_button_);
 
-  auto button_layout = new QHBoxLayout();
+  if (size_control_) {
+    layout_->addWidget(select_range_button_);
+  }
+
+  button_layout_ = new QHBoxLayout();
   remove_minimap_button_ = new QPushButton();
   remove_minimap_button_->setIcon(QIcon(":/images/minus.png"));
   remove_minimap_button_->setEnabled(false);
   connect(remove_minimap_button_, SIGNAL(released()),
           this, SLOT(removeMinimap()));
-  button_layout->addWidget(remove_minimap_button_, 0);
-
-  change_mode_button_ = new QPushButton("mode", this);
+  if (size_control_) {
+    button_layout_->addWidget(remove_minimap_button_, 0);
+  }
+  change_mode_button_ = new QPushButton("mode");
   connect(change_mode_button_, SIGNAL(released()),
           this, SLOT(changeMinimapMode()));
-  button_layout->addWidget(change_mode_button_);
+  button_layout_->addWidget(change_mode_button_);
 
   add_minimap_button_ = new QPushButton();
   add_minimap_button_->setIcon(QIcon(":/images/plus.png"));
   connect(add_minimap_button_, SIGNAL(released()), this, SLOT(addMinimap()));
-  button_layout->addWidget(add_minimap_button_, 0);
-  button_layout->setSpacing(0);
-  button_layout->setContentsMargins(0, 0, 0, 0);
+  if (size_control_) {
+    button_layout_->addWidget(add_minimap_button_, 0);
+  }
+  button_layout_->setSpacing(0);
+  button_layout_->setContentsMargins(0, 0, 0, 0);
 
-  layout_->addLayout(button_layout);
+  layout_->addLayout(button_layout_);
+
+
   layout_->setSpacing(0);
   layout_->setContentsMargins(0, 0, 0, 0);
   setLayout(layout_);
@@ -129,7 +138,7 @@ VisualizationMinimap::MinimapColor MinimapPanel::getMinimapColor() {
 /*****************************************************************************/
 
 void MinimapPanel::addMinimap() {
-  auto new_minimap = new VisualizationMinimap(this);
+  auto new_minimap = new VisualizationMinimap(size_control_, this);
   auto new_sampler = minimap_samplers_.back()->clone();
   auto range = minimaps_.back()->getSelectedRange();
   new_sampler->setRange(range.first, range.second);
@@ -199,9 +208,7 @@ void MinimapPanel::showSelectRangeDialog() {
   select_range_dialog_->show();
 }
 
-void MinimapPanel::selectRange() {
-  size_t start = select_range_dialog_->getStartAddress();
-  size_t end = select_range_dialog_->getEndAddress();
+void MinimapPanel::selectRange(size_t start, size_t end) {
   size_t center = start + ((end - start) / 2);
   size_t size = end - start;
   size_t curr_start = 0;
@@ -242,6 +249,57 @@ void MinimapPanel::selectRange() {
     index += 1;
   }
 
+  while (minimaps_.size() > index + 1) {
+    removeMinimap();
+  }
+}
+
+void MinimapPanel::adjustMinimaps(size_t selection_size, int grow_factor, size_t start_position) {
+  size_t full_size = sampler_->getFileOffset(sampler_->getSampleSize());
+  QVector<size_t> minimap_sizes;
+  QVector<size_t> minimap_selection_sizes;
+  QVector<size_t> minimap_start_position;
+  QVector<size_t> minimap_selection_offset;
+
+  do {
+    selection_size = std::min(full_size, selection_size);
+    minimap_selection_sizes.append(selection_size);
+    size_t minimap_size = std::min(static_cast<size_t>(selection_size * grow_factor), full_size);
+    minimap_sizes.append(minimap_size);
+
+    size_t offset = start_position % minimap_size;
+
+    // jump to begin if selection overflows bar
+    if (offset + selection_size > minimap_size && (offset + selection_size < full_size)) {
+      offset = 0;
+    }
+
+    // fit end of bar to end of data
+    if (start_position - offset + minimap_size > full_size) {
+      offset += ((start_position - offset + minimap_size) - full_size);
+    }
+
+    size_t minimap_start = start_position - offset;
+    minimap_start_position.append(minimap_start);
+
+    minimap_selection_offset.append(minimap_start + offset);
+
+    start_position = minimap_start;
+    selection_size = minimap_size;
+
+  } while (selection_size < full_size);
+
+  int index = 0;
+  while(index < minimap_sizes.size()) {
+    if (index >= minimaps_.size()) {
+      addMinimap();
+    }
+
+    int reversed_index = minimap_sizes.size() - index - 1;
+    minimaps_[index]->setRange(minimap_start_position[reversed_index], minimap_start_position[reversed_index] + minimap_sizes[reversed_index]);
+    minimaps_[index]->setSelectedRange(minimap_selection_offset[reversed_index], minimap_selection_offset[reversed_index] + minimap_selection_sizes[reversed_index]);
+    ++index;
+  }
   while (minimaps_.size() > index + 1) {
     removeMinimap();
   }

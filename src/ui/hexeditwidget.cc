@@ -62,6 +62,10 @@ HexEditWidget::HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
   connect(hex_edit_, &HexEdit::selectionChanged,
       this, &HexEditWidget::selectionChanged);
 
+  connect(hex_edit_, &HexEdit::visibleRegionChanged, [this] (qint64 start_addr, qint64 region_size) {
+    emit updateMinimap(start_addr, region_size);
+  });
+
   search_dialog_ = new SearchDialog(hex_edit_, this);
 
   createActions();
@@ -176,16 +180,16 @@ void HexEditWidget::createActions() {
   connect(show_node_tree_act_, SIGNAL(toggled(bool)),
       this, SIGNAL(showNodeTree(bool)));
 
-//  Currently not implemented
-//  show_minimap_act_ = ShortcutsModel::ShortcutsModel::getShortcutsModel()->createQAction(
-//        util::settings::shortcuts::SHOW_MINIMAP,
-//        this, QIcon(":/images/show_minimap.png"), Qt::WidgetWithChildrenShortcut);
-//  show_minimap_act_->setToolTip(tr("Minimap"));
-//  show_minimap_act_->setEnabled(true);
-//  show_minimap_act_->setCheckable(true);
-//  show_minimap_act_->setChecked(false);
-//  connect(show_minimap_act_, SIGNAL(toggled(bool)), this,
-//      SIGNAL(showMinimap(bool)));
+  //Currently not implemented
+  show_minimap_act_ = ShortcutsModel::ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::SHOW_MINIMAP,
+        this, QIcon(":/images/show_minimap.png"), Qt::WidgetWithChildrenShortcut);
+  show_minimap_act_->setToolTip(tr("Minimap"));
+  show_minimap_act_->setEnabled(true);
+  show_minimap_act_->setCheckable(true);
+  show_minimap_act_->setChecked(false);
+  connect(show_minimap_act_, SIGNAL(toggled(bool)), this,
+      SIGNAL(showMinimap(bool)));
 
   show_hex_edit_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::OPEN_HEX,
@@ -201,8 +205,8 @@ void HexEditWidget::createToolBars() {
   addAction(show_node_tree_act_);
   tools_tool_bar_->addAction(show_node_tree_act_);
   //Disabled until minimap does anything of value in hex-view
-  //addAction(show_minimap_act_);
-  //tools_tool_bar_->addAction(show_minimap_act_);
+  addAction(show_minimap_act_);
+  tools_tool_bar_->addAction(show_minimap_act_);
 
   auto parser_tool_button = new QToolButton();
   parser_tool_button->setMenu(&parsers_menu_);
@@ -370,6 +374,10 @@ void HexEditWidget::nodeTreeVisibilityChanged(bool visibility) {
 
 void HexEditWidget::minimapVisibilityChanged(bool visibility) {
   show_minimap_act_->setChecked(visibility);
+}
+
+void HexEditWidget::minimapSelectionChanged(size_t start, size_t end) {
+  hex_edit_->scrollToByte(start);
 }
 
 }  // namespace ui

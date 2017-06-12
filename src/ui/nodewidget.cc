@@ -44,6 +44,8 @@
 namespace veles {
 namespace ui {
 
+const float k_minimap_selection_factor = 10;
+
 /*****************************************************************************/
 /* Public methods */
 /*****************************************************************************/
@@ -54,7 +56,9 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
     : View("Hex editor", ":/images/show_hex_edit.png"),
       main_window_(main_window), minimap_(nullptr),
       minimap_dock_(nullptr), data_model_(data_model),
-      selection_model_(selection_model), sampler_(nullptr) {
+      selection_model_(selection_model), sampler_(nullptr),
+      update_minimap_start_(0), update_minimap_size_(0),
+      ignore_update_minimap_(false) {
   hex_edit_widget_ = new HexEditWidget(
       main_window, data_model, selection_model);
   addAction(hex_edit_widget_->uploadAction());
@@ -79,47 +83,78 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
   setDockNestingEnabled(true);
   addDockWidget(Qt::LeftDockWidgetArea, node_tree_dock_);
 
-#if 0 // We do not use minimap for NodeWidget yet,
-  minimap_dock_ = new QDockWidget;
-  new DockWidgetVisibilityGuard(minimap_dock_);
-  minimap_dock_->setWindowTitle("Minimap");
-  minimap_ = new visualization::MinimapPanel(this);
-
-  if(data_model_->binData().size() > 0) {
-    loadBinDataToMinimap();
-  } else {
-    sampler_data_ = QByteArray("");
-    sampler_ = new util::UniformSampler(sampler_data_);
-    sampler_->setSampleSize(4096 * 1024);
-    minimap_->setSampler(sampler_);
-  }
-
-  minimap_dock_->setWidget(minimap_);
-  minimap_dock_->setContextMenuPolicy(Qt::PreventContextMenu);
-  minimap_dock_->setAllowedAreas(
-      Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-  addDockWidget(Qt::LeftDockWidgetArea, minimap_dock_);
-  MainWindowWithDetachableDockWidgets::splitDockWidget2(this, node_tree_dock_,
-      minimap_dock_, Qt::Horizontal);
-#endif
-
   connect(hex_edit_widget_, &HexEditWidget::showNodeTree,
       node_tree_dock_, &QDockWidget::setVisible);
   connect(node_tree_dock_, &QDockWidget::visibilityChanged,
         hex_edit_widget_, &HexEditWidget::nodeTreeVisibilityChanged);
 
-#if 0 // We do not use minimap for NodeWidget yet,
-  connect(hex_edit_widget_, &HexEditWidget::showMinimap,
-        minimap_dock_, &QDockWidget::setVisible);
-  connect(data_model_.data(), &FileBlobModel::newBinData,
-      this, &NodeWidget::loadBinDataToMinimap);
-  connect(minimap_dock_, &QDockWidget::visibilityChanged,
-      hex_edit_widget_, &HexEditWidget::minimapVisibilityChanged);
-#endif
+  connect(hex_edit_widget_, &HexEditWidget::showMinimap, this, &NodeWidget::showMinimap);
+  connect(hex_edit_widget_, &HexEditWidget::updateMinimap, [this](qint64 start, qint64 size) {
+    if (!ignore_update_minimap_) {
+      update_minimap_start_ = start;
+      update_minimap_size_ = size;
+      update_minimap_timer_.start(400);
+    }
+  });
+
+  update_minimap_timer_.setSingleShot(true);
+  connect(&update_minimap_timer_, &QTimer::timeout, this, &NodeWidget::updateMinimap);
 }
 
 NodeWidget::~NodeWidget() {
   delete sampler_;
+}
+
+void NodeWidget::showMinimap(bool show) {
+  if (minimap_dock_ == nullptr) {
+    if (!show) {
+      return;
+    }
+    minimap_dock_ = new QDockWidget;
+    new DockWidgetVisibilityGuard(minimap_dock_);
+    minimap_dock_->setWindowTitle("Minimap");
+    minimap_ = new visualization::MinimapPanel(this, /*size_control=*/false);
+
+    if(data_model_->binData().size() > 0) {
+      loadBinDataToMinimap();
+    } else {
+      sampler_data_ = QByteArray("");
+      sampler_ = new util::UniformSampler(sampler_data_);
+      sampler_->setSampleSize(4096 * 1024);
+      minimap_->setSampler(sampler_);
+    }
+
+    minimap_dock_->setWidget(minimap_);
+    minimap_dock_->setContextMenuPolicy(Qt::PreventContextMenu);
+    minimap_dock_->setAllowedAreas(
+        Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    addDockWidget(Qt::LeftDockWidgetArea, minimap_dock_);
+    MainWindowWithDetachableDockWidgets::splitDockWidget2(this, node_tree_dock_,
+        minimap_dock_, Qt::Horizontal);
+
+    connect(data_model_.data(), &FileBlobModel::newBinData,
+        this, &NodeWidget::loadBinDataToMinimap);
+    connect(minimap_dock_, &QDockWidget::visibilityChanged,
+        hex_edit_widget_, &HexEditWidget::minimapVisibilityChanged);
+    connect(minimap_, &visualization::MinimapPanel::selectionChanged, [this] (size_t start, size_t end) {
+      if (!ignore_update_minimap_) {
+        ignore_update_minimap_ = true;
+        hex_edit_widget_->minimapSelectionChanged(start, end);
+        ignore_update_minimap_ = false;
+      }
+    });
+  }
+  minimap_dock_->setVisible(show);
+
+}
+
+void NodeWidget::updateMinimap() {
+  if (minimap_dock_ == nullptr || sampler_->empty()) {
+    return;
+  }
+  ignore_update_minimap_ = true;
+  minimap_->adjustMinimaps(update_minimap_size_, k_minimap_selection_factor, update_minimap_start_);
+  ignore_update_minimap_ = false;
 }
 
 void NodeWidget::loadBinDataToMinimap() {
@@ -130,6 +165,7 @@ void NodeWidget::loadBinDataToMinimap() {
   sampler_ = new util::UniformSampler(sampler_data_);
   sampler_->setSampleSize(4096 * 1024);
   minimap_->setSampler(sampler_);
+  updateMinimap();
 }
 
 }  // namespace ui
