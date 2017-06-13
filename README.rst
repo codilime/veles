@@ -62,3 +62,7 @@ On Ubuntu it can be done like this::
 
     apt-get install git python2.7 python3-pip
     pip3 install tox>=2.4.0
+
+On Windows if you want to avoid compiling OpenSSL everytime you clean build directory
+you can store `libeay32.dll` and `ssleay32.dll` in some directory, and pass it to cmake
+as OPENSSL_DLL_DIR.
