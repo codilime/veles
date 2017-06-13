@@ -737,8 +737,7 @@ void View::createHexEditor(MainWindowWithDetachableDockWidgets* main_window,
   // auto sibling = DockWidget::getParentDockWidget(this);
   DockWidget* sibling = nullptr;
 
-  auto dock_widget = main_window->addTab(
-      node_edit, data_model->path().join(" : "), sibling);
+  main_window->addTab(node_edit, data_model->path().join(" : "), sibling);
 //  if (sibling == nullptr) {
 //    main_window->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
 //  }
