@@ -1190,7 +1190,7 @@ void HexEdit::flipCursorVisibility() {
     qint64 y_pos = ((current_position_ / bytesPerRow_) - startRow_)
                    * charHeight_ + verticalByteBorderMargin_;
 
-    QRect cursor_line(0, y_pos, viewport()->width(), charHeight_ + 1);
+    QRect cursor_line(0, y_pos, viewport()->width(), charHeight_ * 2);
     viewport()->update(cursor_line);
   }
 }
