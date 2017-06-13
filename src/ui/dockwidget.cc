@@ -707,7 +707,7 @@ void View::deleteIcons() {
 void View::createVisualization(MainWindowWithDetachableDockWidgets* main_window,
                                QSharedPointer<FileBlobModel> data_model) {
   auto *panel = new visualization::VisualizationPanel(main_window, data_model);
-  panel->setData(QByteArray(static_cast<const char *>data_model->binData().rawData(),
+  panel->setData(QByteArray(reinterpret_cast<const char *>(data_model->binData().rawData()),
                             static_cast<int>(data_model->binData().size())));
   panel->setAttribute(Qt::WA_DeleteOnClose);
 
