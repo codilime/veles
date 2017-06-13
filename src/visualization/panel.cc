@@ -240,6 +240,7 @@ void VisualizationPanel::setVisualization(EVisualization type) {
     visualization_->setSampler(sampler_);
     visualization_root_->setCentralWidget(visualization_);
     prepareVisualizationOptions();
+    visualization_root_->setFocus();
     delete old;
   }
 }
