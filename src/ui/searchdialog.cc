@@ -39,6 +39,12 @@ SearchDialog::SearchDialog(HexEdit *hexEdit, QWidget *parent)
   message_box_not_valid_hex_string_->setWindowTitle(tr("HexEdit"));
   message_box_not_valid_hex_string_->setStandardButtons(QMessageBox::Close);
   message_box_not_valid_hex_string_->setDefaultButton(QMessageBox::Close);
+
+  connect(_hexEdit, &HexEdit::selectionChanged, [this](qint64 start_addr, qint64 selection_size) {
+    _lastFoundPos = start_addr;
+    _lastFoundSize = 0;
+  });
+
 }
 
 SearchDialog::~SearchDialog() { delete ui; }
