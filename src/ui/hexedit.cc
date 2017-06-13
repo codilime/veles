@@ -146,7 +146,7 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
 
   goToAddressDialog_ = new GoToAddressDialog(this);
   connect(goToAddressDialog_, &QDialog::accepted, [this]() {
-    scrollToByte(goToAddressDialog_->address() - startOffset_);
+    setSelection(goToAddressDialog_->address() - startOffset_, 0, /*set_visible=*/true);
   });
   goToAddressDialog_->setRange(startOffset_, startOffset_ + dataBytesCount_);
 
