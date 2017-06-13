@@ -393,8 +393,8 @@ void VisualizationPanel::initOptionsPanel() {
   // and HexEditWidget we should consider refactoring some parts of those classes
   // into common base
   QAction* open_hex = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::OPEN_HEX, this,
-        Qt::WidgetWithChildrenShortcut);
+      util::settings::shortcuts::OPEN_HEX, this,
+      Qt::WidgetWithChildrenShortcut);
 
   connect(open_hex, &QAction::triggered, [this]() {
     createHexEditor(main_window_, data_model_);
@@ -402,8 +402,8 @@ void VisualizationPanel::initOptionsPanel() {
   addAction(open_hex);
 
   QAction* open_visualization = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::OPEN_VISUALIZATION, this,
-        Qt::WidgetWithChildrenShortcut);
+      util::settings::shortcuts::OPEN_VISUALIZATION, this,
+      Qt::WidgetWithChildrenShortcut);
 
   connect(open_visualization, &QAction::triggered, [this]() {
     createVisualization(main_window_, data_model_);

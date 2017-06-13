@@ -119,7 +119,7 @@ DockWidget::DockWidget() : QDockWidget(), timer_id_(0), ticks_(0),
         util::settings::shortcuts::SWITCH_TAB_NEXT, this,
         Qt::WidgetWithChildrenShortcut);
   connect(next_tab_action_, &QAction::triggered, [this]() {
-    MainWindowWithDetachableDockWidgets::focusNextPrevDock(this, true);
+    MainWindowWithDetachableDockWidgets::focusNextPrevDock(this, /*next*/true);
   });
   addAction(next_tab_action_);
 
@@ -127,7 +127,7 @@ DockWidget::DockWidget() : QDockWidget(), timer_id_(0), ticks_(0),
         util::settings::shortcuts::SWITCH_TAB_PREV, this,
         Qt::WidgetWithChildrenShortcut);
   connect(prev_tab_action_, &QAction::triggered, [this]() {
-    MainWindowWithDetachableDockWidgets::focusNextPrevDock(this, false);
+    MainWindowWithDetachableDockWidgets::focusNextPrevDock(this, /*next*/false);
   });
   addAction(prev_tab_action_);
 }
@@ -705,10 +705,10 @@ void View::deleteIcons() {
 }
 
 void View::createVisualization(MainWindowWithDetachableDockWidgets* main_window,
-                          QSharedPointer<FileBlobModel> data_model) {
+                               QSharedPointer<FileBlobModel> data_model) {
   auto *panel = new visualization::VisualizationPanel(main_window, data_model);
-  panel->setData(QByteArray((const char *)data_model->binData().rawData(),
-    static_cast<int>(data_model->binData().size())));
+  panel->setData(QByteArray(static_cast<const char *>data_model->binData().rawData(),
+                            static_cast<int>(data_model->binData().size())));
   panel->setAttribute(Qt::WA_DeleteOnClose);
 
   // FIXME: main_window_ needs to be updated when docks are moved around,
@@ -726,10 +726,10 @@ void View::createVisualization(MainWindowWithDetachableDockWidgets* main_window,
 }
 
 void View::createHexEditor(MainWindowWithDetachableDockWidgets* main_window,
-                      QSharedPointer<FileBlobModel> data_model) {
+                           QSharedPointer<FileBlobModel> data_model) {
   QSharedPointer<QItemSelectionModel> new_selection_model(
         new QItemSelectionModel(data_model.data()));
-  NodeWidget *node_edit = new NodeWidget(main_window, data_model,
+  NodeWidget* node_edit = new NodeWidget(main_window, data_model,
       new_selection_model);
 
   // FIXME: main_window_ needs to be updated when docks are moved around,
@@ -738,7 +738,7 @@ void View::createHexEditor(MainWindowWithDetachableDockWidgets* main_window,
   DockWidget* sibling = nullptr;
 
   auto dock_widget = main_window->addTab(
-        node_edit, data_model->path().join(" : "), sibling);
+      node_edit, data_model->path().join(" : "), sibling);
 //  if (sibling == nullptr) {
 //    main_window->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
 //  }
@@ -1144,7 +1144,7 @@ void MainWindowWithDetachableDockWidgets::focusNextPrevDock(DockWidget* dock_wid
       if (next) {
         index = (tab_pair.second + 1) % tab_pair.first->count();
       } else {
-        index = (tab_pair.second - 1 + tab_pair.first->count())  % tab_pair.first->count();
+        index = (tab_pair.second - 1 + tab_pair.first->count()) % tab_pair.first->count();
       }
       tab_pair.first->setCurrentIndex(index);
     }

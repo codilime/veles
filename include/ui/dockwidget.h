@@ -212,9 +212,9 @@ class View : public QMainWindow {
  protected:
   void getOrCreateIcon(QString category, QString icon_path);
   static void deleteIcons();
-  void createVisualization(MainWindowWithDetachableDockWidgets *main_window,
+  void createVisualization(MainWindowWithDetachableDockWidgets* main_window,
                            QSharedPointer<FileBlobModel> data_model);
-  void createHexEditor(MainWindowWithDetachableDockWidgets *main_window,
+  void createHexEditor(MainWindowWithDetachableDockWidgets* main_window,
                        QSharedPointer<FileBlobModel> data_model);
 
   static std::map<QString, QIcon*> icons_;

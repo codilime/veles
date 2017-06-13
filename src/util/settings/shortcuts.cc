@@ -382,8 +382,8 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
   addShortcutType(DOCK_SPLIT_HORIZ, docks, tr("Split horizontally"));
   addShortcutType(DOCK_SPLIT_VERT, docks, tr("Split vertically"));
   addShortcutType(DOCK_CLOSE, docks, tr("Close current dock"));
-  addShortcutType(SWITCH_TAB_NEXT, docks, tr("Switch to the next Tab"));
-  addShortcutType(SWITCH_TAB_PREV, docks, tr("Switch to the previous Tab"));
+  addShortcutType(SWITCH_TAB_NEXT, docks, tr("Switch to the next tab"));
+  addShortcutType(SWITCH_TAB_PREV, docks, tr("Switch to the previous tab"));
 
   addShortcutType(OPEN_VISUALIZATION, global, tr("&Visualization"), tr("Open visualization for current file"));
   addShortcutType(OPEN_HEX, global, tr("Show &hex editor"), tr("Open hex editor for current file"));
