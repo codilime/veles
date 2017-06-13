@@ -119,7 +119,7 @@ DockWidget::DockWidget() : QDockWidget(), timer_id_(0), ticks_(0),
         util::settings::shortcuts::SWITCH_TAB_NEXT, this,
         Qt::WidgetWithChildrenShortcut);
   connect(next_tab_action_, &QAction::triggered, [this]() {
-    MainWindowWithDetachableDockWidgets::focusNextPrevDock(this, /*next*/true);
+    MainWindowWithDetachableDockWidgets::focusNextPrevDock(this, /*next=*/true);
   });
   addAction(next_tab_action_);
 
@@ -127,7 +127,7 @@ DockWidget::DockWidget() : QDockWidget(), timer_id_(0), ticks_(0),
         util::settings::shortcuts::SWITCH_TAB_PREV, this,
         Qt::WidgetWithChildrenShortcut);
   connect(prev_tab_action_, &QAction::triggered, [this]() {
-    MainWindowWithDetachableDockWidgets::focusNextPrevDock(this, /*next*/false);
+    MainWindowWithDetachableDockWidgets::focusNextPrevDock(this, /*next=*/false);
   });
   addAction(prev_tab_action_);
 }
