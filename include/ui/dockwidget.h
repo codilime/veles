@@ -32,6 +32,8 @@
 #include <QProxyStyle>
 #include <QDateTime>
 
+#include "ui/fileblobmodel.h"
+
 namespace veles {
 namespace ui {
 
@@ -76,6 +78,7 @@ class DockWidget : public QDockWidget {
   virtual ~DockWidget();
   const QAction* maximizeHereAction();
   static DockWidget* getParentDockWidget(QObject* obj);
+  void addCloseAction();
 
  public slots:
   void displayContextMenu(const QPoint& pos);
@@ -111,6 +114,9 @@ class DockWidget : public QDockWidget {
   QAction* split_horizontally_action_;
   QAction* split_vertically_action_;
   QWidget* empty_title_bar_;
+  QAction* dock_close_action_;
+  QAction* next_tab_action_;
+  QAction* prev_tab_action_;
 };
 
 /*****************************************************************************/
@@ -206,6 +212,11 @@ class View : public QMainWindow {
  protected:
   void getOrCreateIcon(QString category, QString icon_path);
   static void deleteIcons();
+  void createVisualization(MainWindowWithDetachableDockWidgets* main_window,
+                           QSharedPointer<FileBlobModel> data_model);
+  void createHexEditor(MainWindowWithDetachableDockWidgets* main_window,
+                       QSharedPointer<FileBlobModel> data_model);
+
   static std::map<QString, QIcon*> icons_;
 };
 
@@ -230,7 +241,7 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
   void setDockWidgetsWithNoTitleBars(bool no_title_bars);
   bool dockWidgetsWithNoTitleBars();
   QDockWidget* tabToDockWidget(QTabBar* tab_bar, int index);
-  QTabBar* dockWidgetToTab(QDockWidget* dock_widget);
+  QPair<QTabBar*, int> dockWidgetToTab(QDockWidget* dock_widget);
   void splitDockWidget2(QDockWidget* first, QDockWidget* second,
       Qt::Orientation orientation);
   void showRubberBand(bool show);
@@ -250,6 +261,7 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
         DockWidget* dock_widget);
   static void hideAllRubberBands();
   static void setActiveDockWidget(DockWidget* dock_widget);
+  static void focusNextPrevDock(DockWidget* dock_widget, bool next);
   std::set<MainWindowWithDetachableDockWidgets*> allMainWindows();
 
  public slots:

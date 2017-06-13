@@ -62,9 +62,17 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[EXIT_APPLICATION] = QKeySequence::keyBindings(QKeySequence::Quit);
     defaults[OPEN_FILE] = QKeySequence::keyBindings(QKeySequence::Open);
     defaults[NEW_FILE] = QKeySequence::keyBindings(QKeySequence::New);
+    defaults[SHOW_OPTIONS] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_K)};
     defaults[DOCK_MOVE_TO_TOP_MAX] = {QKeySequence(Qt::Key_F12)};
+    defaults[GO_TO_ADDRESS] = {QKeySequence(Qt::CTRL | Qt::Key_G)};
+    defaults[REMOVE_CHUNK] = {QKeySequence(Qt::Key_Delete)};
     defaults[HEX_FIND] = QKeySequence::keyBindings(QKeySequence::Find);
-    defaults[HEX_FIND_NEXT] = QKeySequence::keyBindings(QKeySequence::FindNext);
+    defaults[HEX_FIND_NEXT] = {QKeySequence(Qt::Key_F3)};
+    defaults[OPEN_VISUALIZATION] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_V)};
+    defaults[OPEN_HEX] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H)};
+    defaults[VISUALIZATION_DIGRAM] = {QKeySequence(Qt::Key_1)};
+    defaults[VISUALIZATION_TRIGRAM] = {QKeySequence(Qt::Key_2)};
+    defaults[VISUALIZATION_LAYERED_DIGRAM] = {QKeySequence(Qt::Key_3)};
     defaults[VISUALIZATION_MANIPULATOR_SPIN] = {QKeySequence(Qt::CTRL | Qt::Key_1), QKeySequence(Qt::Key_Escape)};
     defaults[VISUALIZATION_MANIPULATOR_TRACKBALL] = {QKeySequence(Qt::CTRL + Qt::Key_2)};
     defaults[VISUALIZATION_MANIPULATOR_FREE] = {QKeySequence(Qt::CTRL + Qt::Key_3)};
@@ -96,6 +104,9 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[HEX_SELECT_END_OF_LINE] = QKeySequence::keyBindings(QKeySequence::SelectEndOfLine);
     defaults[HEX_SELECT_START_OF_DOCUMENT] = QKeySequence::keyBindings(QKeySequence::SelectStartOfDocument);
     defaults[HEX_SELECT_END_OF_DOCUMENT] = QKeySequence::keyBindings(QKeySequence::SelectEndOfDocument);
+    defaults[DOCK_CLOSE] = QKeySequence::keyBindings(QKeySequence::Close);
+    defaults[SWITCH_TAB_NEXT] = {QKeySequence(Qt::CTRL | Qt::Key_Tab)};
+    defaults[SWITCH_TAB_PREV] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Tab)};
   }
   return defaults;
 }
@@ -370,6 +381,9 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
   addShortcutType(DOCK_MOVE_TO_TOP_MAX, docks, tr("Move to new top level window and maximize"));
   addShortcutType(DOCK_SPLIT_HORIZ, docks, tr("Split horizontally"));
   addShortcutType(DOCK_SPLIT_VERT, docks, tr("Split vertically"));
+  addShortcutType(DOCK_CLOSE, docks, tr("Close current dock"));
+  addShortcutType(SWITCH_TAB_NEXT, docks, tr("Switch to the next tab"));
+  addShortcutType(SWITCH_TAB_PREV, docks, tr("Switch to the previous tab"));
 
   addShortcutType(OPEN_VISUALIZATION, global, tr("&Visualization"), tr("Open visualization for current file"));
   addShortcutType(OPEN_HEX, global, tr("Show &hex editor"), tr("Open hex editor for current file"));

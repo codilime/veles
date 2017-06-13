@@ -72,8 +72,6 @@ class NodeTreeWidget : public View {
 
   MainWindowWithDetachableDockWidgets *main_window_;
 
-  QString cur_file_;
-  QString cur_file_path_;
   QFile file_;
   bool is_untitled;
 

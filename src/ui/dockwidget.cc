@@ -29,7 +29,9 @@
 
 #include "ui/dockwidget.h"
 #include "ui/dockwidget_native.h"
+#include "ui/nodewidget.h"
 #include "util/settings/shortcuts.h"
+#include "visualization/panel.h"
 
 namespace veles {
 namespace ui {
@@ -88,7 +90,8 @@ bool ActivateDockEventFilter::eventFilter(QObject *watched, QEvent *event) {
 /*****************************************************************************/
 
 DockWidget::DockWidget() : QDockWidget(), timer_id_(0), ticks_(0),
-    context_menu_(nullptr), empty_title_bar_(new QWidget(this)) {
+    context_menu_(nullptr), empty_title_bar_(new QWidget(this)),
+    dock_close_action_(nullptr) {
   QStyle* style = new QProxyStyleForDockWidgetWithIconOnTitleBar(this->style());
   setStyle(style);
 
@@ -111,6 +114,22 @@ DockWidget::DockWidget() : QDockWidget(), timer_id_(0), ticks_(0),
         this, SLOT(displayContextMenu(const QPoint&)));
   connect(this, SIGNAL(topLevelChanged(bool)),
       this, SLOT(topLevelChangedNotify(bool)), Qt::QueuedConnection);
+
+  next_tab_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::SWITCH_TAB_NEXT, this,
+        Qt::WidgetWithChildrenShortcut);
+  connect(next_tab_action_, &QAction::triggered, [this]() {
+    MainWindowWithDetachableDockWidgets::focusNextPrevDock(this, /*next=*/true);
+  });
+  addAction(next_tab_action_);
+
+  prev_tab_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::SWITCH_TAB_PREV, this,
+        Qt::WidgetWithChildrenShortcut);
+  connect(prev_tab_action_, &QAction::triggered, [this]() {
+    MainWindowWithDetachableDockWidgets::focusNextPrevDock(this, /*next=*/false);
+  });
+  addAction(prev_tab_action_);
 }
 
 DockWidget::~DockWidget() {
@@ -138,6 +157,29 @@ DockWidget* DockWidget::getParentDockWidget(QObject* obj) {
   }
 
   return nullptr;
+}
+
+void DockWidget::addCloseAction() {
+  if (!dock_close_action_) {
+    dock_close_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
+          util::settings::shortcuts::DOCK_CLOSE, this,
+          Qt::WidgetWithChildrenShortcut);
+    connect(dock_close_action_, &QAction::triggered, [this]() {
+      deleteLater();
+      auto parent = MainWindowWithDetachableDockWidgets
+          ::getOwnerOfDockWidget(this);
+
+      if (parent) {
+        auto tab_pair = parent->dockWidgetToTab(this);
+        if (tab_pair.first) {
+          tab_pair.first->tabCloseRequested(tab_pair.second);
+        } else {
+          deleteLater();
+        }
+      }
+    });
+    addAction(dock_close_action_);
+  }
 }
 
 void DockWidget::displayContextMenu(const QPoint& pos) {
@@ -662,6 +704,45 @@ void View::deleteIcons() {
   icons_.clear();
 }
 
+void View::createVisualization(MainWindowWithDetachableDockWidgets* main_window,
+                               QSharedPointer<FileBlobModel> data_model) {
+  auto *panel = new visualization::VisualizationPanel(main_window, data_model);
+  panel->setData(QByteArray(reinterpret_cast<const char *>(data_model->binData().rawData()),
+                            static_cast<int>(data_model->binData().size())));
+  panel->setAttribute(Qt::WA_DeleteOnClose);
+
+  // FIXME: main_window_ needs to be updated when docks are moved around,
+  // then we can use this behaviour without any weird effects
+  // auto sibling = DockWidget::getParentDockWidget(this);
+  DockWidget* sibling = nullptr;
+
+  auto dock_widget = main_window->addTab(
+        panel, data_model->path().join(" : "), sibling);
+  connect(dock_widget, &DockWidget::visibilityChanged,
+          panel, &visualization::VisualizationPanel::visibilityChanged);
+//  if (sibling == nullptr) {
+//    main_window->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
+//  }
+}
+
+void View::createHexEditor(MainWindowWithDetachableDockWidgets* main_window,
+                           QSharedPointer<FileBlobModel> data_model) {
+  QSharedPointer<QItemSelectionModel> new_selection_model(
+        new QItemSelectionModel(data_model.data()));
+  NodeWidget* node_edit = new NodeWidget(main_window, data_model,
+      new_selection_model);
+
+  // FIXME: main_window_ needs to be updated when docks are moved around,
+  // then we can use this behaviour without any weird effects
+  // auto sibling = DockWidget::getParentDockWidget(this);
+  DockWidget* sibling = nullptr;
+
+  main_window->addTab(node_edit, data_model->path().join(" : "), sibling);
+//  if (sibling == nullptr) {
+//    main_window->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
+//  }
+}
+
 /*****************************************************************************/
 /* MainWindowWithDetachableDockWidgets */
 /*****************************************************************************/
@@ -732,6 +813,7 @@ DockWidget* MainWindowWithDetachableDockWidgets::addTab(QWidget *widget,
       QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable);
   dock_widget->setWidget(widget);
   dock_widget->setWindowIcon(widget ? widget->windowIcon() : QIcon());
+  dock_widget->addCloseAction();
 
   if (sibling != nullptr) {
     tabifyDockWidget(sibling, dock_widget);
@@ -886,17 +968,17 @@ QDockWidget* MainWindowWithDetachableDockWidgets::tabToDockWidget(
   return nullptr;
 }
 
-QTabBar* MainWindowWithDetachableDockWidgets::dockWidgetToTab(
+QPair<QTabBar*, int> MainWindowWithDetachableDockWidgets::dockWidgetToTab(
     QDockWidget* dock_widget) {
   for (auto tab_bar : findChildren<QTabBar*>()) {
     for (int i = 0; i < tab_bar->count(); ++i) {
       if (tabToDockWidget(tab_bar, i) == dock_widget) {
-        return tab_bar;
+        return qMakePair(tab_bar, i);
       }
     }
   }
 
-  return nullptr;
+  return qMakePair(nullptr, -1);
 }
 
 void MainWindowWithDetachableDockWidgets::splitDockWidget2(
@@ -1048,6 +1130,23 @@ void MainWindowWithDetachableDockWidgets::setActiveDockWidget(
       window->updateDocksAndTabs();
     }
     dock_widget->setFocus();
+  }
+}
+
+void MainWindowWithDetachableDockWidgets::focusNextPrevDock(DockWidget* dock_widget, bool next) {
+  auto parent = getOwnerOfDockWidget(dock_widget);
+
+  if (parent) {
+    auto tab_pair = parent->dockWidgetToTab(dock_widget);
+    if (tab_pair.first) {
+      int index;
+      if (next) {
+        index = (tab_pair.second + 1) % tab_pair.first->count();
+      } else {
+        index = (tab_pair.second - 1 + tab_pair.first->count()) % tab_pair.first->count();
+      }
+      tab_pair.first->setCurrentIndex(index);
+    }
   }
 }
 
