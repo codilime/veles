@@ -8,3 +8,5 @@ ChangeLog
 .tox
 .cache
 res*.xml
+veles.cert
+veles.key
