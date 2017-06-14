@@ -16,8 +16,10 @@
  */
 #pragma once
 
+#include <chrono>
 #include <stdint.h>
 #include <vector>
+
 #include <QString>
 
 #include "dbif/types.h"
@@ -92,10 +94,14 @@ struct BlobDescriptionReply : DescriptionReply {
 
 struct FileBlobDescriptionReply : BlobDescriptionReply {
   const QString path;
-  explicit FileBlobDescriptionReply(const QString &name, const QString &comment,
-                           uint64_t base, uint64_t size, int width,
-                           const QString &path) :
-    BlobDescriptionReply(name, comment, base, size, width), path(path) {}
+  const std::chrono::system_clock::time_point time_uploaded;
+  explicit FileBlobDescriptionReply(const QString& name, const QString& comment,
+                                    uint64_t base, uint64_t size, int width,
+                                    const QString& path,
+                                    const std::chrono::system_clock::time_point&
+                                        time_uploaded) :
+    BlobDescriptionReply(name, comment, base, size, width), path(path),
+    time_uploaded(time_uploaded) {}
 };
 
 struct SubBlobDescriptionReply : BlobDescriptionReply {

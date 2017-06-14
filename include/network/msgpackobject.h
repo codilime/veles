@@ -16,6 +16,8 @@
  */
 #pragma once
 
+#include <chrono>
+
 #include <msgpack.hpp>
 
 #include "fwd_models.h"
@@ -297,6 +299,7 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, uint64_t& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, double& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<data::NodeID>& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<data::BinData>& out);
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<std::chrono::system_clock::time_point>& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<proto::VelesException>& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<MsgpackObject>& out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<std::string>& out);

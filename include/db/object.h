@@ -17,6 +17,7 @@
 #pragma once
 
 #include <atomic>
+#include <chrono>
 
 #include <QSet>
 #include <QMap>
@@ -109,22 +110,33 @@ class DataBlobObject : public LocalObject {
 class FileBlobObject : public DataBlobObject {
   friend class QSharedPointer<FileBlobObject>;
   QString path_;
+  std::chrono::system_clock::time_point time_uploaded_;
 
-  FileBlobObject(LocalObject *parent, const data::BinData &data, const QString &path) :
-    DataBlobObject(parent, data, path), path_(path) {}
+  FileBlobObject(LocalObject *parent, const data::BinData &data,
+                 const QString &path,
+                 const std::chrono::system_clock::time_point& time_uploaded) :
+    DataBlobObject(parent, data, path), path_(path),
+    time_uploaded_(time_uploaded) {}
 
  protected:
   void description_reply(InfoGetter *getter) override;
 
  public:
   static PLocalObject create(LocalObject *parent,
-    const data::BinData &data, const QString &path) {
-    PLocalObject res = QSharedPointer<FileBlobObject>::create(parent, data, path);
+                             const data::BinData &data, const QString &path,
+                             const std::chrono::system_clock::time_point&
+                                 time_uploaded) {
+    PLocalObject res = QSharedPointer<FileBlobObject>::create(parent, data,
+                                                              path,
+                                                              time_uploaded);
     parent->addChild(res);
     return res;
   }
   dbif::ObjectType type() const override { return dbif::FILE_BLOB; }
   QString path() const { return path_; }
+  std::chrono::system_clock::time_point time_uploaded() const {
+    return time_uploaded_;
+  }
 };
 
 class SubBlobObject : public DataBlobObject {

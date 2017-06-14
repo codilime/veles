@@ -138,7 +138,7 @@ void LocalObject::kill() {
 
 void RootLocalObject::runMethod(MethodRunner *runner, PMethodRequest req) {
   if (auto blobreq = req.dynamicCast<dbif::RootCreateFileBlobFromDataRequest>()) {
-    PLocalObject obj = FileBlobObject::create(this, blobreq->data, blobreq->path);
+    PLocalObject obj = FileBlobObject::create(this, blobreq->data, blobreq->path, blobreq->time_uploaded);
     runner->sendResult<dbif::CreatedReply>(db()->handle(obj));
   } else {
     LocalObject::runMethod(runner, req);
@@ -258,7 +258,7 @@ void DataBlobObject::killed() {
 
 void FileBlobObject::description_reply(InfoGetter *getter) {
   getter->sendInfo<dbif::FileBlobDescriptionReply>(
-    name(), comment(), 0, data().size(), 8, path()
+    name(), comment(), 0, data().size(), 8, path(), time_uploaded()
   );
 }
 

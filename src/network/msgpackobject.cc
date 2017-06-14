@@ -473,6 +473,20 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr
   out = std::make_shared<data::BinData>(width, size, &data->data()[4]);
 }
 
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<std::chrono::system_clock::time_point>& out) {
+  if (obj->getExt().first != proto::EXT_DATETIME) {
+    throw proto::SchemaError("Wrong ext type for BinData");
+  }
+  auto data = obj->getExt().second;
+  if (data->size() < 8) {
+    throw proto::SchemaError("Not enough data for datetime to unpack");
+  }
+  uint64_t timestamp = util::bytesToIntLe<uint64_t>(data->data(), 8);
+  auto datetime = std::chrono::system_clock::from_time_t(timestamp / 1000);
+  datetime += std::chrono::milliseconds(timestamp % 1000);
+  out = std::make_shared<std::chrono::system_clock::time_point>(datetime);
+}
+
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<proto::VelesException>& out) {
   if (obj == nullptr) {
     out = nullptr;

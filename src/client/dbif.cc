@@ -15,6 +15,7 @@
  *
  */
 
+#include <chrono>
 #include <memory>
 #include <vector>
 
@@ -26,6 +27,8 @@
 #include "network/msgpackobject.h"
 #include "client/dbif.h"
 #include "parser/utils.h"
+
+using std::make_shared;
 
 namespace veles {
 namespace client {
@@ -399,12 +402,20 @@ void NCWrapper::handleGetReplyMessage(msg_ptr message) {
         uint64_t base(0);
         uint64_t size(0);
         uint64_t width(8);
+        std::shared_ptr<std::chrono::system_clock::time_point> time_uploaded;
 
         getAttr<uint64_t>(reply->obj->attr, "base", base);
         getAttr<uint64_t>(reply->obj->attr, "size", size);
         getAttr<uint64_t>(reply->obj->attr, "width", width);
-
         if (node_type == dbif::ObjectType::FILE_BLOB) {
+          getAttr<std::shared_ptr<std::chrono::system_clock::time_point>>(
+              reply->obj->attr, "time_uploaded", time_uploaded);
+          if (!time_uploaded) {
+            // Default to some old date, just to behave sanely when this field
+            // is not present.
+            time_uploaded = make_shared<std::chrono::system_clock::time_point>(
+                std::chrono::system_clock::from_time_t(0));
+          }
           QString path;
           getQStringAttr(reply->obj->attr, "path", path);
 
@@ -412,13 +423,13 @@ void NCWrapper::handleGetReplyMessage(msg_ptr message) {
             *nc_->output() << QString("NCWrapper: received MsgGetReply "
                 "(file blob) - name: \"%1\" comment: \"%2\";").arg(name)
                 .arg(comment) << endl << QString("    base: %1; size: %2;"
-                " width: %3; path: \"%4\".").arg(base).arg(size).arg(width)
-                .arg(path) << endl;
+                " width: %3; path: \"%4\".").arg(base)
+                .arg(size).arg(width).arg(path) << endl;
           }
 
           emit promise_iter->second->gotInfo(
               QSharedPointer<dbif::FileBlobDescriptionReply>
-              ::create(name, comment, base, size, width, path));
+              ::create(name, comment, base, size, width, path, *time_uploaded));
         } else {
           auto parent = QSharedPointer<NCObjectHandle>::create(
               this, *reply->obj->parent, dbif::ObjectType::CHUNK); //FIXME

@@ -42,8 +42,11 @@ struct NullReply;
 struct RootCreateFileBlobFromDataRequest : MethodRequest {
   data::BinData data;
   QString path;
+  std::chrono::system_clock::time_point time_uploaded;
   explicit RootCreateFileBlobFromDataRequest(const data::BinData &data,
-    const QString &path) : data(data), path(path) {}
+                                             const QString &path,
+                                             const std::chrono::system_clock::time_point& time_uploaded)
+    : data(data), path(path), time_uploaded(time_uploaded) {}
   explicit RootCreateFileBlobFromDataRequest(data::BinData &&data,
     const QString &path) : data(data), path(path) {}
   typedef CreatedReply ReplyType;

@@ -196,7 +196,7 @@ void NetworkClient::sendMsgConnect() {
       new std::string(client_type_.toStdString()));
 
   msg_ptr msg(new proto::MsgConnect(
-      1,
+      /*proto_version=*/2,
       pair_str(true, client_name_ptr),
       pair_str(true, client_version_ptr),
       pair_str(true, client_description_ptr),

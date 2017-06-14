@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals, print_function
 
+from datetime import datetime
 from six import text_type
 
 from veles.scli import client
@@ -9,7 +10,7 @@ from veles.schema.nodeid import NodeID
 from veles.util import helpers
 
 parser = helpers.get_client_argparse()
-parser.add_argument('file', help='path to file to upload', type=text_type)
+parser.add_argument('file', help='path to a file to upload', type=text_type)
 args = parser.parse_args()
 
 client = client.create_client(args.server, args.server_auth_key)
@@ -25,6 +26,7 @@ id = client.create(NodeID.root_id,
         'width': 8,
         'base': 0,
         'size': len(data),
+        'time_uploaded': datetime.utcnow(),
     },
     bindata={
         'data': data,

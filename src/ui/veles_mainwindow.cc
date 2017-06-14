@@ -14,6 +14,8 @@
  * limitations under the License.
  *
  */
+#include <chrono>
+
 #include <QAction>
 #include <QApplication>
 #include <QFileDialog>
@@ -391,7 +393,7 @@ void VelesMainWindow::createFileBlob(QString fileName) {
   }
   auto promise =
       database_->asyncRunMethod<dbif::RootCreateFileBlobFromDataRequest>(
-          this, data, fileName);
+          this, data, fileName, std::chrono::system_clock::now());
   connect(promise, &dbif::MethodResultPromise::gotResult,
       [this, fileName](dbif::PMethodReply reply) {
     createHexEditTab(

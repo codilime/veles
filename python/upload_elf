@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals, print_function
 
+import datetime
 from six import text_type
 
 from veles.scli import client
@@ -25,6 +26,7 @@ id = client.create(NodeID.root_id,
         'width': 8,
         'base': 0,
         'size': len(data),
+        'time_uploaded': datetime.utcnow(),
     },
     bindata={
         'data': data,

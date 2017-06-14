@@ -14,6 +14,7 @@
 
 import six
 
+from datetime import datetime
 from veles.compatibility import pep487
 from veles.proto.exceptions import SchemaError
 from veles.data import bindata
@@ -221,6 +222,14 @@ class String(Field):
     def cpp_type(self):
         # TODO default value from self.default
         return 'std::string', False, 'nullptr'
+
+
+class DateTime(Field):
+    value_type = datetime
+
+    def cpp_type(self):
+        # TODO default value from self.default
+        return 'std::chrono::system_clock::time_point', False, 'nullptr'
 
 
 class Binary(Field):
