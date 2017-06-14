@@ -79,7 +79,7 @@ ConnectionDialog::ConnectionDialog(QWidget* parent)
   certificate_dir_dialog_->setFileMode(QFileDialog::Directory);
 
   connect(ui_->select_database_button, &QPushButton::clicked,
-        certificate_dir_dialog_, &QFileDialog::show);
+      certificate_dir_dialog_, &QFileDialog::show);
   connect(certificate_dir_dialog_, &QFileDialog::fileSelected,
       this, &ConnectionDialog::databaseFileSelected);
 
@@ -92,7 +92,7 @@ ConnectionDialog::ConnectionDialog(QWidget* parent)
   connect(ui_->new_profile_button, &QPushButton::clicked, this, &ConnectionDialog::newProfile);
   connect(ui_->default_profile, &QPushButton::clicked, this, &ConnectionDialog::defaultProfile);
   connect(ui_->ssl_checkbox, &QCheckBox::toggled, this, &ConnectionDialog::sslEnabledToggled);
-  connect(ui_->server_url_line_edit, &QLineEdit::textEdited, [this](const QString &text) {
+  connect(ui_->server_url_line_edit, &QLineEdit::textEdited, [this](const QString& text) {
     QString trimmed_text = text.trimmed();
     ui_->server_url_line_edit->setText(trimmed_text);
     QString scheme = trimmed_text.section("://", 0, 0).toLower();
@@ -159,15 +159,15 @@ QString ConnectionDialog::serverScript() {
   return ui_->server_executable_line_edit->text();
 }
 
-QString ConnectionDialog::certificateDir() {
+QString ConnectionDialog::certificateDir() const {
   return ui_->certificate_dir_line_edit->text();
 }
 
-QString ConnectionDialog::serverUrl() {
+QString ConnectionDialog::serverUrl() const {
   return ui_->server_url_line_edit->text();
 }
 
-bool ConnectionDialog::sslEnabled() {
+bool ConnectionDialog::sslEnabled() const {
   return ui_->ssl_checkbox->isChecked();
 }
 
@@ -289,7 +289,7 @@ void ConnectionDialog::loadSettings() {
     ui_->server_url_line_edit->setText(
         util::settings::connection::serverUrl());
     emit ui_->server_url_line_edit->textEdited(
-          util::settings::connection::serverUrl());
+        util::settings::connection::serverUrl());
   }
   ui_->client_interface_line_edit->setText(
       util::settings::connection::clientInterface());

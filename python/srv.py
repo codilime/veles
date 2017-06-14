@@ -28,7 +28,7 @@ parser = helpers.get_logging_argparse()
 parser.add_argument(
     'url', help='URL that the server will listen on, in form of: '
                 'VELES[+SSL|+UNIX]://auth_key@([host]:port|path) '
-                'there are 3 supported schemas: VELES - TCP socket, '
+                '\nThere are 3 supported schemas: VELES - TCP socket, '
                 'VELES+SSL - SSL socket '
                 'VELES+UNIX - UNIX socket (not available on Windows)')
 parser.add_argument(

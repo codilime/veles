@@ -137,7 +137,7 @@ void NetworkClient::connect(
           this, &NetworkClient::socketConnected, Qt::QueuedConnection);
       QObject::connect(
           client_socket_,
-          static_cast<void(QSslSocket::*)(const QList<QSslError> &)>(&QSslSocket::sslErrors),
+          static_cast<void(QSslSocket::*)(const QList<QSslError>&)>(&QSslSocket::sslErrors),
           this, &NetworkClient::checkFingerprint);
     } else {
       QObject::connect(client_socket_, &QAbstractSocket::connected,
@@ -164,7 +164,7 @@ void NetworkClient::connect(
       if (output()) {
         *output() << "NetworkClient: bind successful." << endl;
       }
-      if(ssl_enabled_) {
+      if (ssl_enabled_) {
         client_socket_->connectToHostEncrypted(server_name_, server_port_);
       } else {
         client_socket_->connectToHost(server_name_, server_port_);
@@ -506,7 +506,7 @@ void NetworkClient::socketError(QAbstractSocket::SocketError socketError) {
 
 void NetworkClient::checkFingerprint(const QList<QSslError>& errors) {
   bool fingerprint_valid = false;
-  for (auto err : errors) {
+  for (const auto& err : errors) {
     if (err.error() == QSslError::SelfSignedCertificate || err.error() == QSslError::HostNameMismatch) {
       if (!fingerprint_valid) {
         QSslCertificate cert = err.certificate();

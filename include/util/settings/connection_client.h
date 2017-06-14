@@ -57,11 +57,11 @@ void setServerScript(QString server_script);
 
 QString certDirectoryDefault();
 QString certDirectory();
-void setCertDirectory(QString cert_directory);
+void setCertDirectory(const QString& cert_directory);
 
 QString serverUrlDefault();
 QString serverUrl();
-void setServerUrl(QString server_url);
+void setServerUrl(const QString& server_url);
 
 bool sslEnabledDefault();
 bool sslEnabled();

@@ -241,7 +241,7 @@ void ConnectionManager::disconnect() {
 void ConnectionManager::serverProcessReadyRead() {
   if(server_process_ && server_process_->bytesAvailable() > 0) {
     QByteArray out = server_process_->read(server_process_->bytesAvailable());
-    if(out.size() > 0) {
+    if (out.size() > 0) {
       if (network_client_->connectionStatus() == client::NetworkClient::ConnectionStatus::NotConnected) {
         QString marker("Client url: ");
         int start_pos = out.indexOf(marker);

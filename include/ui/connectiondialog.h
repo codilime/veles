@@ -41,9 +41,9 @@ class ConnectionDialog : public QDialog {
   QString clientName();
   QString databaseFile();
   QString serverScript();
-  QString certificateDir();
-  QString serverUrl();
-  bool sslEnabled();
+  QString certificateDir() const;
+  QString serverUrl() const;
+  bool sslEnabled() const;
 
  public slots:
   void serverLocalhost();

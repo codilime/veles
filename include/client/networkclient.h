@@ -110,7 +110,7 @@ public slots:
   void socketDisconnected();
   void newDataAvailable();
   void socketError(QAbstractSocket::SocketError socketError);
-  void checkFingerprint(const QList<QSslError> &errors);
+  void checkFingerprint(const QList<QSslError>& errors);
 
  private:
   QSslSocket* client_socket_;

@@ -244,7 +244,7 @@ QString certDirectory() {
       certDirectoryDefault()).toString();
 }
 
-void setCertDirectory(QString cert_directory) {
+void setCertDirectory(const QString& cert_directory) {
   setProfileSettings("connection.cert_dir", cert_directory);
 }
 
@@ -257,7 +257,7 @@ QString serverUrl() {
       serverUrlDefault()).toString();
 }
 
-void setServerUrl(QString server_url) {
+void setServerUrl(const QString& server_url) {
   setProfileSettings("connection.server_url", server_url);
 }
 
