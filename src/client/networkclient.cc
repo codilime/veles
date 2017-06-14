@@ -21,6 +21,8 @@
 #include <string>
 
 #include <QHostAddress>
+#include <QSslConfiguration>
+#include <QSslSocket>
 
 #include "proto/exceptions.h"
 #include "client/node.h"
@@ -58,7 +60,8 @@ NetworkClient::NetworkClient(QObject* parent) : QObject(parent),
     client_interface_name_("127.0.0.1"),
     protocol_version_(1), client_name_(""),
     client_version_("[unspecified version]"), client_description_(""),
-    client_type_(""), authentication_key_(""), quit_on_close_(false),
+    client_type_(""), authentication_key_(""), fingerprint_(""),
+    quit_on_close_(false), ssl_enabled_(true),
     output_stream_(nullptr), qid_(0) {
   registerMessageHandlers();
 }
@@ -71,17 +74,45 @@ NetworkClient::ConnectionStatus NetworkClient::connectionStatus() {
 }
 
 void NetworkClient::connect(
-    QString server_name,
-    int server_port,
+    QString server_url,
     QString client_interface_name,
     QString client_name,
     QString client_version,
     QString client_description,
     QString client_type,
-    const QByteArray &authentication_key,
     bool quit_on_close) {
-  server_name_ = server_name;
-  server_port_ = server_port;
+
+  QString scheme = server_url.section("://", 0, 0).toLower();
+  if (scheme == SCHEME_SSL) {
+    if (QSslSocket::supportsSsl()) {
+      ssl_enabled_ = true;
+    } else {
+      if (output()) {
+        *output() << "NetworkClient:: SSL error - check if "
+                     "OpenSSL is available" << endl;
+      }
+      return;
+    }
+  } else if (scheme == SCHEME_TCP) {
+    ssl_enabled_ = false;
+  } else if (scheme == SCHEME_UNIX) {
+    if (output()) {
+      *output() << "NetworkClient:: Unix sockets are "
+                   "currently unsupported" << endl;
+    }
+    return;
+  } else {
+    if (output()) {
+      *output() << "NetworkClient:: ERROR: unknown scheme provided!" << endl;
+    }
+    return;
+  }
+  QString url = server_url.section("://",1);
+  QString auth = url.section("@", 0, 0);
+  QString loc = url.section("@", 1);
+
+  server_name_ = loc.section(":", 0, -2);
+  server_port_ = loc.section(":", -1, -1).toInt();
   client_interface_name_ = client_interface_name;
   client_name_ = client_name;
   client_version_ = client_version;
@@ -89,7 +120,8 @@ void NetworkClient::connect(
   client_type_ = client_type;
   quit_on_close_ = quit_on_close;
 
-  authentication_key_ = authentication_key;
+  authentication_key_ = QByteArray::fromHex(auth.section(":", 0, 0).toUtf8());
+  fingerprint_ = auth.section(":", 1).replace(":", "").toLower();
   const int target_size = 64;
   int key_size = authentication_key_.size();
   authentication_key_.resize(target_size);
@@ -99,9 +131,18 @@ void NetworkClient::connect(
 
   if (status_ != ConnectionStatus::Connected
       && status_ != ConnectionStatus::Connecting) {
-    client_socket_ = new QTcpSocket(this);
-    QObject::connect(client_socket_, &QAbstractSocket::connected,
-        this, &NetworkClient::socketConnected, Qt::QueuedConnection);
+    client_socket_ = new QSslSocket(this);
+    if (ssl_enabled_) {
+      QObject::connect(client_socket_, &QSslSocket::encrypted,
+          this, &NetworkClient::socketConnected, Qt::QueuedConnection);
+      QObject::connect(
+          client_socket_,
+          static_cast<void(QSslSocket::*)(const QList<QSslError>&)>(&QSslSocket::sslErrors),
+          this, &NetworkClient::checkFingerprint);
+    } else {
+      QObject::connect(client_socket_, &QAbstractSocket::connected,
+          this, &NetworkClient::socketConnected, Qt::QueuedConnection);
+    }
     QObject::connect(client_socket_, &QAbstractSocket::disconnected,
         this, &NetworkClient::socketDisconnected, Qt::QueuedConnection);
     QObject::connect(client_socket_, &QIODevice::readyRead,
@@ -123,7 +164,11 @@ void NetworkClient::connect(
       if (output()) {
         *output() << "NetworkClient: bind successful." << endl;
       }
-      client_socket_->connectToHost(server_name_, server_port_);
+      if (ssl_enabled_) {
+        client_socket_->connectToHostEncrypted(server_name_, server_port_);
+      } else {
+        client_socket_->connectToHost(server_name_, server_port_);
+      }
       setConnectionStatus(ConnectionStatus::Connecting);
     } else {
       if (output()) {
@@ -457,6 +502,41 @@ void NetworkClient::socketError(QAbstractSocket::SocketError socketError) {
     *output() << "NetworkClient: Socket error - "
         << client_socket_->errorString() << endl;
   }
+}
+
+void NetworkClient::checkFingerprint(const QList<QSslError>& errors) {
+  bool fingerprint_valid = false;
+  for (const auto& err : errors) {
+    if (err.error() == QSslError::SelfSignedCertificate || err.error() == QSslError::HostNameMismatch) {
+      if (!fingerprint_valid) {
+        QSslCertificate cert = err.certificate();
+        if (cert.isNull()) {
+          // This shouldn't happen for those 2 errors, but better safe than sorry
+          if (output()) {
+            *output() << "NetworkClient: received null certificate!" << endl;
+          }
+          return;
+        }
+        QByteArray remote_fingerprint = cert.digest(QCryptographicHash::Algorithm::Sha256).toHex();
+        if (fingerprint_ == remote_fingerprint) {
+          fingerprint_valid = true;
+        } else {
+          if (output()) {
+            *output() << "NetworkClient: Certificate fingerprint mismatch! Expected: "
+                << fingerprint_ << ", got: " << remote_fingerprint << endl;
+          }
+          return;
+        }
+      }
+    } else {
+      if (output()) {
+        *output() << "NetworkClient: unexpected error: "
+            << err.errorString() << endl;
+      }
+      return;
+    }
+  }
+  client_socket_->ignoreSslErrors(errors);
 }
 
 } // client

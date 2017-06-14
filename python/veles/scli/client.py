@@ -15,13 +15,14 @@
 from __future__ import unicode_literals
 
 import socket
+import ssl
 
 import msgpack
 
 from veles.proto import messages, msgpackwrap
 from veles.proto.messages import PROTO_VERSION
 from veles.schema import nodeid
-from veles.util.helpers import prepare_auth_key
+from veles.util import helpers
 
 
 class Client(object):
@@ -36,7 +37,7 @@ class Client(object):
         self.client_description = description
         self.client_type = type
         self.quit_on_close = quit_on_close
-        self._authorize(prepare_auth_key(key))
+        self._authorize(helpers.prepare_auth_key(key))
 
     def _authorize(self, key):
         self.sock.sendall(key)
@@ -422,9 +423,23 @@ class TcpClient(Client):
         super(TcpClient, self).__init__(sock, key, **kwargs)
 
 
-def create_client(addr, key, **kwargs):
-    host, _, port = addr.rpartition(':')
-    if host == 'UNIX':
-        return UnixClient(port, key, **kwargs)
+class SslClient(Client):
+    def __init__(self, ip, port, key, fingerprint, **kwargs):
+        sock = socket.create_connection((ip, port))
+        sc = ssl.SSLContext()
+        sock = sc.wrap_socket(sock)
+        cert = sock.getpeercert(True)
+        helpers.validate_cert(cert, fingerprint)
+        super(SslClient, self).__init__(sock, key, **kwargs)
+
+
+def create_client(url):
+    url = helpers.parse_url(url)
+    if url.scheme == helpers.UrlScheme.UNIX_SCHEME:
+        return UnixClient(url.path, url.auth_key)
+    elif url.scheme == helpers.UrlScheme.TCP_SCHEME:
+        return TcpClient(url.host, url.port, url.auth_key)
+    elif url.scheme == helpers.UrlScheme.SSL_SCHEME:
+        return SslClient(url.host, url.port, url.auth_key, url.fingerprint)
     else:
-        return TcpClient(host, int(port), key, **kwargs)
+        raise ValueError('Wrong scheme provided!')

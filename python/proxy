@@ -19,19 +19,27 @@ import logging
 import asyncio
 import signal
 
-from veles.server.proto import create_unix_server, create_tcp_server
+from veles.server.proto import (create_unix_server, create_tcp_server,
+                                create_ssl_server)
 from veles.async_client.conn import AsyncRemoteConnection
-from veles.async_client.proto import create_unix_client, create_tcp_client
+from veles.async_client import proto
 from veles.util import helpers
 
 
 parser = argparse.ArgumentParser(
-    parents=[helpers.get_client_argparse(), helpers.get_logging_argparse()])
+    parents=[helpers.get_client_argparse(), helpers.get_logging_argparse()],
+    add_help=False)
 parser.add_argument(
-    'url', help='either UNIX:<socket_path> or <ip>:<tcp port> to listen on')
+    'url', help='URL that the server will listen on, in form of: '
+                'VELES[+SSL|+UNIX]://auth_key@([host]:port|path) '
+                '\nThere are 3 supported schemas: VELES - TCP socket, '
+                'VELES+SSL - SSL socket '
+                'VELES+UNIX - UNIX socket (not available on Windows)')
 parser.add_argument(
-    'auth_key', help='hex-encoded up to 64bytes value that '
-                     'clients need to provide when connecting')
+    '--cert-dir', help='Directory in which server will look for certificate '
+                       'and key files (named veles.cert and veles.key '
+                       'respectively) and save generated ones if not found',
+    default='.')
 args = parser.parse_args()
 
 logging.basicConfig(level=logging.getLevelName(args.log_level))
@@ -39,22 +47,22 @@ logging.basicConfig(level=logging.getLevelName(args.log_level))
 logging.info('Świtezianka proxy is starting up...')
 loop = asyncio.get_event_loop()
 
-host, _, port = args.server.rpartition(':')
-if host == 'UNIX':
-    logging.info('Connecting to UNIX server...')
-    proto = loop.run_until_complete(create_unix_client(loop, args.server_auth_key, port))[1]
-else:
-    logging.info('Connecting to TCP server...')
-    proto = loop.run_until_complete(create_tcp_client(loop, args.server_auth_key, host, int(port)))[1]
+proto = loop.run_until_complete(proto.create_client(loop, args.server_url))[1]
 conn = AsyncRemoteConnection(loop, proto)
 
-host, _, port = args.url.rpartition(':')
-if host == 'UNIX':
+url = helpers.parse_url(args.url)
+if url.scheme == helpers.UrlScheme.UNIX_SCHEME:
     logging.info('Starting UNIX server...')
-    loop.run_until_complete(create_unix_server(conn, args.auth_key, port))
-else:
+    loop.run_until_complete(create_unix_server(conn, url.auth_key, url.path))
+elif url.scheme == helpers.UrlScheme.TCP_SCHEME:
     logging.info('Starting TCP server...')
-    loop.run_until_complete(create_tcp_server(conn, args.auth_key, host, int(port)))
+    loop.run_until_complete(
+        create_tcp_server(conn, url.auth_key, url.host, url.port))
+elif url.scheme == helpers.UrlScheme.SSL_SCHEME:
+    logging.info('Starting SSL server...')
+    loop.run_until_complete(
+        create_ssl_server(
+            conn, url.auth_key, url.host, url.port, args.cert_dir))
 logging.info('Ready.')
 try:
     loop.add_signal_handler(signal.SIGINT, loop.stop)

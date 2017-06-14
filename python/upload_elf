@@ -12,7 +12,7 @@ parser = helpers.get_client_argparse()
 parser.add_argument('file', help='path to file to upload', type=text_type)
 args = parser.parse_args()
 
-client = client.create_client(args.server, args.server_auth_key)
+client = client.create_client(args.server_url)
 
 with open(args.file, 'rb') as f:
     data = f.read()

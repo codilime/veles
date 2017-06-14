@@ -12,7 +12,6 @@ if(WIN32)
       COMMAND ${CMAKE_COMMAND} -E tar xzf ${OPENSSL_ARCHIVE_PATH}
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
     if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
-      #set(WINXXBITS Win64)
       add_custom_command(OUTPUT "${OPENSSL_DIR}/crypto/buildinf.h"
         COMMAND ${PERL_EXECUTABLE} Configure VC-WIN64A
         WORKING_DIRECTORY ${OPENSSL_DIR}
@@ -33,7 +32,6 @@ if(WIN32)
         COMMENT "Building OpenSSL"
         VERBATIM)
     else("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
-      #set(WINXXBITS Win32)
       add_custom_command(OUTPUT "${OPENSSL_DIR}/crypto/buildinf.h"
         COMMAND ${PERL_EXECUTABLE} Configure VC-WIN32
         WORKING_DIRECTORY ${OPENSSL_DIR}

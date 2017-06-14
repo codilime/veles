@@ -116,7 +116,6 @@ void ConnectionManager::connectionDialogAccepted() {
     startLocalServer();
     QTextStream out(LogWidget::output());
     out << "Waiting for a new server to start..." << endl;
-    QTimer::singleShot(2000, this, &ConnectionManager::startClient);
   } else {
     startClient();
   }
@@ -124,14 +123,12 @@ void ConnectionManager::connectionDialogAccepted() {
 
 void ConnectionManager::startClient() {
   network_client_->connect(
-      connection_dialog_->serverHost(),
-      connection_dialog_->serverPort(),
+      connection_dialog_->serverUrl(),
       connection_dialog_->clientInterface(),
       connection_dialog_->clientName(),
       veles::util::version::string,
       "Veles UI",
       "Veles UI",
-      QByteArray::fromHex(connection_dialog_->authenticationKey().toUtf8()),
       is_local_server_);
 }
 
@@ -139,7 +136,6 @@ void ConnectionManager::startLocalServer() {
   if(server_process_) {
     server_process_->deleteLater();
   }
-
   server_process_ = new QProcess(this);
   server_process_->setProcessChannelMode(QProcess::MergedChannels);
   connect(server_process_, &QProcess::started,
@@ -169,12 +165,21 @@ void ConnectionManager::startLocalServer() {
   env.insert("PYTHONIOENCODING", "UTF-8");
   server_process_->setProcessEnvironment(env);
 
+  QString scheme;
+
+  if (connection_dialog_->sslEnabled()) {
+    scheme = client::SCHEME_SSL;
+  } else {
+    scheme = client::SCHEME_TCP;
+  }
+
   QStringList arguments;
   arguments
       << server_file_name
-      << QString("%1:%2").arg(connection_dialog_->serverHost())
+      << QString("%1://%2@%3:%4").arg(scheme)
+      .arg(connection_dialog_->authenticationKey())
+      .arg(connection_dialog_->serverHost())
       .arg(connection_dialog_->serverPort())
-      << connection_dialog_->authenticationKey()
       << connection_dialog_->databaseFile();
 
 #if defined(Q_OS_LINUX)
@@ -234,11 +239,33 @@ void ConnectionManager::disconnect() {
 }
 
 void ConnectionManager::serverProcessReadyRead() {
-  char buf[10240];
   if(server_process_ && server_process_->bytesAvailable() > 0) {
-    qint64 len = server_process_->read(buf, sizeof(buf));
-    if(len > 0) {
-      LogWidget::output()->write(buf, len);
+    QByteArray out = server_process_->read(server_process_->bytesAvailable());
+    if (out.size() > 0) {
+      if (network_client_->connectionStatus() == client::NetworkClient::ConnectionStatus::NotConnected) {
+        QString marker("Client url: ");
+        int start_pos = out.indexOf(marker);
+        if (start_pos != -1) {
+          start_pos += marker.length();
+          int end_pos = out.indexOf("\n", start_pos);
+          if (end_pos == -1) {
+            server_process_->waitForReadyRead();
+            QByteArray additional = server_process_->readLine(server_process_->bytesAvailable());
+            out += additional;
+            end_pos = out.indexOf("\n", start_pos);
+          }
+          QByteArray url = out.mid(start_pos, end_pos - start_pos);
+          network_client_->connect(
+              QString::fromUtf8(url),
+              connection_dialog_->clientInterface(),
+              connection_dialog_->clientName(),
+              veles::util::version::string,
+              "Veles UI",
+              "Veles UI",
+              is_local_server_);
+        }
+      }
+      LogWidget::output()->write(out);
     }
   }
 }
