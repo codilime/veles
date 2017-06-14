@@ -24,7 +24,7 @@
 namespace veles {
 namespace ui {
 
-DatabaseInfo::DatabaseInfo(dbif::ObjectHandle database, QWidget *parent)
+DatabaseInfo::DatabaseInfo(dbif::ObjectHandle database, QWidget* parent)
     : QWidget(parent),
       ui_(new Ui::DatabaseInfo),
       database_(database),
@@ -45,8 +45,6 @@ DatabaseInfo::DatabaseInfo(dbif::ObjectHandle database, QWidget *parent)
 
   ui_->goButton->setEnabled(false);
 
-  historyModel_ = new QStandardItemModel(0, 3);
-
   subscribeChildren();
 }
 
@@ -61,7 +59,7 @@ DatabaseInfo::~DatabaseInfo() { delete ui_; }
 void DatabaseInfo::goClicked() {
   auto selectedIndex = ui_->resourcesListView->currentIndex();
   if (selectedIndex.isValid()) {
-    emit goFile(indexToObject_[selectedIndex.row()],
+    emit goFile(index_to_object_[selectedIndex.row()],
                 selectedIndex.data().toString());
   }
 }
@@ -69,40 +67,41 @@ void DatabaseInfo::goClicked() {
 void DatabaseInfo::newClicked() { emit newFile(); }
 
 void DatabaseInfo::gotChildrenResponse(veles::dbif::PInfoReply reply) {
-  objectToIndex_.clear();
-  indexToObject_.clear();
+  object_to_index_.clear();
+  index_to_object_.clear();
   model_->clear();
   ui_->goButton->setEnabled(false);
 
   auto objects =
       reply.dynamicCast<dbif::ChildrenRequest::ReplyType>()->objects;
-  int nextIndex = 0;
-  for (auto &object : objects) {
-    if (object->type() != dbif::FILE_BLOB || objectToIndex_.contains(object)) {
+  int next_index = 0;
+  for (const auto& object : objects) {
+    if (object->type() != dbif::FILE_BLOB || object_to_index_.contains(object)) {
       continue;
     }
 
-    auto item = new QStandardItem("loading");
+    auto item = new QStandardItem("loading...");
     item->setEditable(false);
     model_->appendRow(item);
-    auto index = model_->index(nextIndex, 0);
-    objectToIndex_[object] = index;
-    indexToObject_.append(object);
-    nextIndex++;
+    auto index = model_->index(next_index, 0);
+    object_to_index_[object] = index;
+    index_to_object_.append(object);
+    next_index++;
 
-    auto descriptionPromise =
+    auto description_promise =
         object->asyncSubInfo<dbif::DescriptionRequest>(this);
 
-    connect(descriptionPromise, &dbif::InfoPromise::gotInfo,
-            [this, object](veles::dbif::PInfoReply reply) {
-              if (auto fileBlobDescription =
-                      reply.dynamicCast<dbif::FileBlobDescriptionReply>()) {
-                if (objectToIndex_.contains(object)) {
-                  model_->setData(objectToIndex_[object],
-                                  fileBlobDescription->path);
-                }
-              }
-            });
+    connect(description_promise, &dbif::InfoPromise::gotInfo,
+        [this, object](veles::dbif::PInfoReply reply) {
+          if (auto file_blob_description =
+                reply.dynamicCast<dbif::FileBlobDescriptionReply>()) {
+            if (object_to_index_.contains(object)) {
+              model_->setData(object_to_index_[object],
+                              file_blob_description->path);
+            }
+          }
+        }
+    );
   }
 }
 
