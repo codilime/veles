@@ -84,7 +84,7 @@ qint64 SearchDialog::lastIndexOf(const data::BinData &pattern,
     startPos = data.size();
   }
   qint64 index = startPos - 1;
-  while (index > 0) {
+  while (index >= 0) {
     size_t numberOfMatches = 0;
     while (numberOfMatches < pattern.size() &&
            numberOfMatches + index < data.size() &&
@@ -118,29 +118,41 @@ qint64 SearchDialog::findNext() {
   }
 
   bool backwards = ui->cbBackwards->isChecked();
+  bool overlapping = ui->cbOverlapping->isChecked();
 
-  qint64 startSearchPos = _lastFoundPos;
-
-  if (!backwards) {
-    startSearchPos += _lastFoundSize;
+  qint64 start_search_pos_modifier = 0;
+  if (_lastFoundSize > 0) {
+    if (overlapping) {
+      start_search_pos_modifier = 1;
+    } else {
+      start_search_pos_modifier = _lastFoundSize;
+    }
   }
+
+  if (backwards) {
+    start_search_pos_modifier = -(start_search_pos_modifier - 1);
+  }
+
+  qint64 start_search_pos = _lastFoundPos + start_search_pos_modifier;
 
   qint64 idx = -1;
   if (backwards) {
-    idx = lastIndexOf(_findBa, startSearchPos);
+    idx = lastIndexOf(_findBa, start_search_pos);
   } else {
-    idx = indexOf(_findBa, startSearchPos);
+    idx = indexOf(_findBa, start_search_pos);
   }
 
   if (idx >= 0) {
     _hexEdit->setSelection(idx, _findBa.size(), true);
-    _lastFoundPos = idx;
     _lastFoundSize = _findBa.size();
     emit enableFindNext(true);
   } else {
-    _lastFoundPos = -1;
     _lastFoundSize = 0;
-    _hexEdit->setSelection(0, 0, false);
+    if (backwards) {
+      _hexEdit->setSelection(_hexEdit->dataModel()->binData().size() - 1, 0, false);
+    } else {
+      _hexEdit->setSelection(0, 0, false);
+    }
     message_box_not_found_->show();
   }
 
