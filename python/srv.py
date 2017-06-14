@@ -16,7 +16,6 @@
 
 import logging
 import asyncio
-import platform
 import signal
 import importlib
 
@@ -77,8 +76,6 @@ logging.info('Ready.')
 try:
     loop.add_signal_handler(signal.SIGINT, loop.stop)
 except NotImplementedError:
-    pass
-if platform.system() == 'Windows':
     # loop.run_forever() breaks Ctrl+C on Windows.
     # See http://bugs.python.org/issue23057.
     while True:
