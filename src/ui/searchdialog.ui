@@ -98,21 +98,59 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QCheckBox" name="cbBackwards">
-          <property name="text">
-           <string>&amp;Backwards</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="cbPrompt">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>&amp;Prompt on replace</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="QCheckBox" name="cbBackwards">
+              <property name="text">
+               <string>&amp;Backwards</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="cbPrompt">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>&amp;Prompt on replace</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <item>
+             <widget class="QCheckBox" name="cbOverlapping">
+              <property name="text">
+               <string>Overlapping matches</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>16</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -185,6 +223,7 @@
   <tabstop>cbReplace</tabstop>
   <tabstop>cbBackwards</tabstop>
   <tabstop>cbPrompt</tabstop>
+  <tabstop>cbOverlapping</tabstop>
   <tabstop>pbFind</tabstop>
   <tabstop>pbReplace</tabstop>
   <tabstop>pbReplaceAll</tabstop>
