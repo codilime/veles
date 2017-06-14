@@ -412,10 +412,10 @@ QRect HexEdit::bytePosToRect(qint64 pos, bool ascii, qint64 char_pos) {
   if (ascii) {
     xPos = charWidht_ * columnNum + addressWidth_ + hexAreaWidth_ +
            startMargin_ - startPosX_ + 1;
-    width = charWidht_ + 1;
+    width = charWidht_ + 2;
   } else {
     xPos = (byteCharsCount_ * charWidht_ + spaceAfterByte_) * columnNum +
-           addressWidth_ + startMargin_ - startPosX_ + char_pos * charWidht_;
+           addressWidth_ + startMargin_ - startPosX_ + char_pos * charWidht_ - 1;
     width = charWidht_ * (byteCharsCount_ - char_pos) + spaceAfterByte_;
   }
   qint64 yPos = (rowNum + 1) * charHeight_;
