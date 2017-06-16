@@ -78,10 +78,10 @@ ConnectionDialog::ConnectionDialog(QWidget* parent)
   certificate_dir_dialog_ = new QFileDialog(this);
   certificate_dir_dialog_->setFileMode(QFileDialog::Directory);
 
-  connect(ui_->select_database_button, &QPushButton::clicked,
+  connect(ui_->certificate_dir_button, &QPushButton::clicked,
       certificate_dir_dialog_, &QFileDialog::show);
   connect(certificate_dir_dialog_, &QFileDialog::fileSelected,
-      this, &ConnectionDialog::databaseFileSelected);
+      this, &ConnectionDialog::certificateDirSelected);
 
   connect(ui_->load_defaults_button, &QPushButton::clicked,
       this, &ConnectionDialog::loadDefaultValues);
