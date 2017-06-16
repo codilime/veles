@@ -409,17 +409,19 @@ QRect HexEdit::bytePosToRect(qint64 pos, bool ascii, qint64 char_pos) {
 
   qint64 xPos;
   qint64 width;
+  auto hex_border_spacing_x = spaceAfterByte_ / 2;
   if (ascii) {
     xPos = charWidht_ * columnNum + addressWidth_ + hexAreaWidth_ +
-           startMargin_ - startPosX_ + 1;
+        startMargin_ - startPosX_ + 1;
     width = charWidht_ + 2;
   } else {
     xPos = (byteCharsCount_ * charWidht_ + spaceAfterByte_) * columnNum +
-           addressWidth_ + startMargin_ - startPosX_ + char_pos * charWidht_ - 1;
-    width = charWidht_ * (byteCharsCount_ - char_pos) + spaceAfterByte_;
+        addressWidth_ + startMargin_ - startPosX_ + char_pos * charWidht_;
+    width = charWidht_ * (byteCharsCount_ - char_pos) + hex_border_spacing_x*2
+        - 1;
   }
   qint64 yPos = (rowNum + 1) * charHeight_;
-  return QRect(xPos - spaceAfterByte_ / 2,
+  return QRect(xPos - hex_border_spacing_x,
                yPos - charHeight_ + verticalByteBorderMargin_, width,
                charHeight_);
 }
