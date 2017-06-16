@@ -108,7 +108,8 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
       selection_size_(0),
       current_area_(WindowArea::HEX),
       cursor_pos_in_byte_(0),
-      cursor_visible_(false) {
+      cursor_visible_(false),
+      edit_engine_(dataModel->binData().width()) {
   setFont(util::settings::theme::font());
 
   connect(dataModel_, &FileBlobModel::newBinData,
@@ -503,6 +504,20 @@ uint64_t HexEdit::byteValue(qint64 pos, bool modified) {
   return dataModel_->binData()[pos].element64();
 }
 
+void HexEdit::setBytesValues(qint64 pos, const data::BinData& new_data) {
+  qint64 paste_size = new_data.size();
+  if (dataBytesCount_ - pos < paste_size) {
+    paste_size = dataBytesCount_ - pos;
+  }
+
+  data::BinData old_data(dataModel_->binData().width(), paste_size);
+  for (int i=0; i < paste_size; ++i) {
+    old_data.setElement64(i, byteValue(pos + i));
+  }
+  edit_engine_.changeBytes(pos, new_data, old_data);
+  emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
+}
+
 void HexEdit::discardChanges() {
   edit_engine_.clear();
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
@@ -839,8 +854,9 @@ void HexEdit::setByteValue(qint64 pos, uint64_t byte_value) {
     return;
   }
 
-
-  edit_engine_.changeBytes(pos, {byte_value}, {old_byte});
+  edit_engine_.changeBytes(
+        pos, data::BinData(dataModel()->binData().width(), {byte_value}),
+        data::BinData(dataModel()->binData().width(), {old_byte}));
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
 }
 
@@ -850,7 +866,7 @@ void HexEdit::transferChanges(data::BinData& bin_data, qint64 offset_shift, qint
 
 void HexEdit::applyChanges() {
   while (edit_engine_.hasChanges()) {
-    auto change = edit_engine_.popFirstChange(dataModel_->binData().width());
+    auto change = edit_engine_.popFirstChange();
     dataModel_->uploadNewData(change.second, change.first);
   }
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
@@ -991,11 +1007,11 @@ void HexEdit::pasteFromClipboard(util::encoders::IDecoder* enc) {
     paste_size = dataBytesCount_ - paste_start_position;
   }
 
-  QVector<uint64_t> new_data;
-  QVector<uint64_t> old_data;
+  data::BinData new_data(dataModel_->binData().width(), paste_size);
+  data::BinData old_data(dataModel_->binData().width(), paste_size);
   for (int i=0; i < paste_size; ++i) {
-    new_data.append(static_cast<unsigned char>(data[i]));
-    old_data.append(byteValue(paste_start_position + i));
+    new_data.setElement64(i, static_cast<unsigned char>(data[i]));
+    old_data.setElement64(i, byteValue(paste_start_position + i));
   }
   edit_engine_.changeBytes(paste_start_position, new_data, old_data);
   setSelection(paste_start_position, paste_size);

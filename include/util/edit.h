@@ -28,17 +28,18 @@ namespace util {
 
 class EditEngine {
  public:
-  explicit EditEngine(int edit_stack_limit = 100) : edit_stack_limit_(edit_stack_limit) {}
+  explicit EditEngine(int bindata_width, int edit_stack_limit = 100) :
+    edit_stack_limit_(edit_stack_limit), bindata_width_(bindata_width) {}
 
-  void changeBytes(size_t pos, const QVector<uint64_t>& bytes,
-      const QVector<uint64_t>& old_bytes, bool add_to_history = true);
+  void changeBytes(size_t pos, const data::BinData& bytes,
+      const data::BinData& old_bytes, bool add_to_history = true);
 
   bool hasUndo() const {return !edit_stack_.isEmpty();}
   /** Undo last changeBytes and returns first byte changed by this operation */
   size_t undo();
 
   void applyChanges(data::BinData& data, size_t offset = 0, int64_t max_bytes = -1) const;
-  QPair<size_t, data::BinData> popFirstChange(uint32_t bindata_width);
+  QPair<size_t, data::BinData> popFirstChange();
 
   bool isChanged(size_t byte_pos) const;
   uint64_t byteValue(size_t byte_pos) const;
@@ -48,12 +49,13 @@ class EditEngine {
 
  private:
   int edit_stack_limit_;
-  QList<QVector<uint64_t>> edit_stack_data_;
+  int bindata_width_;
+  QList<data::BinData> edit_stack_data_;
   QList<QPair<size_t, size_t>> edit_stack_;
-  QMap<size_t, QVector<uint64_t>> changes_;
+  QMap<size_t, data::BinData> changes_;
 
-  QMap<size_t, QVector<uint64_t>>::const_iterator itFromPos(size_t pos) const;
-  QMap<size_t, QVector<uint64_t>> changesFromRange(size_t pos, size_t size) const;
+  QMap<size_t, data::BinData>::const_iterator itFromPos(size_t pos) const;
+  QMap<size_t, data::BinData> changesFromRange(size_t pos, size_t size) const;
   void removeChanges(size_t pos, size_t size);
 
 };

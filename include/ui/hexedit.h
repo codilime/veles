@@ -52,6 +52,7 @@ class HexEdit : public QAbstractScrollArea {
   void setParserIds(QStringList ids);
   void processEditEvent(QKeyEvent *event);
   uint64_t byteValue(qint64 pos, bool modified = true);
+  void setBytesValues(qint64 pos, const data::BinData& new_data);
 
 public slots:
   void newBinData();

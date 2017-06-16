@@ -45,6 +45,11 @@ SearchDialog::SearchDialog(HexEdit *hexEdit, QWidget *parent)
     _lastFoundSize = 0;
   });
 
+  ui->warning_label->setVisible(false);
+
+  connect(ui->cbFind, &QComboBox::editTextChanged, this, &SearchDialog::findTextChanged);
+  connect(ui->cbReplace, &QComboBox::editTextChanged, this, &SearchDialog::replaceTextChanged);
+
 }
 
 SearchDialog::~SearchDialog() { delete ui; }
@@ -103,11 +108,18 @@ qint64 SearchDialog::lastIndexOf(const data::BinData &pattern,
   return -1;
 }
 
-void SearchDialog::replace(qint64 pos, qint64 len, const data::BinData &data) {
-  // TODO: implement this
+void SearchDialog::replace(qint64 pos, const data::BinData &data) {
+  _hexEdit->setBytesValues(pos, data);
 }
 
-qint64 SearchDialog::findNext() {
+void SearchDialog::enableReplace(const QString& find, const QString& replace) {
+  ui->warning_label->setVisible(replace.length() && (replace.length() != find.length()));
+  bool enable_replace = replace.length() && (replace.length() == find.length());
+  ui->pbReplace->setEnabled(enable_replace);
+  ui->pbReplaceAll->setEnabled(enable_replace);
+}
+
+qint64 SearchDialog::findNext(bool include_overlapping, bool interactive) {
   emit enableFindNext(false);
 
   _findBa =
@@ -118,7 +130,7 @@ qint64 SearchDialog::findNext() {
   }
 
   bool backwards = ui->cbBackwards->isChecked();
-  bool overlapping = ui->cbOverlapping->isChecked();
+  bool overlapping = ui->cbOverlapping->isChecked() && include_overlapping;
 
   qint64 start_search_pos_modifier = 0;
   if (_lastFoundSize > 0) {
@@ -153,7 +165,9 @@ qint64 SearchDialog::findNext() {
     } else {
       _hexEdit->setSelection(0, 0, false);
     }
-    message_box_not_found_->show();
+    if (interactive) {
+      message_box_not_found_->show();
+    }
   }
 
   return idx;
@@ -176,7 +190,7 @@ void SearchDialog::on_pbReplace_clicked() {
     replaceOccurrence(_lastFoundPos, replaceData);
   }
 
-  findNext();
+  findNext(false);
 }
 
 void SearchDialog::on_pbReplaceAll_clicked() {
@@ -185,7 +199,7 @@ void SearchDialog::on_pbReplaceAll_clicked() {
   int idx = 0;
   int goOn = QMessageBox::Yes;
   while ((idx >= 0) && (goOn == QMessageBox::Yes)) {
-    idx = findNext();
+    idx = findNext(false, false);
     if (idx >= 0) {
       data::BinData replaceBa = getContent(ui->cbReplaceFormat->currentIndex(),
                                         ui->cbReplace->currentText());
@@ -201,6 +215,14 @@ void SearchDialog::on_pbReplaceAll_clicked() {
     QMessageBox::information(
         this, tr("HexEdit"),
         QString(tr("%1 occurrences replaced.")).arg(replaceCounter));
+}
+
+void SearchDialog::findTextChanged(const QString& text) {
+  enableReplace(text, ui->cbReplace->currentText());
+}
+
+void SearchDialog::replaceTextChanged(const QString& text) {
+  enableReplace(ui->cbFind->currentText(), text);
 }
 
 bool SearchDialog::isHexStr(QString hexStr) {
@@ -257,11 +279,11 @@ qint64 SearchDialog::replaceOccurrence(qint64 idx,
         QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 
     if (result == QMessageBox::Yes) {
-       replace(idx, replaceBa.size(), replaceBa);
+       replace(idx, replaceBa);
       _hexEdit->update();
     }
   } else {
-    replace(idx, _findBa.size(), replaceBa);
+    replace(idx, replaceBa);
   }
   return result;
 }
