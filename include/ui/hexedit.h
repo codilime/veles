@@ -155,7 +155,8 @@ public slots:
   void recalculateValues();
   void initParseMenu();
   void adjustBytesPerRowToWindowSize();
-  QRect bytePosToRect(qint64 pos, bool ascii = false, qint64 char_pos = 0);
+  QRect bytePosToArea(qint64 pos, bool ascii = false, qint64 char_pos = 0);
+  QRect bytePosToBorder(qint64 pos, bool ascii = false, qint64 char_pos = 0);
   qint64 pointToRowNum(QPoint pos);
   qint64 pointToColumnNum(QPoint pos);
   qint64 pointToBytePos(QPoint pos);

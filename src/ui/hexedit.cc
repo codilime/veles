@@ -399,7 +399,37 @@ void HexEdit::createAction(util::settings::shortcuts::ShortcutType type, const s
   addAction(action);
 }
 
-QRect HexEdit::bytePosToRect(qint64 pos, bool ascii, qint64 char_pos) {
+// Returns area which belongs to the given byte on the screen. All bytes have
+// non-overlapping areas.
+QRect HexEdit::bytePosToArea(qint64 pos, bool ascii, qint64 char_pos) {
+  qint64 columnNum = pos % bytesPerRow_;
+  qint64 rowNum = pos / bytesPerRow_ - startRow_;
+
+  if (rowNum < 0 || rowNum >= rowsOnScreen_) {
+    return QRect();
+  }
+
+  qint64 xPos;
+  qint64 width;
+  auto hex_border_spacing_x = spaceAfterByte_ / 2;
+  if (ascii) {
+    xPos = charWidht_ * columnNum + addressWidth_ + hexAreaWidth_ +
+        startMargin_ - startPosX_ + 2;
+    width = charWidht_;
+  } else {
+    xPos = (byteCharsCount_ * charWidht_ + spaceAfterByte_) * columnNum +
+        addressWidth_ + startMargin_ - startPosX_ + char_pos * charWidht_;
+    width = charWidht_ * (byteCharsCount_ - char_pos) + spaceAfterByte_;
+  }
+  qint64 yPos = (rowNum + 1) * charHeight_;
+  return QRect(xPos - hex_border_spacing_x,
+               yPos - charHeight_ + verticalByteBorderMargin_, width,
+               charHeight_);
+}
+
+// Returns where a border of a given byte should be drawn. Borders can overlap
+// with each other, because of centering on different DPIs.
+QRect HexEdit::bytePosToBorder(qint64 pos, bool ascii, qint64 char_pos) {
   qint64 columnNum = pos % bytesPerRow_;
   qint64 rowNum = pos / bytesPerRow_ - startRow_;
 
@@ -579,6 +609,7 @@ QColor HexEdit::byteBackroundColorFromPos(qint64 pos) {
   return QColor();
 }
 
+// Draws a border around a sequence of bytes.
 void HexEdit::drawBorder(qint64 start, qint64 size, bool asciiArea,
                          bool doted) {
   QPainter painter(viewport());
@@ -592,7 +623,7 @@ void HexEdit::drawBorder(qint64 start, qint64 size, bool asciiArea,
 
   // top Line
   for (qint64 i = 0; i < qMin(size, bytesPerRow_); ++i) {
-    auto rect = bytePosToRect(start + i, asciiArea);
+    auto rect = bytePosToArea(start + i, asciiArea);
     if (rect.isEmpty()) {
       continue;
     }
@@ -601,7 +632,7 @@ void HexEdit::drawBorder(qint64 start, qint64 size, bool asciiArea,
 
   // bottom Line
   for (qint64 i = 0; i < qMin(size, bytesPerRow_); ++i) {
-    auto rect = bytePosToRect(start + size - i - 1, asciiArea);
+    auto rect = bytePosToArea(start + size - i - 1, asciiArea);
     if (rect.isEmpty()) {
       continue;
     }
@@ -609,13 +640,13 @@ void HexEdit::drawBorder(qint64 start, qint64 size, bool asciiArea,
   }
 
   // left line for first byte
-  auto rect = bytePosToRect(start, asciiArea);
+  auto rect = bytePosToArea(start, asciiArea);
   if (!rect.isEmpty()) {
     painter.drawLine(rect.topLeft(), rect.bottomLeft());
   }
 
   // right line for last byte
-  rect = bytePosToRect(start + size - 1, asciiArea);
+  rect = bytePosToArea(start + size - 1, asciiArea);
   if (!rect.isEmpty()) {
     painter.drawLine(rect.topRight(), rect.bottomRight());
   }
@@ -624,7 +655,7 @@ void HexEdit::drawBorder(qint64 start, qint64 size, bool asciiArea,
     // rest of left line
     for (qint64 i = bytesPerRow_ - start % bytesPerRow_; i < size;
          i += bytesPerRow_) {
-      auto rect = bytePosToRect(start + i, asciiArea);
+      auto rect = bytePosToArea(start + i, asciiArea);
       if (rect.isEmpty()) {
         continue;
       }
@@ -634,7 +665,7 @@ void HexEdit::drawBorder(qint64 start, qint64 size, bool asciiArea,
     // rest of left line
     for (qint64 i = bytesPerRow_ - start % bytesPerRow_ - 1; i < size;
          i += bytesPerRow_) {
-      auto rect = bytePosToRect(start + i, asciiArea);
+      auto rect = bytePosToArea(start + i, asciiArea);
       if (rect.isEmpty()) {
         continue;
       }
@@ -706,8 +737,8 @@ void HexEdit::paintEvent(QPaintEvent *event) {
       if (byteNum < dataBytesCount_) {
         auto bgc = byteBackroundColorFromPos(byteNum);
         if (bgc.isValid()) {
-          painter.fillRect(bytePosToRect(byteNum), bgc);
-          painter.fillRect(bytePosToRect(byteNum, true), bgc);
+          painter.fillRect(bytePosToArea(byteNum), bgc);
+          painter.fillRect(bytePosToArea(byteNum, true), bgc);
         }
 
         old_pen = painter.pen();
@@ -743,7 +774,7 @@ void HexEdit::paintEvent(QPaintEvent *event) {
   if ((cursor_visible_ || !hasFocus()) && dataBytesCount_ > 0) {
     bool in_ascii_area = current_area_ == WindowArea::ASCII;
     drawBorder(current_position_, 1, true, !in_ascii_area);
-    auto rect = bytePosToRect(current_position_, false, cursor_pos_in_byte_);
+    auto rect = bytePosToBorder(current_position_, false, cursor_pos_in_byte_);
     QPainter cursor_painter(viewport());
     auto old_pen = cursor_painter.pen();
     auto new_pen = QPen(old_pen.color());
