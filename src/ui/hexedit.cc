@@ -599,7 +599,7 @@ void HexEdit::drawBorder(qint64 start, qint64 size, bool asciiArea,
     painter.drawLine(rect.topLeft(), rect.topRight());
   }
 
-  // bootom Line
+  // bottom Line
   for (qint64 i = 0; i < qMin(size, bytesPerRow_); ++i) {
     auto rect = bytePosToRect(start + size - i - 1, asciiArea);
     if (rect.isEmpty()) {
