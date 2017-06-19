@@ -49,7 +49,12 @@ SearchDialog::SearchDialog(HexEdit *hexEdit, QWidget *parent)
 
   connect(ui->cbFind, &QComboBox::editTextChanged, this, &SearchDialog::findTextChanged);
   connect(ui->cbReplace, &QComboBox::editTextChanged, this, &SearchDialog::replaceTextChanged);
-
+  connect(ui->cbFindFormat, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this](int) {
+    enableReplace(ui->cbFind->currentText(), ui->cbReplace->currentText());
+  });
+  connect(ui->cbReplaceFormat, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this](int) {
+    enableReplace(ui->cbFind->currentText(), ui->cbReplace->currentText());
+  });
 }
 
 SearchDialog::~SearchDialog() { delete ui; }
@@ -115,11 +120,11 @@ void SearchDialog::replace(qint64 pos, const data::BinData &data) {
 void SearchDialog::enableReplace(const QString& find, const QString& replace) {
   auto replace_len = replace.length();
   if (ui->cbReplaceFormat->currentIndex() == 1) {
-    replace_len *=2;
+    replace_len *= (_hexEdit->dataModel()->binData().width() + 3) / 4;
   }
   auto find_len = find.length();
   if (ui->cbFindFormat->currentIndex() == 1) {
-    find_len *=2;
+    find_len *= (_hexEdit->dataModel()->binData().width() + 3) / 4;
   }
   ui->warning_label->setVisible(replace.length() && (replace_len != find_len));
   bool enable_replace = replace.length() && (replace_len == find_len);
