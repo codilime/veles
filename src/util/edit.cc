@@ -68,7 +68,7 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes, const data:
       new_bytes.setElement64(count, first_chunk.element64(static_cast<int>(i - first_pos)));
     }
 
-    for (int i=0; i < bytes.size(); ++i, ++count) {
+    for (size_t i=0; i < bytes.size(); ++i, ++count) {
       new_bytes.setElement64(count, bytes.element64(i));
     }
 
@@ -113,7 +113,7 @@ void EditEngine::applyChanges(data::BinData &bindata, size_t offset, int64_t max
   for (auto it = changes.begin(); it != changes.constEnd(); ++it) {
     size_t pos = it.key();
     auto data = it.value();
-    for (int i = 0; i < data.size(); ++i) {
+    for (size_t i = 0; i < data.size(); ++i) {
       bindata.setElement64(pos - offset + i, data.element64(i));
     }
   }
@@ -127,7 +127,7 @@ QPair<size_t, data::BinData> EditEngine::popFirstChange() {
     pos = changes_.firstKey();
     auto first_chunk = changes_[pos];
     bindata = data::BinData(bindata_width_, first_chunk.size());
-    for (int i=0; i < first_chunk.size(); i++) {
+    for (size_t i=0; i < first_chunk.size(); i++) {
       bindata.setElement64(i, first_chunk.element64(i));
     }
     changes_.remove(pos);
@@ -201,7 +201,7 @@ QMap<size_t, data::BinData> EditEngine::changesFromRange(size_t byte_pos, size_t
       data::BinData new_data(bindata_width_, len);
 
       int counter = 0;
-      for (int i = static_cast<int>(byte_pos - pos); i < data.size(); ++i, ++counter) {
+      for (size_t i = byte_pos - pos; i < data.size(); ++i, ++counter) {
         new_data.setElement64(counter, data.element64(i));
       }
 
