@@ -113,8 +113,16 @@ void SearchDialog::replace(qint64 pos, const data::BinData &data) {
 }
 
 void SearchDialog::enableReplace(const QString& find, const QString& replace) {
-  ui->warning_label->setVisible(replace.length() && (replace.length() != find.length()));
-  bool enable_replace = replace.length() && (replace.length() == find.length());
+  auto replace_len = replace.length();
+  if (ui->cbReplaceFormat->currentIndex() == 1) {
+    replace_len *=2;
+  }
+  auto find_len = find.length();
+  if (ui->cbFindFormat->currentIndex() == 1) {
+    find_len *=2;
+  }
+  ui->warning_label->setVisible(replace.length() && (replace_len != find_len));
+  bool enable_replace = replace.length() && (replace_len == find_len);
   ui->pbReplace->setEnabled(enable_replace);
   ui->pbReplaceAll->setEnabled(enable_replace);
 }

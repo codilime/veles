@@ -97,6 +97,7 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
                  QWidget *parent)
     : QAbstractScrollArea(parent),
       dataModel_(dataModel),
+      bindata_width_(dataModel_->binData().width()),
       chunkSelectionModel_(selectionModel),
       dataBytesCount_(0),
       bytesPerRow_(16),
@@ -109,7 +110,7 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
       current_area_(WindowArea::HEX),
       cursor_pos_in_byte_(0),
       cursor_visible_(false),
-      edit_engine_(dataModel->binData().width()) {
+      edit_engine_(bindata_width_) {
   setFont(util::settings::theme::font());
 
   connect(dataModel_, &FileBlobModel::newBinData,
@@ -505,13 +506,13 @@ uint64_t HexEdit::byteValue(qint64 pos, bool modified) {
 }
 
 void HexEdit::setBytesValues(qint64 pos, const data::BinData& new_data) {
-  qint64 paste_size = new_data.size();
-  if (dataBytesCount_ - pos < paste_size) {
-    paste_size = dataBytesCount_ - pos;
+  qint64 size = new_data.size();
+  if (dataBytesCount_ - pos < size) {
+    size = dataBytesCount_ - pos;
   }
 
-  data::BinData old_data(dataModel_->binData().width(), paste_size);
-  for (int i=0; i < paste_size; ++i) {
+  data::BinData old_data(bindata_width_, size);
+  for (int i=0; i < size; ++i) {
     old_data.setElement64(i, byteValue(pos + i));
   }
   edit_engine_.changeBytes(pos, new_data, old_data);
@@ -847,17 +848,7 @@ void HexEdit::contextMenuEvent(QContextMenuEvent *event) {
 }
 
 void HexEdit::setByteValue(qint64 pos, uint64_t byte_value) {
-
-  auto old_byte = byteValue(pos);
-
-  if (old_byte == byte_value) {
-    return;
-  }
-
-  edit_engine_.changeBytes(
-        pos, data::BinData(dataModel()->binData().width(), {byte_value}),
-        data::BinData(dataModel()->binData().width(), {old_byte}));
-  emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
+  setBytesValues(pos, data::BinData(bindata_width_, {byte_value}));
 }
 
 void HexEdit::transferChanges(data::BinData& bin_data, qint64 offset_shift, qint64 max_bytes) {
@@ -1007,15 +998,12 @@ void HexEdit::pasteFromClipboard(util::encoders::IDecoder* enc) {
     paste_size = dataBytesCount_ - paste_start_position;
   }
 
-  data::BinData new_data(dataModel_->binData().width(), paste_size);
-  data::BinData old_data(dataModel_->binData().width(), paste_size);
+  data::BinData new_data(bindata_width_, paste_size);
   for (int i=0; i < paste_size; ++i) {
     new_data.setElement64(i, static_cast<unsigned char>(data[i]));
-    old_data.setElement64(i, byteValue(paste_start_position + i));
   }
-  edit_engine_.changeBytes(paste_start_position, new_data, old_data);
+  setBytesValues(paste_start_position, new_data);
   setSelection(paste_start_position, paste_size);
-  emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
 }
 
 void HexEdit::setSelectedChunk(QModelIndex newSelectedChunk) {
@@ -1108,6 +1096,11 @@ void HexEdit::scrollRows(qint64 num_rows) {
 }
 
 void HexEdit::newBinData() {
+  if (bindata_width_ != dataModel_->binData().width()) {
+    bindata_width_ = dataModel_->binData().width();
+    edit_engine_ = util::EditEngine(bindata_width_);
+    emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
+  }
   recalculateValues();
   goToAddressDialog_->setRange(startOffset_, startOffset_ + dataBytesCount_);
   qint64 new_position = current_position_;

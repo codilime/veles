@@ -78,6 +78,7 @@ public slots:
 
  private:
   FileBlobModel *dataModel_;
+  uint32_t bindata_width_;
   QItemSelectionModel *chunkSelectionModel_;
 
   /** Total number of bytes in the blob */

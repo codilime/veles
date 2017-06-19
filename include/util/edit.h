@@ -28,7 +28,7 @@ namespace util {
 
 class EditEngine {
  public:
-  explicit EditEngine(int bindata_width, int edit_stack_limit = 100) :
+  explicit EditEngine(uint32_t bindata_width, int edit_stack_limit = 100) :
     edit_stack_limit_(edit_stack_limit), bindata_width_(bindata_width) {}
 
   void changeBytes(size_t pos, const data::BinData& bytes,
@@ -49,7 +49,7 @@ class EditEngine {
 
  private:
   int edit_stack_limit_;
-  int bindata_width_;
+  uint32_t bindata_width_;
   QList<data::BinData> edit_stack_data_;
   QList<QPair<size_t, size_t>> edit_stack_;
   QMap<size_t, data::BinData> changes_;
