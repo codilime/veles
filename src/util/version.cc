@@ -21,10 +21,10 @@ namespace util {
 namespace version {
 
 const unsigned year = 2017;
-const unsigned month = 5;
+const unsigned month = 6;
 const unsigned release = 0;
 const unsigned patch = 0;
-const QString codename = "Świtezianka";
+const QString codename = "SWOND";
 const QString string = patch ?
   QString("%1.%2.%3.%4.%5").arg(
     QString("%1").arg(year),
