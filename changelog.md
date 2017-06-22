@@ -5,7 +5,7 @@
 ### Major features and changes:
 
   * Added a cursor to the hex view.
-  * Introduced support for editing bytes in hex view (currently without insertion/deletion).
+  * Introduced support for editing bytes in hex view (currently without an ability to change file size).
   * Added many new keyboard shortcuts.
   * Added a shortcut editor.
   * Connection to the server uses TLS now.
