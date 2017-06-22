@@ -506,7 +506,7 @@ uint64_t HexEdit::byteValue(qint64 pos, bool modified) {
 }
 
 void HexEdit::setBytesValues(qint64 pos, const data::BinData& new_data) {
-  qint64 size = std::min(static_cast<qint64>(new_data.size()), dataBytesCount_ - pos);
+  qint64 size = std::min<qint64>(new_data.size(), dataBytesCount_ - pos);
 
   data::BinData old_data(bindata_width_, size);
   for (int i=0; i < size; ++i) {
