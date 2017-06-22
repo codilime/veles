@@ -45,6 +45,17 @@ To install [which is optional], use ::
 
     $ make install
 
+To run Veles you we recommend creating virtualenv for veles::
+
+    $ python -m venv ~/venv/veles
+    $ . ~/venv/veles/bin/activate
+    (veles) $ pip install -r ../python/requirements.txt
+
+Then to run Veles you will need to activate the venv before running veles::
+
+    $ . ~/venv/veles/bin/activate
+    (veles) $ ./veles
+
 If you want to install to a non-default directory, you'll also need to pass
 it as an option to cmake before building, eg.::
 
