@@ -5,11 +5,11 @@
 ### Major features and changes:
 
   * Added a cursor to the hex view.
-  * Introduced support for editing bytes in hex view (currently without insertion).
+  * Introduced support for editing bytes in hex view (currently without insertion/deletion).
   * Added many new keyboard shortcuts.
   * Added a shortcut editor.
   * Connection to the server uses TLS now.
-  * "Replace" option has been enabled again.
+  * "Replace" option has been enabled.
 
 ### Minor features and changes:
 
@@ -18,7 +18,7 @@
 
 ### Bugfixes:
 
-  * Some Python scripts have been fixed to support Python 2.
+  * Client API Python library has been fixed to support Python 2.
   * Previously Ctrl+C didn't work when running srv.py on Windows.
 
 ## 2017.05.0.Świtezianka (2017-05-12)
