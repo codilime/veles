@@ -113,16 +113,16 @@ qint64 SearchDialog::lastIndexOf(const data::BinData &pattern,
   return -1;
 }
 
-void SearchDialog::replace(qint64 pos, const data::BinData &data) {
+void SearchDialog::replace(qint64 pos, const data::BinData& data) {
   _hexEdit->setBytesValues(pos, data);
 }
 
 void SearchDialog::enableReplace(const QString& find, const QString& replace) {
-  auto replace_len = replace.length();
+  auto replace_len = replace.toUtf8().length();
   if (ui->cbReplaceFormat->currentIndex() == 1) {
     replace_len *= (_hexEdit->dataModel()->binData().width() + 3) / 4;
   }
-  auto find_len = find.length();
+  auto find_len = find.toUtf8().length();
   if (ui->cbFindFormat->currentIndex() == 1) {
     find_len *= (_hexEdit->dataModel()->binData().width() + 3) / 4;
   }
@@ -203,24 +203,20 @@ void SearchDialog::on_pbReplace_clicked() {
     replaceOccurrence(_lastFoundPos, replaceData);
   }
 
-  findNext(false);
+  findNext(/*include_overlapping=*/false);
 }
 
 void SearchDialog::on_pbReplaceAll_clicked() {
   _lastFoundPos = -1;
   int replaceCounter = 0;
   int idx = 0;
-  int goOn = QMessageBox::Yes;
-  while ((idx >= 0) && (goOn == QMessageBox::Yes)) {
-    idx = findNext(false, false);
+  while (idx >= 0) {
+    idx = findNext(/*include_overlapping=*/false, /*interactive=*/false);
     if (idx >= 0) {
       data::BinData replaceBa = getContent(ui->cbReplaceFormat->currentIndex(),
                                         ui->cbReplace->currentText());
-      int result = replaceOccurrence(idx, replaceBa);
-
-      if (result == QMessageBox::Yes) replaceCounter += 1;
-
-      if (result == QMessageBox::Cancel) goOn = result;
+      replaceOccurrence(idx, replaceBa);
+      replaceCounter += 1;
     }
   }
 
@@ -283,22 +279,9 @@ data::BinData SearchDialog::getContent(int comboIndex, const QString &input) {
   return result;
 }
 
-qint64 SearchDialog::replaceOccurrence(qint64 idx,
-                                       const data::BinData &replaceBa) {
-  int result = QMessageBox::Yes;
-  if (ui->cbPrompt->isChecked()) {
-    result = QMessageBox::question(
-        this, tr("HexEdit"), tr("Replace occurrence?"),
-        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-
-    if (result == QMessageBox::Yes) {
-       replace(idx, replaceBa);
-      _hexEdit->update();
-    }
-  } else {
-    replace(idx, replaceBa);
-  }
-  return result;
+void SearchDialog::replaceOccurrence(qint64 idx,
+                                     const data::BinData &replaceBa) {
+  replace(idx, replaceBa);
 }
 
 }  // namespace ui

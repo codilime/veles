@@ -54,11 +54,11 @@ class SearchDialog : public QDialog {
  private:
   data::BinData getContent(int comboIndex, const QString &input);
   bool isHexStr(QString hexStr);
-  qint64 replaceOccurrence(qint64 idx, const data::BinData &replaceBa);
+  void replaceOccurrence(qint64 idx, const data::BinData &replaceBa);
   qint64 findIndex(qint64 startSearchPos);
   qint64 lastIndexOf(const data::BinData& pattern, qint64 startPos);
   qint64 indexOf(const data::BinData& pattern, qint64 startPos);
-  void replace(qint64 pos, const data::BinData &data);
+  void replace(qint64 pos, const data::BinData& data);
   void enableReplace(const QString& find, const QString& replace);
 
   HexEdit *_hexEdit;

@@ -135,7 +135,7 @@
            </palette>
           </property>
           <property name="text">
-           <string>Find and replace values need to have equal width.</string>
+           <string>Find and replace values need to have equal byte length.</string>
           </property>
          </widget>
         </item>
@@ -159,16 +159,6 @@
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QCheckBox" name="cbPrompt">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>&amp;Prompt on replace</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </item>
           <item>
@@ -182,22 +172,6 @@
                <bool>true</bool>
               </property>
              </widget>
-            </item>
-            <item>
-             <spacer name="verticalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Expanding</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>16</height>
-               </size>
-              </property>
-             </spacer>
             </item>
            </layout>
           </item>
@@ -273,7 +247,6 @@
   <tabstop>cbReplaceFormat</tabstop>
   <tabstop>cbReplace</tabstop>
   <tabstop>cbBackwards</tabstop>
-  <tabstop>cbPrompt</tabstop>
   <tabstop>cbOverlapping</tabstop>
   <tabstop>pbFind</tabstop>
   <tabstop>pbReplace</tabstop>
