@@ -1,4 +1,4 @@
-veles - A new age tool for binary analysis
+Veles - A new age tool for binary analysis
 ==========================================
 
 See our home page at https://veles.io.
@@ -45,13 +45,13 @@ To install [which is optional], use ::
 
     $ make install
 
-To run Veles you we recommend creating virtualenv for veles::
+To run Veles from build directory we recommend creating virtualenv for Veles::
 
     $ python -m venv ~/venv/veles
     $ . ~/venv/veles/bin/activate
     (veles) $ pip install -r ../python/requirements.txt
 
-Then to run Veles you will need to activate the venv before running veles::
+Then to run Veles you will need to activate the venv before running Veles::
 
     $ . ~/venv/veles/bin/activate
     (veles) $ ./veles
@@ -77,3 +77,4 @@ On Ubuntu it can be done like this::
 On Windows if you want to avoid compiling OpenSSL everytime you clean build directory
 you can store `libeay32.dll` and `ssleay32.dll` in some directory, and pass it to cmake
 as OPENSSL_DLL_DIR.
+
