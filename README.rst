@@ -47,7 +47,7 @@ To install [which is optional], use ::
 
 To run Veles from build directory we recommend creating virtualenv for Veles::
 
-    $ python -m venv ~/venv/veles
+    $ python3 -m venv ~/venv/veles
     $ . ~/venv/veles/bin/activate
     (veles) $ pip install -r ../python/requirements.txt
 
