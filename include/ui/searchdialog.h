@@ -35,7 +35,7 @@ class SearchDialog : public QDialog {
  public:
   explicit SearchDialog(HexEdit *hexEdit, QWidget *parent = 0);
   ~SearchDialog();
-  qint64 findNext();
+  qint64 findNext(bool include_overlapping = true, bool interactive = true);
   Ui::SearchDialog *ui;
 
  signals:
@@ -48,15 +48,18 @@ class SearchDialog : public QDialog {
   void on_pbFind_clicked();
   void on_pbReplace_clicked();
   void on_pbReplaceAll_clicked();
+  void findTextChanged(const QString& text);
+  void replaceTextChanged(const QString& text);
 
  private:
   data::BinData getContent(int comboIndex, const QString &input);
   bool isHexStr(QString hexStr);
-  qint64 replaceOccurrence(qint64 idx, const data::BinData &replaceBa);
+  void replaceOccurrence(qint64 idx, const data::BinData &replaceBa);
   qint64 findIndex(qint64 startSearchPos);
   qint64 lastIndexOf(const data::BinData& pattern, qint64 startPos);
   qint64 indexOf(const data::BinData& pattern, qint64 startPos);
-  void replace(qint64 pos, qint64 len, const data::BinData &data);
+  void replace(qint64 pos, const data::BinData& data);
+  void enableReplace(const QString& find, const QString& replace);
 
   HexEdit *_hexEdit;
   data::BinData _findBa;
