@@ -14,6 +14,8 @@
  * limitations under the License.
  *
  */
+#include <algorithm>
+
 #include <QApplication>
 #include <QClipboard>
 #include <QFileDialog>
@@ -60,8 +62,8 @@ void HexEdit::recalculateValues() {
       (viewport()->height() - horizontalAreaSpaceWidth_ * 2) / charHeight_;
 
   // Spacing needs to be odd for proper border alignment.
-  spaceAfterByte_ = (charWidth_ / 3 | 1);
-  spaceAfterAsciiByte_ = (charWidth_ / 8 | 1);
+  spaceAfterByte_ = ((charWidth_ / 3) | 1);
+  spaceAfterAsciiByte_ = ((charWidth_ / 8) | 1);
   hexAreaWidth_ = bytesPerRow_ * byteCharsCount_ * charWidth_ +
                   (bytesPerRow_ - 1) * spaceAfterByte_ +
                   verticalAreaSpaceWidth_;
@@ -605,12 +607,12 @@ QColor HexEdit::byteBackroundColorFromPos(qint64 pos) {
 }
 
 void HexEdit::drawBorder(qint64 start, qint64 size, bool asciiArea,
-                         bool doted) {
+                         bool dotted) {
   QPainter painter(viewport());
 
   auto oldPen = painter.pen();
   auto newPen = QPen(oldPen.color());
-  if (doted) {
+  if (dotted) {
     newPen.setStyle(Qt::DashLine);
   }
   painter.setPen(newPen);
@@ -685,10 +687,10 @@ void HexEdit::getRangeFromIndex(QModelIndex index, qint64 *start,
 
 void HexEdit::paintEvent(QPaintEvent *event) {
   QPainter painter(viewport());
+  auto invalidated_rect = event->rect();
 
   auto old_pen = painter.pen();
   painter.setPen(QPen(viewport()->palette().color(QPalette::Shadow)));
-
   auto separator_offset =
       startMargin_ + addressWidth_ - verticalAreaSpaceWidth_ / 2 - startPosX_;
   auto separator_length =
@@ -698,52 +700,85 @@ void HexEdit::paintEvent(QPaintEvent *event) {
   painter.fillRect(address_bar_area_rect,
                    viewport()->palette().color(QPalette::AlternateBase));
   painter.drawLine(separator_offset, 0, separator_offset, separator_length);
-  separator_offset = startMargin_ + addressWidth_ + hexAreaWidth_ -
-                    verticalAreaSpaceWidth_ / 2 - startPosX_;
+  separator_offset = startMargin_ + addressWidth_ + hexAreaWidth_
+      - verticalAreaSpaceWidth_ / 2 - startPosX_;
   painter.drawLine(separator_offset, 0, separator_offset, separator_length);
   separator_offset = lineWidth_ - endMargin_ / 2 - startPosX_;
   painter.drawLine(separator_offset, 0, separator_offset, viewport()->height());
   painter.drawLine(-startPosX_, separator_length,
                    lineWidth_ - endMargin_ / 2 - startPosX_, separator_length);
   separator_length += charHeight_ + horizontalAreaSpaceWidth_;
-
   painter.setPen(old_pen);
 
-  for (auto rowNum = startRow_;
-       rowNum < qMin(startRow_ + rowsOnScreen_, rowsCount_); ++rowNum) {
-    auto yPos = (rowNum - startRow_ + 1) * charHeight_;
-
-    if (yPos < event->rect().y() || yPos > event->rect().y() + event->rect().height()) {
+  // Draw background.
+  // This code will be optimized in another commit to reduce number of calls to
+  // fillRect().
+  for (auto row_num = startRow_;
+       row_num < std::min(startRow_ + rowsOnScreen_, rowsCount_); ++row_num) {
+    auto first_byte_rect = bytePosToRect(row_num * bytesPerRow_);
+    if (first_byte_rect.bottom() < invalidated_rect.y()
+        || first_byte_rect.y() > invalidated_rect.y() + invalidated_rect.height()) {
+      // We don't have to redraw current line.
       continue;
     }
 
-    auto bytesOffset = rowNum * bytesPerRow_;
-    if (bytesOffset > dataBytesCount_) {
-      bytesOffset = dataBytesCount_;
+    // Draw current row.
+    for (auto byte_idx = row_num * bytesPerRow_;
+         byte_idx < std::min((row_num + 1) * bytesPerRow_, dataBytesCount_);
+         byte_idx++) {
+      auto hex_rect = bytePosToRect(byte_idx);
+      auto ascii_rect = bytePosToRect(byte_idx, true);
+      auto bgc = byteBackroundColorFromPos(byte_idx);
+      bool redraw_hex = invalidated_rect.intersects(hex_rect);
+      bool redraw_ascii = invalidated_rect.intersects(ascii_rect);
+      if (redraw_hex && bgc.isValid()) {
+        painter.fillRect(hex_rect, bgc);
+      }
+      if (redraw_ascii && bgc.isValid()) {
+        painter.fillRect(ascii_rect, bgc);
+      }
     }
-    painter.drawText(startMargin_ - startPosX_, yPos,
-                     addressAsText(bytesOffset));
+  }
 
-    for (auto columnNum = 0; columnNum < bytesPerRow_; ++columnNum) {
-      auto xPos = (byteCharsCount_ * charWidth_ + spaceAfterByte_) * columnNum +
-          addressWidth_ + startMargin_ - startPosX_;
-      auto byteNum = rowNum * bytesPerRow_ + columnNum;
-      if (byteNum < dataBytesCount_) {
-        auto bgc = byteBackroundColorFromPos(byteNum);
-        if (bgc.isValid()) {
-          painter.fillRect(bytePosToRect(byteNum), bgc);
-          painter.fillRect(bytePosToRect(byteNum, true), bgc);
+  // Draw all text.
+  for (auto row_num = startRow_;
+       row_num < std::min(startRow_ + rowsOnScreen_, rowsCount_); ++row_num) {
+    auto y_pos = (row_num - startRow_ + 1) * charHeight_;
+
+    auto first_byte_rect = bytePosToRect(row_num * bytesPerRow_);
+    if (first_byte_rect.bottom() < invalidated_rect.y()
+        || first_byte_rect.y() > invalidated_rect.y() + invalidated_rect.height()) {
+      // We don't have to redraw current line.
+      continue;
+    }
+
+    auto bytes_offset = std::min(row_num * bytesPerRow_, dataBytesCount_);
+    painter.drawText(startMargin_ - startPosX_, y_pos,
+                     addressAsText(bytes_offset));
+
+    for (auto column_num = 0; column_num < bytesPerRow_; ++column_num) {
+      auto byte_num = row_num * bytesPerRow_ + column_num;
+      if (byte_num < dataBytesCount_) {
+        auto hex_rect = bytePosToRect(byte_num);
+        auto ascii_rect = bytePosToRect(byte_num, true);
+        bool redraw_hex = invalidated_rect.intersects(hex_rect);
+        bool redraw_ascii = invalidated_rect.intersects(ascii_rect);
+
+        if (redraw_hex || redraw_ascii) {
+          old_pen = painter.pen();
+          painter.setPen(QPen(byteTextColorFromPos(byte_num)));
+          if (redraw_hex) {
+            auto x_pos = (byteCharsCount_ * charWidth_ + spaceAfterByte_) * column_num +
+                addressWidth_ + startMargin_ - startPosX_;
+            painter.drawText(x_pos, y_pos, hexRepresentationFromBytePos(byte_num));
+          }
+          if (redraw_ascii) {
+            auto x_pos = (charWidth_ + spaceAfterAsciiByte_) * column_num + addressWidth_ +
+                hexAreaWidth_ + startMargin_ - startPosX_;
+            painter.drawText(x_pos, y_pos, asciiRepresentationFromBytePos(byte_num));
+          }
+          painter.setPen(old_pen);
         }
-
-        old_pen = painter.pen();
-
-        painter.setPen(QPen(byteTextColorFromPos(byteNum)));
-        painter.drawText(xPos, yPos, hexRepresentationFromBytePos(byteNum));
-        xPos = (charWidth_ + spaceAfterAsciiByte_) * columnNum + addressWidth_ +
-            hexAreaWidth_ + startMargin_ - startPosX_;
-        painter.drawText(xPos, yPos, asciiRepresentationFromBytePos(byteNum));
-
-        painter.setPen(old_pen);
       }
     }
   }
@@ -769,20 +804,20 @@ void HexEdit::paintEvent(QPaintEvent *event) {
     bool in_ascii_area = current_area_ == WindowArea::ASCII;
     drawBorder(current_position_, 1, true, !in_ascii_area);
     auto rect = bytePosToRect(current_position_, false, cursor_pos_in_byte_);
-    QPainter cursor_painter(viewport());
-    auto old_pen = cursor_painter.pen();
-    auto new_pen = QPen(old_pen.color());
-    if (in_ascii_area) {
-      new_pen.setStyle(Qt::DashLine);
-    }
-    cursor_painter.setPen(new_pen);
-
     if (!rect.isEmpty()) {
+      QPainter cursor_painter(viewport());
+      auto old_pen = cursor_painter.pen();
+      auto new_pen = QPen(old_pen.color());
+      if (in_ascii_area) {
+        new_pen.setStyle(Qt::DashLine);
+      }
+      cursor_painter.setPen(new_pen);
+
       // We have to adjust the size because drawRect semantics differs from the
       // one used by QRect methods.
       cursor_painter.drawRect(rect.adjusted(0, 0, -1, -1));
+      cursor_painter.setPen(old_pen);
     }
-    cursor_painter.setPen(old_pen);
   }
 }
 
@@ -1208,12 +1243,12 @@ void HexEdit::parse(QAction *action) {
 void HexEdit::flipCursorVisibility() {
   if (hasFocus() || !cursor_visible_) {
     cursor_visible_ = !cursor_visible_;
-
-    qint64 y_pos = ((current_position_ / bytesPerRow_) - startRow_)
-                   * charHeight_ + verticalByteBorderMargin_;
-
-    QRect cursor_line(0, y_pos, viewport()->width(), charHeight_ * 2);
-    viewport()->update(cursor_line);
+    auto cursor_hex_rect = bytePosToRect(current_position_, /*ascii=*/false,
+                                         cursor_pos_in_byte_);
+    viewport()->update(cursor_hex_rect);
+    auto cursor_ascii_rect = bytePosToRect(current_position_, /*ascii=*/true,
+                                           cursor_pos_in_byte_);
+    viewport()->update(cursor_ascii_rect);
   }
 }
 
