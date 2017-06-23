@@ -48,7 +48,7 @@ class HexEdit : public QAbstractScrollArea {
   /** Scroll screen to make byte visible */
   void scrollToByte(qint64 bytePos, bool minimal_change = false);
   void scrollRows(qint64 num_rows);
-  FileBlobModel *dataModel() { return dataModel_;}
+  FileBlobModel *dataModel() { return dataModel_; }
   void setParserIds(QStringList ids);
   void processEditEvent(QKeyEvent *event);
   uint64_t byteValue(qint64 pos, bool modified = true);
@@ -182,7 +182,7 @@ public slots:
 
   void getRangeFromIndex(QModelIndex index, qint64 *begin, qint64 *size);
   void drawBorder(qint64 start, qint64 size, bool asciiArea = false,
-                  bool doted = false);
+                  bool dotted = false);
 
   void setSelectedChunk(QModelIndex newSelectedChunk);
   bool isRangeVisible(qint64 start, qint64 size);
