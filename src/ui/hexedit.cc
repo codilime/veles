@@ -37,7 +37,7 @@ static const qint64 endMargin_ = 10;
 static const qint64 cursor_blink_time_ = 500;
 
 void HexEdit::recalculateValues() {
-  charWidht_ = fontMetrics().width(QLatin1Char('2'));
+  charWidth_ = fontMetrics().width(QLatin1Char('2'));
   charHeight_ = fontMetrics().height();
 
   verticalByteBorderMargin_ = charHeight_ / 5;
@@ -52,18 +52,20 @@ void HexEdit::recalculateValues() {
   if (dataBytesCount_ + startOffset_ >= 0x100000000LL) {
     addressBytes_ = 8;
   }
-  addressWidth_ = addressBytes_ * 2 * charWidht_ + verticalAreaSpaceWidth_;
+  addressWidth_ = addressBytes_ * 2 * charWidth_ + verticalAreaSpaceWidth_;
 
   // plus one for only addr
   rowsCount_ = (dataBytesCount_ + bytesPerRow_ - 1) / bytesPerRow_ + 1;
   rowsOnScreen_ =
       (viewport()->height() - horizontalAreaSpaceWidth_ * 2) / charHeight_;
 
-  spaceAfterByte_ = charWidht_ / 2;
-  hexAreaWidth_ = bytesPerRow_ * byteCharsCount_ * charWidht_ +
+  // Spacing needs to be odd for proper border alignment.
+  spaceAfterByte_ = (charWidth_ / 3 | 1);
+  spaceAfterAsciiByte_ = (charWidth_ / 8 | 1);
+  hexAreaWidth_ = bytesPerRow_ * byteCharsCount_ * charWidth_ +
                   (bytesPerRow_ - 1) * spaceAfterByte_ +
                   verticalAreaSpaceWidth_;
-  asciiWidth_ = bytesPerRow_ * charWidht_;
+  asciiWidth_ = bytesPerRow_ * (charWidth_ + spaceAfterAsciiByte_);
   lineWidth_ =
       startMargin_ + addressWidth_ + hexAreaWidth_ + asciiWidth_ + endMargin_;
 
@@ -409,6 +411,9 @@ void HexEdit::createAction(util::settings::shortcuts::ShortcutType type, const s
   addAction(action);
 }
 
+// Returns where a border around a byte should be drawn.  The result assumes the
+// same semantics as used in QRect methods (e.g. QRect::bottom).  Rectangles
+// returned by this function are overlapping by exactly one pixel.
 QRect HexEdit::bytePosToRect(qint64 pos, bool ascii, qint64 char_pos) {
   qint64 columnNum = pos % bytesPerRow_;
   qint64 rowNum = pos / bytesPerRow_ - startRow_;
@@ -420,18 +425,18 @@ QRect HexEdit::bytePosToRect(qint64 pos, bool ascii, qint64 char_pos) {
   qint64 xPos;
   qint64 width;
   if (ascii) {
-    xPos = charWidht_ * columnNum + addressWidth_ + hexAreaWidth_ +
-           startMargin_ - startPosX_ + 1;
-    width = charWidht_ + 1;
+    xPos = (charWidth_ + spaceAfterAsciiByte_) * columnNum + addressWidth_ +
+        hexAreaWidth_ + startMargin_ - startPosX_ + 1;
+    width = charWidth_ + 1;
   } else {
-    xPos = (byteCharsCount_ * charWidht_ + spaceAfterByte_) * columnNum +
-           addressWidth_ + startMargin_ - startPosX_ + char_pos * charWidht_;
-    width = charWidht_ * (byteCharsCount_ - char_pos) + spaceAfterByte_;
+    xPos = (byteCharsCount_ * charWidth_ + spaceAfterByte_) * columnNum +
+        addressWidth_ + startMargin_ - startPosX_ + char_pos * charWidth_;
+    width = charWidth_ * (byteCharsCount_ - char_pos) + spaceAfterByte_;
   }
   qint64 yPos = (rowNum + 1) * charHeight_;
-  return QRect(xPos - spaceAfterByte_ / 2,
-               yPos - charHeight_ + verticalByteBorderMargin_, width,
-               charHeight_);
+  return QRect(xPos - spaceAfterByte_ / 2 - 1,
+               yPos - charHeight_ + verticalByteBorderMargin_, width + 1,
+               charHeight_ + 1);
 }
 
 qint64 HexEdit::pointToRowNum(QPoint pos) {
@@ -444,13 +449,14 @@ qint64 HexEdit::pointToColumnNum(QPoint pos) {
 
   if (realPosX > addressWidth_ + hexAreaWidth_ + startMargin_ -
                      verticalAreaSpaceWidth_ / 2) {
-    auto asciAreaPos =
+    auto asciiAreaPos =
         realPosX - (addressWidth_ + hexAreaWidth_ + startMargin_);
-    columnNum = (asciAreaPos + spaceAfterByte_ / 2 - 1) / charWidht_;
+    columnNum = (asciiAreaPos + spaceAfterByte_ / 2 - 1) / (charWidth_
+        + spaceAfterAsciiByte_);
   } else {
     auto hexAreaPos = realPosX - (addressWidth_ + startMargin_);
     columnNum = (hexAreaPos + spaceAfterByte_ / 2) /
-                (byteCharsCount_ * charWidht_ + spaceAfterByte_);
+                (byteCharsCount_ * charWidth_ + spaceAfterByte_);
   }
 
   return columnNum;
@@ -719,8 +725,8 @@ void HexEdit::paintEvent(QPaintEvent *event) {
                      addressAsText(bytesOffset));
 
     for (auto columnNum = 0; columnNum < bytesPerRow_; ++columnNum) {
-      auto xPos = (byteCharsCount_ * charWidht_ + spaceAfterByte_) * columnNum +
-                  addressWidth_ + startMargin_ - startPosX_;
+      auto xPos = (byteCharsCount_ * charWidth_ + spaceAfterByte_) * columnNum +
+          addressWidth_ + startMargin_ - startPosX_;
       auto byteNum = rowNum * bytesPerRow_ + columnNum;
       if (byteNum < dataBytesCount_) {
         auto bgc = byteBackroundColorFromPos(byteNum);
@@ -733,8 +739,8 @@ void HexEdit::paintEvent(QPaintEvent *event) {
 
         painter.setPen(QPen(byteTextColorFromPos(byteNum)));
         painter.drawText(xPos, yPos, hexRepresentationFromBytePos(byteNum));
-        xPos = charWidht_ * columnNum + addressWidth_ + hexAreaWidth_ +
-               startMargin_ - startPosX_;
+        xPos = (charWidth_ + spaceAfterAsciiByte_) * columnNum + addressWidth_ +
+            hexAreaWidth_ + startMargin_ - startPosX_;
         painter.drawText(xPos, yPos, asciiRepresentationFromBytePos(byteNum));
 
         painter.setPen(old_pen);
@@ -772,7 +778,9 @@ void HexEdit::paintEvent(QPaintEvent *event) {
     cursor_painter.setPen(new_pen);
 
     if (!rect.isEmpty()) {
-        cursor_painter.drawRect(rect);
+      // We have to adjust the size because drawRect semantics differs from the
+      // one used by QRect methods.
+      cursor_painter.drawRect(rect.adjusted(0, 0, -1, -1));
     }
     cursor_painter.setPen(old_pen);
   }

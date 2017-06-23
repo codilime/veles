@@ -100,8 +100,10 @@ public slots:
   quint64 byte_max_value_;
   /** Number of pixels between two bytes in hex view (calculated from char width) */
   qint64 spaceAfterByte_;
+  /** Number of pixels between two bytes in ASCII view (calculated from char width) */
+  qint64 spaceAfterAsciiByte_;
   /** Width of single character in pixels */
-  qint64 charWidht_;
+  qint64 charWidth_;
   /** Height of single character in pixels */
   qint64 charHeight_;
   /** Number of pixels between two bytes (vertically) in hex view (calculated from char height)  */
