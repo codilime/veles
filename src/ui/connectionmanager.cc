@@ -180,7 +180,8 @@ void ConnectionManager::startLocalServer() {
       .arg(connection_dialog_->authenticationKey())
       .arg(connection_dialog_->serverHost())
       .arg(connection_dialog_->serverPort())
-      << connection_dialog_->databaseFile();
+      << connection_dialog_->databaseFile()
+      << "--cert-dir" << connection_dialog_->certificateDir();
 
 #if defined(Q_OS_LINUX)
   QString python_interpreter_executable("/usr/share/veles-server/venv/bin/python3");
