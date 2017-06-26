@@ -176,12 +176,12 @@ void ConnectionManager::startLocalServer() {
   QStringList arguments;
   arguments
       << server_file_name
+      << "--cert-dir" << connection_dialog_->certificateDir()
       << QString("%1://%2@%3:%4").arg(scheme)
       .arg(connection_dialog_->authenticationKey())
       .arg(connection_dialog_->serverHost())
       .arg(connection_dialog_->serverPort())
-      << connection_dialog_->databaseFile()
-      << "--cert-dir" << connection_dialog_->certificateDir();
+      << connection_dialog_->databaseFile();
 
 #if defined(Q_OS_LINUX)
   QString python_interpreter_executable("/usr/share/veles-server/venv/bin/python3");

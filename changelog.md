@@ -1,5 +1,11 @@
 # Veles changelog
 
+## 2017.06.0.1 (2017-06-26)
+
+### Bugfix
+
+  * Fixed invocation of server so it doesn't fail when installed from .deb package
+
 ## 2017.06.0.SWOND (2017-06-22)
 
 ### Major features and changes:

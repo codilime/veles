@@ -23,7 +23,7 @@ namespace version {
 const unsigned year = 2017;
 const unsigned month = 6;
 const unsigned release = 0;
-const unsigned patch = 0;
+const unsigned patch = 1;
 const QString codename = "SWOND";
 const QString string = patch ?
   QString("%1.%2.%3.%4.%5").arg(
