@@ -181,8 +181,10 @@ builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
               dir ("build") {
                 def branch = getBranch()
                 sh """cmake -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."""
-                sh "cmake --build . --config ${buildConfiguration} -- -j3 > error_and_warnings.txt 2>&1"
-                sh "cat error_and_warnings.txt"
+                sh """#!/bin/bash -ex
+                  set -o pipefail
+                  cmake --build . --config ${buildConfiguration} -- -j3 2>&1 | tee error_and_warnings.txt
+                """
                 sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-ubuntu1604 -G \"ZIP;DEB\" -C ${buildConfiguration}"
                 junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
                 step([$class: 'ArtifactArchiver', artifacts: 'veles-ubuntu1604.*', fingerprint: true])
@@ -192,7 +194,6 @@ builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
               }
               sh 'rm -Rf build'
             } catch (error) {
-              sh "cat build/error_and_warnings.txt"
               post_stage_failure(env.JOB_NAME, "ubuntu-16.04-amd64", env.BUILD_ID, env.BUILD_URL)
               throw error
             }
@@ -234,7 +235,10 @@ builders['macosx'] = { node ('macosx'){
               dir ("build") {
                 def branch = getBranch()
                 sh "cmake .. -G \"Xcode\" -DCMAKE_PREFIX_PATH=$QT/5.7/clang_64 -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\""
-                sh "cmake --build . --config ${buildConfiguration} > error_and_warnings.txt 2>&1"
+                sh """#!/bin/bash -ex
+                  set -o pipefail
+                  cmake --build . --config ${buildConfiguration} 2>&1 | tee error_and_warnings.txt
+                """
                 sh "cat error_and_warnings.txt"
                 sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-osx -G \"DragNDrop;ZIP\" -C ${buildConfiguration}"
                 junit allowEmptyResults: true, keepLongStdio: true, testResults: 'results.xml'
