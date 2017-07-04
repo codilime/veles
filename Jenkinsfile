@@ -47,48 +47,72 @@ builders['msvc2015_64'] = { node('windows'){
     def version = 'msvc2015_64'
     ws(getWorkspace("")){
       timestamps {
-        try {
-          stage('windows msvc2015 x64') {
-            deleteDir()
+        stage('checkout windows msvc2015 x64') {
+          try {
             checkout scm
-            def branch = getBranch()
-            def generator = "Visual Studio 14 2015"
-            def vcredist_binary = "vcredist_x64.exe"
-            def cpack_generator = "ZIP"
-            withEnv(["PATH+QT=${env.QT}\\Tools\\${version}\\bin;${env.QT}\\5.7\\${version}\\bin",
-                     "PATH+CMAKE=${env.CMAKE}\\bin",
-                     "CMAKE_PREFIX_PATH+QT=${env.QT}\\5.7\\${version}",
-                     "GOOGLETEST_DIR=${tool 'googletest'}",
-                     "EMBED_PYTHON_ARCHIVE_PATH=${tool 'embed-python-64'}",
-                     "VCINSTALLDIR=${env.VS}\\VC\\"
-                     ]){
-              if(version.contains("64")){
-                generator = "${generator} Win64"
+          }  catch (error) {
+            post_stage_failure(env.JOB_NAME, "windows checkout", env.BUILD_ID, env.BUILD_URL)
+            throw error
+          }
+        }
+
+        parallel(
+          "build windows msvc2015 x64": {
+            stage('windows msvc2015 x64') {
+              try {
+                def branch = getBranch()
+                def generator = "Visual Studio 14 2015"
+                def vcredist_binary = "vcredist_x64.exe"
+                def cpack_generator = "ZIP"
+                withEnv(["PATH+QT=${env.QT}\\Tools\\${version}\\bin;${env.QT}\\5.7\\${version}\\bin",
+                         "PATH+CMAKE=${env.CMAKE}\\bin",
+                         "CMAKE_PREFIX_PATH+QT=${env.QT}\\5.7\\${version}",
+                         "GOOGLETEST_DIR=${tool 'googletest'}",
+                         "EMBED_PYTHON_ARCHIVE_PATH=${tool 'embed-python-64'}",
+                         "VCINSTALLDIR=${env.VS}\\VC\\"
+                         ]){
+                  if(version.contains("64")){
+                    generator = "${generator} Win64"
+                  }
+                  if (!buildConfiguration.equals("Debug")) {
+                    cpack_generator = "${cpack_generator};NSIS"
+                  }
+                  bat(script: "rd /s /q build_${version}", returnStatus: true)
+                  bat script: "md build_${version}", returnStatus: true
+                  dir ("build_${version}") {
+                    bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -DVCREDIST_BINARY=\"${vcredist_binary}\" -DOPENSSL_DLL_DIR=${tool 'openssl-64'} -G \"${generator}\" ..\\"
+                    bat script: "cmake --build . --config ${buildConfiguration} -- /maxcpucount:8 > error_and_warnings.txt"
+                    bat script: "type error_and_warnings.txt"
+                    bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G \"${cpack_generator}\" -C ${buildConfiguration}"
+                  }
+                  junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
+                  step([$class: 'ArtifactArchiver', artifacts: "build_${version}/veles-${version}.*", fingerprint: true])
+                  step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
+                        excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
+                        parserConfigurations: [[parserName: 'MSBuild', pattern: "build_${version}/error_and_warnings.txt"]], unHealthy: ''])
+                  bat(script: "rd /s /q build_${version}", returnStatus: true)
+                }
+              }  catch (error) {
+                post_stage_failure(env.JOB_NAME, "windows-msvc2015-x64", env.BUILD_ID, env.BUILD_URL)
+                bat script: "type build_${version}\\error_and_warnings.txt"
+                throw error
               }
-              if (!buildConfiguration.equals("Debug")) {
-                cpack_generator = "${cpack_generator};NSIS"
+            }
+          },
+          "python tests - Windows": {
+            stage('python tests - Windows') {
+              try {
+                dir('python') {
+                  bat "run_tests.bat"
+                  junit allowEmptyResults: true, keepLongStdio: true, testResults: 'res**.xml'
+                }
+              } catch (error) {
+                post_stage_failure(env.JOB_NAME, "python-windows", env.BUILD_ID, env.BUILD_URL)
+                throw error
               }
-              bat(script: "rd /s /q build_${version}", returnStatus: true)
-              bat script: "md build_${version}", returnStatus: true
-              dir ("build_${version}") {
-                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -DVCREDIST_BINARY=\"${vcredist_binary}\" -DOPENSSL_DLL_DIR=${tool 'openssl-64'} -G \"${generator}\" ..\\"
-                bat script: "cmake --build . --config ${buildConfiguration} -- /maxcpucount:8 > error_and_warnings.txt"
-                bat script: "type error_and_warnings.txt"
-                bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G \"${cpack_generator}\" -C ${buildConfiguration}"
-              }
-              junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
-              step([$class: 'ArtifactArchiver', artifacts: "build_${version}/veles-${version}.*", fingerprint: true])
-              step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
-                    excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
-                    parserConfigurations: [[parserName: 'MSBuild', pattern: "build_${version}/error_and_warnings.txt"]], unHealthy: ''])
-              bat(script: "rd /s /q build_${version}", returnStatus: true)
             }
           }
-        }  catch (error) {
-          post_stage_failure(env.JOB_NAME, "windows-msvc2015-x64", env.BUILD_ID, env.BUILD_URL)
-          bat script: "type build_${version}\\error_and_warnings.txt"
-          throw error
-        }
+        )
       }
     }
   }
@@ -100,7 +124,6 @@ builders['msvc2015'] = {node('windows'){
       timestamps {
         try {
           stage('windows msvc2015 x86') {
-            deleteDir()
             checkout scm
             def branch = getBranch()
             def generator = "Visual Studio 14 2015"
@@ -142,114 +165,110 @@ builders['msvc2015'] = {node('windows'){
 
 builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
     timestamps {
-      try {
-        stage('ubuntu 16.04') {
+      stage('checkout ubuntu 16.04') {
+        try {
           checkout scm
           sh 'rm -Rf build'
-          dir ("build") {
-            def branch = getBranch()
-            sh """cmake -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."""
-            sh "cmake --build . --config ${buildConfiguration} -- -j3 > error_and_warnings.txt 2>&1"
-            sh "cat error_and_warnings.txt"
-            sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-ubuntu1604 -G \"ZIP;DEB\" -C ${buildConfiguration}"
-            junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
-            step([$class: 'ArtifactArchiver', artifacts: 'veles-ubuntu1604.*', fingerprint: true])
-            step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
-            excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
-            parserConfigurations: [[parserName: 'GNU Make + GNU C Compiler (gcc)', pattern: 'error_and_warnings.txt']], unHealthy: ''])
-          }
-          sh 'rm -Rf build'
+        } catch (error) {
+          post_stage_failure(env.JOB_NAME, "Ubuntu checkout", env.BUILD_ID, env.BUILD_URL)
+          throw error
         }
-      } catch (error) {
-        sh "cat build/error_and_warnings.txt"
-        post_stage_failure(env.JOB_NAME, "ubuntu-16.04-amd64", env.BUILD_ID, env.BUILD_URL)
-        throw error
       }
+      parallel(
+        "build ubuntu 16.04": {
+          stage('ubuntu 16.04') {
+            try {
+              dir ("build") {
+                def branch = getBranch()
+                sh """cmake -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."""
+                sh "cmake --build . --config ${buildConfiguration} -- -j3 > error_and_warnings.txt 2>&1"
+                sh "cat error_and_warnings.txt"
+                sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-ubuntu1604 -G \"ZIP;DEB\" -C ${buildConfiguration}"
+                junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
+                step([$class: 'ArtifactArchiver', artifacts: 'veles-ubuntu1604.*', fingerprint: true])
+                step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
+                excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
+                parserConfigurations: [[parserName: 'GNU Make + GNU C Compiler (gcc)', pattern: 'error_and_warnings.txt']], unHealthy: ''])
+              }
+              sh 'rm -Rf build'
+            } catch (error) {
+              sh "cat build/error_and_warnings.txt"
+              post_stage_failure(env.JOB_NAME, "ubuntu-16.04-amd64", env.BUILD_ID, env.BUILD_URL)
+              throw error
+            }
+          }
+        },
+        "python tests - Linux ubuntu 16.04": {
+          stage('python tests - Linux ubuntu 16.04') {
+            try {
+              dir('python') {
+                sh "./run_tests.sh"
+                junit allowEmptyResults: true, keepLongStdio: true, testResults: 'res**.xml'
+              }
+            } catch (error) {
+              post_stage_failure(env.JOB_NAME, "python-ubuntu1604", env.BUILD_ID, env.BUILD_URL)
+              throw error
+            }
+          }
+        }
+      )
     }
   }
 }
 
 builders['macosx'] = { node ('macosx'){
     timestamps {
-      try{
-        stage('macOS 10.12 w/ Apple Clang 8.0.0') {
+      stage('checkout macOS') {
+        try {
           checkout scm
           sh 'rm -Rf build'
-          dir ("build") {
-            def branch = getBranch()
-            sh "cmake .. -G \"Xcode\" -DCMAKE_PREFIX_PATH=$QT/5.7/clang_64 -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\""
-            sh "cmake --build . --config ${buildConfiguration} > error_and_warnings.txt 2>&1"
-            sh "cat error_and_warnings.txt"
-            sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-osx -G \"DragNDrop;ZIP\" -C ${buildConfiguration}"
-            junit allowEmptyResults: true, keepLongStdio: true, testResults: 'results.xml'
-            step([$class: 'ArtifactArchiver', artifacts: 'veles-osx.*', fingerprint: true])
-            step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
-            excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
-            parserConfigurations: [[parserName: 'Clang (LLVM based)', pattern: 'error_and_warnings.txt']], unHealthy: ''])
-          }
-          sh 'rm -Rf build'
+        } catch (error) {
+          post_stage_failure(env.JOB_NAME, "macOS checkout", env.BUILD_ID, env.BUILD_URL)
+          throw error
         }
-      } catch (error) {
-        sh "cat build/error_and_warnings.txt"
-        post_stage_failure(env.JOB_NAME, "macOS-10.12", env.BUILD_ID, env.BUILD_URL)
-        throw error
       }
+      parallel(
+        "build macOS 10.12 w/ Apple Clang 8.0.0": {
+          stage('macOS 10.12 w/ Apple Clang 8.0.0') {
+            try {
+              dir ("build") {
+                def branch = getBranch()
+                sh "cmake .. -G \"Xcode\" -DCMAKE_PREFIX_PATH=$QT/5.7/clang_64 -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\""
+                sh "cmake --build . --config ${buildConfiguration} > error_and_warnings.txt 2>&1"
+                sh "cat error_and_warnings.txt"
+                sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-osx -G \"DragNDrop;ZIP\" -C ${buildConfiguration}"
+                junit allowEmptyResults: true, keepLongStdio: true, testResults: 'results.xml'
+                step([$class: 'ArtifactArchiver', artifacts: 'veles-osx.*', fingerprint: true])
+                step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
+                excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
+                parserConfigurations: [[parserName: 'Clang (LLVM based)', pattern: 'error_and_warnings.txt']], unHealthy: ''])
+              }
+              sh 'rm -Rf build'
+            } catch (error) {
+              sh "cat build/error_and_warnings.txt"
+              post_stage_failure(env.JOB_NAME, "macOS-10.12", env.BUILD_ID, env.BUILD_URL)
+              throw error
+            }
+          }
+        },
+        "python tests - macOS 10.12": {
+          stage('python tests - macOS 10.12') {
+            try {
+              dir('python') {
+                sh "./run_tests.sh"
+                junit allowEmptyResults: true, keepLongStdio: true, testResults: 'res**.xml'
+              }
+            } catch (error) {
+              post_stage_failure(env.JOB_NAME, "python-macosx", env.BUILD_ID, env.BUILD_URL)
+              throw error
+            }
+          }
+        }
+      )
     }
   }
 }
 
-builders['python-windows'] = { node ('windows'){    timestamps {
-      try {
-        stage('python tests - Windows 10') {
-          checkout scm
-          dir('python') {
-            bat "run_tests.bat"
-            junit allowEmptyResults: true, keepLongStdio: true, testResults: 'res**.xml'
-          }
-        }
-      } catch (error) {
-        post_stage_failure(env.JOB_NAME, "python-windows", env.BUILD_ID, env.BUILD_URL)
-        throw error
-      }
-    }
-  }
-}
-
-builders['python-ubuntu'] = { node ('ubuntu-16.04'){
-    timestamps {
-      try {
-        stage('python tests - Linux ubuntu 16.04') {
-          checkout scm
-          dir('python') {
-            sh "./run_tests.sh"
-            junit allowEmptyResults: true, keepLongStdio: true, testResults: 'res**.xml'
-          }
-        }
-      } catch (error) {
-        post_stage_failure(env.JOB_NAME, "python-ubuntu1604", env.BUILD_ID, env.BUILD_URL)
-        throw error
-      }
-    }
-  }
-}
-
-builders['python-macosx'] = { node ('macosx'){
-    timestamps {
-      try {
-        stage('python tests - macOS 10.12') {
-          checkout scm
-          dir('python') {
-            sh "./run_tests.sh"
-            junit allowEmptyResults: true, keepLongStdio: true, testResults: 'res**.xml'
-          }
-        }
-      } catch (error) {
-        post_stage_failure(env.JOB_NAME, "python-macosx", env.BUILD_ID, env.BUILD_URL)
-        throw error
-      }
-    }
-  }
-}
 //parallel builders
 
 
