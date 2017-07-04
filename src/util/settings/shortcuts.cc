@@ -105,8 +105,8 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[HEX_SELECT_START_OF_DOCUMENT] = QKeySequence::keyBindings(QKeySequence::SelectStartOfDocument);
     defaults[HEX_SELECT_END_OF_DOCUMENT] = QKeySequence::keyBindings(QKeySequence::SelectEndOfDocument);
     defaults[DOCK_CLOSE] = QKeySequence::keyBindings(QKeySequence::Close);
-    defaults[SWITCH_TAB_NEXT] = {QKeySequence(Qt::CTRL | Qt::Key_Tab)};
-    defaults[SWITCH_TAB_PREV] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Tab)};
+    defaults[SWITCH_TAB_NEXT] = {QKeySequence(Qt::CTRL | Qt::Key_Tab), QKeySequence(Qt::CTRL | Qt::Key_PageDown)};
+    defaults[SWITCH_TAB_PREV] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Tab), QKeySequence(Qt::CTRL | Qt::Key_PageUp)};
   }
   return defaults;
 }
