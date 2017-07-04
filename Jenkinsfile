@@ -1,5 +1,27 @@
 #!/usr/bin/env groovy
-// To get a more sensible workspace directory name
+// TODO: Get a more sensible workspace directory name
+/**
+ * This Jenkins file uses custom Warning parsers for clang-tidy output.
+ * Jenkins / Manage Jenkins / Configure System
+ * In section "Compiler Warnings" three parsers needs to be configured:
+ * clang-tidy-gcc, clang-tidy-clang, clang-tidy-msvc
+ * Regular Expression: (?m)^(.+?):(\d+):(?:\d+:)?(?:\{\d:-\}+)?(?:.*) (warning|error): (.*) \[([^\]]*)\]
+ * Mapping script:
+import hudson.plugins.warnings.parser.Warning
+import hudson.plugins.analysis.util.model.Priority
+
+String fileName = matcher.group(1)
+int lineNumber = Integer.parseInt(matcher.group(2))
+String category = matcher.group(5)
+String message = matcher.group(4)
+Priority priority = Priority.NORMAL
+
+if (category.contains('error')) priority = Priority.HIGH
+
+return new Warning(fileName, lineNumber, "Clang-tidy", category, message, priority)
+
+ */
+
 
 def getBranch = {
     env.BRANCH_NAME.tokenize("/").last()
@@ -81,20 +103,37 @@ builders['msvc2015_64'] = { node('windows'){
                   bat script: "md build_${version}", returnStatus: true
                   dir ("build_${version}") {
                     bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -DVCREDIST_BINARY=\"${vcredist_binary}\" -DOPENSSL_DLL_DIR=${tool 'openssl-64'} -G \"${generator}\" ..\\"
-                    bat script: "cmake --build . --config ${buildConfiguration} -- /maxcpucount:8 > error_and_warnings.txt"
-                    bat script: "type error_and_warnings.txt"
+                    bat script: "cmake --build . --config ${buildConfiguration} -- /maxcpucount:8 > errors_and_warnings.txt"
+                    bat script: "type errors_and_warnings.txt"
+                    bat script: "cmake --build . --target lint --config ${buildConfiguration} -- /maxcpucount:8 > lint_errors_and_warnings.txt"
+                    bat script: "type lint_errors_and_warnings.txt"
                     bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G \"${cpack_generator}\" -C ${buildConfiguration}"
                   }
                   junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
                   step([$class: 'ArtifactArchiver', artifacts: "build_${version}/veles-${version}.*", fingerprint: true])
+                  step([$class: 'WarningsPublisher',
+                    canComputeNew: false,
+                    canResolveRelativePaths: false,
+                    defaultEncoding: '',
+                    excludePattern: '',
+                    healthy: '',
+                    includePattern: '',
+                    messagesPattern: '',
+                    parserConfigurations: [
+                      [parserName: 'MSBuild', pattern: "build_${version}/errors_and_warnings.txt"],
+                      [parserName: 'clang-tidy-msvc', pattern: "build_${version}/lint_errors_and_warnings.txt"]
+                    ],
+                    unHealthy: ''
+                  ])
+
                   step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
                         excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
-                        parserConfigurations: [[parserName: 'MSBuild', pattern: "build_${version}/error_and_warnings.txt"]], unHealthy: ''])
+                        parserConfigurations: [[parserName: 'MSBuild', pattern: "build_${version}/errors_and_warnings.txt"]], unHealthy: ''])
                   bat(script: "rd /s /q build_${version}", returnStatus: true)
                 }
               }  catch (error) {
                 post_stage_failure(env.JOB_NAME, "windows-msvc2015-x64", env.BUILD_ID, env.BUILD_URL)
-                bat script: "type build_${version}\\error_and_warnings.txt"
+                bat script: "type build_${version}\\*errors_and_warnings.txt"
                 throw error
               }
             }
@@ -183,14 +222,30 @@ builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
                 sh """cmake -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."""
                 sh """#!/bin/bash -ex
                   set -o pipefail
-                  cmake --build . --config ${buildConfiguration} -- -j3 2>&1 | tee error_and_warnings.txt
+                  cmake --build . --config ${buildConfiguration} -- -j3 2>&1 | tee errors_and_warnings.txt
                 """
+                sh """#!/bin/bash -ex
+                  set -o pipefail
+                  cmake --build . --target lint --config ${buildConfiguration} -- -j3 2>&1 | tee lint_errors_and_warnings.txt
+                """
+
                 sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-ubuntu1604 -G \"ZIP;DEB\" -C ${buildConfiguration}"
                 junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
                 step([$class: 'ArtifactArchiver', artifacts: 'veles-ubuntu1604.*', fingerprint: true])
-                step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
-                excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
-                parserConfigurations: [[parserName: 'GNU Make + GNU C Compiler (gcc)', pattern: 'error_and_warnings.txt']], unHealthy: ''])
+                step([$class: 'WarningsPublisher',
+                  canComputeNew: false,
+                  canResolveRelativePaths: false,
+                  defaultEncoding: '',
+                  excludePattern: '',
+                  healthy: '',
+                  includePattern: '',
+                  messagesPattern: '',
+                  parserConfigurations: [
+                    [parserName: 'GNU Make + GNU C Compiler (gcc)', pattern: 'errors_and_warnings.txt'],
+                    [parserName: 'clang-tidy-gcc', pattern: 'lint_errors_and_warnings.txt'],
+                  ],
+                  unHealthy: ''
+                ])
               }
               sh 'rm -Rf build'
             } catch (error) {
@@ -237,19 +292,32 @@ builders['macosx'] = { node ('macosx'){
                 sh "cmake .. -G \"Xcode\" -DCMAKE_PREFIX_PATH=$QT/5.7/clang_64 -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\""
                 sh """#!/bin/bash -ex
                   set -o pipefail
-                  cmake --build . --config ${buildConfiguration} 2>&1 | tee error_and_warnings.txt
+                  cmake --build . --config ${buildConfiguration} 2>&1 | tee errors_and_warnings.txt
                 """
-                sh "cat error_and_warnings.txt"
+                sh """#!/bin/bash -ex
+                  set -o pipefail
+                  cmake --build . --target lint --config ${buildConfiguration} 2>&1  | tee lint_errors_and_warnings.txt
+                """
                 sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-osx -G \"DragNDrop;ZIP\" -C ${buildConfiguration}"
                 junit allowEmptyResults: true, keepLongStdio: true, testResults: 'results.xml'
                 step([$class: 'ArtifactArchiver', artifacts: 'veles-osx.*', fingerprint: true])
-                step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, defaultEncoding: '',
-                excludePattern: '', healthy: '', includePattern: '', messagesPattern: '',
-                parserConfigurations: [[parserName: 'Clang (LLVM based)', pattern: 'error_and_warnings.txt']], unHealthy: ''])
+                step([$class: 'WarningsPublisher',
+                  canComputeNew: false,
+                  canResolveRelativePaths: false,
+                  defaultEncoding: '',
+                  excludePattern: '',
+                  healthy: '',
+                  includePattern: '',
+                  messagesPattern: '',
+                  parserConfigurations: [
+                    [parserName: 'Clang (LLVM based)', pattern: 'errors_and_warnings.txt'],
+                    [parserName: 'clang-tidy-clang', pattern: 'lint_errors_and_warnings.txt']
+                  ],
+                  unHealthy: ''
+                ])
               }
               sh 'rm -Rf build'
             } catch (error) {
-              sh "cat build/error_and_warnings.txt"
               post_stage_failure(env.JOB_NAME, "macOS-10.12", env.BUILD_ID, env.BUILD_URL)
               throw error
             }
