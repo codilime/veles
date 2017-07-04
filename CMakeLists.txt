@@ -40,6 +40,9 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 endif()
 if(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc ") # set exception handling mode and linking mode
+  # build with multiple processes
+  # see: https://docs.microsoft.com/en-us/cpp/build/reference/mp-build-with-multiple-processes
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP ")
 endif()
 if(APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
