@@ -289,7 +289,7 @@ builders['macosx'] = { node ('macosx'){
             try {
               dir ("build") {
                 def branch = getBranch()
-                sh "cmake .. -G \"Xcode\" -DCMAKE_PREFIX_PATH=$QT/5.7/clang_64 -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\""
+                sh "cmake .. -DCMAKE_PREFIX_PATH=$QT/5.7/clang_64 -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\""
                 sh """#!/bin/bash -ex
                   set -o pipefail
                   cmake --build . --config ${buildConfiguration} 2>&1 | tee errors_and_warnings.txt
