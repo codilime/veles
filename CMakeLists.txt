@@ -544,6 +544,26 @@ else()
 endif()
 
 
+message(STATUS "Looking for clang-format")
+find_program(CLANG_FORMAT NAMES clang-format clang-format-4.0 clang-format-3.9 clang-format-3.8 clang-format-3.7 clang-format-3.6 clang-format-3.5)
+
+if(CLANG_FORMAT)
+  message(STATUS "Looking for clang-format - found")
+  file(GLOB_RECURSE LINT_ALL_SOURCE_FILES src/*.cc)
+  add_custom_target(
+    format
+    COMMAND
+      ${CLANG_FORMAT}
+      -style=Google
+      -sort-includes
+      -i
+      ${LINT_ALL_SOURCE_FILES}
+  )
+else()
+    message(STATUS "Looking for clang-format - not found")
+    message(STATUS "  Build target 'format' will not be available.")
+endif()
+
 ####
 
 # Post-build packaging
