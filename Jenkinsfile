@@ -341,6 +341,54 @@ builders['macosx'] = { node ('macosx'){
   }
 }
 
+builders['clang-format'] = { node ('ubuntu-16.04'){
+    timestamps {
+      try {
+        stage('clang format') {
+          checkout scm
+          sh """#!/bin/bash -ex
+            set -o pipefail
+            for i in clang-format clang-format-4.0 clang-format-3.9 clang-format-3.8 ; do
+              if hash \$i 2>/dev/null ; then
+                CLANG_FORMAT=\$i
+                break
+              fi
+            done
+            echo Using clang-format: \$CLANG_FORMAT
+            find . -name *.h -or -name *.cc | xargs \$CLANG_FORMAT -style=Google -sort-includes -i
+          """
+          dir('build') {
+            sh """#!/bin/bash -ex
+              set -o pipefail
+              for i in `git diff --name-only` ; do
+                git diff -U0 ../\$i  | sed -e "s#^#\$i:#"
+              done > clang-format.out
+              echo done
+            """
+          }
+          step([$class: 'WarningsPublisher',
+            canComputeNew: false,
+            canResolveRelativePaths: false,
+            defaultEncoding: '',
+            excludePattern: '',
+            healthy: '',
+            includePattern: '',
+            messagesPattern: '',
+            parserConfigurations: [
+              [parserName: 'clang-format', pattern: "build/clang-format.out"],
+            ],
+            unHealthy: ''
+          ])
+        }
+      } catch (error) {
+        post_stage_failure(env.JOB_NAME, "python-ubuntu1604", env.BUILD_ID,
+          env.BUILD_URL)
+        throw error
+      }
+    }
+  }
+}
+
 //parallel builders
 
 
