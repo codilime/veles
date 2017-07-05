@@ -270,17 +270,22 @@ void MinimapPanel::adjustMinimaps(size_t selection_size, int grow_factor, size_t
     size_t offset = start_position % minimap_size;
 
     // jump to begin if selection overflows bar
-    if (offset + selection_size > minimap_size && (offset + selection_size < full_size)) {
+    if (offset + selection_size > minimap_size && (start_position + selection_size < full_size)) {
       offset = 0;
     }
 
-    // fit end of bar to end of data
+    // fit bar start position at end of data
     if (start_position - offset + minimap_size > full_size) {
       offset += ((start_position - offset + minimap_size) - full_size);
     }
 
     size_t minimap_start = start_position - offset;
     minimap_start_position.append(minimap_start);
+
+    // at the end of data make sure that selection don't overflow bar
+    if (offset + selection_size > minimap_size) {
+      offset = minimap_size - selection_size;
+    }
 
     minimap_selection_offset.append(minimap_start + offset);
 
