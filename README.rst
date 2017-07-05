@@ -1,7 +1,8 @@
 Veles - A new age tool for binary analysis
 ==========================================
 
-See our home page at https://veles.io or visit us on IRC: #veles at freenode.
+See our home page at https://veles.io or visit us on IRC: `#veles
+<http://webchat.freenode.net/?channels=#veles>`__ at freenode.
 
 
 Building, installing
