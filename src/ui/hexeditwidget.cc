@@ -62,7 +62,7 @@ HexEditWidget::HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
   connect(hex_edit_, &HexEdit::selectionChanged,
       this, &HexEditWidget::selectionChanged);
 
-  connect(hex_edit_, &HexEdit::visibleRegionChanged, [this] (qint64 start_addr, qint64 region_size) {
+  connect(hex_edit_, &HexEdit::visibleRegionChanged, [this](qint64 start_addr, qint64 region_size) {
     emit updateMinimap(start_addr, region_size);
   });
 
@@ -180,7 +180,7 @@ void HexEditWidget::createActions() {
   connect(show_node_tree_act_, SIGNAL(toggled(bool)),
       this, SIGNAL(showNodeTree(bool)));
 
-  //Currently not implemented
+  // Currently not implemented
   show_minimap_act_ = ShortcutsModel::ShortcutsModel::getShortcutsModel()->createQAction(
         util::settings::shortcuts::SHOW_MINIMAP,
         this, QIcon(":/images/show_minimap.png"), Qt::WidgetWithChildrenShortcut);

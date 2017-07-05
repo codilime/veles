@@ -115,7 +115,7 @@ void NodeWidget::showMinimap(bool show) {
     minimap_dock_->setWindowTitle("Minimap");
     minimap_ = new visualization::MinimapPanel(this, /*size_control=*/false);
 
-    if(data_model_->binData().size() > 0) {
+    if (data_model_->binData().size() > 0) {
       loadBinDataToMinimap();
     } else {
       sampler_data_ = QByteArray("");
@@ -136,7 +136,7 @@ void NodeWidget::showMinimap(bool show) {
         this, &NodeWidget::loadBinDataToMinimap);
     connect(minimap_dock_, &QDockWidget::visibilityChanged,
         hex_edit_widget_, &HexEditWidget::minimapVisibilityChanged);
-    connect(minimap_, &visualization::MinimapPanel::selectionChanged, [this] (size_t start, size_t end) {
+    connect(minimap_, &visualization::MinimapPanel::selectionChanged, [this](size_t start, size_t end) {
       if (!ignore_update_minimap_) {
         ignore_update_minimap_ = true;
         hex_edit_widget_->minimapSelectionChanged(start, end);

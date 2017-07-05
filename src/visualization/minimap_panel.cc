@@ -31,7 +31,7 @@ const float k_minimum_auto_selection_size = 0.1f;
 
 typedef VisualizationMinimap::MinimapMode MinimapMode;
 
-MinimapPanel::MinimapPanel(QWidget *parent, bool size_control) :
+MinimapPanel::MinimapPanel(bool size_control, QWidget *parent) :
     QWidget(parent), size_control_(size_control), mode_(MinimapMode::VALUE),
     select_range_dialog_(new SelectRangeDialog(this)) {
   minimaps_.push_back(new VisualizationMinimap(size_control_, this));
@@ -39,7 +39,7 @@ MinimapPanel::MinimapPanel(QWidget *parent, bool size_control) :
           std::bind(&MinimapPanel::updateSelection, this,
                     0, std::placeholders::_1,
                     std::placeholders::_2));
-  connect(select_range_dialog_, &SelectRangeDialog::accepted, [this] () {
+  connect(select_range_dialog_, &SelectRangeDialog::accepted, [this]() {
     selectRange(select_range_dialog_->getStartAddress(), select_range_dialog_->getEndAddress());
   });
   initLayout();
@@ -256,11 +256,17 @@ void MinimapPanel::selectRange(size_t start, size_t end) {
 
 void MinimapPanel::adjustMinimaps(size_t selection_size, int grow_factor, size_t start_position) {
   size_t full_size = sampler_->getFileOffset(sampler_->getSampleSize());
+
+  if (full_size == 0) {
+    return;
+  }
+
   QVector<size_t> minimap_sizes;
   QVector<size_t> minimap_selection_sizes;
   QVector<size_t> minimap_start_position;
   QVector<size_t> minimap_selection_offset;
 
+  // calculate number of minimaps and all parameters
   do {
     selection_size = std::min(full_size, selection_size);
     minimap_selection_sizes.append(selection_size);
@@ -269,12 +275,12 @@ void MinimapPanel::adjustMinimaps(size_t selection_size, int grow_factor, size_t
 
     size_t offset = start_position % minimap_size;
 
-    // jump to begin if selection overflows bar
+    // Jump to beginning if selection overflows bar.
     if (offset + selection_size > minimap_size && (start_position + selection_size < full_size)) {
       offset = 0;
     }
 
-    // fit bar start position at end of data
+    // Fit bar start position at end of data.
     if (start_position - offset + minimap_size > full_size) {
       offset += ((start_position - offset + minimap_size) - full_size);
     }
@@ -282,7 +288,7 @@ void MinimapPanel::adjustMinimaps(size_t selection_size, int grow_factor, size_t
     size_t minimap_start = start_position - offset;
     minimap_start_position.append(minimap_start);
 
-    // at the end of data make sure that selection don't overflow bar
+    // At the end of data make sure that selection don't overflow bar.
     if (offset + selection_size > minimap_size) {
       offset = minimap_size - selection_size;
     }
@@ -292,7 +298,7 @@ void MinimapPanel::adjustMinimaps(size_t selection_size, int grow_factor, size_t
     start_position = minimap_start;
     selection_size = minimap_size;
 
-  } while (selection_size < full_size);
+  } while(selection_size < full_size);
 
   int index = 0;
   while(index < minimap_sizes.size()) {

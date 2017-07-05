@@ -71,6 +71,7 @@ class NodeWidget : public View {
   util::UniformSampler* sampler_;
   QByteArray sampler_data_;
 
+  // don't change minimap too often when scrolling by "normal" hex edit scroll bar
   QTimer update_minimap_timer_;
   qint64 update_minimap_start_;
   qint64 update_minimap_size_;

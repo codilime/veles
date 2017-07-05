@@ -33,7 +33,7 @@ class MinimapPanel : public QWidget {
   Q_OBJECT
 
  public:
-  explicit MinimapPanel(QWidget *parent = 0, bool size_control = true);
+  explicit MinimapPanel(bool size_control = true, QWidget *parent = 0);
   ~MinimapPanel();
 
   void setSampler(util::ISampler *sampler);

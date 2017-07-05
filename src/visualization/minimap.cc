@@ -49,7 +49,7 @@ void VisualizationMinimap::setSampler(util::ISampler *sampler) {
 }
 
 QPair<size_t, size_t> VisualizationMinimap::getRange() {
-  if (empty()) return qMakePair(0, 0);
+  if (empty()) return {0, 0};
   auto range = sampler_->getRange();
   return qMakePair(range.first, range.second);
 }
@@ -58,7 +58,7 @@ QPair<size_t, size_t> VisualizationMinimap::getSelectedRange() {
   if (empty()) return qMakePair(0, 0);
   size_t start = sampler_->getFileOffset(selection_start_);
   size_t end = sampler_->getFileOffset(selection_end_);
-  return qMakePair(start, end);
+  return {start, end};
 }
 
 void VisualizationMinimap::setSelectedRange(size_t start_address, size_t end_address) {
