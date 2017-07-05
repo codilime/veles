@@ -266,7 +266,7 @@ void MinimapPanel::adjustMinimaps(size_t selection_size, int grow_factor, size_t
   QVector<size_t> minimap_start_position;
   QVector<size_t> minimap_selection_offset;
 
-  // calculate number of minimaps and all parameters
+  // Calculate number of minimaps and all parameters.
   do {
     selection_size = std::min(full_size, selection_size);
     minimap_selection_sizes.append(selection_size);
@@ -301,7 +301,7 @@ void MinimapPanel::adjustMinimaps(size_t selection_size, int grow_factor, size_t
   } while(selection_size < full_size);
 
   int index = 0;
-  while(index < minimap_sizes.size()) {
+  while (index < minimap_sizes.size()) {
     if (index >= minimaps_.size()) {
       addMinimap();
     }
