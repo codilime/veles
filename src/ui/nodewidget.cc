@@ -113,7 +113,7 @@ void NodeWidget::showMinimap(bool show) {
     minimap_dock_ = new QDockWidget;
     new DockWidgetVisibilityGuard(minimap_dock_);
     minimap_dock_->setWindowTitle("Minimap");
-    minimap_ = new visualization::MinimapPanel(this, /*size_control=*/false);
+    minimap_ = new visualization::MinimapPanel(/*size_control=*/false, this);
 
     if (data_model_->binData().size() > 0) {
       loadBinDataToMinimap();
