@@ -822,7 +822,7 @@ void HexEdit::setSelection(qint64 start, qint64 size, bool set_visible) {
   createChunkDialog_->setRange(selectionStart(), selectionEnd());
 
   if (set_visible ) {
-    scrollToByte(selectionStart(), /*minimal_change=*/true);
+    scrollToByte(current_position_, /*minimal_change=*/true);
   }
 
   resetCursor();

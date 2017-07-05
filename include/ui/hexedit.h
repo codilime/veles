@@ -48,7 +48,7 @@ class HexEdit : public QAbstractScrollArea {
   /** Scroll screen to make byte visible */
   void scrollToByte(qint64 bytePos, bool minimal_change = false);
   void scrollRows(qint64 num_rows);
-  FileBlobModel *dataModel() { return dataModel_;};
+  FileBlobModel *dataModel() { return dataModel_;}
   void setParserIds(QStringList ids);
   void processEditEvent(QKeyEvent *event);
   uint64_t byteValue(qint64 pos, bool modified = true);
