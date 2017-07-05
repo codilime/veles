@@ -298,10 +298,10 @@ void MinimapPanel::adjustMinimaps(size_t selection_size, int grow_factor, size_t
     start_position = minimap_start;
     selection_size = minimap_size;
 
-  } while(selection_size < full_size);
+  } while (selection_size < full_size);
 
   int index = 0;
-  while(index < minimap_sizes.size()) {
+  while (index < minimap_sizes.size()) {
     if (index >= minimaps_.size()) {
       addMinimap();
     }
