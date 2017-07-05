@@ -182,8 +182,8 @@ void HexEditWidget::createActions() {
 
   // Currently not implemented
   show_minimap_act_ = ShortcutsModel::ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::SHOW_MINIMAP,
-        this, QIcon(":/images/show_minimap.png"), Qt::WidgetWithChildrenShortcut);
+      util::settings::shortcuts::SHOW_MINIMAP,
+      this, QIcon(":/images/show_minimap.png"), Qt::WidgetWithChildrenShortcut);
   show_minimap_act_->setToolTip(tr("Minimap"));
   show_minimap_act_->setEnabled(true);
   show_minimap_act_->setCheckable(true);
