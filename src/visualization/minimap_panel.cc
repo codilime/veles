@@ -27,7 +27,7 @@
 namespace veles {
 namespace visualization {
 
-const float k_minimum_auto_selection_size = 0.1f;
+const float K_MINIMUM_AUTO_SELECTION_SIZE = 0.1f;
 
 typedef VisualizationMinimap::MinimapMode MinimapMode;
 
@@ -220,7 +220,7 @@ void MinimapPanel::selectRange(size_t start, size_t end) {
       addMinimap();
     }
     size_t curr_size = std::max(size,
-      static_cast<size_t>(std::ceil(k_minimum_auto_selection_size *
+      static_cast<size_t>(std::ceil(K_MINIMUM_AUTO_SELECTION_SIZE *
                           (curr_end - curr_start))));
     if (size == curr_size) {
       minimaps_[index]->setSelectedRange(start, end);
@@ -298,10 +298,10 @@ void MinimapPanel::adjustMinimaps(size_t selection_size, int grow_factor, size_t
     start_position = minimap_start;
     selection_size = minimap_size;
 
-  } while (selection_size < full_size);
+  } while(selection_size < full_size);
 
   int index = 0;
-  while (index < minimap_sizes.size()) {
+  while(index < minimap_sizes.size()) {
     if (index >= minimaps_.size()) {
       addMinimap();
     }
