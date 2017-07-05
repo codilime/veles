@@ -109,6 +109,8 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[SWITCH_TAB_PREV] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Tab), QKeySequence(Qt::CTRL | Qt::Key_PageUp)};
     defaults[HEX_SCROLL_UP] = {QKeySequence(Qt::CTRL | Qt::Key_Up)};
     defaults[HEX_SCROLL_DOWN] = {QKeySequence(Qt::CTRL | Qt::Key_Down)};
+    defaults[HEX_ADD_COLUMN] = {QKeySequence(Qt::Key_Plus), QKeySequence(Qt::Key_Equal)};
+    defaults[HEX_REMOVE_COLUMN] = {QKeySequence(Qt::Key_Minus)};
   }
   return defaults;
 }
@@ -408,12 +410,14 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
   addShortcutType(CREATE_CHILD_CHUNK, hex, tr("&Create child chunk"), tr("Create child chunk"));
   addShortcutType(GO_TO_ADDRESS, hex, tr("&Go to address"), tr("Go to address"));
   addShortcutType(REMOVE_CHUNK, hex, tr("Remove chunk"));
-  addShortcutType(SAVE_SELECTION_TO_FILE, hex, tr("&Save to file"), tr("Save selection to file"));
+  addShortcutType(SAVE_SELECTION_TO_FILE, hex, tr("&Save selection to file"), tr("Save selection to file"));
   addShortcutType(HEX_FIND, hex, tr("&Find/Replace"), tr("Show the dialog for finding and replacing"));
   addShortcutType(HEX_FIND_NEXT, hex, tr("Find &next"), tr("Find next"));
   addShortcutType(UPLOAD, hex, tr("&Upload"), tr("Upload"));
   addShortcutType(UNDO, hex, tr("&Undo"), tr("Undo"));
   addShortcutType(DISCARD, hex, tr("&Discard"), tr("Discard changes"));
+  addShortcutType(HEX_ADD_COLUMN, hex, tr("Add column"), tr("Add column"));
+  addShortcutType(HEX_REMOVE_COLUMN, hex, tr("Remove column"), tr("Remove column"));
 
   auto hex_move = addCategory(tr("Cursor movement"), hex);
   addShortcutType(HEX_MOVE_TO_NEXT_CHAR, hex_move, tr("Right"));

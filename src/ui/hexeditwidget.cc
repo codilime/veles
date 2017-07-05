@@ -194,6 +194,18 @@ void HexEditWidget::createActions() {
   show_hex_edit_act_->setEnabled(true);
   connect(show_hex_edit_act_, SIGNAL(triggered()),
       this, SLOT(showHexEditor()));
+
+  add_column_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+      util::settings::shortcuts::HEX_ADD_COLUMN,
+      this, QIcon(":/images/plus.png"), Qt::WidgetWithChildrenShortcut);
+  add_column_act_->setStatusTip(tr("Add column"));
+  connect(add_column_act_, SIGNAL(triggered()), this, SLOT(addColumn()));
+
+  remove_column_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+      util::settings::shortcuts::HEX_REMOVE_COLUMN,
+      this, QIcon(":/images/minus.png"), Qt::WidgetWithChildrenShortcut);
+  remove_column_act_->setStatusTip(tr("Remove column"));
+  connect(remove_column_act_, SIGNAL(triggered()), this, SLOT(removeColumn()));
 }
 
 void HexEditWidget::createToolBars() {
@@ -240,6 +252,12 @@ void HexEditWidget::createToolBars() {
   edit_tool_bar_->addAction(find_next_act_);
   edit_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
   addToolBar(edit_tool_bar_);
+
+  view_tool_bar_ = new QToolBar(tr("View"));
+  view_tool_bar_->addAction(remove_column_act_);
+  view_tool_bar_->addAction(add_column_act_);
+  view_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
+  addToolBar(view_tool_bar_);
 
   createSelectionInfo();
 }
@@ -362,6 +380,22 @@ void HexEditWidget::editStateChanged(bool has_changes, bool has_undo) {
   upload_act_->setEnabled(has_changes);
   discard_act_->setEnabled(has_changes);
   undo_act_->setEnabled(has_undo);
+}
+
+void HexEditWidget::addColumn() {
+  int bytesPerRow = hex_edit_->getBytesPerRow();
+  if (bytesPerRow >= 1024) {
+    return;
+  }
+  hex_edit_->setBytesPerRow(bytesPerRow + 1, false);
+}
+
+void HexEditWidget::removeColumn() {
+  int bytesPerRow = hex_edit_->getBytesPerRow();
+  if (bytesPerRow <= 1) {
+    return;
+  }
+  hex_edit_->setBytesPerRow(bytesPerRow - 1, false);
 }
 
 void HexEditWidget::nodeTreeVisibilityChanged(bool visibility) {

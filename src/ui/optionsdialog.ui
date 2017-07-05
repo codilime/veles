@@ -66,6 +66,9 @@
             <property name="minimum">
              <number>1</number>
             </property>
+            <property name="maximum">
+             <number>1024</number>
+            </property>
             <property name="value">
              <number>16</number>
             </property>

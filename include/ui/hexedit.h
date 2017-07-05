@@ -42,6 +42,7 @@ class HexEdit : public QAbstractScrollArea {
           QItemSelectionModel *selectionModel = nullptr, QWidget *parent = 0);
   /** Mark bytes as selected and optionally scroll screen to make these bytes visible */
   void setSelection(qint64 start, qint64 size, bool set_visible = false);
+  int getBytesPerRow() { return bytesPerRow_; }
   /** Sets how many bytes should be displayed in the single hex row or optionaly
    *  turn on automatic mode which will adjust bytes per row to window size */
   void setBytesPerRow(int bytesCount, bool automatic = false);
@@ -92,7 +93,7 @@ public slots:
   qint64 startOffset_;
   /** Total number of rows in hex edit (counting last address only row) */
   qint64 rowsCount_;
-  /** Number of rows displayed on the screen )calculated from window and font height) */
+  /** Number of rows displayed on the screen (calculated from window and font height) */
   qint64 rowsOnScreen_;
   /** Number of hex chars used to display one byte */
   qint64 byteCharsCount_;

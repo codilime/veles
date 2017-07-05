@@ -57,6 +57,8 @@ class HexEditWidget : public View {
   QAction* showVisualizationAction() {return visualization_act_;}
   QAction* showHexEditAction() {return show_hex_edit_act_;}
   QAction* showNodeTreeAction() {return show_node_tree_act_;}
+  QAction* addColumnAction() {return add_column_act_;}
+  QAction* removeColumnAction() {return remove_column_act_;}
 
  signals:
   void showNodeTree(bool show);
@@ -77,6 +79,8 @@ class HexEditWidget : public View {
   void enableFindNext(bool enable);
   void selectionChanged(qint64 start_addr, qint64 selection_size);
   void editStateChanged(bool has_changes, bool has_undo);
+  void addColumn();
+  void removeColumn();
 
  private:
   bool saveFile(const QString &file_name);
@@ -102,6 +106,7 @@ class HexEditWidget : public View {
   QToolBar *file_tool_bar_;
   QToolBar *edit_tool_bar_;
   QToolBar *tools_tool_bar_;
+  QToolBar *view_tool_bar_;
 
   QAction *upload_act_;
   QAction *save_as_act_;
@@ -115,6 +120,8 @@ class HexEditWidget : public View {
   QAction *show_node_tree_act_;
   QAction *show_minimap_act_;
   QAction *show_hex_edit_act_;
+  QAction *add_column_act_;
+  QAction *remove_column_act_;
 
   SearchDialog *search_dialog_;
   HexEdit *hex_edit_;

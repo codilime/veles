@@ -63,7 +63,7 @@ class FileBlobModel : public QAbstractItemModel {
              const QModelIndex &parent = QModelIndex());
 
   dbif::ObjectHandle blob(const QModelIndex &index = QModelIndex());
-  QStringList path() {return path_;};
+  QStringList path() {return path_;}
 
   static const Qt::ItemDataRole ROLE_BEGIN = Qt::UserRole;
   static const Qt::ItemDataRole ROLE_END = (Qt::ItemDataRole)(Qt::UserRole + 1);
