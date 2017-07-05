@@ -350,6 +350,14 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
     scrollToByte(current_position_, /*minimal_change=*/true);
   });
 
+  createAction(util::settings::shortcuts::HEX_SCROLL_UP, [this]() {
+    scrollRows(-1);
+  });
+
+  createAction(util::settings::shortcuts::HEX_SCROLL_DOWN, [this]() {
+    scrollRows(1);
+  });
+
   createAction(util::settings::shortcuts::HEX_SELECT_NEXT_PAGE, [this]() {
     setSelectionEnd(current_position_ + bytesPerRow_ * rowsOnScreen_);
     scrollRows(rowsOnScreen_);
@@ -394,7 +402,7 @@ QModelIndex HexEdit::selectedChunk() {
   return chunkSelectionModel_->currentIndex();
 }
 
-void HexEdit::createAction(util::settings::shortcuts::ShortcutType type, const std::function<void ()>& f) {
+void HexEdit::createAction(util::settings::shortcuts::ShortcutType type, const std::function<void()>& f) {
   auto action = ShortcutsModel::getShortcutsModel()->createQAction(
       type, this, Qt::WidgetWithChildrenShortcut);
   connect(action, &QAction::triggered, f);
