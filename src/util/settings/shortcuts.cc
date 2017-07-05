@@ -107,6 +107,8 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[DOCK_CLOSE] = QKeySequence::keyBindings(QKeySequence::Close);
     defaults[SWITCH_TAB_NEXT] = {QKeySequence(Qt::CTRL | Qt::Key_Tab), QKeySequence(Qt::CTRL | Qt::Key_PageDown)};
     defaults[SWITCH_TAB_PREV] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Tab), QKeySequence(Qt::CTRL | Qt::Key_PageUp)};
+    defaults[HEX_SCROLL_UP] = {QKeySequence(Qt::CTRL | Qt::Key_Up)};
+    defaults[HEX_SCROLL_DOWN] = {QKeySequence(Qt::CTRL | Qt::Key_Down)};
   }
   return defaults;
 }
@@ -418,6 +420,8 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
   addShortcutType(HEX_MOVE_TO_PREV_CHAR, hex_move, tr("Left"));
   addShortcutType(HEX_MOVE_TO_NEXT_LINE, hex_move, tr("Down"));
   addShortcutType(HEX_MOVE_TO_PREV_LINE, hex_move, tr("Up"));
+  addShortcutType(HEX_SCROLL_UP, hex_move, tr("Scroll up one line"));
+  addShortcutType(HEX_SCROLL_DOWN, hex_move, tr("Scroll down one line"));
   addShortcutType(HEX_MOVE_TO_NEXT_PAGE, hex_move, tr("Page down"));
   addShortcutType(HEX_MOVE_TO_PREV_PAGE, hex_move, tr("Page up"));
   addShortcutType(HEX_MOVE_TO_START_OF_LINE, hex_move, tr("Start of line"));

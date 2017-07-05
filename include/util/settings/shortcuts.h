@@ -102,6 +102,8 @@ enum ShortcutType : uint32_t {
   DOCK_CLOSE = 67,
   SWITCH_TAB_NEXT = 68,
   SWITCH_TAB_PREV = 69,
+  HEX_SCROLL_UP = 70,
+  HEX_SCROLL_DOWN = 71,
 };
 
 QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts();
