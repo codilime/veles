@@ -45,7 +45,8 @@ class HexEdit : public QAbstractScrollArea {
   int getBytesPerRow() { return bytesPerRow_; }
   /** Sets how many bytes should be displayed in the single hex row or optionaly
    *  turn on automatic mode which will adjust bytes per row to window size */
-  void setBytesPerRow(int bytesCount, bool automatic = false);
+  void setBytesPerRow(int bytesCount, bool automatic);
+  void setAutoBytesPerRow(bool automatic);
   /** Scroll screen to make byte visible */
   void scrollToByte(qint64 bytePos, bool minimal_change = false);
   void scrollRows(qint64 num_rows);

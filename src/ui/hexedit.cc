@@ -841,6 +841,15 @@ void HexEdit::setBytesPerRow(int bytesCount, bool automatic) {
   viewport()->update();
 }
 
+void HexEdit::setAutoBytesPerRow(bool automatic) {
+  autoBytesPerRow_ = automatic;
+  if (autoBytesPerRow_) {
+    adjustBytesPerRowToWindowSize();
+  }
+  recalculateValues();
+  viewport()->update();
+}
+
 void HexEdit::resetCursor() {
   cursor_visible_ = true;
   cursor_timer_.start();

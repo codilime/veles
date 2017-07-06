@@ -26,6 +26,7 @@
 #include <QToolButton>
 #include <QMainWindow>
 #include <QSharedPointer>
+#include <QWidgetAction>
 #include "visualization/base.h"
 
 #include "ui/fileblobmodel.h"
@@ -122,6 +123,8 @@ class HexEditWidget : public View {
   QAction *show_hex_edit_act_;
   QAction *add_column_act_;
   QAction *remove_column_act_;
+  QWidgetAction* auto_resize_act_;
+  QCheckBox* auto_resize_checkbox_;
 
   SearchDialog *search_dialog_;
   HexEdit *hex_edit_;

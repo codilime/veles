@@ -75,6 +75,9 @@ HexEditWidget::HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
   reapplySettings();
   setWindowTitle(data_model_->path().join(" : "));
 
+  hex_edit_->setBytesPerRow(util::settings::hexedit::columnsNumber(),
+      util::settings::hexedit::resizeColumnsToWindowWidth());
+
   connect(&parsers_menu_, &QMenu::triggered, this, &HexEditWidget::parse);
   setParserIds(dynamic_cast<VelesMainWindow*>(
       MainWindowWithDetachableDockWidgets::getFirstMainWindow())
@@ -83,8 +86,6 @@ HexEditWidget::HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
 }
 
 void HexEditWidget::reapplySettings() {
-  hex_edit_->setBytesPerRow(util::settings::hexedit::columnsNumber(),
-      util::settings::hexedit::resizeColumnsToWindowWidth());
 }
 
 void HexEditWidget::setParserIds(QStringList ids) {
@@ -206,6 +207,15 @@ void HexEditWidget::createActions() {
       this, QIcon(":/images/minus.png"), Qt::WidgetWithChildrenShortcut);
   remove_column_act_->setStatusTip(tr("Remove column"));
   connect(remove_column_act_, SIGNAL(triggered()), this, SLOT(removeColumn()));
+
+  auto_resize_act_ = new QWidgetAction(this);
+  auto_resize_checkbox_ = new QCheckBox(tr("Auto resize"));
+  auto_resize_checkbox_->setChecked(
+      util::settings::hexedit::resizeColumnsToWindowWidth());
+  auto_resize_act_->setDefaultWidget(auto_resize_checkbox_);
+  connect(auto_resize_checkbox_, &QCheckBox::toggled, [this](bool toggled) {
+    hex_edit_->setAutoBytesPerRow(toggled);
+  });
 }
 
 void HexEditWidget::createToolBars() {
@@ -256,6 +266,8 @@ void HexEditWidget::createToolBars() {
   view_tool_bar_ = new QToolBar(tr("View"));
   view_tool_bar_->addAction(remove_column_act_);
   view_tool_bar_->addAction(add_column_act_);
+  view_tool_bar_->addSeparator();
+  view_tool_bar_->addAction(auto_resize_act_);
   view_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
   addToolBar(view_tool_bar_);
 
@@ -388,6 +400,7 @@ void HexEditWidget::addColumn() {
     return;
   }
   hex_edit_->setBytesPerRow(bytesPerRow + 1, false);
+  auto_resize_checkbox_->setChecked(false);
 }
 
 void HexEditWidget::removeColumn() {
@@ -396,6 +409,7 @@ void HexEditWidget::removeColumn() {
     return;
   }
   hex_edit_->setBytesPerRow(bytesPerRow - 1, false);
+  auto_resize_checkbox_->setChecked(false);
 }
 
 void HexEditWidget::nodeTreeVisibilityChanged(bool visibility) {

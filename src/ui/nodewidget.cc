@@ -57,7 +57,7 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
       selection_model_(selection_model), sampler_(nullptr) {
   hex_edit_widget_ = new HexEditWidget(
       main_window, data_model, selection_model);
-  // adding actions for shortcuts
+  // This is only for shortcuts
   addAction(hex_edit_widget_->uploadAction());
   addAction(hex_edit_widget_->undoAction());
   addAction(hex_edit_widget_->findAction());
