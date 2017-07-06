@@ -2,3 +2,7 @@
 *.swp
 *.vdb
 CMakeLists.txt.user
+
+# Visual Studio files
+.vs
+CMakeSettings.json
