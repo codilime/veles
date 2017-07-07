@@ -27,6 +27,7 @@
 #include <QMainWindow>
 #include <QSharedPointer>
 #include <QWidgetAction>
+
 #include "visualization/base.h"
 
 #include "ui/fileblobmodel.h"
@@ -50,16 +51,16 @@ class HexEditWidget : public View {
   void reapplySettings() override;
   void setParserIds(QStringList ids);
   QString addressAsText(qint64 addr);
-  QAction* uploadAction() {return upload_act_;}
-  QAction* undoAction() {return undo_act_;}
-  QAction* discardAction() {return discard_act_;}
-  QAction* findAction() {return find_act_;}
-  QAction* findNextAction() {return find_next_act_;}
-  QAction* showVisualizationAction() {return visualization_act_;}
-  QAction* showHexEditAction() {return show_hex_edit_act_;}
-  QAction* showNodeTreeAction() {return show_node_tree_act_;}
-  QAction* addColumnAction() {return add_column_act_;}
-  QAction* removeColumnAction() {return remove_column_act_;}
+  QAction* uploadAction() const {return upload_act_;}
+  QAction* undoAction() const {return undo_act_;}
+  QAction* discardAction() const {return discard_act_;}
+  QAction* findAction() const {return find_act_;}
+  QAction* findNextAction() const {return find_next_act_;}
+  QAction* showVisualizationAction() const {return visualization_act_;}
+  QAction* showHexEditAction() const {return show_hex_edit_act_;}
+  QAction* showNodeTreeAction() const {return show_node_tree_act_;}
+  QAction* addColumnAction() const {return add_column_act_;}
+  QAction* removeColumnAction() const {return remove_column_act_;}
 
  signals:
   void showNodeTree(bool show);
