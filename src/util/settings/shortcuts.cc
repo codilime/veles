@@ -411,6 +411,7 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
   addShortcutType(GO_TO_ADDRESS, hex, tr("&Go to address"), tr("Go to address"));
   addShortcutType(REMOVE_CHUNK, hex, tr("Remove chunk"));
   addShortcutType(SAVE_SELECTION_TO_FILE, hex, tr("&Save selection to file"), tr("Save selection to file"));
+  addShortcutType(SAVE_CHUNK_TO_FILE, hex, tr("Save chunk to file"), tr("Save chunk to file"));
   addShortcutType(HEX_FIND, hex, tr("&Find/Replace"), tr("Show the dialog for finding and replacing"));
   addShortcutType(HEX_FIND_NEXT, hex, tr("Find &next"), tr("Find next"));
   addShortcutType(UPLOAD, hex, tr("&Upload"), tr("Upload"));

@@ -183,6 +183,12 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
         util::settings::shortcuts::REMOVE_CHUNK, this, Qt::WidgetWithChildrenShortcut);
   connect(removeChunkPassiveAction, &QAction::triggered, remove_chunk_lambda);
 
+  saveChunkAction_ = ShortcutsModel::getShortcutsModel()->createQAction(
+        util::settings::shortcuts::SAVE_CHUNK_TO_FILE, this, Qt::WidgetWithChildrenShortcut);
+  connect(saveChunkAction_, &QAction::triggered, [this]() {
+    saveChunkToFile(QFileDialog::getSaveFileName(this, tr("Save File")));
+  });
+
   saveSelectionAction_ = ShortcutsModel::getShortcutsModel()->createQAction(
         util::settings::shortcuts::SAVE_SELECTION_TO_FILE, this, Qt::WidgetWithChildrenShortcut);
   connect(saveSelectionAction_, &QAction::triggered, [this]() {
@@ -207,7 +213,9 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
   addAction(createChildChunkAction_);
   addAction(goToAddressAction_);
   addAction(removeChunkPassiveAction);
+  addAction(saveChunkAction_);
   addAction(saveSelectionAction_);
+
   menu_.addAction(createChunkAction_);
   menu_.addAction(createChildChunkAction_);
   menu_.addAction(goToAddressAction_);
@@ -215,9 +223,13 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
 
   menu_.addSeparator();
 
+  menu_.addAction(saveChunkAction_);
+
+  menu_.addSeparator();
+
   menu_.addAction(saveSelectionAction_);
 
-  auto copyMenu = menu_.addMenu("Copy as");
+  auto copyMenu = menu_.addMenu("Copy selection as");
 
   for (const auto& id : util::encoders::EncodersFactory::keys()) {
     QSharedPointer<util::encoders::IEncoder> encoder(
@@ -893,13 +905,13 @@ void HexEdit::contextMenuEvent(QContextMenuEvent *event) {
   bool selectionActive = selectionSize() > 0;
   bool isEditable = selectedChunk().isValid() &&
                     (selectedChunk().flags() & Qt::ItemNeverHasChildren) == 0;
-  bool selectionOrChunkActive = selectionActive || selectedChunk().isValid();
   createChunkAction_->setEnabled(selectionActive);
   createChildChunkAction_->setEnabled(isEditable);
   removeChunkAction_->setEnabled(dataModel_->isRemovable(selectedChunk()));
+  saveChunkAction_->setEnabled(selectedChunk().isValid());
 
-  saveSelectionAction_->setEnabled(selectionOrChunkActive);
-  parsers_menu_.setEnabled(selectionOrChunkActive);
+  saveSelectionAction_->setEnabled(selectionActive);
+  parsers_menu_.setEnabled(selectionActive);
 
   menu_.exec(event->globalPos());
 }
@@ -1195,21 +1207,38 @@ void HexEdit::saveSelectionToFile(QString path) {
   qint64 byteOffset = selectionStart();
   qint64 size = selectionSize();
 
-  // try to use selected chunk
-  if (size == 0 && selectedChunk().isValid()) {
-    getRangeFromIndex(selectedChunk(), &byteOffset, &size);
+  if (size == 0) {
+    return;
   }
+
+  saveDataToFile(byteOffset, size, path);
+}
+
+void HexEdit::saveChunkToFile(QString path) {
+
+  if (path.isEmpty() || !selectedChunk().isValid()) {
+    return;
+  }
+
+  qint64 byteOffset;
+  qint64 size;
+
+  getRangeFromIndex(selectedChunk(), &byteOffset, &size);
 
   if (size == 0) {
     return;
   }
 
-  if (byteOffset + size > dataBytesCount_) {
-    size = dataBytesCount_ - byteOffset;
+  saveDataToFile(byteOffset, size, path);
+}
+
+void HexEdit::saveDataToFile(int byte_offset, int size, QString path) {
+  if (byte_offset + size > dataBytesCount_) {
+    size = dataBytesCount_ - byte_offset;
   }
 
-  auto dataToSave = dataModel_->binData().data(byteOffset, byteOffset + size);
-  transferChanges(dataToSave, byteOffset, size);
+  auto dataToSave = dataModel_->binData().data(byte_offset, byte_offset + size);
+  transferChanges(dataToSave, byte_offset, size);
 
   QFile file(path);
   if (!file.open(QIODevice::WriteOnly)) {

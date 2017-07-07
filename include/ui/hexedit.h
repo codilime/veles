@@ -42,7 +42,7 @@ class HexEdit : public QAbstractScrollArea {
           QItemSelectionModel *selectionModel = nullptr, QWidget *parent = 0);
   /** Mark bytes as selected and optionally scroll screen to make these bytes visible */
   void setSelection(qint64 start, qint64 size, bool set_visible = false);
-  const int getBytesPerRow() { return bytesPerRow_; }
+  int getBytesPerRow() const { return bytesPerRow_; }
   /** Sets how many bytes should be displayed in the single hex row or optionaly
    *  turn on automatic mode which will adjust bytes per row to window size */
   void setBytesPerRow(int bytes_count, bool automatic);
@@ -55,6 +55,7 @@ class HexEdit : public QAbstractScrollArea {
   void processEditEvent(QKeyEvent *event);
   uint64_t byteValue(qint64 pos, bool modified = true);
   void setBytesValues(qint64 pos, const data::BinData& new_data);
+  void saveChunkToFile(QString path);
 
 public slots:
   void newBinData();
@@ -147,8 +148,9 @@ public slots:
 
   QAction *createChunkAction_;
   QAction *createChildChunkAction_;
-  QAction *removeChunkAction_;
   QAction *goToAddressAction_;
+  QAction *removeChunkAction_;
+  QAction *saveChunkAction_;
   QAction *saveSelectionAction_;
   QStringList parsers_ids_;
   QMenu menu_;
@@ -191,6 +193,7 @@ public slots:
   bool isByteVisible(qint64 bytePos);
   void setSelectionEnd(qint64 bytePos);
   void saveSelectionToFile(QString path);
+  void saveDataToFile(int byte_offset, int size, QString path);
   void scrollToCurrentChunk();
   void parse(QAction *action);
   void resetCursor();
