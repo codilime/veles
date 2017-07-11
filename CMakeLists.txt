@@ -624,6 +624,7 @@ endif(WIN32)
 # Apple
 if(APPLE)
   set(CPACK_INSTALL_PREFIX "/Applications")
+  set(CMAKE_MACOSX_RPATH on)
   # Finding MacDeployQt
   find_program(MACDEPLOYQT_EXECUTABLE
     macdeployqt
