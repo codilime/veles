@@ -55,7 +55,6 @@ class HexEdit : public QAbstractScrollArea {
   void processEditEvent(QKeyEvent *event);
   uint64_t byteValue(qint64 pos, bool modified = true);
   void setBytesValues(qint64 pos, const data::BinData& new_data);
-  void saveChunkToFile(QString path);
 
 public slots:
   void newBinData();
@@ -150,6 +149,7 @@ public slots:
   QAction *createChildChunkAction_;
   QAction *goToAddressAction_;
   QAction *removeChunkAction_;
+  QAction *selectChunkAction_;
   QAction *saveChunkAction_;
   QAction *saveSelectionAction_;
   QStringList parsers_ids_;
@@ -192,8 +192,9 @@ public slots:
   bool isRangeVisible(qint64 start, qint64 size);
   bool isByteVisible(qint64 bytePos);
   void setSelectionEnd(qint64 bytePos);
-  void saveSelectionToFile(QString path);
-  void saveDataToFile(int byte_offset, int size, QString path);
+  void saveSelectionToFile(const QString& path);
+  void saveChunkToFile(const QString& path);
+  void saveDataToFile(int byte_offset, int size, const QString& path);
   void scrollToCurrentChunk();
   void parse(QAction *action);
   void resetCursor();

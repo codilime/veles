@@ -106,7 +106,8 @@ enum ShortcutType : uint32_t {
   HEX_SCROLL_DOWN = 71,
   HEX_ADD_COLUMN = 72,
   HEX_REMOVE_COLUMN = 73,
-  SAVE_CHUNK_TO_FILE = 74,
+  SELECT_CHUNK = 74,
+  SAVE_CHUNK_TO_FILE = 75,
 };
 
 QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts();

@@ -180,23 +180,38 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
   connect(removeChunkAction_, &QAction::triggered, remove_chunk_lambda);
   removeChunkAction_->setEnabled(false);
   auto removeChunkPassiveAction = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::REMOVE_CHUNK, this, Qt::WidgetWithChildrenShortcut);
+      util::settings::shortcuts::REMOVE_CHUNK, this, Qt::WidgetWithChildrenShortcut);
   connect(removeChunkPassiveAction, &QAction::triggered, remove_chunk_lambda);
 
+  selectChunkAction_ = ShortcutsModel::getShortcutsModel()->createQAction(
+      util::settings::shortcuts::SELECT_CHUNK, this, Qt::WidgetWithChildrenShortcut);
+  connect(selectChunkAction_, &QAction::triggered, [this]() {
+    if (!selectedChunk().isValid()) {
+      return;
+    }
+    qint64 byte_offset;
+    qint64 size;
+    getRangeFromIndex(selectedChunk(), &byte_offset, &size);
+    if (size == 0) {
+      return;
+    }
+    setSelection(byte_offset, size, true);
+  });
+
   saveChunkAction_ = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::SAVE_CHUNK_TO_FILE, this, Qt::WidgetWithChildrenShortcut);
+      util::settings::shortcuts::SAVE_CHUNK_TO_FILE, this, Qt::WidgetWithChildrenShortcut);
   connect(saveChunkAction_, &QAction::triggered, [this]() {
     saveChunkToFile(QFileDialog::getSaveFileName(this, tr("Save File")));
   });
 
   saveSelectionAction_ = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::SAVE_SELECTION_TO_FILE, this, Qt::WidgetWithChildrenShortcut);
+      util::settings::shortcuts::SAVE_SELECTION_TO_FILE, this, Qt::WidgetWithChildrenShortcut);
   connect(saveSelectionAction_, &QAction::triggered, [this]() {
     saveSelectionToFile(QFileDialog::getSaveFileName(this, tr("Save File")));
   });
 
   auto copy_action = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::COPY, this, Qt::WidgetWithChildrenShortcut);
+      util::settings::shortcuts::COPY, this, Qt::WidgetWithChildrenShortcut);
   connect(copy_action, &QAction::triggered, [this]() {
     copyToClipboard();
   });
@@ -213,6 +228,7 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
   addAction(createChildChunkAction_);
   addAction(goToAddressAction_);
   addAction(removeChunkPassiveAction);
+  addAction(selectChunkAction_);
   addAction(saveChunkAction_);
   addAction(saveSelectionAction_);
 
@@ -223,13 +239,14 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
 
   menu_.addSeparator();
 
+  menu_.addAction(selectChunkAction_);
   menu_.addAction(saveChunkAction_);
 
   menu_.addSeparator();
 
   menu_.addAction(saveSelectionAction_);
 
-  auto copyMenu = menu_.addMenu("Copy selection as");
+  auto copy_menu = menu_.addMenu("Copy selection as");
 
   for (const auto& id : util::encoders::EncodersFactory::keys()) {
     QSharedPointer<util::encoders::IEncoder> encoder(
@@ -239,7 +256,7 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
     connect(copyAction, &QAction::triggered,
             [this, encoder] { copyToClipboard(encoder.data()); });
 
-    copyMenu->addAction(copyAction);
+    copy_menu->addAction(copyAction);
   }
 
   auto paste_menu = menu_.addMenu("Paste from");
@@ -908,6 +925,7 @@ void HexEdit::contextMenuEvent(QContextMenuEvent *event) {
   createChunkAction_->setEnabled(selectionActive);
   createChildChunkAction_->setEnabled(isEditable);
   removeChunkAction_->setEnabled(dataModel_->isRemovable(selectedChunk()));
+  selectChunkAction_->setEnabled(selectedChunk().isValid());
   saveChunkAction_->setEnabled(selectedChunk().isValid());
 
   saveSelectionAction_->setEnabled(selectionActive);
@@ -1198,47 +1216,47 @@ void HexEdit::scrollToCurrentChunk() {
   }
 }
 
-void HexEdit::saveSelectionToFile(QString path) {
+void HexEdit::saveSelectionToFile(const QString& path) {
 
   if (path.isEmpty()) {
     return;
   }
 
-  qint64 byteOffset = selectionStart();
+  qint64 byte_offset = selectionStart();
   qint64 size = selectionSize();
 
   if (size == 0) {
     return;
   }
 
-  saveDataToFile(byteOffset, size, path);
+  saveDataToFile(byte_offset, size, path);
 }
 
-void HexEdit::saveChunkToFile(QString path) {
+void HexEdit::saveChunkToFile(const QString& path) {
 
   if (path.isEmpty() || !selectedChunk().isValid()) {
     return;
   }
 
-  qint64 byteOffset;
+  qint64 byte_offset;
   qint64 size;
 
-  getRangeFromIndex(selectedChunk(), &byteOffset, &size);
+  getRangeFromIndex(selectedChunk(), &byte_offset, &size);
 
   if (size == 0) {
     return;
   }
 
-  saveDataToFile(byteOffset, size, path);
+  saveDataToFile(byte_offset, size, path);
 }
 
-void HexEdit::saveDataToFile(int byte_offset, int size, QString path) {
+void HexEdit::saveDataToFile(int byte_offset, int size, const QString& path) {
   if (byte_offset + size > dataBytesCount_) {
     size = dataBytesCount_ - byte_offset;
   }
 
-  auto dataToSave = dataModel_->binData().data(byte_offset, byte_offset + size);
-  transferChanges(dataToSave, byte_offset, size);
+  auto data_to_save = dataModel_->binData().data(byte_offset, byte_offset + size);
+  transferChanges(data_to_save, byte_offset, size);
 
   QFile file(path);
   if (!file.open(QIODevice::WriteOnly)) {
@@ -1248,8 +1266,8 @@ void HexEdit::saveDataToFile(int byte_offset, int size, QString path) {
   }
 
   QDataStream stream(&file);
-  stream.writeRawData((const char *)dataToSave.rawData(),
-                      static_cast<int>(dataToSave.octets()));
+  stream.writeRawData((const char *)data_to_save.rawData(),
+                      static_cast<int>(data_to_save.octets()));
 }
 
 void HexEdit::setParserIds(QStringList ids) {
@@ -1263,19 +1281,19 @@ void HexEdit::parse(QAction *action) {
     parser_id = "";
   }
   QModelIndex parent;
-  qint64 byteOffset = selectionStart();
+  qint64 byte_offset = selectionStart();
   qint64 size = selectionSize();
 
   // try to use selected chunk
   if (size == 0 && selectedChunk().isValid()) {
-    getRangeFromIndex(selectedChunk(), &byteOffset, &size);
+    getRangeFromIndex(selectedChunk(), &byte_offset, &size);
     parent = selectedChunk();
   }
 
   if (size == 0) {
     return;
   }
-  dataModel_->parse(parser_id, byteOffset, parent);
+  dataModel_->parse(parser_id, byte_offset, parent);
 }
 
 void HexEdit::flipCursorVisibility() {
