@@ -16,6 +16,8 @@ Dependencies:
 - ``Python3.5+``
     - ``virtualenv``
 - ``OpenSSL`` >= 1.0.0, < 1.1.0
+- ``clang-tidy``
+- ``libclang-common-dev``
 
 Caveats:
 ``qt`` >= 5.6 is required if you want to rearrange tabs using drag&drop.
@@ -33,7 +35,7 @@ corresponding to the dependencies above.
 
 On Ubuntu it can be done like this::
 
-    apt-get install cmake zlib1g-dev qtbase5-dev g++ python3 python3-venv python3-dev libffi-dev libssl-dev
+    apt-get install cmake zlib1g-dev qtbase5-dev g++ python3 python3-venv python3-dev libffi-dev libssl-dev clang-tidy-3.9 libclang-common-3.9-dev
 
 To build ::
 
