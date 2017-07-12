@@ -464,6 +464,88 @@ endif(GTEST_FOUND AND GMOCK_FOUND)
 target_link_libraries(main_ui veles_base veles_db veles_network veles_client veles_visualization Qt5::Widgets parser)
 set_target_properties(main_ui PROPERTIES OUTPUT_NAME "veles")
 
+###
+#   Post-build - linting ###
+###
+
+message(STATUS "Looking for clang-tidy")
+find_program(CLANG_TIDY NAMES clang-tidy clang-tidy-4.0 clang-tidy-3.9 clang-tidy-3.8 clang-tidy-3.7 clang-tidy-3.6 clang-tidy-3.5)
+
+if(CLANG_TIDY)
+  message(STATUS "Looking for clang-tidy - found")
+  file(GLOB_RECURSE LINT_ALL_SOURCE_FILES src/*.cc)
+
+  # Get includes from main file
+  get_property(LINT_INC_DIRS TARGET main_ui PROPERTY INCLUDE_DIRECTORIES)
+
+  # Get includes from network library (QNetwork and friends)
+  get_property(LINT_VELES_NETWORK_DIRS TARGET veles_network PROPERTY INCLUDE_DIRECTORIES)
+
+  # join the lists of the includes
+  list(APPEND LINT_INC_DIRS ${LINT_VELES_NETWORK_DIRS})
+
+  # use this hack, so cmake will not escape space characters when passing the list
+  # to COMMAND, for example by using "-I$<JOIN:${LINT_INC_DIRS}, -I>"
+  string(REPLACE ";" ";-I" LINT_INCLUDES "${LINT_INC_DIRS}")
+
+  # checks
+  list(APPEND LINT_CHECKS "google-*")
+
+  string(REPLACE ";" "," LINT_CHECKS_STR "${LINT_CHECKS}")
+  message(STATUS "clang-tidy includes: -I${LINT_INCLUDES} -I${CMAKE_BINARY_DIR} -I${PROJECT_SOURCE_DIR}")
+  message(STATUS "clang-tidy checks: ${LINT_CHECKS_STR}")
+  # parse CMAKE_CXX_FLAGS to list, so spaces will not be escaped in COMMANDs
+  separate_arguments(LINT_CXX_FLAGS UNIX_COMMAND ${CMAKE_CXX_FLAGS})
+
+  # as an alternative - we could use
+  # set(CMAKE_CXX_CLANG_TIDY clang-tidy;-style=google;-checks=${LINT_CHECKS_STR}")
+  # and then all the magic should happen at compile time
+  # cmake 3.6+ required (Ubuntu 18.04 LTS)
+  add_custom_target(lint)
+
+
+  # this target is needed so dependencies are not build for each clang-tidy call
+  add_custom_target(lint_depends
+          DEPENDS
+            ${MSGPACK_CPP_HEADER}
+            ${MSGPACK_EXTRACT_PATH}
+            ${FORMS}
+            ${VISUALIZATION_FORMS}
+  )
+
+  # foreach is needed so maximum command line length is not reached
+  # create intermediary targets to allow parallel checks with -jN
+  foreach(LINT_SOURCE_FILE ${LINT_ALL_SOURCE_FILES})
+    list(APPEND LINT_ADDED_TARGETS ${LINT_SOURCE_FILE})
+    list(LENGTH LINT_ADDED_TARGETS LINT_ADDED_TARGETS_LEN)
+    set(LINT_TARGET_NAME "lint-${LINT_ADDED_TARGETS_LEN}")
+    add_custom_target(
+        ${LINT_TARGET_NAME}
+        COMMAND
+            ${CLANG_TIDY}
+            -checks=${LINT_CHECKS_STR}
+            ${LINT_SOURCE_FILE}
+            --
+            ${LINT_CXX_FLAGS}
+            # Don't know how to get from CMake that he will invoke compiler with
+            # -fPIC
+            "$<$<NOT:$<OR:$<BOOL:${WIN32}>,$<BOOL:${WIN64}>>>:-fPIC>"
+            -I${LINT_INCLUDES}
+            -I${CMAKE_BINARY_DIR}
+            -I${PROJECT_SOURCE_DIR}
+          DEPENDS
+            lint_depends
+    )
+    add_dependencies(lint ${LINT_TARGET_NAME})
+  endforeach()
+else()
+    message(STATUS "Looking for clang-tidy - not found")
+    message(STATUS "  Build target 'lint' will not be available.")
+endif()
+
+
+####
+
 # Post-build packaging
 
 #Unix paths
