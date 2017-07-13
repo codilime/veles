@@ -30,22 +30,27 @@ include("cmake/cppgen.cmake")
 include("cmake/server.cmake")
 include("cmake/openssl.cmake")
 # Compiler flags
-set(CMAKE_CXX_STANDARD_REQUIRED 11) # Use c++11
+if(MINGW)
+  # MinGW is not supported because of C++14 problems (and many others).
+  message(FATAL_ERROR "MinGW is not supported, use MSVC on Windows")
+endif()
+set(CMAKE_CXX_STANDARD_REQUIRED 14) # Use c++14
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 set(CMAKE_INSTALL_RPATH ".")
 if(CMAKE_COMPILER_IS_GNUCXX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall --std=c++11") # All warnings
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall --std=c++14") # All warnings
   set(ADDITIONAL_LINK_LIBRARIES "pthread")
 endif()
 if(MSVC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc ") # set exception handling mode and linking mode
+  # set exception handling mode and linking mode
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc ")
   # build with multiple processes
   # see: https://docs.microsoft.com/en-us/cpp/build/reference/mp-build-with-multiple-processes
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP ")
 endif()
 if(APPLE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 endif(APPLE)
 
 if(WIN32)
