@@ -296,20 +296,6 @@ qt5_use_modules(veles_db Core)
 add_dependencies(veles_db veles_network)
 target_link_libraries(veles_db veles_dbif parser)
 
-# EXE: dbif_test
-add_executable(dbif_test ${SRC_DIR}/dbif_test.cc)
-
-qt5_use_modules(dbif_test Core)
-
-target_link_libraries(dbif_test veles_db veles_network)
-
-# EXE: unpyc
-add_executable(unpyc ${SRC_DIR}/unpyc.cc)
-
-qt5_use_modules(unpyc Core)
-
-target_link_libraries(unpyc veles_db parser veles_network)
-
 #target_link_libraries(test_veles veles)
 
 # Resources
