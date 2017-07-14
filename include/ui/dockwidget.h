@@ -120,54 +120,6 @@ class DockWidget : public QDockWidget {
 };
 
 /*****************************************************************************/
-/* DockWidgetVisibilityGuard
- *
- * Sometimes it's useful to have a QDockWidget within a QMainWindow
- * within a QDockWidget within a QMainWindow. It seems that Qt (5.5/5.7)
- * doesn't handle that situation correctly: when an outer QDockWidget is
- * docked/undocked or its parent is changed, all internal QDockWidgets
- * are closed.
- *
- * Purpose of this class is to keep an internal QDockWidget visible (actually
- * to reopen it) when such a situation happens.
- */
-/*****************************************************************************/
-
-class DockWidgetVisibilityGuard : public QObject {
-  Q_OBJECT
-
- public:
-  DockWidgetVisibilityGuard(QDockWidget* dock_widget);
-  void setEnabled(bool enabled);
-  bool isEnabled();
-  bool eventFilter(QObject* watched, QEvent* event) override;
-
- public slots:
-  void innerDockWidgetVisibilityChanged(bool visible);
-
- private:
-  QDockWidget* findOuterQDockWidget(QDockWidget* dock_widget);
-  bool enabled_;
-  QDockWidget* inner_dock_widget_;
-
-  /*
-   * Unfortunately it seems that we don't have a better method to detect that
-   * undesired visibility change has occurred than to detect that two events
-   * happened in a sequence:
-   * 1. Visibility of inner QDockWidget is set to false.
-   * 2. One of the following conditions is met:
-   *   - Parent of an outer QDockWidget is changed.
-   *   - Native window id of an outer QDockWidget is changed.
-   *
-   * We assume that both events happened in a sequence when they both
-   * happened closely in time.
-   */
-  bool inner_dock_widget_has_been_hidden_;
-  QTime time_stamp_;
-  static constexpr int treshold_msec_ = 100;
-};
-
-/*****************************************************************************/
 /* TabBarEventFilter */
 /*****************************************************************************/
 

@@ -441,69 +441,6 @@ void DockWidget::createSplitActions() {
 }
 
 /*****************************************************************************/
-/* DockWidgetVisibilityGuard */
-/*****************************************************************************/
-
-DockWidgetVisibilityGuard::DockWidgetVisibilityGuard(QDockWidget* dock_widget)
-      : QObject(dock_widget), enabled_(true),
-      inner_dock_widget_(dock_widget) {
-  if(inner_dock_widget_) {
-    connect(inner_dock_widget_, &QDockWidget::visibilityChanged,
-        this, &DockWidgetVisibilityGuard::innerDockWidgetVisibilityChanged);
-  }
-}
-
-void DockWidgetVisibilityGuard::setEnabled(bool enabled) {
-  enabled_ = enabled;
-}
-
-bool DockWidgetVisibilityGuard::isEnabled() {
-  return enabled_;
-}
-
-bool DockWidgetVisibilityGuard::eventFilter(QObject* watched, QEvent* event) {
-  if (event->type() == QEvent::ParentChange
-      || event->type() == QEvent::WinIdChange
-      || event->type() == QEvent::Show) {
-    if (enabled_ && inner_dock_widget_has_been_hidden_
-        && time_stamp_.elapsed() <= treshold_msec_) {
-      inner_dock_widget_->setVisible(true);
-    }
-  }
-
-  return false;
-}
-
-void DockWidgetVisibilityGuard::innerDockWidgetVisibilityChanged(
-    bool visible) {
-  QDockWidget* outer_dock_widget = findOuterQDockWidget(inner_dock_widget_);
-  if (outer_dock_widget) {
-    outer_dock_widget->installEventFilter(this);
-    inner_dock_widget_has_been_hidden_ = !visible;
-    if (inner_dock_widget_has_been_hidden_) {
-      time_stamp_.start();
-    }
-  }
-}
-
-QDockWidget* DockWidgetVisibilityGuard::findOuterQDockWidget(
-    QDockWidget* dock_widget) {
-  if (dock_widget) {
-    QObject* obj = dock_widget->parent();
-    while (obj) {
-      QDockWidget* dock = dynamic_cast<QDockWidget*>(obj);
-      if (dock == nullptr) {
-        obj = obj->parent();
-      } else {
-        return dock;
-      }
-    }
-  }
-
-  return nullptr;
-}
-
-/*****************************************************************************/
 /* TabBarEventFilter */
 /*****************************************************************************/
 

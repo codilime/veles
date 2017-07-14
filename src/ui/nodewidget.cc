@@ -71,7 +71,6 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
   setFocusProxy(hex_edit_widget_);
 
   node_tree_dock_ = new QDockWidget;
-  new DockWidgetVisibilityGuard(node_tree_dock_);
   node_tree_dock_->setWindowTitle("Node tree");
   node_tree_widget_ = new NodeTreeWidget(main_window, data_model,
       selection_model);
