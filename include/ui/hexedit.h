@@ -22,6 +22,7 @@
 #include <QItemSelectionModel>
 #include <QMenu>
 #include <QMouseEvent>
+#include <QStaticText>
 #include <QStringList>
 
 #include "ui/createchunkdialog.h"
@@ -89,7 +90,6 @@ public slots:
   qint64 bytesPerRow_;
   /** Indicates if bytes per row should be automatically adjusted to window width */
   bool autoBytesPerRow_;
-
   /** Byte offset of whole blob */
   qint64 startOffset_;
   /** Total number of rows in hex edit (counting last address only row) */
@@ -120,11 +120,19 @@ public slots:
   qint64 asciiWidth_;
   /** Height in pixels of area separator */
   qint64 lineWidth_;
-
   /** Number of first row displayed on the screen */
   qint64 startRow_;
   /** Number of first pixel from left which should be displayed on the screen */
   qint64 startPosX_;
+  /** Number of byte where selection starts (counting from beginning of blob) */
+  qint64 current_position_;
+  /** Number of bytes in selection */
+  qint64 selection_size_;
+
+  // Cache for faster rendering.
+  QStaticText hex_text_cache_[256];
+  QStaticText ascii_text_cache_[256];
+  QColor selectionColor_;
 
   enum class WindowArea {
     ADDRESS,
@@ -132,11 +140,6 @@ public slots:
     ASCII,
     OUTSIDE,
   };
-
-  /** Number of byte where selection starts (counting from beginning of blob) */
-  qint64 current_position_;
-  /** Number of bytes in selection */
-  qint64 selection_size_;
 
   WindowArea current_area_;
   qint64 cursor_pos_in_byte_;
@@ -170,11 +173,11 @@ public slots:
   void flipCursorVisibility();
   WindowArea pointToWindowArea(QPoint pos);
   QString addressAsText(qint64 pos);
-  QString hexRepresentationFromBytePos(qint64 pos);
-  QString asciiRepresentationFromBytePos(qint64 pos);
+  QString hexRepresentationFromByte(uint64_t byte_val);
+  QString asciiRepresentationFromByte(uint64_t byte_val);
 
   void setByteValue(qint64 pos, uint64_t byte_value);
-  QColor byteTextColorFromPos(qint64 pos);
+  QColor byteTextColorFromByteValue(uint64_t byte_val);
   QColor byteBackroundColorFromPos(qint64 pos);
 
   qint64 selectionStart();

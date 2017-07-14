@@ -43,6 +43,9 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   set(ADDITIONAL_LINK_LIBRARIES "pthread")
 endif()
 if(MSVC)
+  # Uncomment this line to use instrumentation in Visual Studio.
+  # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /Profile")
+
   # set exception handling mode and linking mode
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc ")
   # build with multiple processes
@@ -99,6 +102,7 @@ add_library(veles_base
     ${INCLUDE_DIR}/util/edit.h
     ${INCLUDE_DIR}/util/string_utils.h
     ${INCLUDE_DIR}/util/math.h
+    ${INCLUDE_DIR}/util/misc.h
 
     ${SRC_DIR}/util/icons.cc
     ${SRC_DIR}/util/concurrency/threadpool.cc
@@ -122,6 +126,7 @@ add_library(veles_base
     ${SRC_DIR}/util/edit.cc
     ${SRC_DIR}/util/string_utils.cc
     ${SRC_DIR}/util/math.cc
+    ${SRC_DIR}/util/misc.cc
     ${SRC_DIR}/util/version.cc)
 
 qt5_use_modules(veles_base Core Gui Widgets)

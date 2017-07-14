@@ -25,7 +25,10 @@
 
 #include "ui/hexedit.h"
 #include "util/encoders/factory.h"
+#include "util/misc.h"
 #include "util/settings/theme.h"
+
+using veles::util::misc::array_size;
 
 namespace veles {
 namespace ui {
@@ -44,6 +47,8 @@ void HexEdit::recalculateValues() {
 
   verticalByteBorderMargin_ = charHeight_ / 5;
   dataBytesCount_ = dataModel_->binData().size();
+  // TODO(mkow): This should be updated in a separate function (only on actual
+  // change of this value) and then cause recalculation of cached text.
   byteCharsCount_ = (dataModel_->binData().width() + 3) / 4;
   byte_max_value_ = ~0ULL;
   if (dataModel_->binData().width() < 64) {
@@ -111,11 +116,13 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
       byte_max_value_(0),
       current_position_(0),
       selection_size_(0),
+      selectionColor_(viewport()->palette().color(QPalette::Highlight)),
       current_area_(WindowArea::HEX),
       cursor_pos_in_byte_(0),
       cursor_visible_(false),
       edit_engine_(bindata_width_) {
-  setFont(util::settings::theme::font());
+  auto font = util::settings::theme::font();
+  setFont(font);
 
   connect(dataModel_, &FileBlobModel::newBinData,
       this, &HexEdit::newBinData);
@@ -128,6 +135,18 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
   }
 
   recalculateValues();
+
+  // Initialize hex & ASCII text cache.
+  for (size_t i = 0; i < array_size(hex_text_cache_); i++) {
+    hex_text_cache_[i].setPerformanceHint(QStaticText::ModerateCaching);
+    hex_text_cache_[i].setText(hexRepresentationFromByte(i));
+    hex_text_cache_[i].setTextFormat(Qt::PlainText);
+  }
+  for (size_t i = 0; i < array_size(ascii_text_cache_); i++) {
+    ascii_text_cache_[i].setPerformanceHint(QStaticText::ModerateCaching);
+    ascii_text_cache_[i].setText(asciiRepresentationFromByte(i));
+    ascii_text_cache_[i].setTextFormat(Qt::PlainText);
+  }
 
   connect(verticalScrollBar(), &QAbstractSlider::valueChanged, this,
           &HexEdit::recalculateValues);
@@ -583,9 +602,16 @@ qint64 HexEdit::selectionEnd() {
 
 qint64 HexEdit::selectionSize() { return qAbs(selection_size_); }
 
-QString HexEdit::hexRepresentationFromBytePos(qint64 pos) {
-  return QString::number(byteValue(pos), 16)
-      .rightJustified(byteCharsCount_, '0');
+QString HexEdit::hexRepresentationFromByte(uint64_t byte_val) {
+  // This seems to be much faster than QString::number() + rightJustified()
+  // (according to profiling results).
+  auto res = QString(byteCharsCount_, '0');
+  for (int i = byteCharsCount_ - 1; i >= 0; i--) {
+    res[i] = "0123456789abcdef"[byte_val % 16];
+    byte_val /= 16;
+  }
+  assert(byte_val == 0);
+  return res;
 }
 
 QString HexEdit::addressAsText(qint64 pos) {
@@ -593,28 +619,24 @@ QString HexEdit::addressAsText(qint64 pos) {
       .rightJustified(addressBytes_ * 2, '0');
 }
 
-QString HexEdit::asciiRepresentationFromBytePos(qint64 pos) {
-  auto x = byteValue(pos);
-  if (x >= 0x20 && x < 0x7f) {
-    return QChar::fromLatin1(x);
+QString HexEdit::asciiRepresentationFromByte(uint64_t byte_val) {
+  if (byte_val >= 0x20 && byte_val < 0x7f) {
+    return QChar::fromLatin1(byte_val);
   }
   return ".";
 }
 
-QColor HexEdit::byteTextColorFromPos(qint64 pos) {
-  auto x = byteValue(pos);
+QColor HexEdit::byteTextColorFromByteValue(uint64_t byte_val) {
   // TODO: better support for non 8 bit bytes
-  return util::settings::theme::byteColor(x & 0xff);
+  return util::settings::theme::byteColor(byte_val & 0xff);
 }
 
 QColor HexEdit::byteBackroundColorFromPos(qint64 pos) {
-  auto selectionColor = viewport()->palette().color(QPalette::Highlight);
-
   if (pos >= selectionStart() && pos < selectionEnd() && selectionSize() > 1) {
-    return selectionColor;
+    return selectionColor_;
   }
 
-  if (byteValue(pos) != byteValue(pos, /*modified=*/false)) {
+  if (edit_engine_.isChanged(pos)) {
     return util::settings::theme::editedBackground();
   }
 
@@ -785,6 +807,7 @@ void HexEdit::paintEvent(QPaintEvent *event) {
     painter.drawText(startMargin_ - startPosX_, y_pos,
                      addressAsText(bytes_offset));
 
+    old_pen = painter.pen();
     for (auto column_num = 0; column_num < bytesPerRow_; ++column_num) {
       auto byte_num = row_num * bytesPerRow_ + column_num;
       if (byte_num < dataBytesCount_) {
@@ -794,22 +817,33 @@ void HexEdit::paintEvent(QPaintEvent *event) {
         bool redraw_ascii = invalidated_rect.intersects(ascii_rect);
 
         if (redraw_hex || redraw_ascii) {
-          old_pen = painter.pen();
-          painter.setPen(QPen(byteTextColorFromPos(byte_num)));
+          auto byte_val = byteValue(byte_num);
+          painter.setPen(QPen(byteTextColorFromByteValue(byte_val)));
+          // We use drawStaticText() where possible, as it's much faster than
+          // drawText(). Unfortunately, both functions use different
+          // coordinates, so we have to adjust them.
           if (redraw_hex) {
             auto x_pos = (byteCharsCount_ * charWidth_ + spaceAfterByte_) * column_num +
                 addressWidth_ + startMargin_ - startPosX_;
-            painter.drawText(x_pos, y_pos, hexRepresentationFromBytePos(byte_num));
+            if (byte_val < array_size(hex_text_cache_)) {
+              painter.drawStaticText(x_pos, y_pos - fontMetrics().ascent(), hex_text_cache_[byte_val]);
+            } else {
+              painter.drawText(x_pos, y_pos, hexRepresentationFromByte(byte_val));
+            }
           }
           if (redraw_ascii) {
             auto x_pos = (charWidth_ + spaceAfterAsciiByte_) * column_num + addressWidth_ +
-                hexAreaWidth_ + startMargin_ - startPosX_;
-            painter.drawText(x_pos, y_pos, asciiRepresentationFromBytePos(byte_num));
+              hexAreaWidth_ + startMargin_ - startPosX_;
+            if (byte_val < array_size(ascii_text_cache_)) {
+              painter.drawStaticText(x_pos, y_pos - fontMetrics().ascent(), ascii_text_cache_[byte_val]);
+            } else {
+              painter.drawText(x_pos, y_pos, asciiRepresentationFromByte(byte_val));
+            }
           }
-          painter.setPen(old_pen);
         }
       }
     }
+    painter.setPen(old_pen);
   }
 
   // border around selected chunk

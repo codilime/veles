@@ -263,6 +263,7 @@ QVariant FileBlobModel::data(const QModelIndex& index, int role) const {
         return color(index.row());
       }
     }
+    return QVariant();
   }
 
   if (item == nullptr) return QVariant();
@@ -300,12 +301,11 @@ QModelIndex FileBlobModel::indexFromPos(uint64_t pos,
     return QModelIndex();
   }
 
-  for (int childIndex = 0; childIndex < loader->childrenCount(); childIndex++) {
-    auto loaderChild = loader->child(childIndex);
+  for (const auto loader_child : loader->children()) {
     uint64_t begin, end;
-    loaderChild->range(&begin, &end);
+    loader_child->range(&begin, &end);
     if (pos >= begin && pos < end) {
-      return indexFromItem(loaderChild);
+      return indexFromItem(loader_child);
     }
   }
 

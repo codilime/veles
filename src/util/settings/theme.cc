@@ -88,7 +88,6 @@ QColor chunkBackground(int colorIndex) {
   }
   QColor ret =
       chunkBackgroundColors_[colorIndex % chunkBackgroundColors_.size()];
-  QSettings settings;
   if (isDark()) {
     ret = QColor(ret.red() ^ 0xff, ret.green() ^ 0xff, ret.blue() ^ 0xff);
   }
