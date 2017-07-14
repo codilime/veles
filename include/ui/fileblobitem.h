@@ -33,6 +33,7 @@ class FileBlobItem : public QObject {
   explicit FileBlobItem(QString name, QString value, QString comment,
                         uint64_t start, uint64_t end, QObject *parent);
 
+  virtual const QVector<FileBlobItem*>& children() const { return children_; }
   virtual int childrenCount();
   virtual FileBlobItem *child(int index);
   virtual int childIndex(FileBlobItem *child);
@@ -65,7 +66,7 @@ class FileBlobItem : public QObject {
   dbif::ObjectHandle newRoot_;
 
   dbif::ObjectHandle dataObj_;
-  QList<FileBlobItem *> children_;
+  QVector<FileBlobItem *> children_;
 
  private:
   bool sortChildren();

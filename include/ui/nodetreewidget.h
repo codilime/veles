@@ -72,9 +72,6 @@ class NodeTreeWidget : public View {
 
   MainWindowWithDetachableDockWidgets *main_window_;
 
-  QFile file_;
-  bool is_untitled;
-
   QToolBar *file_tool_bar_;
   QToolBar *edit_tool_bar_;
   QToolBar *tools_tool_bar_;
