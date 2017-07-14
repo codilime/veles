@@ -174,7 +174,7 @@ void HexEditWidget::createActions() {
   show_node_tree_act_->setEnabled(true);
   show_node_tree_act_->setCheckable(true);
   show_node_tree_act_->setChecked(true);
-  connect(show_node_tree_act_, SIGNAL(toggled(bool)),
+  connect(show_node_tree_act_, SIGNAL(triggered(bool)),
       this, SIGNAL(showNodeTree(bool)));
 
 //  Currently not implemented
