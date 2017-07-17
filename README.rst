@@ -75,7 +75,7 @@ Python tests dependencies:
 
 On Ubuntu it can be done like this::
 
-    apt-get install git python2.7 python3-pip
+    apt-get install git python2.7 python2.7-dev python3-pip
     pip3 install tox>=2.4.0
 
 On Windows if you want to avoid compiling OpenSSL everytime you clean build directory
