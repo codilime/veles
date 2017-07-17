@@ -389,6 +389,26 @@ builders['clang-format'] = { node ('ubuntu-16.04'){
   }
 }
 
+builders['building instructions - Docker'] = { node ('ubuntu-16.04') {
+    timestamps {
+      try {
+        stage('building instructions - Docker') {
+          checkout scm
+          sh """#!/bin/bash -ex
+            set -o pipefail
+            docker build -f test/build/Dockerfile .
+            docker ps -q -f status=exited | xargs --no-run-if-empty docker rm
+            docker images -q -f "dangling=true" | xargs --no-run-if-empty docker rmi
+          """
+        }
+      } catch (error) {
+        post_stage_failure(env.JOB_NAME, "building instructions - Docker", env.BUILD_ID,
+          env.BUILD_URL)
+        throw error
+      }
+    }
+  }
+}
 //parallel builders
 
 
