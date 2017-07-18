@@ -157,15 +157,11 @@ QMap<size_t, data::BinData>::const_iterator EditEngine::itFromPos(size_t byte_po
   return it;
 }
 
-bool EditEngine::isChanged(size_t byte_pos) const {
-  return itFromPos(byte_pos) != changes_.constEnd();
-}
-
 uint64_t EditEngine::byteValue(size_t byte_pos) const {
   auto it = itFromPos(byte_pos);
 
   if (it == changes_.constEnd()) {
-    return 0;
+    return original_data_->binData()[byte_pos].element64();
   }
 
   size_t pos = it.key();
@@ -176,6 +172,10 @@ uint64_t EditEngine::byteValue(size_t byte_pos) const {
   }
 
   return data.element64(static_cast<int>(byte_pos - pos));
+}
+
+uint64_t EditEngine::originalByteValue(size_t byte_pos) const {
+  return original_data_->binData()[byte_pos].element64();
 }
 
 bool EditEngine::hasChanges() const {

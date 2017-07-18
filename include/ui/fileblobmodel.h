@@ -56,7 +56,7 @@ class FileBlobModel : public QAbstractItemModel {
   QModelIndex indexFromPos(uint64_t pos,
                            const QModelIndex &parent = QModelIndex());
 
-  const data::BinData& binData() {return binData_;}
+  const data::BinData& binData() const {return binData_;}
   bool isRemovable(const QModelIndex &index = QModelIndex());
   void uploadNewData(const data::BinData& bindata, uint64_t offset = 0);
   void parse(QString parser = "", qint64 offset = 0,

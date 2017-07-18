@@ -120,7 +120,7 @@ HexEdit::HexEdit(FileBlobModel *dataModel, QItemSelectionModel *selectionModel,
       current_area_(WindowArea::HEX),
       cursor_pos_in_byte_(0),
       cursor_visible_(false),
-      edit_engine_(bindata_width_) {
+      edit_engine_(dataModel_) {
   auto font = util::settings::theme::font();
   setFont(font);
 
@@ -560,13 +560,12 @@ HexEdit::WindowArea HexEdit::pointToWindowArea(QPoint pos) {
   return WindowArea::OUTSIDE;
 }
 
-uint64_t HexEdit::byteValue(qint64 pos, bool modified) {
+uint64_t HexEdit::byteValue(qint64 pos) const {
+  return edit_engine_.byteValue(pos);
+}
 
-  if (modified && edit_engine_.isChanged(pos)) {
-    return edit_engine_.byteValue(pos);
-  }
-
-  return dataModel_->binData()[pos].element64();
+uint64_t HexEdit::originalByteValue(qint64 pos) const {
+  return edit_engine_.originalByteValue(pos);
 }
 
 void HexEdit::setBytesValues(qint64 pos, const data::BinData& new_data) {
@@ -636,7 +635,7 @@ QColor HexEdit::byteBackroundColorFromPos(qint64 pos) {
     return selectionColor_;
   }
 
-  if (edit_engine_.isChanged(pos)) {
+  if (byteValue(pos) != originalByteValue(pos)) {
     return util::settings::theme::editedBackground();
   }
 
@@ -1219,7 +1218,7 @@ void HexEdit::scrollRows(qint64 num_rows) {
 void HexEdit::newBinData() {
   if (bindata_width_ != dataModel_->binData().width()) {
     bindata_width_ = dataModel_->binData().width();
-    edit_engine_ = util::EditEngine(bindata_width_);
+    edit_engine_ = util::EditEngine(dataModel_);
     emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
   }
   recalculateValues();

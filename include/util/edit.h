@@ -22,14 +22,16 @@
 #include <QVector>
 
 #include "data/bindata.h"
+#include "ui/fileblobmodel.h"
 
 namespace veles {
 namespace util {
 
 class EditEngine {
  public:
-  explicit EditEngine(uint32_t bindata_width, int edit_stack_limit = 100) :
-    edit_stack_limit_(edit_stack_limit), bindata_width_(bindata_width) {}
+  explicit EditEngine(const ui::FileBlobModel* original_data, int edit_stack_limit = 100) :
+    original_data_(original_data), bindata_width_(original_data->binData().width()),
+    edit_stack_limit_(edit_stack_limit) {}
 
   void changeBytes(size_t pos, const data::BinData& bytes,
       const data::BinData& old_bytes, bool add_to_history = true);
@@ -41,15 +43,16 @@ class EditEngine {
   void applyChanges(data::BinData& data, size_t offset = 0, int64_t max_bytes = -1) const;
   QPair<size_t, data::BinData> popFirstChange();
 
-  bool isChanged(size_t byte_pos) const;
   uint64_t byteValue(size_t byte_pos) const;
+  uint64_t originalByteValue(size_t byte_pos) const;
   bool hasChanges() const;
 
   void clear();
 
  private:
-  int edit_stack_limit_;
+  const ui::FileBlobModel* original_data_;
   uint32_t bindata_width_;
+  int edit_stack_limit_;
   QList<data::BinData> edit_stack_data_;
   QList<QPair<size_t, size_t>> edit_stack_;
   QMap<size_t, data::BinData> changes_;
