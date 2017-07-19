@@ -389,7 +389,7 @@ builders['clang-format'] = { node ('ubuntu-16.04'){
   }
 }
 
-builders['building instructions - Docker'] = { node ('ubuntu-16.04') {
+builders['building instructions - Docker'] = { node ('docker-builder') {
     timestamps {
       try {
         stage('building instructions - Docker') {
@@ -397,8 +397,7 @@ builders['building instructions - Docker'] = { node ('ubuntu-16.04') {
           sh """#!/bin/bash -ex
             set -o pipefail
             docker build -f test/build/Dockerfile .
-            docker ps -q -f status=exited | xargs --no-run-if-empty docker rm
-            docker images -q -f "dangling=true" | xargs --no-run-if-empty docker rmi
+            docker system prune -f
           """
         }
       } catch (error) {
