@@ -33,14 +33,18 @@ class MinimapPanel : public QWidget {
   Q_OBJECT
 
  public:
-  explicit MinimapPanel(QWidget *parent = 0);
+  explicit MinimapPanel(bool size_control = true, QWidget *parent = 0);
   ~MinimapPanel();
 
   void setSampler(util::ISampler *sampler);
   QPair<size_t, size_t> getSelection();
+  void adjustMinimaps(size_t selection_size, int grow_factor, size_t start_position = 0);
 
  signals:
   void selectionChanged(size_t start, size_t end);
+
+ public slots:
+  void selectRange(size_t start, size_t end);
 
  private slots:
   void addMinimap();
@@ -48,11 +52,12 @@ class MinimapPanel : public QWidget {
   void changeMinimapMode();
   void updateSelection(int minimap_index, size_t start, size_t end);
   void showSelectRangeDialog();
-  void selectRange();
 
  private:
   void initLayout();
   VisualizationMinimap::MinimapColor getMinimapColor();
+
+  bool size_control_;
 
   util::ISampler *sampler_;
   QVector<util::ISampler*> minimap_samplers_;
@@ -63,6 +68,7 @@ class MinimapPanel : public QWidget {
 
   VisualizationMinimap::MinimapMode mode_;
 
+  QHBoxLayout *button_layout_;
   QBoxLayout *layout_, *minimaps_layout_;
   QPushButton *add_minimap_button_, *remove_minimap_button_;
   QPushButton *change_mode_button_, *select_range_button_;
