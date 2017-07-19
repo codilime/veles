@@ -6,3 +6,6 @@ CMakeLists.txt.user
 # Visual Studio files
 .vs
 CMakeSettings.json
+*.vsp
+*.vspx
+*.psess
