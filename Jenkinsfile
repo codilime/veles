@@ -157,50 +157,6 @@ builders['msvc2015_64'] = { node('windows'){
   }
 }
 
-builders['msvc2015'] = {node('windows'){
-    def version = "msvc2015"
-    ws(getWorkspace("")){
-      timestamps {
-        try {
-          stage('windows msvc2015 x86') {
-            checkout scm
-            def branch = getBranch()
-            def generator = "Visual Studio 14 2015"
-            def vcredist_binary = "vcredist_x86.exe"
-            def cpack_generator = "ZIP"
-            withEnv(["PATH+QT=${env.QT}\\Tools\\${version}\\bin;${env.QT}\\5.7\\${version}\\bin",
-                     "PATH+CMAKE=${env.CMAKE}\\bin",
-                     "CMAKE_PREFIX_PATH+QT=${env.QT}\\5.7\\${version}",
-                     "GOOGLETEST_DIR=${tool 'googletest'}",
-                     "EMBED_PYTHON_ARCHIVE_PATH=${tool 'embed-python-32'}",
-                     "VCINSTALLDIR=${env.VS}\\VC\\"]){
-              if(version.contains("64")){
-                generator = "${generator} Win64"
-              }
-              if (!buildConfiguration.equals("Debug")) {
-                cpack_generator = "${cpack_generator};NSIS"
-              }
-              bat(script: "rd /s /q build_${version}", returnStatus: true)
-              bat script: "md build_${version}", returnStatus: true
-              dir ("build_${version}") {
-                bat script: "cmake -DCMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH% -DGOOGLETEST_SRC_PATH=%GOOGLETEST_DIR% -DEMBED_PYTHON_ARCHIVE_PATH=%EMBED_PYTHON_ARCHIVE_PATH% -DVCREDIST_BINARY=\"${vcredist_binary}\" -DOPENSSL_DLL_DIR=${tool 'openssl-32'} -G \"${generator}\" ..\\"
-                bat script: "cmake --build . --config ${buildConfiguration} -- /maxcpucount:8"
-                bat script: "cpack -D CPACK_PACKAGE_FILE_NAME=veles-${version} -G \"${cpack_generator}\" -C ${buildConfiguration}"
-              }
-              junit allowEmptyResults: true, keepLongStdio: true, testResults: '**/results.xml'
-              step([$class: 'ArtifactArchiver', artifacts: "build_${version}/veles-${version}.*", fingerprint: true])
-              bat(script: "rd /s /q build_${version}", returnStatus: true)
-            }
-          }
-        } catch (error) {
-          post_stage_failure(env.JOB_NAME, "windows-msvc2015-x86", env.BUILD_ID, env.BUILD_URL)
-          throw error
-        }
-      }
-    }
-  }
-}
-
 
 builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
     timestamps {
