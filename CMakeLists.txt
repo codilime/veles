@@ -489,6 +489,7 @@ if(CLANG_TIDY)
 
   # checks
   list(APPEND LINT_CHECKS "google-*")
+  list(APPEND LINT_CHECKS "performance-*")
 
   string(REPLACE ";" "," LINT_CHECKS_STR "${LINT_CHECKS}")
   message(STATUS "clang-tidy includes: -I${LINT_INCLUDES} -I${CMAKE_BINARY_DIR} -I${PROJECT_SOURCE_DIR}")
