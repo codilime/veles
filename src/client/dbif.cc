@@ -348,12 +348,12 @@ void NCWrapper::handleRequestAckMessage(msg_ptr message) {
 
 void getQStringAttr(std::shared_ptr<std::unordered_map<std::string,
     std::shared_ptr<messages::MsgpackObject>>> attr, std::string key,
-    QString& val_out) {
+    QString* val_out) {
   auto iter = attr->find(key);
   if (iter != attr->end()) {
     auto val_ptr = iter->second->getString();
     if (val_ptr) {
-      val_out = QString::fromStdString(*val_ptr);
+      *val_out = QString::fromStdString(*val_ptr);
     }
   }
 }
@@ -388,8 +388,8 @@ void NCWrapper::handleGetReplyMessage(msg_ptr message) {
       QString name("");
       QString comment("");
 
-      getQStringAttr(reply->obj->attr, "name", name);
-      getQStringAttr(reply->obj->attr, "comment", comment);
+      getQStringAttr(reply->obj->attr, "name", &name);
+      getQStringAttr(reply->obj->attr, "comment", &comment);
 
       dbif::ObjectType node_type = typeFromTags(reply->obj->tags);
 
@@ -406,7 +406,7 @@ void NCWrapper::handleGetReplyMessage(msg_ptr message) {
 
         if (node_type == dbif::ObjectType::FILE_BLOB) {
           QString path;
-          getQStringAttr(reply->obj->attr, "path", path);
+          getQStringAttr(reply->obj->attr, "path", &path);
 
           if (nc_->output() && detailed_debug_info_) {
             *nc_->output() << QString("NCWrapper: received MsgGetReply "
@@ -458,7 +458,7 @@ void NCWrapper::handleGetReplyMessage(msg_ptr message) {
           end = reply->obj->pos_end.second;
         }
 
-        getQStringAttr(reply->obj->attr, "type", chunk_type);
+        getQStringAttr(reply->obj->attr, "type", &chunk_type);
 
         if (nc_->output() && detailed_debug_info_) {
           *nc_->output() << QString("NCWrapper: received MsgGetReply "
@@ -1311,7 +1311,7 @@ bool NCWrapper::nodeToChunkDataItem(
       std::shared_ptr<proto::Node> node,
       data::ChunkDataItem& out_chunk_data_item) {
   QString name("[not set]");
-  getQStringAttr(node->attr, "name", name);
+  getQStringAttr(node->attr, "name", &name);
   dbif::ObjectType type = typeFromTags(node->tags);
   if (type == dbif::ObjectType::CHUNK) {
     out_chunk_data_item = data::ChunkDataItem::subchunk(

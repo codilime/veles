@@ -186,9 +186,9 @@ ISampler::ISampler(const ISampler& other) : data_(other.data_),
 
 size_t ISampler::getDataSize(SamplerConfig *sc) const {
   if (sc == nullptr) {
-    return std::min((size_t)data_.size(), end_ - start_);
+    return std::min<size_t>(data_.size(), end_ - start_);
   }
-  return std::min((size_t)data_.size(), sc->end - sc->start);
+  return std::min<size_t>(data_.size(), sc->end - sc->start);
 }
 
 char ISampler::getDataByte(size_t index, SamplerConfig *sc) const {

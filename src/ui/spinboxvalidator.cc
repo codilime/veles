@@ -99,7 +99,7 @@ void SpinBoxValidator::setRange(uint64_t bottom, uint64_t top)
   top_ = top;
 }
 
-bool SpinBoxValidator::isValidNum(QString &input) const
+bool SpinBoxValidator::isValidNum(const QString& input) const
 {
   QRegularExpression re;
 

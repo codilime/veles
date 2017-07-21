@@ -92,7 +92,7 @@ ISampler::ResampleData* UniformSampler::prepareResample(SamplerConfig *sc) {
   size_t size = getRequestedSampleSize(sc);
   size_t window_size = window_size_;
   if (use_default_window_size_ || window_size_ == 0) {
-    window_size = (size_t)floor(sqrt(size));
+    window_size = static_cast<size_t>(floor(sqrt(size)));
   }
   size_t windows_count = size / window_size;
   size = window_size * windows_count;

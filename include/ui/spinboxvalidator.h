@@ -40,7 +40,7 @@ class SpinBoxValidator : public QValidator {
   uint64_t bottom_;
   uint64_t top_;
 
-  bool isValidNum(QString &input) const;
+  bool isValidNum(const QString& input) const;
 };
 
 }  // namespace ui

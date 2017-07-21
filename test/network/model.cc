@@ -262,9 +262,9 @@ TEST(TestModel, TestBinData) {
   std::shared_ptr<BinDataModelOptional> ptr2;
   fromMsgpackObject(obj, ptr);
   fromMsgpackObject(obj, ptr2);
-  EXPECT_EQ(ptr->a->width(), 8);
+  EXPECT_EQ(ptr->a->width(), 8u);
   EXPECT_EQ(ptr2->a.first, true);
-  EXPECT_EQ(ptr2->a.second->width(), 8);
+  EXPECT_EQ(ptr2->a.second->width(), 8u);
   for (int i = 0; i < 4; ++i) {
     EXPECT_EQ(ptr->a->rawData()[i], raw_data[i]);
     EXPECT_EQ(ptr2->a.second->rawData()[i], raw_data[i]);

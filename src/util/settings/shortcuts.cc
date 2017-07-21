@@ -250,7 +250,7 @@ int ShortcutsModel::columnCount(const QModelIndex& parent) const {
 }
 
 QVariant ShortcutsModel::data(const QModelIndex& index, int role) const {
-  // TODO proper icon
+  // TODO(mkow): proper icon
   static const QIcon category_ico(":/images/open.png");
 
   if (!index.isValid()) {

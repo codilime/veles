@@ -44,7 +44,6 @@ class NodeTreeWidget : public View {
   explicit NodeTreeWidget(MainWindowWithDetachableDockWidgets *main_window,
       QSharedPointer<FileBlobModel>& data_model,
       QSharedPointer<QItemSelectionModel>& selection_model);
-  void reapplySettings();
   void setParserIds(QStringList ids);
 
  private slots:

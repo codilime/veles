@@ -376,8 +376,9 @@ elf_t::section_header_t::~section_header_t() {
 }
 
 std::vector<uint8_t> elf_t::section_header_t::body() {
-    if (f_body)
-        return m_body;
+    if (f_body) {
+      return m_body;
+    }
     m__io->pushName("body");
     kaitai::kstream *io = _root()->_io();
     auto saved_io = io;
@@ -390,15 +391,15 @@ std::vector<uint8_t> elf_t::section_header_t::body() {
     io->endChunk();
     delete io;
     veles_obj = saved_veles_obj;
-    io = saved_io;
     f_body = true;
     m__io->popName();
     return m_body;
 }
 
 std::string elf_t::section_header_t::name() {
-    if (f_name)
-        return m_name;
+    if (f_name) {
+      return m_name;
+    }
     m__io->pushName("name");
     kaitai::kstream *io = _root()->strings()->_io();
     auto saved_io = io;
@@ -411,7 +412,6 @@ std::string elf_t::section_header_t::name() {
     io->endChunk();
     delete io;
     veles_obj = saved_veles_obj;
-    io = saved_io;
     f_name = true;
     m__io->popName();
     return m_name;
@@ -439,8 +439,9 @@ elf_t::strings_t::~strings_t() {
 }
 
 std::vector<elf_t::program_header_t*>* elf_t::program_headers() {
-    if (f_program_headers)
-        return m_program_headers;
+    if (f_program_headers) {
+      return m_program_headers;
+    }
     m__io->pushName("program_headers");
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;
@@ -472,8 +473,9 @@ std::vector<elf_t::program_header_t*>* elf_t::program_headers() {
 }
 
 std::vector<elf_t::section_header_t*>* elf_t::section_headers() {
-    if (f_section_headers)
-        return m_section_headers;
+    if (f_section_headers) {
+      return m_section_headers;
+    }
     m__io->pushName("section_headers");
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;
@@ -505,8 +507,9 @@ std::vector<elf_t::section_header_t*>* elf_t::section_headers() {
 }
 
 elf_t::strings_t* elf_t::strings() {
-    if (f_strings)
-        return m_strings;
+    if (f_strings) {
+      return m_strings;
+    }
     m__io->pushName("strings");
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;

@@ -39,8 +39,8 @@ enum {
 };
 
 struct PycVersion {
-  uint32_t sig;
   const char *name;
+  uint32_t sig;
   uint32_t flags;
 };
 
@@ -50,10 +50,10 @@ const uint32_t PYVER_FLAGS_PY35 = PYVER_FLAGS_PY34;
 const uint32_t PYVER_FLAGS_PY36 = (PYVER_FLAGS_PY35 | PYVER_FLAG_WORDCODE | PYVER_FLAG_SIGNED_LINENO | PYVER_FLAG_PY36) & ~(PYVER_FLAG_LT_PY36);
 
 const PycVersion pyc_versions[] = {
-  { 0x0a0d0c9e, "cpython33", PYVER_FLAGS_PY33 },
-  { 0x0a0d0cee, "cpython34", PYVER_FLAGS_PY34 },
-  { 0x0a0d0d16, "cpython35", PYVER_FLAGS_PY35 },
-  { 0x0a0d0d33, "cpython36", PYVER_FLAGS_PY36 },
+  {"cpython33", 0x0a0d0c9e, PYVER_FLAGS_PY33},
+  {"cpython34", 0x0a0d0cee, PYVER_FLAGS_PY34},
+  {"cpython35", 0x0a0d0d16, PYVER_FLAGS_PY35},
+  {"cpython36", 0x0a0d0d33, PYVER_FLAGS_PY36},
 };
 
 enum {
@@ -207,9 +207,9 @@ const PycOpcode pyc_ops[] = {
 
 void parseCode(dbif::ObjectHandle code, const PycVersion &version);
 
-bool parseMarshal(StreamParser &parser, const QString &name, const PycVersion &version) {
-  parser.startChunk("marshal", name);
-  uint8_t mtype = parser.getByte("type");
+bool parseMarshal(StreamParser* parser, const QString &name, const PycVersion &version) {
+  parser->startChunk("marshal", name);
+  uint8_t mtype = parser->getByte("type");
   // XXX: annotate type enum val & ref bit
   // XXX: store ref
   switch (mtype & 0x7f) {
@@ -222,63 +222,63 @@ bool parseMarshal(StreamParser &parser, const QString &name, const PycVersion &v
     break;
   case 'i': {
     // 32-bit signed int
-    parser.getLe32("value", data::FieldHighType::SIGNED);
+    parser->getLe32("value", data::FieldHighType::SIGNED);
     break;
   }
   case 'l': {
     // big int
     // XXX: annotate with bignum value
-    int32_t slen = parser.getLe32("len", data::FieldHighType::SIGNED);
+    int32_t slen = parser->getLe32("len", data::FieldHighType::SIGNED);
     uint32_t len = slen < 0 ? -slen : slen;
-    parser.getLe16("digits", len);
+    parser->getLe16("digits", len);
     break;
   }
   case 'g': {
     // XXX: get as 64-bit, annotate as double
-    parser.getBytes("value", 8);
+    parser->getBytes("value", 8);
     break;
   }
   case 'y': {
     // XXX: get as 64-bit, annotate as double
-    parser.getBytes("real", 8);
-    parser.getBytes("imag", 8);
+    parser->getBytes("real", 8);
+    parser->getBytes("imag", 8);
     break;
   }
   case 's': {
     // bytestring
-    uint32_t len = parser.getLe32("length");
+    uint32_t len = parser->getLe32("length");
     // XXX: annotate as string, unless it's code / lnotab?
-    parser.getBytes("bytes", len);
+    parser->getBytes("bytes", len);
     break;
   }
   case 'u':
   case 't': {
     // UTF-8 unicode string, 32-bit length
     // XXX: annotate as number
-    uint32_t len = parser.getLe32("length");
-    parser.getBytes("chars", len);
+    uint32_t len = parser->getLe32("length");
+    parser->getBytes("chars", len);
     break;
   }
   case 'a':
   case 'A': {
     // 7-bit-only unicode string, 32-bit length
     // XXX: annotate as number
-    uint32_t len = parser.getLe32("length");
-    parser.getBytes("chars", len);
+    uint32_t len = parser->getLe32("length");
+    parser->getBytes("chars", len);
     break;
   }
   case 'z':
   case 'Z': {
     // 7-bit-only unicode string, 8-bit length
     // XXX: annotate as number
-    uint32_t len = parser.getByte("length");
-    parser.getBytes("chars", len);
+    uint32_t len = parser->getByte("length");
+    parser->getBytes("chars", len);
     break;
   }
   case '(': {
     // tuple, 32-bit length
     // XXX: annotate as number
-    uint32_t len = parser.getLe32("length");
+    uint32_t len = parser->getLe32("length");
     for (uint32_t i = 0; i != len; i++) {
       if (!parseMarshal(parser, QString("elements[%1]").arg(i), version)) {
         goto err;
@@ -289,7 +289,7 @@ bool parseMarshal(StreamParser &parser, const QString &name, const PycVersion &v
   case ')': {
     // tuple, 8-bit length
     // XXX: annotate as number
-    uint32_t len = parser.getByte("length");
+    uint32_t len = parser->getByte("length");
     for (uint32_t i = 0; i != len; i++) {
       if (!parseMarshal(parser, QString("elements[%1]").arg(i), version)) {
         goto err;
@@ -301,17 +301,17 @@ bool parseMarshal(StreamParser &parser, const QString &name, const PycVersion &v
   case 'r': {
     // ref
     // XXX: find that thing and annotate
-    parser.getLe32("idx");
+    parser->getLe32("idx");
     break;
   }
   case 'c': {
     // code object
     // XXX: annotate all these as numbers
-    parser.getLe32("argcount");
-    parser.getLe32("kwonlyargcount");
-    parser.getLe32("nlocals");
-    parser.getLe32("stacksize");
-    parser.getLe32("flags");
+    parser->getLe32("argcount");
+    parser->getLe32("kwonlyargcount");
+    parser->getLe32("nlocals");
+    parser->getLe32("stacksize");
+    parser->getLe32("flags");
     if (!parseMarshal(parser, "code", version)) goto err;
     if (!parseMarshal(parser, "consts", version)) goto err;
     if (!parseMarshal(parser, "names", version)) goto err;
@@ -320,31 +320,34 @@ bool parseMarshal(StreamParser &parser, const QString &name, const PycVersion &v
     if (!parseMarshal(parser, "cellvars", version)) goto err;
     if (!parseMarshal(parser, "filename", version)) goto err;
     if (!parseMarshal(parser, "name", version)) goto err;
-    parser.getLe32("firstlineno");
+    parser->getLe32("firstlineno");
     if (!parseMarshal(parser, "lnotab", version)) goto err;
-    parseCode(parser.endChunk(), version);
+    parseCode(parser->endChunk(), version);
     return true;
   }
   default:
 err:
-    parser.endChunk();
+    parser->endChunk();
     return false;
   }
-  parser.endChunk();
+  parser->endChunk();
   return true;
 }
 
 std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> parseLnotab(dbif::ObjectHandle code, dbif::ObjectHandle bytecodeBlob) {
   std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> res;
   auto lnotabObj = findSubChunk(code, "lnotab");
-  if (!lnotabObj)
+  if (!lnotabObj) {
     return res;
+  }
   auto lnotabField = findField(lnotabObj, "bytes");
-  if (!lnotabField)
+  if (!lnotabField) {
     return res;
+  }
   auto firstlinenoField = findField(code, "firstlineno");
-  if (!firstlinenoField || firstlinenoField.raw_value.size() != 1 || firstlinenoField.raw_value.width() > 64)
+  if (!firstlinenoField || firstlinenoField.raw_value.size() != 1 || firstlinenoField.raw_value.width() > 64) {
     return res;
+  }
   uint32_t firstlineno = firstlinenoField.raw_value.element64();
   auto lnotabBlob = makeSubBlob(code, "lnotab", lnotabField.raw_value);
   StreamParser parser(lnotabBlob, 0);
@@ -371,11 +374,13 @@ std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> parseLnotab(dbif::ObjectHa
 void parseCode(dbif::ObjectHandle code, const PycVersion &version) {
   // XXX: needs ref support
   auto bytecodeObj = findSubChunk(code, "code");
-  if (!bytecodeObj)
+  if (!bytecodeObj) {
     return;
+  }
   auto bytecodeField = findField(bytecodeObj, "bytes");
-  if (!bytecodeField)
+  if (!bytecodeField) {
     return;
+  }
   auto bytecodeBlob = makeSubBlob(code, "code", bytecodeField.raw_value);
   auto lines = parseLnotab(code, bytecodeBlob);
   StreamParser parser(bytecodeBlob, 0);
@@ -422,8 +427,9 @@ restart:
         break;
       }
     }
-    if (!found)
+    if (!found) {
       return;
+    }
   }
 #if 0
   for (auto &line : lines) {
@@ -434,7 +440,7 @@ restart:
 #endif
 }
 
-}
+}  // namespace
 
 void unpycFileBlob(dbif::ObjectHandle blob, uint64_t start,
                    dbif::ObjectHandle parent_chunk) {
@@ -446,7 +452,7 @@ void unpycFileBlob(dbif::ObjectHandle blob, uint64_t start,
   parser.endChunk();
   for (auto &version : pyc_versions) {
     if (version.sig == sig) {
-      parseMarshal(parser, "module", version);
+      parseMarshal(&parser, "module", version);
       break;
     }
   }

@@ -387,9 +387,9 @@ void VisualizationPanel::initOptionsPanel() {
   // Additional toolbars specific for current visualization
   prepareVisualizationOptions();
 
-  // TODO considering that there is already some code duplication between here
-  // and HexEditWidget we should consider refactoring some parts of those classes
-  // into common base
+  // TODO(mkow): considering that there is already some code duplication between
+  // here and HexEditWidget we should consider refactoring some parts of those
+  // classes into common base.
   QAction* open_hex = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::OPEN_HEX, this,
       Qt::WidgetWithChildrenShortcut);

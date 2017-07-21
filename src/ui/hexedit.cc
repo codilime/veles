@@ -626,7 +626,7 @@ QString HexEdit::asciiRepresentationFromByte(uint64_t byte_val) {
 }
 
 QColor HexEdit::byteTextColorFromByteValue(uint64_t byte_val) {
-  // TODO: better support for non 8 bit bytes
+  // TODO(mkow): better support for non 8 bit bytes.
   return util::settings::theme::byteColor(byte_val & 0xff);
 }
 
@@ -757,7 +757,6 @@ void HexEdit::paintEvent(QPaintEvent *event) {
   painter.drawLine(separator_offset, 0, separator_offset, viewport()->height());
   painter.drawLine(-startPosX_, separator_length,
                    lineWidth_ - endMargin_ / 2 - startPosX_, separator_length);
-  separator_length += charHeight_ + horizontalAreaSpaceWidth_;
   painter.setPen(old_pen);
 
   // Draw background.
@@ -992,7 +991,7 @@ void HexEdit::undo() {
 }
 
 void HexEdit::processEditEvent(QKeyEvent* event) {
-  uint8_t key = (uint8_t)event->text()[0].toLatin1();
+  uint8_t key = static_cast<uint8_t>(event->text()[0].toLatin1());
 
   if (current_area_ == WindowArea::ASCII) {
     if (key < 0x20 || key > 0x7e) {
@@ -1090,11 +1089,11 @@ void HexEdit::copyToClipboard(util::encoders::IEncoder* enc) {
   transferChanges(selectedData, selectionStart(), selectionEnd() - selectionStart());
 
   QClipboard *clipboard = QApplication::clipboard();
-  // TODO: convert encoders to use BinData
+  // TODO(mwk): convert encoders to use BinData.
   clipboard->setText(enc->encode(QByteArray(
-      (const char *)selectedData.rawData(), (int)selectedData.octets())));
+      reinterpret_cast<const char*>(selectedData.rawData()),
+      static_cast<int>(selectedData.octets()))));
 }
-
 
 void HexEdit::pasteFromClipboard(util::encoders::IDecoder* enc) {
   if (enc == nullptr) {
@@ -1299,7 +1298,7 @@ void HexEdit::saveDataToFile(int byte_offset, int size, const QString& path) {
   }
 
   QDataStream stream(&file);
-  stream.writeRawData((const char *)data_to_save.rawData(),
+  stream.writeRawData(reinterpret_cast<const char*>(data_to_save.rawData()),
                       static_cast<int>(data_to_save.octets()));
 }
 

@@ -29,14 +29,14 @@ float len(QPoint p) {
 
 // It is assumed that transformation described by m consists of
 // translation and rotation only.
-void decompose(QMatrix4x4& m, QVector3D& v, QQuaternion& r) {
-  v = m.column(3).toVector3D();
+void decompose(const QMatrix4x4& m, QVector3D* v, QQuaternion* r) {
+  *v = m.column(3).toVector3D();
   float data[] = {
       m.data()[0], m.data()[1], m.data()[2],
       m.data()[4], m.data()[5], m.data()[6],
       m.data()[8], m.data()[9], m.data()[10]
   };
-  r = QQuaternion::fromRotationMatrix(QMatrix3x3(data));
+  *r = QQuaternion::fromRotationMatrix(QMatrix3x3(data));
 }
 
 /*****************************************************************************/
@@ -80,7 +80,7 @@ QMatrix4x4 TrackballManipulator::transform() {
 }
 
 void TrackballManipulator::initFromMatrix(QMatrix4x4 m) {
-  decompose(m, init_position_, rotation_);
+  decompose(m, &init_position_, &rotation_);
   rotation_ = rotation_.conjugated();
   distance_ = 5.f;
   factor_ = 0.f;
@@ -174,7 +174,7 @@ QMatrix4x4 FreeManipulator::transform() {
 }
 
 void FreeManipulator::initFromMatrix(QMatrix4x4 m) {
-  decompose(m, position_, eye_rotation_);
+  decompose(m, &position_, &eye_rotation_);
   position_ = QMatrix4x4(eye_rotation_.toRotationMatrix())
       .mapVector(position_);
   eye_rotation_ = eye_rotation_.conjugated();
@@ -221,34 +221,20 @@ bool FreeManipulator::keyboardEvent(QKeyEvent* event) {
   int key = event->key();
 
   if (event->type() == QEvent::KeyPress) {
-    if (key == key_left)
-      left_ = true;
-    if (key == key_right)
-      right_ = true;
-    if (key == key_up)
-      up_ = true;
-    if (key == key_down)
-      down_ = true;
-    if (key == key_forward)
-      forward_ = true;
-    if (key == key_back)
-      back_ = true;
-
+    if (key == key_left) left_ = true;
+    if (key == key_right) right_ = true;
+    if (key == key_up) up_ = true;
+    if (key == key_down) down_ = true;
+    if (key == key_forward) forward_ = true;
+    if (key == key_back) back_ = true;
     return true;
   } else if (event->type() == QEvent::KeyRelease) {
-    if (key == key_left)
-      left_ = false;
-    if (key == key_right)
-      right_ = false;
-    if (key == key_up)
-      up_ = false;
-    if (key == key_down)
-      down_ = false;
-    if (key == key_forward)
-      forward_ = false;
-    if (key == key_back)
-      back_ = false;
-
+    if (key == key_left) left_ = false;
+    if (key == key_right) right_ = false;
+    if (key == key_up) up_ = false;
+    if (key == key_down) down_ = false;
+    if (key == key_forward) forward_ = false;
+    if (key == key_back) back_ = false;
     return true;
   }
 
@@ -332,7 +318,7 @@ QMatrix4x4 SpinManipulator::transform() {
 }
 
 void SpinManipulator::initFromMatrix(QMatrix4x4 m) {
-  decompose(m, init_position_, init_rotation_);
+  decompose(m, &init_position_, &init_rotation_);
   init_rotation_ = init_rotation_.conjugated();
   factor_ = 0.f;
   angle_ = 0.f;

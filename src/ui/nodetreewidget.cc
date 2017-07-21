@@ -77,7 +77,7 @@ NodeTreeWidget::NodeTreeWidget(
 
   registered_line_edit_ = nullptr;
 
-  reapplySettings();
+  NodeTreeWidget::reapplySettings();
   setWindowTitle(data_model_->path().join(" : "));
 
   // We don't need this now, but it might be useful in the future.
@@ -85,9 +85,6 @@ NodeTreeWidget::NodeTreeWidget(
   setParserIds(dynamic_cast<VelesMainWindow*>(
         MainWindowWithDetachableDockWidgets::getFirstMainWindow())
         ->parsersList());
-}
-
-void NodeTreeWidget::reapplySettings() {
 }
 
 void NodeTreeWidget::setParserIds(QStringList ids) {

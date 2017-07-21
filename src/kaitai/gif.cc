@@ -155,8 +155,9 @@ gif_t::logical_screen_descriptor_t::~logical_screen_descriptor_t() {
 }
 
 bool gif_t::logical_screen_descriptor_t::has_color_table() {
-    if (f_has_color_table)
-        return m_has_color_table;
+    if (f_has_color_table) {
+      return m_has_color_table;
+    }
     m__io->pushName("has_color_table");
     m__io->pushName("has_color_table");
     m_has_color_table = (flags() & 128) != 0;
@@ -167,8 +168,9 @@ bool gif_t::logical_screen_descriptor_t::has_color_table() {
 }
 
 int32_t gif_t::logical_screen_descriptor_t::color_table_size() {
-    if (f_color_table_size)
-        return m_color_table_size;
+    if (f_color_table_size) {
+      return m_color_table_size;
+    }
     m__io->pushName("color_table_size");
     m__io->pushName("color_table_size");
     m_color_table_size = (2 << (flags() & 7));
@@ -216,8 +218,9 @@ gif_t::local_image_descriptor_t::~local_image_descriptor_t() {
 }
 
 bool gif_t::local_image_descriptor_t::has_color_table() {
-    if (f_has_color_table)
-        return m_has_color_table;
+    if (f_has_color_table) {
+      return m_has_color_table;
+    }
     m__io->pushName("has_color_table");
     m__io->pushName("has_color_table");
     m_has_color_table = (flags() & 128) != 0;
@@ -228,8 +231,9 @@ bool gif_t::local_image_descriptor_t::has_color_table() {
 }
 
 bool gif_t::local_image_descriptor_t::has_interlace() {
-    if (f_has_interlace)
-        return m_has_interlace;
+    if (f_has_interlace) {
+      return m_has_interlace;
+    }
     m__io->pushName("has_interlace");
     m__io->pushName("has_interlace");
     m_has_interlace = (flags() & 64) != 0;
@@ -240,8 +244,9 @@ bool gif_t::local_image_descriptor_t::has_interlace() {
 }
 
 bool gif_t::local_image_descriptor_t::has_sorted_color_table() {
-    if (f_has_sorted_color_table)
-        return m_has_sorted_color_table;
+    if (f_has_sorted_color_table) {
+      return m_has_sorted_color_table;
+    }
     m__io->pushName("has_sorted_color_table");
     m__io->pushName("has_sorted_color_table");
     m_has_sorted_color_table = (flags() & 32) != 0;
@@ -252,8 +257,9 @@ bool gif_t::local_image_descriptor_t::has_sorted_color_table() {
 }
 
 int32_t gif_t::local_image_descriptor_t::color_table_size() {
-    if (f_color_table_size)
-        return m_color_table_size;
+    if (f_color_table_size) {
+      return m_color_table_size;
+    }
     m__io->pushName("color_table_size");
     m__io->pushName("color_table_size");
     m_color_table_size = (2 << (flags() & 7));
@@ -346,8 +352,9 @@ gif_t::ext_graphic_control_t::~ext_graphic_control_t() {
 }
 
 bool gif_t::ext_graphic_control_t::transparent_color_flag() {
-    if (f_transparent_color_flag)
-        return m_transparent_color_flag;
+    if (f_transparent_color_flag) {
+      return m_transparent_color_flag;
+    }
     m__io->pushName("transparent_color_flag");
     m__io->pushName("transparent_color_flag");
     m_transparent_color_flag = (flags() & 1) != 0;
@@ -358,8 +365,9 @@ bool gif_t::ext_graphic_control_t::transparent_color_flag() {
 }
 
 bool gif_t::ext_graphic_control_t::user_input_flag() {
-    if (f_user_input_flag)
-        return m_user_input_flag;
+    if (f_user_input_flag) {
+      return m_user_input_flag;
+    }
     m__io->pushName("user_input_flag");
     m__io->pushName("user_input_flag");
     m_user_input_flag = (flags() & 2) != 0;

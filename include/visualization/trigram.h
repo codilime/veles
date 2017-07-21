@@ -65,11 +65,11 @@ class LabelPositionMixer {
     s1c0p1_ = s1c0p1;
   }
 
-  QVector4D interpolate(QVector4D a, QVector4D b, float f) {
+  QVector4D interpolate(QVector4D a, QVector4D b, float f) const {
     return (1.f - f) * a + f * b;
   }
 
-  QVector4D mix(float sph, float cyl, float pos) {
+  QVector4D mix(float sph, float cyl, float pos) const {
     QVector4D sp0 = interpolate(s0c0p0_, s1c0p0_, sph);
     QVector4D cp0 = interpolate(s0c0p0_, s0c1p0_, cyl);
     QVector4D sp1 = interpolate(s0c0p1_, s1c0p1_, sph);
@@ -133,12 +133,12 @@ class TrigramWidget : public VisualizationWidget {
   AdditionalResampleData* onAsyncResample() override;
 
   void paintLabels(QMatrix4x4& scene_mp, QMatrix4x4& scene_m);
-  void paintLabel(LabelPositionMixer& mixer, QMatrix4x4& scene_to_screen,
-      QMatrix4x4& screen_mp, QOpenGLTexture* texture);
+  void paintLabel(const LabelPositionMixer& mixer, const QMatrix4x4& scene_to_screen,
+      const QMatrix4x4& screen_mp, QOpenGLTexture* texture);
   void initLabels();
   void releaseLabels();
   QVector3D calcScreenPosForLabel(QVector3D world_pos,
-      QMatrix4x4& scene_to_screen, int width, int height);
+      const QMatrix4x4& scene_to_screen, int width, int height);
   void paintRF(QMatrix4x4& mvp);
   void initRF();
   void releaseRF();

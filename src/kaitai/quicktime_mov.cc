@@ -329,8 +329,9 @@ quicktime_mov_t::atom_t::~atom_t() {
 }
 
 int32_t quicktime_mov_t::atom_t::len() {
-    if (f_len)
-        return m_len;
+    if (f_len) {
+      return m_len;
+    }
     m__io->pushName("len");
     m__io->pushName("len");
     m_len = (len32() == 0) ? ((_io()->size() - 8)) : ((len32() == 1) ? ((len64() - 16)) : ((len32() - 8)));

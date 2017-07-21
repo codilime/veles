@@ -68,7 +68,7 @@ void FileBlobModel::emitDataChanged(FileBlobItem* loader) {
     return;
   }
 
-  auto lastIndex = createIndex(firstIndex.row(), columnCount(),
+  auto lastIndex = createIndex(firstIndex.row(), columnCount(QModelIndex()),
                                firstIndex.internalPointer());
 
   emit dataChanged(firstIndex, lastIndex);

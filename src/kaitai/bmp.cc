@@ -204,8 +204,9 @@ bmp_t::bitmap_info_header_t::~bitmap_info_header_t() {
 }
 
 std::vector<uint8_t> bmp_t::image() {
-    if (f_image)
-        return m_image;
+    if (f_image) {
+      return m_image;
+    }
     m__io->pushName("image");
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;

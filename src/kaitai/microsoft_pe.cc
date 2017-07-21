@@ -355,8 +355,9 @@ microsoft_pe_t::section_t::~section_t() {
 }
 
 std::vector<uint8_t> microsoft_pe_t::section_t::body() {
-    if (f_body)
-        return m_body;
+    if (f_body) {
+      return m_body;
+    }
     m__io->pushName("body");
     auto saved_io = m__io;
     auto saved_veles_obj = veles_obj;

@@ -24,12 +24,13 @@
 namespace veles {
 namespace ui {
 
-using namespace util::settings::shortcuts;
+using util::settings::shortcuts::ShortcutsModel;
+using util::settings::shortcuts::ShortcutType;
 
 ShortcutsDialog::ShortcutsDialog(QWidget* parent) :
     QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint),
     ui_(new Ui::ShortcutsDialog), shortcut_selection_(new ShortcutEditDialog(this)),
-    model_(ShortcutsModel::getShortcutsModel()), filter_(new ShortcutsFilter(this)){
+    model_(ShortcutsModel::getShortcutsModel()), filter_(new ShortcutsFilter(this)) {
   ui_->setupUi(this);
   filter_->setSourceModel(model_);
   ui_->shortcutsTree->setModel(filter_);

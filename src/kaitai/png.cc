@@ -228,8 +228,9 @@ png_t::point_t::~point_t() {
 }
 
 double png_t::point_t::x() {
-    if (f_x)
-        return m_x;
+    if (f_x) {
+      return m_x;
+    }
     m__io->pushName("x");
     m__io->pushName("x");
     m_x = (x_int() / 100000.0);
@@ -240,8 +241,9 @@ double png_t::point_t::x() {
 }
 
 double png_t::point_t::y() {
-    if (f_y)
-        return m_y;
+    if (f_y) {
+      return m_y;
+    }
     m__io->pushName("y");
     m__io->pushName("y");
     m_y = (y_int() / 100000.0);
@@ -416,8 +418,9 @@ png_t::gama_chunk_t::~gama_chunk_t() {
 }
 
 double png_t::gama_chunk_t::gamma_ratio() {
-    if (f_gamma_ratio)
-        return m_gamma_ratio;
+    if (f_gamma_ratio) {
+      return m_gamma_ratio;
+    }
     m__io->pushName("gamma_ratio");
     m__io->pushName("gamma_ratio");
     m_gamma_ratio = (100000.0 / gamma_int());

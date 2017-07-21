@@ -375,10 +375,11 @@ void ChunkObject::runMethod(MethodRunner *runner, PMethodRequest req) {
 
 void ChunkObject::killed() {
   LocalObject::killed();
-  if (parent_chunk_)
+  if (parent_chunk_) {
     parent_chunk_->delChild(sharedFromThis());
-  else
+  } else {
     blob_->delChild(sharedFromThis());
+  }
 
   auto parse_watchers = parse_watchers_;
   for (auto getter: parse_watchers) {

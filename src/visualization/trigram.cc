@@ -69,8 +69,9 @@ TrigramWidget::TrigramWidget(QWidget* parent) :
 }
 
 TrigramWidget::~TrigramWidget() {
-  if (!texture_ && !databuf_)
+  if (!texture_ && !databuf_) {
     return;
+  }
   makeCurrent();
   delete texture_;
   delete databuf_;
@@ -108,8 +109,9 @@ void TrigramWidget::refresh(AdditionalResampleDataPtr ad) {
   if (use_brightness_heuristic_) {
     if (ad) {
       setBrightness(std::static_pointer_cast<BrightnessData>(ad)->brightness);
-      if (brightness_slider_ != nullptr)
+      if (brightness_slider_ != nullptr) {
         brightness_slider_->setValue(brightness_);
+      }
     } else {
       autoSetBrightness();
     }
@@ -136,22 +138,25 @@ void TrigramWidget::prepareOptions(QMainWindow* visualization_window) {
   QToolBar* shape_toolbar = new QToolBar("Shape", this);
   shape_toolbar->setMovable(false);
   cube_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::TRIGRAM_CUBE, this,
-        util::getColoredIcon(":/images/cube.png", icon_color, false));
+      util::settings::shortcuts::TRIGRAM_CUBE, this,
+      util::getColoredIcon(":/images/cube.png", icon_color, false),
+      Qt::WindowShortcut);
   connect(cube_action_, &QAction::triggered, std::bind(
       &TrigramWidget::setShape, this, EVisualizationShape::CUBE));
   shape_toolbar->addAction(cube_action_);
 
   cylinder_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::TRIGRAM_CYLINDER, this,
-        util::getColoredIcon(":/images/cylinder.png", icon_color, false));
+      util::settings::shortcuts::TRIGRAM_CYLINDER, this,
+      util::getColoredIcon(":/images/cylinder.png", icon_color, false),
+      Qt::WindowShortcut);
   connect(cylinder_action_, &QAction::triggered, std::bind(
       &TrigramWidget::setShape, this, EVisualizationShape::CYLINDER));
   shape_toolbar->addAction(cylinder_action_);
 
   sphere_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::TRIGRAM_SPHERE, this,
-        util::getColoredIcon(":/images/sphere.png", icon_color));
+      util::settings::shortcuts::TRIGRAM_SPHERE, this,
+      util::getColoredIcon(":/images/sphere.png", icon_color),
+      Qt::WindowShortcut);
 
   connect(sphere_action_, &QAction::triggered,
       std::bind(&TrigramWidget::setShape, this, EVisualizationShape::SPHERE));
@@ -190,8 +195,9 @@ void TrigramWidget::prepareOptions(QMainWindow* visualization_window) {
   brightness_label->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   layout->addWidget(brightness_label);
 
-  if (use_brightness_heuristic_)
+  if (use_brightness_heuristic_) {
     setBrightness(suggestBrightness());
+  }
   brightness_slider_ = new QSlider(Qt::Horizontal);
   brightness_slider_->setMinimum(k_minimum_brightness);
   brightness_slider_->setMaximum(k_maximum_brightness);
@@ -273,8 +279,9 @@ void TrigramWidget::setShape(EVisualizationShape shape) {
 }
 
 void TrigramWidget::brightnessSliderMoved(int value) {
-  if (value == brightness_)
+  if (value == brightness_) {
     return;
+  }
   use_brightness_heuristic_ = false;
   util::settings::visualization::setAutoBrightness(false);
   use_heuristic_checkbox_->setChecked(false);
@@ -314,11 +321,13 @@ void TrigramWidget::setManipulator(Manipulator* manipulator) {
 
 void TrigramWidget::autoSetBrightness() {
   auto new_brightness = suggestBrightness();
-  if (new_brightness == brightness_)
+  if (new_brightness == brightness_) {
     return;
+  }
   setBrightness(new_brightness);
-  if (brightness_slider_)
+  if (brightness_slider_) {
     brightness_slider_->setValue(brightness_);
+  }
 }
 
 bool TrigramWidget::event(QEvent* event) {
@@ -353,33 +362,37 @@ void TrigramWidget::timerEvent(QTimerEvent*) {
   } else {
     c_sph_ -= 0.01f;
   }
-  if (c_cyl_ > 1) c_cyl_ = 1;
-  if (c_cyl_ < 0) c_cyl_ = 0;
-  if (c_sph_ > 1) c_sph_ = 1;
-  if (c_sph_ < 0) c_sph_ = 0;
+  if (c_cyl_ > 1) { c_cyl_ = 1; }
+  if (c_cyl_ < 0) { c_cyl_ = 0; }
+  if (c_sph_ > 1) { c_sph_ = 1; }
+  if (c_sph_ < 0) { c_sph_ = 0; }
 
   if (mode_ == EVisualizationMode::LAYERED_DIGRAM && c_pos_ < 1) {
     c_pos_ += 0.01f;
-    if (c_pos_ > 1)
+    if (c_pos_ > 1) {
       c_pos_ = 1;
+    }
   }
   if (mode_ != EVisualizationMode::LAYERED_DIGRAM && c_pos_) {
     c_pos_ -= 0.01f;
-    if (c_pos_ < 0)
+    if (c_pos_ < 0) {
       c_pos_ = 0;
+    }
   }
   update();
 }
 
 bool TrigramWidget::initializeVisualizationGL() {
-  if (!initializeOpenGLFunctions())
+  if (!initializeOpenGLFunctions()) {
     return false;
+  }
 
   glClearColor(0, 0, 0, 1);
   glEnable(GL_DEPTH_TEST);
 
-  if (use_brightness_heuristic_)
+  if (use_brightness_heuristic_) {
     autoSetBrightness();
+  }
 
   initShaders();
   initTextures();
@@ -393,17 +406,20 @@ bool TrigramWidget::initializeVisualizationGL() {
 
 void TrigramWidget::initShaders() {
   if (!program_.addShaderFromSourceFile(QOpenGLShader::Vertex,
-                                       ":/trigram/vshader.glsl"))
+                                        ":/trigram/vshader.glsl")) {
     close();
+  }
 
   // Compile fragment shader
   if (!program_.addShaderFromSourceFile(QOpenGLShader::Fragment,
-                                       ":/trigram/fshader.glsl"))
+                                        ":/trigram/fshader.glsl")) {
     close();
+  }
 
   // Link shader pipeline
-  if (!program_.link())
+  if (!program_.link()) {
     close();
+  }
 
   timer_.start(12, this);
 }
@@ -588,8 +604,8 @@ void TrigramWidget::paintLabels(QMatrix4x4& scene_mp, QMatrix4x4& scene_m) {
   label_program_.release();
 }
 
-void TrigramWidget::paintLabel(LabelPositionMixer& mixer,
-    QMatrix4x4& scene_to_screen, QMatrix4x4& screen_mp,
+void TrigramWidget::paintLabel(const LabelPositionMixer& mixer,
+    const QMatrix4x4& scene_to_screen, const QMatrix4x4& screen_mp,
     QOpenGLTexture* texture) {
   texture->bind();
   QVector4D world_pos = mixer.mix(c_sph_, c_cyl_, c_pos_);
@@ -686,7 +702,7 @@ void TrigramWidget::releaseLabels() {
 }
 
 QVector3D TrigramWidget::calcScreenPosForLabel(QVector3D world_pos,
-    QMatrix4x4& scene_to_screen, int width, int height) {
+    const QMatrix4x4& scene_to_screen, int width, int height) {
   QVector3D world_zero(0.f, 0.f, 0.f);
   QVector3D zero_on_screen = scene_to_screen.map(world_zero);
   QVector3D pos_on_screen = scene_to_screen.map(world_pos);
