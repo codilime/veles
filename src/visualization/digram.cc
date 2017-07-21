@@ -51,19 +51,25 @@ bool DigramWidget::initializeVisualizationGL() {
 
 void DigramWidget::initShaders() {
   if (!program_.addShaderFromSourceFile(QOpenGLShader::Vertex,
-                                       ":/digram/vshader.glsl"))
+                                        ":/digram/vshader.glsl")) {
     close();
+  }
 
   // Compile fragment shader
   if (!program_.addShaderFromSourceFile(QOpenGLShader::Fragment,
-                                       ":/digram/fshader.glsl"))
+                                        ":/digram/fshader.glsl")) {
     close();
+  }
 
   // Link shader pipeline
-  if (!program_.link()) close();
+  if (!program_.link()) {
+    close();
+  }
 
   // Bind shader pipeline for use
-  if (!program_.bind()) close();
+  if (!program_.bind()) {
+    close();
+  }
 }
 
 void DigramWidget::initTextures() {

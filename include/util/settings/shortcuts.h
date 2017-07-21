@@ -160,15 +160,15 @@ class ShortcutsModel : public QAbstractItemModel {
 
   ~ShortcutsModel();
 
-  virtual QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
+  virtual QModelIndex index(int row, int column, const QModelIndex& parent) const override;
   virtual QModelIndex parent(const QModelIndex& index) const override;
-  virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-  virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-  virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-  QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+  virtual int rowCount(const QModelIndex& parent) const override;
+  virtual int columnCount(const QModelIndex& parent) const override;
+  virtual QVariant data(const QModelIndex& index, int role) const override;
+  QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
   static ShortcutsModel* getShortcutsModel();
-  QAction* createQAction(util::settings::shortcuts::ShortcutType type, QObject* parent, Qt::ShortcutContext context = Qt::WindowShortcut);
-  QAction* createQAction(util::settings::shortcuts::ShortcutType type, QObject* parent, QIcon icon, Qt::ShortcutContext context = Qt::WindowShortcut);
+  QAction* createQAction(util::settings::shortcuts::ShortcutType type, QObject* parent, Qt::ShortcutContext context);
+  QAction* createQAction(util::settings::shortcuts::ShortcutType type, QObject* parent, QIcon icon, Qt::ShortcutContext context);
   void addShortcut(util::settings::shortcuts::ShortcutType type, const QKeySequence& shortcut);
   void removeShortcut(util::settings::shortcuts::ShortcutType type, const QKeySequence& shortcut);
   ShortcutsItem* itemFromIndex(const QModelIndex& index) const;

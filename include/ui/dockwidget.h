@@ -50,7 +50,7 @@ public:
   QProxyStyleForDockWidgetWithIconOnTitleBar(QStyle* default_style);
 
   void drawControl(QStyle::ControlElement element, const QStyleOption *option,
-      QPainter *painter, const QWidget *widget = nullptr) const override;
+      QPainter *painter, const QWidget *widget) const override;
 };
 
 /*****************************************************************************/

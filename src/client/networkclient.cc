@@ -63,7 +63,7 @@ NetworkClient::NetworkClient(QObject* parent) : QObject(parent),
     client_type_(""), authentication_key_(""), fingerprint_(""),
     quit_on_close_(false), ssl_enabled_(true),
     output_stream_(nullptr), qid_(0) {
-  registerMessageHandlers();
+  NetworkClient::NetworkClient::registerMessageHandlers();
 }
 
 NetworkClient::~NetworkClient() {
@@ -159,7 +159,7 @@ void NetworkClient::connect(
     }
 
     if (1) {
-    // TODO: Why is bind causing a problem here?
+    // TODO(altran01): Why is bind causing a problem here?
     // if (client_socket_->bind(QHostAddress(client_interface_name))) {
       if (output()) {
         *output() << "NetworkClient: bind successful." << endl;
@@ -339,7 +339,7 @@ void NetworkClient::handleConnectionsMessage(msg_ptr msg) {
         << "\" message." << endl;
   }
 
-  // TODO - is this something that client should implement in a subclass?
+  // TODO(altran01): Is this something that client should implement in a subclass?
 }
 
 void NetworkClient::handleRegistryReplyMessage(msg_ptr msg) {
@@ -348,7 +348,7 @@ void NetworkClient::handleRegistryReplyMessage(msg_ptr msg) {
         << "\" message." << endl;
   }
 
-  // TODO - is this something that client should implement in a subclass?
+  // TODO(altran01): Is this something that client should implement in a subclass?
 }
 
 void NetworkClient::handleMthdResMessage(msg_ptr msg) {
@@ -356,7 +356,7 @@ void NetworkClient::handleMthdResMessage(msg_ptr msg) {
     *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
         << "\" message." << endl;
   }
-  // TODO - is this something that client should implement in a subclass?
+  // TODO(altran01): Is this something that client should implement in a subclass?
 }
 
 void NetworkClient::handlePluginTriggerRunMessage(msg_ptr msg) {
@@ -365,7 +365,7 @@ void NetworkClient::handlePluginTriggerRunMessage(msg_ptr msg) {
         << "\" message." << endl;
   }
 
-  // TODO - is this something that client should implement in a subclass?
+  // TODO(altran01): Is this something that client should implement in a subclass?
 }
 
 void NetworkClient::handleConnErrorMessage(msg_ptr msg) {
@@ -389,7 +389,7 @@ void NetworkClient::handlePluginMethodRunMessage(msg_ptr msg) {
         << "\" message." << endl;
   }
 
-  // TODO - is this something that client should implement in a subclass?
+  // TODO(altran01): Is this something that client should implement in a subclass?
 }
 
 void NetworkClient::handlePluginQueryGetMessage(msg_ptr msg) {
@@ -398,7 +398,7 @@ void NetworkClient::handlePluginQueryGetMessage(msg_ptr msg) {
         << "\" message." << endl;
   }
 
-  // TODO - is this something that client should implement in a subclass?
+  // TODO(altran01): Is this something that client should implement in a subclass?
 }
 
 void NetworkClient::handleBroadcastRunMessage(msg_ptr msg) {
@@ -407,7 +407,7 @@ void NetworkClient::handleBroadcastRunMessage(msg_ptr msg) {
         << "\" message." << endl;
   }
 
-  // TODO - is this something that client should implement in a subclass?
+  // TODO(altran01): Is this something that client should implement in a subclass?
 }
 
 void NetworkClient::handlePluginHandlerUnregisteredMessage(msg_ptr msg) {
@@ -416,7 +416,7 @@ void NetworkClient::handlePluginHandlerUnregisteredMessage(msg_ptr msg) {
         << "\" message." << endl;
   }
 
-  // TODO - is this something that client should implement in a subclass?
+  // TODO(altran01): Is this something that client should implement in a subclass?
 }
 
 void NetworkClient::sendMessage(msg_ptr msg) {
@@ -539,5 +539,5 @@ void NetworkClient::checkFingerprint(const QList<QSslError>& errors) {
   client_socket_->ignoreSslErrors(errors);
 }
 
-} // client
-} // veles
+}  // namespace client
+}  // namespace veles

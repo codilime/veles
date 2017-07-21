@@ -72,7 +72,7 @@ HexEditWidget::HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
 
   setupDataModelHandlers();
 
-  reapplySettings();
+  HexEditWidget::reapplySettings();
   setWindowTitle(data_model_->path().join(" : "));
 
   hex_edit_->setBytesPerRow(util::settings::hexedit::columnsNumber(),
@@ -322,7 +322,7 @@ bool HexEditWidget::saveFile(const QString &file_name) {
 
   QFile file(tmp_file_name);
   file.open(QIODevice::WriteOnly);
-  bool ok = file.write(QByteArray((const char *)data_model_->binData().rawData(),
+  bool ok = file.write(QByteArray(reinterpret_cast<const char*>(data_model_->binData().rawData()),
                                   static_cast<int>(data_model_->binData().size()))) != -1;
   if (QFile::exists(file_name)) ok = QFile::remove(file_name);
   if (ok) {

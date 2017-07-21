@@ -60,7 +60,7 @@ SearchDialog::SearchDialog(HexEdit *hexEdit, QWidget *parent)
 SearchDialog::~SearchDialog() { delete ui; }
 
 qint64 SearchDialog::indexOf(const data::BinData &pattern, qint64 startPos) {
-  // TODO: implement this as BinData method or as separate util
+  // TODO(mwk): implement this as BinData method or as separate util
   const data::BinData &data = _hexEdit->dataModel()->binData();
   if (startPos == -1) {
     startPos = 0;
@@ -88,7 +88,7 @@ qint64 SearchDialog::indexOf(const data::BinData &pattern, qint64 startPos) {
 
 qint64 SearchDialog::lastIndexOf(const data::BinData &pattern,
                                  qint64 startPos) {
-  // TODO: implement this as BinData method or as separate util
+  // TODO(mwk): implement this as BinData method or as separate util
   const data::BinData &data = _hexEdit->dataModel()->binData();
   if (startPos == -1) {
     startPos = data.size();
@@ -220,10 +220,10 @@ void SearchDialog::on_pbReplaceAll_clicked() {
     }
   }
 
-  if (replaceCounter > 0)
-    QMessageBox::information(
-        this, tr("HexEdit"),
+  if (replaceCounter > 0) {
+    QMessageBox::information(this, tr("HexEdit"),
         QString(tr("%1 occurrences replaced.")).arg(replaceCounter));
+  }
 }
 
 void SearchDialog::findTextChanged(const QString& text) {
@@ -274,8 +274,9 @@ data::BinData SearchDialog::getContent(int comboIndex, const QString &input) {
 
   data::BinData result(hexCharsPerByte * 4, findBa.size());
   size_t pos = 0;
-  for (auto x : findBa)
+  for (auto x : findBa) {
     result.setElement64(pos++, x);
+  }
   return result;
 }
 

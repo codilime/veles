@@ -182,8 +182,8 @@ void ConnectionDialog::clientLocalhost() {
 }
 
 void ConnectionDialog::randomKey() {
-  // TODO: This is cryptographically-secure on all modern OS-es, but this isn't
-  // explicitely guaranteed by the standard. We should fix it someday.
+  // TODO(mkow): This is cryptographically-secure on all modern OS-es, but this
+  // isn't explicitely guaranteed by the standard. We should fix it someday.
   std::random_device rd;
   std::uniform_int_distribution<uint32_t> uniform;
   auto gen_key_part = [&rd, &uniform](){

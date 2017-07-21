@@ -35,8 +35,9 @@ std::vector<uint8_t> do_inflate(const std::vector<uint8_t> &d) {
   strm.opaque = Z_NULL;
   strm.avail_in = static_cast<uInt>(d.size());
   strm.next_in = const_cast<uint8_t *>(d.data());
-  if (inflateInit(&strm) != Z_OK)
+  if (inflateInit(&strm) != Z_OK) {
     return res;
+  }
   const unsigned BUFSZ = 0x4000;
   uint8_t buf[BUFSZ];
   while (1) {
@@ -83,14 +84,16 @@ void unpngFileBlob(dbif::ObjectHandle blob, uint64_t start,
     if (type[0] == 'I' && type[1] == 'D' && type[2] == 'A' && type[3] == 'T') {
       jointIdats.insert(jointIdats.end(), d.begin(), d.end());
     }
-    if (type[0] == 'I' && type[1] == 'E' && type[2] == 'N' && type[3] == 'D')
+    if (type[0] == 'I' && type[1] == 'E' && type[2] == 'N' && type[3] == 'D') {
       break;
+    }
   }
   auto png = parser.endChunk();
   makeSubBlob(png, "deflated_data", data::BinData(8, jointIdats.size(), jointIdats.data()));
   auto decompressed = do_inflate(jointIdats);
-  if (decompressed.size())
+  if (decompressed.size()) {
     makeSubBlob(png, "inflated_data", data::BinData(8, decompressed.size(), decompressed.data()));
+  }
 }
 
 }  // namespace parser
