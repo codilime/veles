@@ -54,7 +54,8 @@ class HexEdit : public QAbstractScrollArea {
   FileBlobModel *dataModel() { return dataModel_; }
   void setParserIds(QStringList ids);
   void processEditEvent(QKeyEvent *event);
-  uint64_t byteValue(qint64 pos, bool modified = true);
+  uint64_t byteValue(qint64 pos) const;
+  uint64_t originalByteValue(qint64 pos) const;
   void setBytesValues(qint64 pos, const data::BinData& new_data);
 
 public slots:
