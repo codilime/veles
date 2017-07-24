@@ -17,7 +17,6 @@
 #pragma once
 
 #include <QObject>
-#include "db/types.h"
 #include "dbif/types.h"
 
 namespace veles {
@@ -29,7 +28,6 @@ class InfoGetter : public QObject {
  signals:
   void gotInfo(veles::dbif::PInfoReply x);
   void gotError(veles::dbif::PError x);
-  void getInfo(veles::db::PLocalObject obj, veles::db::InfoGetter *getter, veles::dbif::PInfoRequest req, bool once);
 
  public:
   template<typename Reply, typename... Args>
@@ -48,7 +46,6 @@ class MethodRunner : public QObject {
  signals:
   void gotResult(veles::dbif::PMethodReply x);
   void gotError(veles::dbif::PError x);
-  void runMethod(veles::db::PLocalObject obj, veles::db::MethodRunner *runner, veles::dbif::PMethodRequest req);
 
  public:
   template<typename Err, typename... Args>

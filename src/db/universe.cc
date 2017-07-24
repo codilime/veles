@@ -18,76 +18,14 @@
 
 #include "db/universe.h"
 #include "dbif/promise.h"
+#include "dbif/method.h"
 #include "dbif/error.h"
-#include "db/handle.h"
-#include "db/object.h"
 #include "db/getter.h"
-#include "db/db.h"
 
 #include "parser/utils.h"
 
 namespace veles {
 namespace db {
-
-class DbThread : public QThread {
- protected:
-  void run() {
-    exec();
-  }
-};
-
-dbif::ObjectHandle create_db() {
-  ParserWorker *parser_worker = new ParserWorker;
-  for (auto parser : parser::createAllParsers()) {
-    parser_worker->registerParser(parser);
-  }
-  Universe *db = new Universe(parser_worker);
-  PLocalObject root = RootLocalObject::create(db);
-  db->setRoot(root);
-  DbThread *thr = new DbThread;
-  DbThread *parser_thr = new DbThread;
-  db->moveToThread(thr);
-  parser_worker->moveToThread(parser_thr);
-  QObject::connect(db, &QObject::destroyed, thr, &QThread::quit);
-  QObject::connect(parser_worker, &QObject::destroyed, parser_thr, &QThread::quit);
-  QObject::connect(db, &QObject::destroyed, parser_worker, &QObject::deleteLater);
-  QObject::connect(db, &Universe::parse, parser_worker, &ParserWorker::parse);
-  QObject::connect(parser_worker, &ParserWorker::newParser, [root] {
-    root.dynamicCast<RootLocalObject>()->parsers_list_updated();
-  });
-  thr->start();
-  parser_thr->start();
-
-  return db->handle(root);
-}
-
-dbif::ObjectHandle Universe::handle(PLocalObject obj) {
-  dbif::ObjectHandle objHandle;
-  if (obj) {
-    objHandle = QSharedPointer<LocalObjectHandle>::create(this, obj, obj->type());
-  }
-  return objHandle;
-}
-
-Universe::~Universe() {
-  root_->kill();
-}
-
-void Universe::getInfo(PLocalObject obj, InfoGetter *getter, dbif::PInfoRequest req, bool once) {
-  if (obj->dead()) {
-    emit getter->gotError(QSharedPointer<dbif::ObjectGoneError>::create());
-  } else {
-    obj->getInfo(getter, req, once);
-  }
-}
-
-void Universe::runMethod(PLocalObject obj, MethodRunner *runner, dbif::PMethodRequest req) {
-  if (obj->dead()) {
-    emit runner->gotError(QSharedPointer<dbif::ObjectGoneError>::create());
-  } else {
-    obj->runMethod(runner, req);
-  }
-}
 
 ParserWorker::~ParserWorker() { qDeleteAll(_parsers); }
 

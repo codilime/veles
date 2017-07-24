@@ -22,7 +22,6 @@
 #include <QUrl>
 #include <QMenu>
 
-#include "db/db.h"
 #include "dbif/method.h"
 #include "dbif/promise.h"
 #include "dbif/types.h"
@@ -324,14 +323,10 @@ void VelesMainWindow::updateConnectionStatus(
 
 void VelesMainWindow::createDb() {
   if (database_ == nullptr) {
-#if 0
-    database_ = db::create_db();
-#else
     auto nc = new client::NCWrapper(
         connection_manager_->networkClient(), this);
     database_ = QSharedPointer<client::NCObjectHandle>::create(
         nc, *data::NodeID::getRootNodeId(), dbif::ObjectType::ROOT);
-#endif
   }
   auto database_info = new DatabaseInfo(database_);
   DockWidget* dock_widget = new DockWidget;

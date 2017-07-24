@@ -281,15 +281,9 @@ qt5_use_modules(veles_network Core Network Widgets)
 
 # LIB: veles_db
 add_library(veles_db
-    ${INCLUDE_DIR}/db/db.h
     ${INCLUDE_DIR}/db/getter.h
-    ${INCLUDE_DIR}/db/handle.h
-    ${INCLUDE_DIR}/db/object.h
-    ${INCLUDE_DIR}/db/types.h
     ${INCLUDE_DIR}/db/universe.h
     ${SRC_DIR}/db/universe.cc
-    ${SRC_DIR}/db/object.cc
-    ${SRC_DIR}/db/handle.cc
 )
 
 # LIB: veles_client

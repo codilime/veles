@@ -1129,9 +1129,9 @@ dbif::MethodResultPromise* NCWrapper::handleBlobParseRequest(
   auto runner = new db::MethodRunner;
 
   QObject::connect(runner, &db::MethodRunner::gotResult,
-      promise, &db::MethodResultPromise::gotResult);
+      promise, &dbif::MethodResultPromise::gotResult);
   QObject::connect(runner, &db::MethodRunner::gotError,
-      promise, &db::MethodResultPromise::gotError);
+      promise, &dbif::MethodResultPromise::gotError);
 
   emit parse(QSharedPointer<NCObjectHandle>::create(
       this, id, dbif::ObjectType::FILE_BLOB), runner,
