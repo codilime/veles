@@ -30,7 +30,7 @@ namespace veles {
 namespace dbif {
 
 class ObjectHandleBase {
-  PInfoReply baseSyncGetInfo(PInfoRequest req) {
+  PInfoReply baseSyncGetInfo(const PInfoRequest& req) {
     QPointer<InfoPromise> promise = getInfo(req);
     PInfoReply res;
     PError err;
@@ -55,7 +55,7 @@ class ObjectHandleBase {
     }
   }
 
-  PMethodReply baseSyncRunMethod(PMethodRequest req) {
+  PMethodReply baseSyncRunMethod(const PMethodRequest& req) {
     QPointer<MethodResultPromise> promise = runMethod(req);
     PMethodReply res;
     PError err;
@@ -83,9 +83,9 @@ class ObjectHandleBase {
  public:
   virtual ~ObjectHandleBase() {}
 
-  virtual InfoPromise *getInfo(PInfoRequest req) = 0;
-  virtual InfoPromise *subInfo(PInfoRequest req) = 0;
-  virtual MethodResultPromise *runMethod(PMethodRequest req) = 0;
+  virtual InfoPromise *getInfo(const PInfoRequest& req) = 0;
+  virtual InfoPromise *subInfo(const PInfoRequest& req) = 0;
+  virtual MethodResultPromise *runMethod(const PMethodRequest& req) = 0;
   virtual ObjectType type() const = 0;
 
   template<typename Request, typename... Args>

@@ -74,9 +74,9 @@ void FileBlobModel::emitDataChanged(FileBlobItem* loader) {
   emit dataChanged(firstIndex, lastIndex);
 }
 
-void FileBlobModel::addChunk(QString name, QString type, QString comment,
-                             uint64_t start, uint64_t end,
-                             const QModelIndex& index) {
+void FileBlobModel::addChunk(const QString& name, const QString& type,
+                             const QString& comment, uint64_t start,
+                             uint64_t end, const QModelIndex& index) {
   dbif::ObjectHandle parent;
   if (index.isValid()) {
     parent = itemFromIndex(index)->objectHandle();
@@ -93,7 +93,7 @@ void FileBlobModel::addChunk(QString name, QString type, QString comment,
       });
 }
 
-FileBlobModel::FileBlobModel(dbif::ObjectHandle fileBlob,
+FileBlobModel::FileBlobModel(const dbif::ObjectHandle& fileBlob,
                              const QStringList& path, QObject* parent)
     : QAbstractItemModel(parent),
       fileBlob_(fileBlob),
@@ -132,7 +132,7 @@ FileBlobModel::FileBlobModel(dbif::ObjectHandle fileBlob,
           SLOT(gotDescriptionResponse(veles::dbif::PInfoReply)));
 }
 
-void FileBlobModel::gotBytesResponse(veles::dbif::PInfoReply reply) {
+void FileBlobModel::gotBytesResponse(const veles::dbif::PInfoReply& reply) {
   if (auto bytesReply =
           reply.dynamicCast<dbif::BlobDataRequest::ReplyType>()) {
     binData_ = bytesReply->data;
@@ -140,7 +140,7 @@ void FileBlobModel::gotBytesResponse(veles::dbif::PInfoReply reply) {
   }
 }
 
-void FileBlobModel::gotDescriptionResponse(veles::dbif::PInfoReply reply) {
+void FileBlobModel::gotDescriptionResponse(const veles::dbif::PInfoReply& reply) {
   if (auto description = reply.dynamicCast<dbif::BlobDescriptionReply>()) {
     if (bytesCount_ != description->size) {
       bytesCount_ = description->size;
@@ -332,7 +332,7 @@ bool FileBlobModel::removeRows(int row, int count, const QModelIndex &parent) {
     }
   }
 
-  for (dbif::ObjectHandle obj: toRemove) {
+  for (const auto& obj : toRemove) {
     obj->asyncRunMethod<dbif::DeleteRequest>(this);
   }
   return toRemove.size() > 0;
@@ -360,7 +360,7 @@ void FileBlobModel::uploadNewData(const data::BinData& bindata, uint64_t offset)
       bindata);
 }
 
-void FileBlobModel::parse(QString parser, qint64 offset,
+void FileBlobModel::parse(const QString& parser, qint64 offset,
                           const QModelIndex& parent) {
   dbif::ObjectHandle parent_chunk;
   if (parent.isValid()) {

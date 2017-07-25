@@ -43,15 +43,15 @@ class NCWrapper;
 class NCObjectHandle : public dbif::ObjectHandleBase {
  public:
   NCObjectHandle(NCWrapper* nc = nullptr,
-      data::NodeID id = *data::NodeID::getNilId(),
-      dbif::ObjectType type = dbif::ObjectType::CHUNK);
+                 const data::NodeID& id = *data::NodeID::getNilId(),
+                 dbif::ObjectType type = dbif::ObjectType::CHUNK);
   data::NodeID id();
 
-  virtual dbif::InfoPromise *getInfo(dbif::PInfoRequest req);
-  virtual dbif::InfoPromise *subInfo(dbif::PInfoRequest req);
-  virtual dbif::MethodResultPromise *runMethod(dbif::PMethodRequest req);
+  virtual dbif::InfoPromise *getInfo(const dbif::PInfoRequest& req);
+  virtual dbif::InfoPromise *subInfo(const dbif::PInfoRequest& req);
+  virtual dbif::MethodResultPromise *runMethod(const dbif::PMethodRequest& req);
   virtual dbif::ObjectType type() const;
-  bool operator==(NCObjectHandle& other);
+  bool operator==(const NCObjectHandle& other);
 
  private:
   NCWrapper* nc_;
@@ -65,7 +65,7 @@ class NCObjectHandle : public dbif::ObjectHandleBase {
 
 struct ChunkDataItemQuery{
   ChunkDataItemQuery(uint64_t children_qid, uint64_t data_items_qid,
-      QPointer<dbif::InfoPromise> promise, data::NodeID id, bool sub);
+      const QPointer<dbif::InfoPromise>& promise, const data::NodeID& id, bool sub);
   typedef std::map<data::NodeID, std::shared_ptr<proto::Node>> ChildrenMap;
 
   bool ready();
@@ -91,94 +91,96 @@ class NCWrapper : public QObject {
 
  public:
   typedef std::map<data::NodeID, NCObjectHandle> ChildrenMap;
-  typedef void (NCWrapper::*MessageHandler)(msg_ptr);
+  typedef void (NCWrapper::*MessageHandler)(const msg_ptr&);
 
   NCWrapper(NetworkClient* network_client, QObject* parent = nullptr);
   static dbif::ObjectType typeFromTags(
-      std::shared_ptr<std::unordered_set<std::shared_ptr<std::string>>> tags);
+      const std::shared_ptr<std::unordered_set<std::shared_ptr<std::string>>>& tags);
 
-  virtual dbif::InfoPromise* getInfo(dbif::PInfoRequest req, data::NodeID id);
-  virtual dbif::InfoPromise* subInfo(dbif::PInfoRequest req, data::NodeID id);
-  virtual dbif::InfoPromise* info(dbif::PInfoRequest req, data::NodeID id,
+  virtual dbif::InfoPromise* getInfo(const dbif::PInfoRequest& req, const data::NodeID& id);
+  virtual dbif::InfoPromise* subInfo(const dbif::PInfoRequest& req, const data::NodeID& id);
+  virtual dbif::InfoPromise* info(const dbif::PInfoRequest& req, const data::NodeID& id,
       bool sub);
-  virtual dbif::MethodResultPromise *runMethod(dbif::PMethodRequest req,
-      data::NodeID id);
+  virtual dbif::MethodResultPromise *runMethod(const dbif::PMethodRequest& req,
+                                               const data::NodeID& id);
 
-  void handleGetListReplyMessage(msg_ptr message);
+  void handleGetListReplyMessage(const msg_ptr& message);
   void handleGetChildrenListReply(
-      std::shared_ptr<proto::MsgGetListReply> reply,
-      QPointer<dbif::InfoPromise> promise);
+      const std::shared_ptr<proto::MsgGetListReply>& reply,
+      const QPointer<dbif::InfoPromise>& promise);
   void handleGetChunkDataItemsReply(
-      std::shared_ptr<proto::MsgGetListReply> reply,
-      std::shared_ptr<ChunkDataItemQuery> chunk_data_item_query);
+      const std::shared_ptr<proto::MsgGetListReply>& reply,
+      const std::shared_ptr<ChunkDataItemQuery>& chunk_data_item_query);
 
-  void handleRequestAckMessage(msg_ptr message);
-  void handleGetReplyMessage(msg_ptr message);
-  void handleGetBinDataReplyMessage(msg_ptr message);
-  void handleGetDataReplyMessage(msg_ptr message);
-  void handleQueryErrorMessage(msg_ptr message);
+  void handleRequestAckMessage(const msg_ptr& message);
+  void handleGetReplyMessage(const msg_ptr& message);
+  void handleGetBinDataReplyMessage(const msg_ptr& message);
+  void handleGetDataReplyMessage(const msg_ptr& message);
+  void handleQueryErrorMessage(const msg_ptr& message);
 
-  dbif::InfoPromise* handleDescriptionRequest(data::NodeID id, bool sub);
-  dbif::InfoPromise* handleChildrenRequest(data::NodeID id, bool sub);
+  dbif::InfoPromise* handleDescriptionRequest(const data::NodeID& id, bool sub);
+  dbif::InfoPromise* handleChildrenRequest(const data::NodeID& id, bool sub);
   dbif::InfoPromise* handleParsersListRequest(bool sub);
-  dbif::InfoPromise* handleBlobDataRequest(
-      data::NodeID id, uint64_t start, uint64_t end, bool sub);
-  dbif::InfoPromise* handleChunkDataRequest(data::NodeID id, bool sub);
+  dbif::InfoPromise* handleBlobDataRequest(const data::NodeID& id,
+                                           uint64_t start, uint64_t end,
+                                           bool sub);
+  dbif::InfoPromise* handleChunkDataRequest(const data::NodeID& id, bool sub);
 
   dbif::MethodResultPromise* handleRootCreateFileBlobFromDataRequest(
-      QSharedPointer<dbif::RootCreateFileBlobFromDataRequest>
+      const QSharedPointer<dbif::RootCreateFileBlobFromDataRequest>&
       create_file_blob_request);
-  dbif::MethodResultPromise* handleChunkCreateRequest(data::NodeID id,
-      QSharedPointer<dbif::ChunkCreateRequest> chunk_create_request);
-  dbif::MethodResultPromise* handleChunkCreateSubBlobRequest(data::NodeID id,
-      QSharedPointer<dbif::ChunkCreateSubBlobRequest>
+  dbif::MethodResultPromise* handleChunkCreateRequest(const data::NodeID& id,
+      const QSharedPointer<dbif::ChunkCreateRequest>& chunk_create_request);
+  dbif::MethodResultPromise* handleChunkCreateSubBlobRequest(const data::NodeID& id,
+      const QSharedPointer<dbif::ChunkCreateSubBlobRequest>&
       chunk_create_subblob_request);
-  dbif::MethodResultPromise* handleDeleteRequest(data::NodeID id);
-  dbif::MethodResultPromise* handleSetNameRequest(data::NodeID id,
-      std::string name);
-  dbif::MethodResultPromise* handleSetCommentRequest(data::NodeID id,
-      std::string comment);
-  dbif::MethodResultPromise* handleChangeDataRequest(data::NodeID id,
-      QSharedPointer<dbif::ChangeDataRequest> change_data_request);
+  dbif::MethodResultPromise* handleDeleteRequest(const data::NodeID& id);
+  dbif::MethodResultPromise* handleSetNameRequest(const data::NodeID& id,
+      const std::string& name);
+  dbif::MethodResultPromise* handleSetCommentRequest(const data::NodeID& id,
+      const std::string& comment);
+  dbif::MethodResultPromise* handleChangeDataRequest(const data::NodeID& id,
+      const QSharedPointer<dbif::ChangeDataRequest>& change_data_request);
   dbif::MethodResultPromise* handleSetChunkBoundsRequest(
-      data::NodeID id, int64_t pos_start, int64_t pos_end);
-  dbif::MethodResultPromise* handleSetChunkParseRequest(data::NodeID id,
-      QSharedPointer<dbif::SetChunkParseRequest> chunk_parse_request);
-  dbif::MethodResultPromise* handleBlobParseRequest(data::NodeID id,
-      QSharedPointer<dbif::BlobParseRequest> blob_parse_request);
+      const data::NodeID& id, int64_t pos_start, int64_t pos_end);
+  dbif::MethodResultPromise* handleSetChunkParseRequest(const data::NodeID& id,
+      const QSharedPointer<dbif::SetChunkParseRequest>& chunk_parse_request);
+  dbif::MethodResultPromise* handleBlobParseRequest(const data::NodeID& id,
+      const QSharedPointer<dbif::BlobParseRequest>& blob_parse_request);
 
   std::shared_ptr<messages::MsgpackObject> chunkDataItemToMsgpack(
       const data::ChunkDataItem& item);
   data::ChunkDataItem msgpackToChunkDataItem(
-      std::shared_ptr<messages::MsgpackObject> msgo);
+      const std::shared_ptr<messages::MsgpackObject>& msgo);
   bool nodeToChunkDataItem(
-      std::shared_ptr<proto::Node> node,
-      data::ChunkDataItem& out_chunk_data_item);
+      const std::shared_ptr<proto::Node>& node,
+      data::ChunkDataItem* out_chunk_data_item);
 
-  void updateChildrenDataItems(ChunkDataItemQuery& query,
-      std::shared_ptr<std::vector<std::shared_ptr<proto::Node>>> children,
-      std::shared_ptr<std::vector<std::shared_ptr<veles::data::NodeID>>> gone);
-  void updateDataItems(ChunkDataItemQuery& query,
-      std::shared_ptr<messages::MsgpackObject> data_items);
-  std::vector<data::ChunkDataItem> resultDataItems(ChunkDataItemQuery& query);
+  void updateChildrenDataItems(ChunkDataItemQuery* query,
+      const std::shared_ptr<std::vector<std::shared_ptr<proto::Node>>>& children,
+      const std::shared_ptr<std::vector<std::shared_ptr<veles::data::NodeID>>>& gone);
+  void updateDataItems(ChunkDataItemQuery* query,
+      const std::shared_ptr<messages::MsgpackObject>& data_items);
+  std::vector<data::ChunkDataItem> resultDataItems(const ChunkDataItemQuery& query);
 
  public slots:
   void updateConnectionStatus(NetworkClient::ConnectionStatus
       connection_status);
-  void messageReceived(msg_ptr message);
-  void newParser(QString id);
-  void replyForParsersListRequest(QPointer<dbif::InfoPromise> promise);
+  void messageReceived(const msg_ptr& message);
+  void newParser(const QString& id);
+  void replyForParsersListRequest(const QPointer<dbif::InfoPromise>& promise);
 
  signals:
-  void requestReplyForParsersListRequest(QPointer<dbif::InfoPromise> promise);
-  void parse( dbif::ObjectHandle blob, db::MethodRunner* runner,
-      QString parser_id, quint64 start = 0,
-      dbif::ObjectHandle parent_chunk = dbif::ObjectHandle());
+  void requestReplyForParsersListRequest(const QPointer<dbif::InfoPromise>& promise);
+  void parse(const dbif::ObjectHandle& blob, db::MethodRunner* runner,
+      const QString& parser_id, quint64 start = 0,
+      const dbif::ObjectHandle& parent_chunk = dbif::ObjectHandle());
 
  private:
   dbif::InfoPromise* addInfoPromise(uint64_t qid, bool sub);
   dbif::MethodResultPromise* addMethodPromise(uint64_t qid);
-  void wrongMessageType(QString name, QString expected_type);
+  void wrongMessageType(const QString& name, const QString& expected_type);
+  
   NetworkClient* nc_;
 
   std::unordered_map<std::string, MessageHandler> message_handlers_;

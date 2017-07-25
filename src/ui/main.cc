@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
   mainWin->showMaximized();
 
   auto files = parser.positionalArguments();
-  for (auto file : files) {
+  for (const auto& file : files) {
     mainWin->addFile(file);
   }
 

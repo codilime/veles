@@ -51,8 +51,8 @@ using util::settings::shortcuts::ShortcutsModel;
 /*****************************************************************************/
 
 HexEditWidget::HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
-    QSharedPointer<FileBlobModel>& data_model,
-    QSharedPointer<QItemSelectionModel>& selection_model)
+    const QSharedPointer<FileBlobModel>& data_model,
+    const QSharedPointer<QItemSelectionModel>& selection_model)
     : View("Hex editor", ":/images/show_hex_edit.png"),
       main_window_(main_window), data_model_(data_model),
       selection_model_(selection_model) {
@@ -88,7 +88,7 @@ HexEditWidget::HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
 void HexEditWidget::reapplySettings() {
 }
 
-void HexEditWidget::setParserIds(QStringList ids) {
+void HexEditWidget::setParserIds(const QStringList& ids) {
   parsers_ids_ = ids;
   initParsersMenu();
   hex_edit_->setParserIds(ids);
@@ -278,7 +278,7 @@ void HexEditWidget::initParsersMenu() {
   parsers_menu_.clear();
   parsers_menu_.addAction("auto");
   parsers_menu_.addSeparator();
-  for (auto id : parsers_ids_) {
+  for (const auto& id : parsers_ids_) {
     parsers_menu_.addAction(id);
   }
 }
@@ -302,9 +302,9 @@ void HexEditWidget::createSelectionInfo() {
   addToolBar(selection_toolbar);
 }
 
-void HexEditWidget::addChunk(QString name, QString type, QString comment,
-                          uint64_t start, uint64_t end,
-                          const QModelIndex &index) {
+void HexEditWidget::addChunk(const QString& name, const QString& type,
+                             const QString& comment, uint64_t start,
+                             uint64_t end, const QModelIndex &index) {
   data_model_->addChunk(name, type, comment, start, end, index);
 }
 

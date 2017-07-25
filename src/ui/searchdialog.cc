@@ -234,7 +234,7 @@ void SearchDialog::replaceTextChanged(const QString& text) {
   enableReplace(ui->cbFind->currentText(), text);
 }
 
-bool SearchDialog::isHexStr(QString hexStr) {
+bool SearchDialog::isHexStr(const QString& hexStr) {
   auto hexCharsPerByte = _hexEdit->dataModel()->binData().width() / 4;
   QRegExp hexMatcher(QString("^(([0-9A-F]{%1})|\\s)*$").arg(hexCharsPerByte), Qt::CaseInsensitive);
   return hexMatcher.exactMatch(hexStr);

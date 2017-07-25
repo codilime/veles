@@ -35,8 +35,9 @@ bool FileBlobItem::operator<(const FileBlobItem &other) {
 
 int FileBlobItem::childrenCount() { return children_.size(); }
 
-FileBlobItem::FileBlobItem(QString name, QString value, QString comment,
-                           uint64_t start, uint64_t end, QObject *parent)
+FileBlobItem::FileBlobItem(const QString& name, const QString& value,
+                           const QString& comment, uint64_t start, uint64_t end,
+                           QObject* parent)
     : QObject(parent),
       name_(name),
       comment_(comment),
@@ -120,10 +121,10 @@ bool FileBlobItem::range(uint64_t *start, uint64_t *end) const {
   return true;
 }
 
-void FileBlobItem::setComment(QString comment) { comment_ = comment; }
+void FileBlobItem::setComment(const QString& comment) { comment_ = comment; }
 
-void FileBlobItem::setFields(QString name, QString comment, uint64_t start,
-                             uint64_t end) {
+void FileBlobItem::setFields(const QString& name, const QString& comment,
+                             uint64_t start, uint64_t end) {
   name_ = name;
   comment_ = comment;
   start_ = start;

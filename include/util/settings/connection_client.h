@@ -29,7 +29,7 @@ void setRunServer(bool run_server);
 
 QString serverHostDefault();
 QString serverHost();
-void setServerHost(QString server_host);
+void setServerHost(const QString& server_host);
 
 int serverPortDefault();
 int serverPort();
@@ -37,23 +37,23 @@ void setServerPort(int server_port);
 
 QString clientInterfaceDefault();
 QString clientInterface();
-void setClientInterface(QString client_interface);
+void setClientInterface(const QString& client_interface);
 
 QString clientNameDefault();
 QString clientName();
-void setClientName(QString client_name);
+void setClientName(const QString& client_name);
 
 QString connectionKeyDefault();
 QString connectionKey();
-void setConnectionKey(QString connection_key);
+void setConnectionKey(const QString& connection_key);
 
 QString databaseNameDefault();
 QString databaseName();
-void setDatabaseName(QString database_name);
+void setDatabaseName(const QString& database_name);
 
 QString serverScriptDefault();
 QString serverScript();
-void setServerScript(QString server_script);
+void setServerScript(const QString& server_script);
 
 QString certDirectoryDefault();
 QString certDirectory();
@@ -68,11 +68,11 @@ bool sslEnabled();
 void setSslEnabled(bool ssl_enabled);
 
 QString currentProfile();
-void setCurrentProfile(QString profile);
+void setCurrentProfile(const QString& profile);
 QStringList profileList();
-void removeProfile(QString profile);
-QString uniqueProfileName(QString prefix);
-void setDefaultProfile(QString profile);
+void removeProfile(const QString& profile);
+QString uniqueProfileName(const QString& prefix);
+void setDefaultProfile(const QString& profile);
 
 }  // namespace connection
 }  // namespace settings

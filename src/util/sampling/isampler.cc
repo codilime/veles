@@ -143,7 +143,7 @@ bool ISampler::isFinished() const {
   return (current_version_.load() == requested_version_.load());
 }
 
-ResampleCallbackId ISampler::registerResampleCallback(ResampleCallback cb) {
+ResampleCallbackId ISampler::registerResampleCallback(const ResampleCallback& cb) {
   auto lc = lock();
   ResampleCallbackId id = next_cb_id_++;
   callbacks_[id] = cb;

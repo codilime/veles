@@ -127,7 +127,7 @@ bool MsgpackObject::operator==(const MsgpackObject &other) const {
   }
 }
 
-bool MsgpackObject::operator!=(const MsgpackObject &other) const {
+bool MsgpackObject::operator!=(const MsgpackObject& other) const {
   return !(*this == other);
 }
 
@@ -160,7 +160,7 @@ void MsgpackObject::destroyValue() {
   }
 }
 
-void MsgpackObject::fromMsgpack(const msgpack::v2::object &obj) {
+void MsgpackObject::fromMsgpack(const msgpack::v2::object& obj) {
   switch(obj.type) {
   case msgpack::type::NIL:
     obj_type = ObjectType::NIL;
@@ -314,7 +314,7 @@ const std::shared_ptr<std::string> MsgpackObject::getString() const {
   return value.str;
 }
 
-void MsgpackObject::setString(std::shared_ptr<std::string> val) {
+void MsgpackObject::setString(const std::shared_ptr<std::string>& val) {
   destroyValue();
   obj_type = ObjectType::STR;
   value.str = val;
@@ -334,7 +334,7 @@ const std::shared_ptr<std::vector<uint8_t>> MsgpackObject::getBin() const {
   return value.bin;
 }
 
-void MsgpackObject::setBin(std::shared_ptr<std::vector<uint8_t>> val) {
+void MsgpackObject::setBin(const std::shared_ptr<std::vector<uint8_t>>& val) {
   destroyValue();
   obj_type = ObjectType::BIN;
   value.bin = val;
@@ -354,7 +354,7 @@ const std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>> MsgpackObject
   return value.array;
 }
 
-void MsgpackObject::setArray(std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>> val) {
+void MsgpackObject::setArray(const std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>>& val) {
   destroyValue();
   obj_type = ObjectType::ARRAY;
   value.array = val;
@@ -374,7 +374,7 @@ const std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>> Msg
   return value.map;
 }
 
-void MsgpackObject::setMap(std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>> val) {
+void MsgpackObject::setMap(const std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>>& val) {
   destroyValue();
   obj_type = ObjectType::MAP;
   value.map = val;
@@ -394,7 +394,7 @@ const std::pair<int, std::shared_ptr<std::vector<uint8_t>>> MsgpackObject::getEx
   return value.ext;
 }
 
-void MsgpackObject::setExt(std::pair<int, std::shared_ptr<std::vector<uint8_t>>> val) {
+void MsgpackObject::setExt(const std::pair<int, std::shared_ptr<std::vector<uint8_t>>>& val) {
   destroyValue();
   obj_type = ObjectType::EXT;
   value.ext = val;
@@ -406,7 +406,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::vector<uint8_t>& val) 
 }
 
 template<>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::vector<uint8_t>> val) {
+std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::vector<uint8_t>>& val) {
   return std::make_shared<MsgpackObject>(val);
 }
 
@@ -414,7 +414,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const MsgpackObject& obj) {
   return std::make_shared<MsgpackObject>(obj);
 }
 
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<MsgpackObject> obj) {
+std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<MsgpackObject>& obj) {
   return obj;
 }
 
@@ -434,7 +434,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::string& val) {
   return std::make_shared<MsgpackObject>(val);
 }
 
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::string> val) {
+std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::string>& val) {
   return std::make_shared<MsgpackObject>(val);
 }
 
@@ -442,18 +442,18 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const data::NodeID& val) {
   return details_::convertNodeIDHelper(val);
 }
 
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::NodeID> val) {
+std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::NodeID>& val) {
   return details_::convertNodeIDHelper(*val);
 }
 
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::BinData> val) {
+std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::BinData>& val) {
   auto data = std::make_shared<std::vector<uint8_t>>(4, 0);
   util::intToBytesLe(val->width(), 4, data->data());
   data->insert(data->end(), val->rawData(), val->rawData() + val->octets());
   return std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_BINDATA), data);
 }
 
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<proto::VelesException> val) {
+std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<proto::VelesException>& val) {
   if (val == nullptr) return nullptr;
   std::map<std::string, std::shared_ptr<MsgpackObject>> m{
     {"type", toMsgpackObject(val->code)},
@@ -466,18 +466,18 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const double val) {
   return std::make_shared<MsgpackObject>(val);
 }
 
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<data::NodeID>& out) {
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, std::shared_ptr<data::NodeID>* out) {
   if (obj->type() == ObjectType::NIL) {
-    out = data::NodeID::getNilId();
+    *out = data::NodeID::getNilId();
   } else {
     if (obj->getExt().first != proto::EXT_NODE_ID) {
       throw proto::SchemaError("Wrong ext type for NodeID");
     }
-    out = std::make_shared<data::NodeID>(obj->getExt().second->data());
+    *out = std::make_shared<data::NodeID>(obj->getExt().second->data());
   }
 }
 
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<data::BinData>& out) {
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, std::shared_ptr<data::BinData>* out) {
   if (obj->getExt().first != proto::EXT_BINDATA) {
     throw proto::SchemaError("Wrong ext type for BinData");
   }
@@ -487,14 +487,14 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr
   }
   uint32_t width = util::bytesToIntLe<uint32_t>(data->data(), 4);
   size_t size = (data->size() - 4) / data::BinData(width, 0).octetsPerElement();
-  out = std::make_shared<data::BinData>(width, size, &data->data()[4]);
+  *out = std::make_shared<data::BinData>(width, size, &data->data()[4]);
 }
 
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<proto::VelesException>& out) {
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, std::shared_ptr<proto::VelesException>* out) {
   if (obj == nullptr) {
-    out = nullptr;
+    *out = nullptr;
   } else if (obj->type() == ObjectType::NIL) {
-    out = nullptr;
+    *out = nullptr;
   } else {
     std::string type;
     std::string message;
@@ -517,36 +517,36 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr
     if (!message_set) {
       throw proto::SchemaError("exception message missing");
     }
-    out = std::make_shared<proto::VelesException>(type, message);
+    *out = std::make_shared<proto::VelesException>(type, message);
   }
 }
 
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<MsgpackObject>& out) {
-  out = obj;
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, std::shared_ptr<MsgpackObject>* out) {
+  *out = obj;
 }
 
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<std::string>& out) {
-  out = obj->getString();
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, std::shared_ptr<std::string>* out) {
+  *out = obj->getString();
 }
 
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, std::shared_ptr<std::vector<uint8_t>>& out) {
-  out = obj->getBin();
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, std::shared_ptr<std::vector<uint8_t>>* out) {
+  *out = obj->getBin();
 }
 
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, uint64_t& out) {
-  out = obj->getUnsignedInt();
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, uint64_t* out) {
+  *out = obj->getUnsignedInt();
 }
 
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, int64_t& out) {
-  out = obj->getSignedInt();
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, int64_t* out) {
+  *out = obj->getSignedInt();
 }
 
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, bool& out) {
-  out = obj->getBool();
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, bool* out) {
+  *out = obj->getBool();
 }
 
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject> obj, double& out) {
-  out = obj->getDouble();
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, double* out) {
+  *out = obj->getDouble();
 }
 
 namespace details_ {

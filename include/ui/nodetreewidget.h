@@ -42,9 +42,9 @@ class NodeTreeWidget : public View {
 
  public:
   explicit NodeTreeWidget(MainWindowWithDetachableDockWidgets *main_window,
-      QSharedPointer<FileBlobModel>& data_model,
-      QSharedPointer<QItemSelectionModel>& selection_model);
-  void setParserIds(QStringList ids);
+      const QSharedPointer<FileBlobModel>& data_model,
+      const QSharedPointer<QItemSelectionModel>& selection_model);
+  void setParserIds(const QStringList& ids);
 
  private slots:
   void updateLineEditWithAddress(qint64 address);
@@ -57,7 +57,8 @@ class NodeTreeWidget : public View {
   void initParsersMenu();
 
   void addDummySlices(dbif::ObjectHandle);
-  void addChunk(QString name, QString type, QString comment, uint64_t start,
+  void addChunk(const QString& name, const QString& type,
+                const QString& comment, uint64_t start,
                 uint64_t end, const QModelIndex &index = QModelIndex());
   void setupTreeViewHandlers();
   void setupDataModelHandlers();

@@ -30,10 +30,11 @@ class ParserWorker : public QObject {
   Q_OBJECT
 
  public slots:
-  void parse(
-      veles::dbif::ObjectHandle blob, MethodRunner *runner, QString parser_id,
-      quint64 start = 0,
-      veles::dbif::ObjectHandle parent_chunk = veles::dbif::ObjectHandle());
+  void parse(const veles::dbif::ObjectHandle& blob,
+             MethodRunner *runner,
+             const QString& parser_id,
+             quint64 start = 0,
+             const veles::dbif::ObjectHandle& parent_chunk = veles::dbif::ObjectHandle());
 
  public:
   void registerParser(parser::Parser *parser);

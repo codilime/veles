@@ -49,8 +49,8 @@ namespace ui {
 /*****************************************************************************/
 
 NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
-    QSharedPointer<FileBlobModel>& data_model,
-    QSharedPointer<QItemSelectionModel>& selection_model)
+    const QSharedPointer<FileBlobModel>& data_model,
+    const QSharedPointer<QItemSelectionModel>& selection_model)
     : View("Hex editor", ":/images/show_hex_edit.png"),
       main_window_(main_window), minimap_(nullptr),
       minimap_dock_(nullptr), data_model_(data_model),

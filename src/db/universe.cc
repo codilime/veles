@@ -43,9 +43,9 @@ QStringList ParserWorker::parserIdsList() {
   return res;
 }
 
-void ParserWorker::parse(dbif::ObjectHandle blob, MethodRunner *runner,
-                         QString parser_id, quint64 start,
-                         veles::dbif::ObjectHandle parent_chunk) {
+void ParserWorker::parse(const dbif::ObjectHandle& blob, MethodRunner *runner,
+                         const QString& parser_id, quint64 start,
+                         const veles::dbif::ObjectHandle& parent_chunk) {
   for (auto parser : _parsers) {
     if (parser_id == "" && parser->magic().size() > 0) {
       if (parser->verifyAndParse(blob, start, parent_chunk)) {

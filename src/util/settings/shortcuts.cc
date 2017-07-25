@@ -35,7 +35,7 @@ QList<QKeySequence> getShortcuts(ShortcutType type) {
     // from QVariant because it sometimes silently fails on macOS
     QList<QVariant> var_list = shortcuts.value(QString(type)).toList();
     QList<QKeySequence> res_list;
-    for (auto var : var_list) {
+    for (const auto& var : var_list) {
       res_list.append(var.value<QKeySequence>());
     }
     return res_list;
@@ -139,7 +139,7 @@ QAction* ShortcutsItem::createQAction(QObject* parent, Qt::ShortcutContext conte
   return ptr;
 }
 
-QAction* ShortcutsItem::createQAction(QObject* parent, QIcon icon, Qt::ShortcutContext context) {
+QAction* ShortcutsItem::createQAction(QObject* parent, const QIcon& icon, Qt::ShortcutContext context) {
   auto ptr = new QAction(icon, name_, parent);
   ptr->setShortcuts(shortcuts_);
   ptr->setShortcutContext(context);
@@ -319,7 +319,7 @@ QAction* ShortcutsModel::createQAction(
 }
 
 QAction* ShortcutsModel::createQAction(
-    ShortcutType type, QObject* parent, QIcon icon, Qt::ShortcutContext context) {
+    ShortcutType type, QObject* parent, const QIcon& icon, Qt::ShortcutContext context) {
   return type_to_shortcut_[type]->createQAction(parent, icon, context);
 }
 

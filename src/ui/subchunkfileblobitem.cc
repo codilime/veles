@@ -27,7 +27,7 @@ int SubchunkFileBlobItem::childrenCount() {
   return FileBlobItem::childrenCount();
 }
 
-void SubchunkFileBlobItem::gotChunkDataResponse(veles::dbif::PInfoReply reply) {
+void SubchunkFileBlobItem::gotChunkDataResponse(const veles::dbif::PInfoReply& reply) {
   FileBlobItem::removeOldChildren();
 
   auto items = reply.dynamicCast<dbif::ChunkDataRequest::ReplyType>()->items;
@@ -69,7 +69,7 @@ void SubchunkFileBlobItem::gotChunkDataResponse(veles::dbif::PInfoReply reply) {
 }
 
 void SubchunkFileBlobItem::gotChunkDescriptionResponse(
-    veles::dbif::PInfoReply reply) {
+    const veles::dbif::PInfoReply& reply) {
   if (auto description = reply.dynamicCast<dbif::ChunkDescriptionReply>()) {
     setFields(description->name, description->comment, description->start,
               description->end);
@@ -77,7 +77,7 @@ void SubchunkFileBlobItem::gotChunkDescriptionResponse(
   }
 }
 
-void SubchunkFileBlobItem::gotError(veles::dbif::PError error) {
+void SubchunkFileBlobItem::gotError(const veles::dbif::PError& error) {
   if (error.dynamicCast<veles::dbif::ObjectGoneError>()) {
     FileBlobItem::setFields("removed", "", 0, 0);
   } else {
@@ -104,7 +104,7 @@ void SubchunkFileBlobItem::subscribeInfo() {
   infoSubscribed_ = true;
 }
 
-SubchunkFileBlobItem::SubchunkFileBlobItem(dbif::ObjectHandle obj,
+SubchunkFileBlobItem::SubchunkFileBlobItem(const dbif::ObjectHandle& obj,
                                            QObject* parent)
     : FileBlobItem("loading", "", "loading", 0, 0, parent),
       infoSubscribed_(false) {
@@ -116,7 +116,7 @@ QString SubchunkFileBlobItem::name() {
   return FileBlobItem::name();
 }
 
-void SubchunkFileBlobItem::setComment(QString comment) {
+void SubchunkFileBlobItem::setComment(const QString& comment) {
   if (dataObj_->type() == dbif::CHUNK) {
     dataObj_->asyncRunMethod<dbif::SetCommentRequest>(this, comment);
   }

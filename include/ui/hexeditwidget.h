@@ -46,10 +46,10 @@ class HexEditWidget : public View {
 
  public:
   explicit HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
-      QSharedPointer<FileBlobModel>& data_model,
-      QSharedPointer<QItemSelectionModel>& selection_model);
+      const QSharedPointer<FileBlobModel>& data_model,
+      const QSharedPointer<QItemSelectionModel>& selection_model);
   void reapplySettings() override;
-  void setParserIds(QStringList ids);
+  void setParserIds(const QStringList& ids);
   QString addressAsText(qint64 addr);
   QAction* uploadAction() const {return upload_act_;}
   QAction* undoAction() const {return undo_act_;}
@@ -87,18 +87,15 @@ class HexEditWidget : public View {
  private:
   bool saveFile(const QString &file_name);
 
-  void addDummySlices(dbif::ObjectHandle);
-  void addChunk(QString name, QString type, QString comment, uint64_t start,
-                uint64_t end, const QModelIndex &index = QModelIndex());
+  void addChunk(const QString& name, const QString& type,
+                const QString& comment, uint64_t start, uint64_t end,
+                const QModelIndex &index = QModelIndex());
   void setupDataModelHandlers();
 
   void createActions();
   void createToolBars();
-  void createSliceCreatorWidget();
   void initParsersMenu();
   void createSelectionInfo();
-
-  bool getRangeValues(qint64 *begin, qint64 *end);
 
   MainWindowWithDetachableDockWidgets *main_window_;
 

@@ -31,10 +31,10 @@ class SubchunkFileBlobItem : public FileBlobItem {
   Q_OBJECT
 
  public:
-  explicit SubchunkFileBlobItem(dbif::ObjectHandle obj, QObject *parent = 0);
+  explicit SubchunkFileBlobItem(const dbif::ObjectHandle& obj, QObject *parent = 0);
 
   int childrenCount() override;
-  void setComment(QString comment_) override;
+  void setComment(const QString& comment_) override;
   QString name() override;
 
  private:
@@ -42,9 +42,9 @@ class SubchunkFileBlobItem : public FileBlobItem {
   void subscribeInfo();
 
  private slots:
-  void gotChunkDataResponse(veles::dbif::PInfoReply reply);
-  void gotChunkDescriptionResponse(veles::dbif::PInfoReply reply);
-  void gotError(veles::dbif::PError);
+  void gotChunkDataResponse(const veles::dbif::PInfoReply& reply);
+  void gotChunkDescriptionResponse(const veles::dbif::PInfoReply& reply);
+  void gotError(const veles::dbif::PError&);
 };
 
 }  // namespace ui

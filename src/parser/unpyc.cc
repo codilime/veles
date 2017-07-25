@@ -204,9 +204,9 @@ const PycOpcode pyc_ops[] = {
   {158, "BUILD_TUPLE_UNPACK_WITH_CALL", PYC_OP_NUM},
 };
 
-void parseCode(dbif::ObjectHandle code, const PycVersion &version);
+void parseCode(const dbif::ObjectHandle& code, const PycVersion& version);
 
-bool parseMarshal(StreamParser* parser, const QString &name, const PycVersion &version) {
+bool parseMarshal(StreamParser* parser, const QString& name, const PycVersion& version) {
   parser->startChunk("marshal", name);
   uint8_t mtype = parser->getByte("type");
   // XXX: annotate type enum val & ref bit
@@ -333,7 +333,7 @@ err:
   return true;
 }
 
-std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> parseLnotab(dbif::ObjectHandle code, dbif::ObjectHandle bytecodeBlob) {
+std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> parseLnotab(const dbif::ObjectHandle& code, const dbif::ObjectHandle& bytecodeBlob) {
   std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> res;
   auto lnotabObj = findSubChunk(code, "lnotab");
   if (!lnotabObj) {
@@ -370,7 +370,7 @@ std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> parseLnotab(dbif::ObjectHa
   return res;
 }
 
-void parseCode(dbif::ObjectHandle code, const PycVersion &version) {
+void parseCode(const dbif::ObjectHandle& code, const PycVersion& version) {
   // XXX: needs ref support
   auto bytecodeObj = findSubChunk(code, "code");
   if (!bytecodeObj) {
@@ -441,8 +441,8 @@ restart:
 
 }  // namespace
 
-void unpycFileBlob(dbif::ObjectHandle blob, uint64_t start,
-                   dbif::ObjectHandle parent_chunk) {
+void unpycFileBlob(const dbif::ObjectHandle& blob, uint64_t start,
+                   const dbif::ObjectHandle& parent_chunk) {
   StreamParser parser(blob, start, parent_chunk);
   parser.startChunk("pycheader", "header");
   uint32_t sig = parser.getLe32("sig");

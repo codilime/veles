@@ -34,7 +34,7 @@ namespace client {
 /* NCObjectHandle */
 /*****************************************************************************/
 
-NCObjectHandle::NCObjectHandle(NCWrapper* nc, data::NodeID id,
+NCObjectHandle::NCObjectHandle(NCWrapper* nc, const data::NodeID& id,
     dbif::ObjectType type) : nc_(nc), id_(id), type_(type) {
 }
 
@@ -42,16 +42,16 @@ data::NodeID NCObjectHandle::id() {
   return id_;
 }
 
-dbif::InfoPromise* NCObjectHandle::getInfo(dbif::PInfoRequest req) {
+dbif::InfoPromise* NCObjectHandle::getInfo(const dbif::PInfoRequest& req) {
   return nc_->getInfo(req, id_);
 }
 
-dbif::InfoPromise* NCObjectHandle::subInfo(dbif::PInfoRequest req) {
+dbif::InfoPromise* NCObjectHandle::subInfo(const dbif::PInfoRequest& req) {
   return nc_->subInfo(req, id_);
 }
 
 dbif::MethodResultPromise* NCObjectHandle::runMethod(
-    dbif::PMethodRequest req) {
+    const dbif::PMethodRequest& req) {
   return nc_->runMethod(req, id_);
 }
 
@@ -59,7 +59,7 @@ dbif::ObjectType NCObjectHandle::type() const {
   return type_;
 }
 
-bool NCObjectHandle::operator==(NCObjectHandle& other) {
+bool NCObjectHandle::operator==(const NCObjectHandle& other) {
   return id_ == other.id_;
 }
 
@@ -69,7 +69,7 @@ bool NCObjectHandle::operator==(NCObjectHandle& other) {
 
 ChunkDataItemQuery::ChunkDataItemQuery(
     uint64_t children_qid, uint64_t data_items_qid,
-    QPointer<dbif::InfoPromise> promise, data::NodeID id, bool sub)
+    const QPointer<dbif::InfoPromise>& promise, const data::NodeID& id, bool sub)
     : children_qid(children_qid), data_items_qid(data_items_qid),
     children_loaded(false), data_items_loaded(false), promise(promise),
     id(id), sub(sub) {}
@@ -118,12 +118,12 @@ NCWrapper::NCWrapper(NetworkClient* network_client, QObject* parent)
 }
 
 dbif::ObjectType NCWrapper::typeFromTags(
-      std::shared_ptr<std::unordered_set<std::shared_ptr<std::string>>> tags) {
+    const std::shared_ptr<std::unordered_set<std::shared_ptr<std::string>>>& tags) {
   bool blob_stored = false;
   bool blob_file = false;
   bool chunk_stored = false;
 
-  for (auto tag : *tags) {
+  for (const auto& tag : *tags) {
     if(*tag == "blob.stored") {
       blob_stored = true;
     } else if(*tag == "blob.file") {
@@ -150,17 +150,17 @@ dbif::ObjectType NCWrapper::typeFromTags(
 /* NCWrapper - dbif interface */
 /*****************************************************************************/
 
-dbif::InfoPromise* NCWrapper::getInfo(dbif::PInfoRequest req,
-    data::NodeID id) {
+dbif::InfoPromise* NCWrapper::getInfo(const dbif::PInfoRequest& req,
+                                      const data::NodeID& id) {
   return info(req, id, false);
 }
 
-dbif::InfoPromise* NCWrapper::subInfo(dbif::PInfoRequest req,
-    data::NodeID id) {
+dbif::InfoPromise* NCWrapper::subInfo(const dbif::PInfoRequest& req,
+    const data::NodeID& id) {
   return info(req, id, true);
 }
 
-dbif::InfoPromise* NCWrapper::info(dbif::PInfoRequest req, data::NodeID id,
+dbif::InfoPromise* NCWrapper::info(const dbif::PInfoRequest& req, const data::NodeID& id,
     bool sub) {
   if (req.dynamicCast<dbif::DescriptionRequest>()) {
     return handleDescriptionRequest(id, sub);
@@ -184,7 +184,7 @@ dbif::InfoPromise* NCWrapper::info(dbif::PInfoRequest req, data::NodeID id,
 }
 
 dbif::MethodResultPromise* NCWrapper::runMethod(
-    dbif::PMethodRequest req, data::NodeID id) {
+    const dbif::PMethodRequest& req, const data::NodeID& id) {
   if (auto create_file_blob_request
       = req.dynamicCast<dbif::RootCreateFileBlobFromDataRequest>()) {
     return handleRootCreateFileBlobFromDataRequest(create_file_blob_request);
@@ -230,7 +230,7 @@ dbif::MethodResultPromise* NCWrapper::runMethod(
 /* NCWrapper - NetworkClient message handlers */
 /*****************************************************************************/
 
-void NCWrapper::handleGetListReplyMessage(msg_ptr message) {
+void NCWrapper::handleGetListReplyMessage(const msg_ptr& message) {
   auto reply = std::dynamic_pointer_cast<proto::MsgGetListReply>(message);
 
   if (reply) {
@@ -258,8 +258,8 @@ void NCWrapper::handleGetListReplyMessage(msg_ptr message) {
 }
 
 void NCWrapper::handleGetChildrenListReply(
-      std::shared_ptr<proto::MsgGetListReply> reply,
-      QPointer<dbif::InfoPromise> promise) {
+    const std::shared_ptr<proto::MsgGetListReply>& reply,
+    const QPointer<dbif::InfoPromise>& promise) {
   auto iter_subscriptions = subscriptions_.find(reply->qid);
 
   auto children_map_iter = children_maps_.find(reply->qid);
@@ -273,18 +273,18 @@ void NCWrapper::handleGetChildrenListReply(
     children_map = children_map_iter->second;
   }
 
-  for (auto child : *reply->objs) {
+  for (const auto& child : *reply->objs) {
     (*children_map)[*child->id] = NCObjectHandle(
         this, *child->id, typeFromTags(child->tags));
   }
 
-  for (auto child_gone : *reply->gone) {
+  for (const auto& child_gone : *reply->gone) {
     children_map->erase(*child_gone);
   }
 
   std::vector<dbif::ObjectHandle> objects;
 
-  for (auto child : *children_map) {
+  for (const auto& child : *children_map) {
     objects.push_back(QSharedPointer<NCObjectHandle>::create(
         child.second));
   }
@@ -294,11 +294,11 @@ void NCWrapper::handleGetChildrenListReply(
 }
 
 void NCWrapper::handleGetChunkDataItemsReply(
-      std::shared_ptr<proto::MsgGetListReply> reply,
-      std::shared_ptr<ChunkDataItemQuery> chunk_data_item_query) {
+    const std::shared_ptr<proto::MsgGetListReply>& reply,
+    const std::shared_ptr<ChunkDataItemQuery>& chunk_data_item_query) {
 
   if (chunk_data_item_query->promise) {
-    updateChildrenDataItems(*chunk_data_item_query, reply->objs, reply->gone);
+    updateChildrenDataItems(chunk_data_item_query.get(), reply->objs, reply->gone);
 
     if (chunk_data_item_query->ready()) {
       std::vector<data::ChunkDataItem> items = resultDataItems(
@@ -316,7 +316,7 @@ void NCWrapper::handleGetChunkDataItemsReply(
   }
 }
 
-void NCWrapper::handleRequestAckMessage(msg_ptr message) {
+void NCWrapper::handleRequestAckMessage(const msg_ptr& message) {
   auto reply = std::dynamic_pointer_cast<proto::MsgRequestAck>(message);
 
   if (reply) {
@@ -346,8 +346,8 @@ void NCWrapper::handleRequestAckMessage(msg_ptr message) {
   }
 }
 
-void getQStringAttr(std::shared_ptr<std::unordered_map<std::string,
-    std::shared_ptr<messages::MsgpackObject>>> attr, std::string key,
+void getQStringAttr(const std::shared_ptr<std::unordered_map<std::string,
+    std::shared_ptr<messages::MsgpackObject>>>& attr, const std::string& key,
     QString* val_out) {
   auto iter = attr->find(key);
   if (iter != attr->end()) {
@@ -358,28 +358,28 @@ void getQStringAttr(std::shared_ptr<std::unordered_map<std::string,
   }
 }
 
-template<class T> void getAttrSPtr(std::shared_ptr<std::unordered_map<
-    std::string, std::shared_ptr<messages::MsgpackObject>>> attr,
-    std::string key, T& val) {
+template<class T> void getAttrSPtr(const std::shared_ptr<std::unordered_map<
+    std::string, std::shared_ptr<messages::MsgpackObject>>>& attr,
+    const std::string& key, T* val) {
   auto iter = attr->find(key);
   if (iter != attr->end()) {
     std::shared_ptr<T> val_ptr;
-    messages::fromMsgpackObject(iter->second, val_ptr);
+    messages::fromMsgpackObject(iter->second, &val_ptr);
     if (val_ptr) {
-      val = *val_ptr;
+      *val = *val_ptr;
     }
   }
 }
 
-template<class T> void getAttr(std::shared_ptr<std::unordered_map<std::string,
-    std::shared_ptr<messages::MsgpackObject>>> attr, std::string key, T& val) {
+template<class T> void getAttr(const std::shared_ptr<std::unordered_map<std::string,
+    std::shared_ptr<messages::MsgpackObject>>>& attr, const std::string& key, T* val) {
   auto iter = attr->find(key);
   if (iter != attr->end()) {
     messages::fromMsgpackObject(iter->second, val);
   }
 }
 
-void NCWrapper::handleGetReplyMessage(msg_ptr message) {
+void NCWrapper::handleGetReplyMessage(const msg_ptr& message) {
   auto reply = std::dynamic_pointer_cast<proto::MsgGetReply>(message);
 
   if (reply) {
@@ -400,9 +400,9 @@ void NCWrapper::handleGetReplyMessage(msg_ptr message) {
         uint64_t size(0);
         uint64_t width(8);
 
-        getAttr<uint64_t>(reply->obj->attr, "base", base);
-        getAttr<uint64_t>(reply->obj->attr, "size", size);
-        getAttr<uint64_t>(reply->obj->attr, "width", width);
+        getAttr<uint64_t>(reply->obj->attr, "base", &base);
+        getAttr<uint64_t>(reply->obj->attr, "size", &size);
+        getAttr<uint64_t>(reply->obj->attr, "width", &width);
 
         if (node_type == dbif::ObjectType::FILE_BLOB) {
           QString path;
@@ -437,7 +437,7 @@ void NCWrapper::handleGetReplyMessage(msg_ptr message) {
       } else if (node_type == dbif::ObjectType::CHUNK) {
         data::NodeID blob_id = *data::NodeID::getNilId();
         getAttrSPtr<data::NodeID>(reply->obj->attr, "blob",
-            blob_id);
+            &blob_id);
         auto blob = QSharedPointer<NCObjectHandle>::create(
             this, blob_id, dbif::ObjectType::FILE_BLOB); //FIXME
         auto parent = QSharedPointer<NCObjectHandle>::create(
@@ -490,7 +490,7 @@ void NCWrapper::handleGetReplyMessage(msg_ptr message) {
   }
 }
 
-void NCWrapper::handleGetBinDataReplyMessage(msg_ptr message) {
+void NCWrapper::handleGetBinDataReplyMessage(const msg_ptr& message) {
   auto reply = std::dynamic_pointer_cast<proto::MsgGetBinDataReply>(message);
   if (reply) {
     if (nc_->output() && detailed_debug_info_) {
@@ -514,7 +514,7 @@ void NCWrapper::handleGetBinDataReplyMessage(msg_ptr message) {
   }
 }
 
-void NCWrapper::handleGetDataReplyMessage(msg_ptr message) {
+void NCWrapper::handleGetDataReplyMessage(const msg_ptr& message) {
   auto reply = std::dynamic_pointer_cast<proto::MsgGetDataReply>(message);
   if (reply) {
     if (nc_->output() && detailed_debug_info_) {
@@ -529,7 +529,7 @@ void NCWrapper::handleGetDataReplyMessage(msg_ptr message) {
           = *chunk_data_item_query_iter->second;
       if (reply->data.first) {
         auto data = reply->data.second;
-        updateDataItems(chunk_data_item_query, data);
+        updateDataItems(&chunk_data_item_query, data);
       } else {
         chunk_data_item_query.items.clear();
         chunk_data_item_query.data_items_loaded = true;
@@ -554,7 +554,7 @@ void NCWrapper::handleGetDataReplyMessage(msg_ptr message) {
   }
 }
 
-void NCWrapper::handleQueryErrorMessage(msg_ptr message) {
+void NCWrapper::handleQueryErrorMessage(const msg_ptr& message) {
   auto reply = std::dynamic_pointer_cast<proto::MsgQueryError>(message);
   if (reply) {
     if (nc_->output() && detailed_debug_info_) {
@@ -572,7 +572,7 @@ void NCWrapper::handleQueryErrorMessage(msg_ptr message) {
 /* NCWrapper - dbif "info" request handlers */
 /*****************************************************************************/
 
-dbif::InfoPromise* NCWrapper::handleDescriptionRequest(data::NodeID id,
+dbif::InfoPromise* NCWrapper::handleDescriptionRequest(const data::NodeID& id,
     bool sub) {
   uint64_t qid = nc_->nextQid();
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
@@ -591,7 +591,7 @@ dbif::InfoPromise* NCWrapper::handleDescriptionRequest(data::NodeID id,
   return addInfoPromise(qid, sub);;
 }
 
-dbif::InfoPromise* NCWrapper::handleChildrenRequest(data::NodeID id, bool sub) {
+dbif::InfoPromise* NCWrapper::handleChildrenRequest(const data::NodeID& id, bool sub) {
   uint64_t qid = nc_->nextQid();
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
@@ -625,7 +625,7 @@ dbif::InfoPromise* NCWrapper::handleParsersListRequest(bool sub) {
 }
 
 dbif::InfoPromise* NCWrapper::handleBlobDataRequest(
-    data::NodeID id, uint64_t start, uint64_t end, bool sub) {
+    const data::NodeID& id, uint64_t start, uint64_t end, bool sub) {
   uint64_t qid = nc_->nextQid();
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
@@ -645,7 +645,7 @@ dbif::InfoPromise* NCWrapper::handleBlobDataRequest(
   return addInfoPromise(qid, sub);
 }
 
-dbif::InfoPromise* NCWrapper::handleChunkDataRequest(data::NodeID id, bool sub) {
+dbif::InfoPromise* NCWrapper::handleChunkDataRequest(const data::NodeID& id, bool sub) {
   uint64_t qid_data = nc_->nextQid();
   uint64_t qid_children = nc_->nextQid();
 
@@ -688,8 +688,8 @@ dbif::InfoPromise* NCWrapper::handleChunkDataRequest(data::NodeID id, bool sub) 
 /*****************************************************************************/
 
 dbif::MethodResultPromise* NCWrapper::handleRootCreateFileBlobFromDataRequest(
-      QSharedPointer<dbif::RootCreateFileBlobFromDataRequest>
-      create_file_blob_request) {
+    const QSharedPointer<dbif::RootCreateFileBlobFromDataRequest>&
+    create_file_blob_request) {
   uint64_t qid = nc_->nextQid();
 
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
@@ -769,8 +769,8 @@ dbif::MethodResultPromise* NCWrapper::handleRootCreateFileBlobFromDataRequest(
   return addMethodPromise(qid);
 }
 
-dbif::MethodResultPromise* NCWrapper::handleChunkCreateRequest(data::NodeID id,
-      QSharedPointer<dbif::ChunkCreateRequest> chunk_create_request) {
+dbif::MethodResultPromise* NCWrapper::handleChunkCreateRequest(const data::NodeID& id,
+    const QSharedPointer<dbif::ChunkCreateRequest>& chunk_create_request) {
   uint64_t qid = nc_->nextQid();
 
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
@@ -849,7 +849,7 @@ dbif::MethodResultPromise* NCWrapper::handleChunkCreateRequest(data::NodeID id,
 }
 
 dbif::MethodResultPromise* NCWrapper::handleChunkCreateSubBlobRequest(
-    data::NodeID id, QSharedPointer<dbif::ChunkCreateSubBlobRequest>
+    const data::NodeID& id, const QSharedPointer<dbif::ChunkCreateSubBlobRequest>&
     chunk_create_subblob_request) {
   uint64_t qid = nc_->nextQid();
 
@@ -931,7 +931,7 @@ dbif::MethodResultPromise* NCWrapper::handleChunkCreateSubBlobRequest(
   return addMethodPromise(qid);
 }
 
-dbif::MethodResultPromise* NCWrapper::handleDeleteRequest(data::NodeID id) {
+dbif::MethodResultPromise* NCWrapper::handleDeleteRequest(const data::NodeID& id) {
   uint64_t qid = nc_->nextQid();
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
@@ -946,8 +946,8 @@ dbif::MethodResultPromise* NCWrapper::handleDeleteRequest(data::NodeID id) {
   return addMethodPromise(qid);
 }
 
-dbif::MethodResultPromise* NCWrapper::handleSetNameRequest(data::NodeID id,
-    std::string name) {
+dbif::MethodResultPromise* NCWrapper::handleSetNameRequest(const data::NodeID& id,
+    const std::string& name) {
   uint64_t qid = nc_->nextQid();
 
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
@@ -976,11 +976,12 @@ dbif::MethodResultPromise* NCWrapper::handleSetNameRequest(data::NodeID id,
   return addMethodPromise(qid);
 }
 
-dbif::MethodResultPromise* NCWrapper::handleSetCommentRequest(data::NodeID id,
-    std::string comment) {
+dbif::MethodResultPromise* NCWrapper::handleSetCommentRequest(
+    const data::NodeID& id,
+    const std::string& comment) {
   uint64_t qid = nc_->nextQid();
 
-  if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
+  if (nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
     if (nc_->output() && detailed_debug_info_) {
       *nc_->output() << "NCWrapper: Sending a request to set a node's"
           " comment (MsgTransaction)." << endl;
@@ -1006,8 +1007,9 @@ dbif::MethodResultPromise* NCWrapper::handleSetCommentRequest(data::NodeID id,
   return addMethodPromise(qid);
 }
 
-dbif::MethodResultPromise* NCWrapper::handleChangeDataRequest(data::NodeID id,
-    QSharedPointer<dbif::ChangeDataRequest> change_data_request) {
+dbif::MethodResultPromise* NCWrapper::handleChangeDataRequest(
+    const data::NodeID& id,
+    const QSharedPointer<dbif::ChangeDataRequest>& change_data_request) {
 
   uint64_t qid = nc_->nextQid();
 
@@ -1047,7 +1049,7 @@ dbif::MethodResultPromise* NCWrapper::handleChangeDataRequest(data::NodeID id,
 }
 
 dbif::MethodResultPromise* NCWrapper::handleSetChunkBoundsRequest(
-    data::NodeID id, int64_t pos_start, int64_t pos_end) {
+    const data::NodeID& id, int64_t pos_start, int64_t pos_end) {
   uint64_t qid = nc_->nextQid();
 
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
@@ -1076,8 +1078,8 @@ dbif::MethodResultPromise* NCWrapper::handleSetChunkBoundsRequest(
 }
 
 dbif::MethodResultPromise* NCWrapper::handleSetChunkParseRequest(
-    data::NodeID id,
-    QSharedPointer<dbif::SetChunkParseRequest> chunk_parse_request) {
+    const data::NodeID& id,
+    const QSharedPointer<dbif::SetChunkParseRequest>& chunk_parse_request) {
   uint64_t qid = nc_->nextQid();
 
   if(nc_->connectionStatus() == NetworkClient::ConnectionStatus::Connected) {
@@ -1106,7 +1108,7 @@ dbif::MethodResultPromise* NCWrapper::handleSetChunkParseRequest(
     auto data_items = std::make_shared<
         std::vector<std::shared_ptr<messages::MsgpackObject>>>();
 
-    for(auto item : chunk_parse_request->items) {
+    for(const auto& item : chunk_parse_request->items) {
       data_items->push_back(chunkDataItemToMsgpack(item));
     }
 
@@ -1123,8 +1125,8 @@ dbif::MethodResultPromise* NCWrapper::handleSetChunkParseRequest(
 }
 
 dbif::MethodResultPromise* NCWrapper::handleBlobParseRequest(
-    data::NodeID id,
-    QSharedPointer<dbif::BlobParseRequest> blob_parse_request) {
+    const data::NodeID& id,
+    const QSharedPointer<dbif::BlobParseRequest>& blob_parse_request) {
   auto promise = new dbif::MethodResultPromise;
   auto runner = new db::MethodRunner;
 
@@ -1199,7 +1201,7 @@ std::shared_ptr<messages::MsgpackObject> NCWrapper::chunkDataItemToMsgpack(
 
   auto refs_ptr = std::make_shared<std::vector<std::shared_ptr<
       messages::MsgpackObject>>>();
-  for (auto ref : item.ref) {
+  for (const auto& ref : item.ref) {
     auto handle = ref.dynamicCast<NCObjectHandle>();
     if (handle) {
       refs_ptr->push_back(messages::toMsgpackObject(
@@ -1213,8 +1215,8 @@ std::shared_ptr<messages::MsgpackObject> NCWrapper::chunkDataItemToMsgpack(
   return std::make_shared<messages::MsgpackObject>(attr_item);
 }
 
-template<class T> void getFieldFromMap(std::shared_ptr<std::map<std::string,
-    std::shared_ptr<messages::MsgpackObject>>> fields, std::string key, T& val) {
+template<class T> void getFieldFromMap(const std::shared_ptr<std::map<std::string,
+    std::shared_ptr<messages::MsgpackObject>>>& fields, const std::string& key, T* val) {
   auto iter = fields->find(key);
   if (iter != fields->end()) {
     messages::fromMsgpackObject(iter->second, val);
@@ -1222,79 +1224,79 @@ template<class T> void getFieldFromMap(std::shared_ptr<std::map<std::string,
 }
 
 data::ChunkDataItem NCWrapper::msgpackToChunkDataItem(
-    std::shared_ptr<messages::MsgpackObject> msgo) {
+    const std::shared_ptr<messages::MsgpackObject>& msgo) {
   data::ChunkDataItem item;
   auto attr_map = msgo->getMap();
   if (attr_map) {
     uint64_t type_uint(data::ChunkDataItem::NONE);
-    getFieldFromMap(attr_map, "type", type_uint);
+    getFieldFromMap(attr_map, "type", &type_uint);
     item.type = data::ChunkDataItem::ChunkDataItemType(type_uint);
 
     uint64_t start(0);
-    getFieldFromMap(attr_map, "start", start);
+    getFieldFromMap(attr_map, "start", &start);
     item.start = start;
 
     uint64_t end(0);
-    getFieldFromMap(attr_map, "end", end);
+    getFieldFromMap(attr_map, "end", &end);
     item.end = end;
 
     uint64_t num_elements(0);
-    getFieldFromMap(attr_map, "num_elements", num_elements);
+    getFieldFromMap(attr_map, "num_elements", &num_elements);
     item.num_elements = num_elements;
 
     auto name = std::make_shared<std::string>("[not set]");
-    getFieldFromMap(attr_map, "name", name);
+    getFieldFromMap(attr_map, "name", &name);
     item.name = QString::fromStdString(*name);
 
     auto bindata = std::make_shared<data::BinData>();
-    getFieldFromMap(attr_map, "raw_value", bindata);
+    getFieldFromMap(attr_map, "raw_value", &bindata);
     item.raw_value = *bindata;
 
     auto repacker = std::make_shared<data::Repacker>();
-    getFieldFromMap(attr_map, "repack", repacker);
+    getFieldFromMap(attr_map, "repack", &repacker);
     item.repack = *repacker;
 
     bool float_complex = false;
-    getFieldFromMap(attr_map, "float_complex", float_complex);
+    getFieldFromMap(attr_map, "float_complex", &float_complex);
     item.high_type.float_complex = float_complex;
 
     uint64_t float_mode(data::FieldHighType::IEEE754_SINGLE);
-    getFieldFromMap(attr_map, "float_mode", float_mode);
+    getFieldFromMap(attr_map, "float_mode", &float_mode);
     item.high_type.float_mode = data::FieldHighType::FieldFloatMode(float_mode);
 
     uint64_t mode(data::FieldHighType::NONE);
-    getFieldFromMap(attr_map, "mode", mode);
+    getFieldFromMap(attr_map, "mode", &mode);
     item.high_type.mode = data::FieldHighType::FieldHighMode(mode);
 
     int64_t shift(0);
-    getFieldFromMap(attr_map, "shift", shift);
+    getFieldFromMap(attr_map, "shift", &shift);
     item.high_type.shift = shift;
 
     uint64_t sign_mode(data::FieldHighType::SIGNED);
-    getFieldFromMap(attr_map, "sign_mode", sign_mode);
+    getFieldFromMap(attr_map, "sign_mode", &sign_mode);
     item.high_type.sign_mode = data::FieldHighType::FieldSignMode(sign_mode);
 
     uint64_t string_encoding(data::FieldHighType::ENC_RAW);
-    getFieldFromMap(attr_map, "string_encoding", string_encoding);
+    getFieldFromMap(attr_map, "string_encoding", &string_encoding);
     item.high_type.string_encoding = data::FieldHighType::FieldStringEncoding(
         string_encoding);
 
     uint64_t string_mode(data::FieldHighType::STRING_RAW);
-    getFieldFromMap(attr_map, "string_mode", string_mode);
+    getFieldFromMap(attr_map, "string_mode", &string_mode);
     item.high_type.string_mode = data::FieldHighType::FieldStringMode(
         string_mode);
 
     auto type_name = std::make_shared<std::string>("[unknown]");
-    getFieldFromMap(attr_map, "type_name", type_name);
+    getFieldFromMap(attr_map, "type_name", &type_name);
     item.high_type.type_name = QString::fromStdString(*type_name);
 
     std::shared_ptr<std::vector<std::shared_ptr<messages::MsgpackObject>>>
         refs;
-    getFieldFromMap(attr_map, "refs", refs);
+    getFieldFromMap(attr_map, "refs", &refs);
     if (refs) {
-      for (auto ref_ptr : *refs) {
+      for (const auto& ref_ptr : *refs) {
         std::shared_ptr<data::NodeID> id_ptr;
-        fromMsgpackObject(ref_ptr, id_ptr);
+        fromMsgpackObject(ref_ptr, &id_ptr);
         if (id_ptr) {
           item.ref.push_back(QSharedPointer<NCObjectHandle>::create(
               this, *id_ptr, item.type == data::ChunkDataItem::SUBBLOB
@@ -1308,19 +1310,19 @@ data::ChunkDataItem NCWrapper::msgpackToChunkDataItem(
 }
 
 bool NCWrapper::nodeToChunkDataItem(
-      std::shared_ptr<proto::Node> node,
-      data::ChunkDataItem& out_chunk_data_item) {
+    const std::shared_ptr<proto::Node>& node,
+    data::ChunkDataItem* out_chunk_data_item) {
   QString name("[not set]");
   getQStringAttr(node->attr, "name", &name);
   dbif::ObjectType type = typeFromTags(node->tags);
   if (type == dbif::ObjectType::CHUNK) {
-    out_chunk_data_item = data::ChunkDataItem::subchunk(
+    *out_chunk_data_item = data::ChunkDataItem::subchunk(
         node->pos_start.second, node->pos_end.second, name,
         QSharedPointer<NCObjectHandle>::create(
         this, *node->id, dbif::ObjectType::CHUNK));
     return true;
   } else if (type == dbif::ObjectType::SUB_BLOB) {
-    out_chunk_data_item = data::ChunkDataItem::subblob(
+    *out_chunk_data_item = data::ChunkDataItem::subblob(
         name,
         QSharedPointer<NCObjectHandle>::create(
         this, *node->id, dbif::ObjectType::SUB_BLOB));
@@ -1330,44 +1332,43 @@ bool NCWrapper::nodeToChunkDataItem(
   return false;
 }
 
-void NCWrapper::updateChildrenDataItems(ChunkDataItemQuery& query,
-    std::shared_ptr<std::vector<std::shared_ptr<proto::Node>>> children,
-    std::shared_ptr<std::vector<std::shared_ptr<veles::data::NodeID>>> gone)
-    {
-  for (auto child : *children) {
-    query.children_map[*child->id] = child;
+void NCWrapper::updateChildrenDataItems(ChunkDataItemQuery* query,
+    const std::shared_ptr<std::vector<std::shared_ptr<proto::Node>>>& children,
+    const std::shared_ptr<std::vector<std::shared_ptr<veles::data::NodeID>>>& gone) {
+  for (const auto& child : *children) {
+    query->children_map[*child->id] = child;
   }
 
-  for (auto child_gone : *gone) {
-    query.children_map.erase(*child_gone);
+  for (const auto& child_gone : *gone) {
+    query->children_map.erase(*child_gone);
   }
 
-  query.children_loaded = true;
+  query->children_loaded = true;
 }
 
-void NCWrapper::updateDataItems(ChunkDataItemQuery& query,
-    std::shared_ptr<messages::MsgpackObject> data_items) {
-  query.items.clear();
+void NCWrapper::updateDataItems(ChunkDataItemQuery* query,
+    const std::shared_ptr<messages::MsgpackObject>& data_items) {
+  query->items.clear();
 
   std::shared_ptr<std::vector<std::shared_ptr<messages::MsgpackObject>>>
       data_items_vector;
-  fromMsgpackObject(data_items, data_items_vector);
-  for (auto item_ptr : *data_items_vector) {
+  fromMsgpackObject(data_items, &data_items_vector);
+  for (const auto& item_ptr : *data_items_vector) {
     auto chunk_data_item = msgpackToChunkDataItem(item_ptr);
 
-    query.items.push_back(chunk_data_item);
+    query->items.push_back(chunk_data_item);
   }
 
-  query.data_items_loaded = true;
+  query->data_items_loaded = true;
 }
 
 std::vector<data::ChunkDataItem> NCWrapper::resultDataItems(
-    ChunkDataItemQuery& query) {
+    const ChunkDataItemQuery& query) {
   std::vector<data::ChunkDataItem> chunk_data_items;
 
   for (auto child : query.children_map) {
     data::ChunkDataItem child_data_item;
-    if (NCWrapper::nodeToChunkDataItem(child.second, child_data_item)) {
+    if (NCWrapper::nodeToChunkDataItem(child.second, &child_data_item)) {
       chunk_data_items.push_back(child_data_item);
     }
   }
@@ -1429,7 +1430,7 @@ void NCWrapper::updateConnectionStatus(client::NetworkClient::ConnectionStatus
   }
 }
 
-void NCWrapper::messageReceived(msg_ptr message) {
+void NCWrapper::messageReceived(const msg_ptr& message) {
   auto handler_iter = message_handlers_.find(message->object_type);
   if(handler_iter != message_handlers_.end()) {
     MessageHandler handler = handler_iter->second;
@@ -1437,16 +1438,16 @@ void NCWrapper::messageReceived(msg_ptr message) {
   }
 }
 
-void NCWrapper::newParser(QString id) {
+void NCWrapper::newParser(const QString& id) {
   parser_ids_.push_back(id);
 
-  for (auto promise : parser_promises_) {
+  for (const auto& promise : parser_promises_) {
     replyForParsersListRequest(promise);
   }
 }
 
 void NCWrapper::replyForParsersListRequest(
-    QPointer<dbif::InfoPromise> promise) {
+    const QPointer<dbif::InfoPromise>& promise) {
   if (promise) {
     emit promise->gotInfo(QSharedPointer<dbif::ParsersListRequest::ReplyType>
         ::create(parser_ids_));
@@ -1470,7 +1471,7 @@ dbif::MethodResultPromise* NCWrapper::addMethodPromise(uint64_t qid) {
   return promise;
 }
 
-void NCWrapper::wrongMessageType(QString name, QString expected_type) {
+void NCWrapper::wrongMessageType(const QString& name, const QString& expected_type) {
   if (nc_->output()) {
     *nc_->output() << QString("NCWrapper: error - declared message type is "
         "\"%1\", but it's actually not a %2.").arg(name).arg(expected_type)

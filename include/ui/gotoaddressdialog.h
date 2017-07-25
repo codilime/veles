@@ -39,7 +39,7 @@ class GoToAddressDialog : public QDialog {
  private:
   Ui::GoToAddressDialog *ui_;
  private slots:
-  void formatChanged(QString);
+  void formatChanged(const QString& format);
 
 };
 

@@ -25,10 +25,10 @@ namespace util {
 namespace string {
 
 // Returns a string containing characters from `src` which satisfy `pred`.
-QString filter(QString src, std::function<bool(const QChar&)> pred);
+QString filter(QString src, const std::function<bool(const QChar&)>& pred);
 
-QString stripNulls(QString src);
-QString stripSpaces(QString src);
+QString stripNulls(const QString& src);
+QString stripSpaces(const QString& src);
 
 }  // namespace string
 }  // namespace util

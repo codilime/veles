@@ -194,7 +194,7 @@ class ISampler {
    * Returned value is callback id, that can be later used to remove this
    * callback.
    */
-  ResampleCallbackId registerResampleCallback(ResampleCallback cb);
+  ResampleCallbackId registerResampleCallback(const ResampleCallback& cb);
 
   /**
    * Remove resample callback with a given id.

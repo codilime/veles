@@ -122,7 +122,7 @@ class ShortcutsItem {
   ~ShortcutsItem();
 
   QAction* createQAction(QObject* parent, Qt::ShortcutContext context = Qt::WindowShortcut);
-  QAction* createQAction(QObject* parent, QIcon icon, Qt::ShortcutContext context = Qt::WindowShortcut);
+  QAction* createQAction(QObject* parent, const QIcon& icon, Qt::ShortcutContext context = Qt::WindowShortcut);
   QString name() const;
   QString displayName() const;
   ShortcutsItem* parent() const;
@@ -168,7 +168,7 @@ class ShortcutsModel : public QAbstractItemModel {
   QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
   static ShortcutsModel* getShortcutsModel();
   QAction* createQAction(util::settings::shortcuts::ShortcutType type, QObject* parent, Qt::ShortcutContext context);
-  QAction* createQAction(util::settings::shortcuts::ShortcutType type, QObject* parent, QIcon icon, Qt::ShortcutContext context);
+  QAction* createQAction(util::settings::shortcuts::ShortcutType type, QObject* parent, const QIcon& icon, Qt::ShortcutContext context);
   void addShortcut(util::settings::shortcuts::ShortcutType type, const QKeySequence& shortcut);
   void removeShortcut(util::settings::shortcuts::ShortcutType type, const QKeySequence& shortcut);
   ShortcutsItem* itemFromIndex(const QModelIndex& index) const;

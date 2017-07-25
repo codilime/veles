@@ -20,7 +20,7 @@ namespace veles {
 namespace util {
 namespace string {
 
-QString filter(QString src, std::function<bool(const QChar&)> pred) {
+QString filter(QString src, const std::function<bool(const QChar&)>& pred) {
   QString newStr;
   for (auto character : src) {
     if (pred(character)) {
@@ -30,11 +30,11 @@ QString filter(QString src, std::function<bool(const QChar&)> pred) {
   return newStr;
 }
 
-QString stripNulls(QString src) {
+QString stripNulls(const QString& src) {
   return filter(src, [](const QChar& x){ return !x.isNull(); });
 }
 
-QString stripSpaces(QString src) {
+QString stripSpaces(const QString& src) {
   return filter(src, [](const QChar& x){ return !x.isSpace(); });
 }
 

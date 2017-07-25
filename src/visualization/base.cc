@@ -51,7 +51,7 @@ void VisualizationWidget::setSampler(util::ISampler *sampler) {
   refreshVisualization();
 }
 
-void VisualizationWidget::refreshVisualization(AdditionalResampleDataPtr ad) {
+void VisualizationWidget::refreshVisualization(const AdditionalResampleDataPtr& ad) {
   if (gl_initialised_ && !error_message_set_) {
     auto lc = sampler_->lock();
     refresh(ad);

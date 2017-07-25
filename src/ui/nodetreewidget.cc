@@ -52,9 +52,9 @@ using util::settings::shortcuts::ShortcutsModel;
 /*****************************************************************************/
 
 NodeTreeWidget::NodeTreeWidget(
-    MainWindowWithDetachableDockWidgets *main_window,
-    QSharedPointer<FileBlobModel>& data_model,
-    QSharedPointer<QItemSelectionModel>& selection_model)
+    MainWindowWithDetachableDockWidgets* main_window,
+    const QSharedPointer<FileBlobModel>& data_model,
+    const QSharedPointer<QItemSelectionModel>& selection_model)
     : View("Node tree", ":/images/show_node_tree.png"),
       main_window_(main_window), data_model_(data_model),
       selection_model_(selection_model) {
@@ -87,7 +87,7 @@ NodeTreeWidget::NodeTreeWidget(
         ->parsersList());
 }
 
-void NodeTreeWidget::setParserIds(QStringList ids) {
+void NodeTreeWidget::setParserIds(const QStringList& ids) {
   parsers_ids_ = ids;
 
   // We don't need this now, but it might be useful in the future.
@@ -120,9 +120,9 @@ void NodeTreeWidget::createToolBars() {
   //addToolBar(tools_tool_bar_);
 }
 
-void NodeTreeWidget::addChunk(QString name, QString type, QString comment,
-                          uint64_t start, uint64_t end,
-                          const QModelIndex &index) {
+void NodeTreeWidget::addChunk(const QString& name, const QString& type,
+                              const QString& comment, uint64_t start,
+                              uint64_t end, const QModelIndex& index) {
   data_model_->addChunk(name, type, comment, start, end, index);
 }
 
@@ -170,7 +170,7 @@ void NodeTreeWidget::initParsersMenu() {
   parsers_menu_.clear();
   parsers_menu_.addAction("auto");
   parsers_menu_.addSeparator();
-  for (auto id : parsers_ids_) {
+  for (const auto& id : parsers_ids_) {
     parsers_menu_.addAction(id);
   }
 }
@@ -179,7 +179,7 @@ void NodeTreeWidget::initParsersMenu() {
 /* Private Slots */
 /*****************************************************************************/
 
-void NodeTreeWidget::parse(QAction *action) {
+void NodeTreeWidget::parse(QAction* action) {
   if (action->text() == "auto") {
     data_model_->parse();
   } else {
@@ -200,14 +200,14 @@ void NodeTreeWidget::removeChunk() {
   data_model_->removeRow(selectedChunk.row(), selectedChunk.parent());
 }
 
-void NodeTreeWidget::currentSelectionChanged(const QModelIndex &currentIndex) {
+void NodeTreeWidget::currentSelectionChanged(const QModelIndex& currentIndex) {
   remove_action_->setEnabled(data_model_->isRemovable(currentIndex));
 }
 
 void NodeTreeWidget::newBinData() {
 }
 
-void NodeTreeWidget::registerLineEdit(QLineEdit *line_edit) {
+void NodeTreeWidget::registerLineEdit(QLineEdit* line_edit) {
   registered_line_edit_ = line_edit;
 }
 

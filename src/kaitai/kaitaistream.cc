@@ -22,8 +22,8 @@
 namespace veles {
 namespace kaitai {
 
-kaitai::kstream::kstream(veles::dbif::ObjectHandle blob, uint64_t start,
-                         veles::dbif::ObjectHandle parent_chunk,
+kaitai::kstream::kstream(const veles::dbif::ObjectHandle& blob, uint64_t start,
+                         const veles::dbif::ObjectHandle& parent_chunk,
                          uint64_t max_size, bool error)
     : obj_(blob), current_name_(nullptr), error_(error), max_size_(max_size) {
   parser_ = new veles::parser::StreamParser(blob, start, parent_chunk);
@@ -33,7 +33,7 @@ kaitai::kstream::~kstream() {
   delete parser_;
 }
 
-veles::dbif::ObjectHandle kaitai::kstream::startChunk(const char *name) {
+veles::dbif::ObjectHandle kaitai::kstream::startChunk(const char* name) {
   return parser_->startChunk(name, name);
 }
 
@@ -242,7 +242,7 @@ std::vector<uint8_t> kaitai::kstream::read_bytes_full() {
 }
 
 std::vector<uint8_t> kaitai::kstream::ensure_fixed_contents(
-    std::string expected) {
+    const std::string& expected) {
   if (error_) {
     return {};
   }

@@ -73,7 +73,7 @@ class ConnectionManager : public QObject {
       client::NetworkClient::ConnectionStatus connection_status);
   void raiseConnectionDialog();
   void sendListConnectionsMessage();
-  void messageReceived(client::msg_ptr message);
+  void messageReceived(const client::msg_ptr& message);
 
  private:
   QAction* show_connection_dialog_action_;
@@ -132,7 +132,7 @@ class ConnectionsWidget : public QWidget {
   void updateConnectionStatus(
       client::NetworkClient::ConnectionStatus connection_status);
   void updateConnections(
-      std::shared_ptr<std::vector<std::shared_ptr<proto::Connection>>>
+      const std::shared_ptr<std::vector<std::shared_ptr<proto::Connection>>>&
       connections);
 
  private:

@@ -259,7 +259,7 @@ TEST(Repack, MsgpackConversion) {
   EXPECT_EQ((*obj->getMap())["high_pad"]->getUnsignedInt(), 1u);
   EXPECT_EQ((*obj->getMap())["low_pad"]->getUnsignedInt(), 8u);
   std::shared_ptr<Repacker> ptr;
-  messages::fromMsgpackObject(obj, ptr);
+  messages::fromMsgpackObject(obj, &ptr);
   EXPECT_EQ(ptr->endian, Endian::BIG);
   EXPECT_EQ(ptr->from_width, 8u);
   EXPECT_EQ(ptr->to_width, 23u);

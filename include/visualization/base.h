@@ -55,7 +55,7 @@ class VisualizationWidget : public QOpenGLWidget,
   };
   typedef std::shared_ptr<AdditionalResampleData> AdditionalResampleDataPtr;
 
-  void refreshVisualization(AdditionalResampleDataPtr ad = AdditionalResampleDataPtr());
+  void refreshVisualization(const AdditionalResampleDataPtr& ad = AdditionalResampleDataPtr());
 
  signals:
   void resampled(AdditionalResampleDataPtr ad);

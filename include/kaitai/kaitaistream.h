@@ -14,8 +14,7 @@
  * limitations under the License.
  *
  */
-#ifndef VELES_KAITAI_KAITAISTREAM_H
-#define VELES_KAITAI_KAITAISTREAM_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -31,16 +30,16 @@ namespace kaitai {
  * Kaitai Stream class (veles::kaitai::kstream) is an implementation of
  * Kaitai Struct stream API for Veles.
  * (https://github.com/kaitai-io/kaitai_struct/wiki/Kaitai-Struct-stream-API)
- * It's implemented as a wrapper over veles StreamParser.
+ * It's implemented as a wrapper over Veles StreamParser.
  *
  * Seeking is not implemented.
- * It has also addiational methods which allows Veles to known field names and
+ * It has also additional methods which allow Veles to know field names and
  * create chunk tree.
  */
 class kstream {
  public:
-  kstream(veles::dbif::ObjectHandle blob, uint64_t start = 0,
-          veles::dbif::ObjectHandle parent_chunk = veles::dbif::ObjectHandle(),
+  kstream(const veles::dbif::ObjectHandle& blob, uint64_t start = 0,
+          const veles::dbif::ObjectHandle& parent_chunk = veles::dbif::ObjectHandle(),
           uint64_t max_size = 0, bool error = false);
   ~kstream();
 
@@ -82,11 +81,11 @@ class kstream {
 
   std::vector<uint8_t> read_bytes(size_t);
   std::vector<uint8_t> read_bytes_full();
-  std::vector<uint8_t> ensure_fixed_contents(std::string);
+  std::vector<uint8_t> ensure_fixed_contents(const std::string&);
 
   static std::string bytes_to_string(std::vector<uint8_t>, const char *);
 
-  /** addiational methods required by Veles */
+  /** additional methods required by Veles */
   void pushName(const char *);
   void popName();
   const char* currentName() {return current_name_;}
@@ -105,7 +104,6 @@ class kstream {
   uint64_t max_size_;
 };
 
-}  // kaitai
-}  // veles
+}  // namespace kaitai
+}  // namespace veles
 
-#endif  // VELES_KAITAI_KAITAISTREAM_H

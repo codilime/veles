@@ -62,7 +62,7 @@ class ConnectionDialog : public QDialog {
   void profileChanged(int index);
   void profileRemoved();
   void newProfile();
-  void profileNameEdited(QString name);
+  void profileNameEdited(const QString& name);
   void defaultProfile();
 
  protected:

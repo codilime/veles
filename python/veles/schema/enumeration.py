@@ -34,16 +34,16 @@ class EnumModel(Enum):
 
     @classmethod
     def generate_header_conv_code(cls):
-        code = '''void fromMsgpackObject(const std::shared_ptr<MsgpackObject>\
- obj, {0}& out);
+        code = '''void fromMsgpackObject(const std::shared_ptr<MsgpackObject>&\
+ obj, {0}* out);
 std::shared_ptr<MsgpackObject> toMsgpackObject({0} val);
 '''.format(cls.cpp_type()[1])
         return code
 
     @classmethod
     def generate_source_conv_code(cls):
-        code = '''void fromMsgpackObject(const std::shared_ptr<MsgpackObject>\
- obj, {0}& out) {{
+        code = '''void fromMsgpackObject(const std::shared_ptr<MsgpackObject>&\
+ obj, {0}* out) {{
 {1}
   throw proto::SchemaError("Unrecognized enum value");
 }}
@@ -56,7 +56,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject({0} val) {{
 }}
 '''.format(cls.cpp_type()[1],
            '\n'.join(['''  if (*obj->getString() == "{1}") {{
-    out = {0}::{2};
+    *out = {0}::{2};
     return;
   }}'''.format(cls.cpp_type()[1], name, name.upper())
                         for name in cls.__members__]),

@@ -23,7 +23,7 @@
 namespace veles {
 namespace ui {
 
-RootFileBlobItem::RootFileBlobItem(dbif::ObjectHandle obj, QObject *parent)
+RootFileBlobItem::RootFileBlobItem(const dbif::ObjectHandle& obj, QObject *parent)
     : FileBlobItem("", "", "", 0, 0, parent) {
   dataObj_ = obj;
   auto childrenPromise = dataObj_->asyncSubInfo<dbif::ChildrenRequest>(this);
@@ -31,7 +31,7 @@ RootFileBlobItem::RootFileBlobItem(dbif::ObjectHandle obj, QObject *parent)
           SLOT(gotChildrenResponse(veles::dbif::PInfoReply)));
 }
 
-void RootFileBlobItem::gotChildrenResponse(veles::dbif::PInfoReply reply) {
+void RootFileBlobItem::gotChildrenResponse(const veles::dbif::PInfoReply& reply) {
   FileBlobItem::removeOldChildren();
   auto objects =
       reply.dynamicCast<dbif::ChildrenRequest::ReplyType>()->objects;

@@ -71,7 +71,7 @@ void mockTopic(const std::string& topic) {
   topics_[topic] = ti;
 }
 
-SchedulingResult runTask(const std::string& topic, Task t) {
+SchedulingResult runTask(const std::string& topic, const Task& t) {
   std::unique_lock<std::mutex> lc(map_mutex_);
   if (topics_.find(topic) == topics_.end()) {
     return SchedulingResult::ERR_UNKNOWN_TOPIC;
