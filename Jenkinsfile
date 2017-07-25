@@ -222,11 +222,11 @@ builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
                 sh """cmake -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\" -DCMAKE_BUILD_TYPE=${buildConfiguration} .."""
                 sh """#!/bin/bash -ex
                   set -o pipefail
-                  cmake --build . --config ${buildConfiguration} -- -j3 2>&1 | tee errors_and_warnings.txt
+                  cmake --build . --config ${buildConfiguration} -- -j8 2>&1 | tee errors_and_warnings.txt
                 """
                 sh """#!/bin/bash -ex
                   set -o pipefail
-                  cmake --build . --target lint --config ${buildConfiguration} -- -j3 2>&1 | tee lint_errors_and_warnings.txt
+                  cmake --build . --target lint --config ${buildConfiguration} -- -j8 2>&1 | tee lint_errors_and_warnings.txt
                 """
 
                 sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-ubuntu1604 -G \"ZIP;DEB\" -C ${buildConfiguration}"
@@ -292,11 +292,11 @@ builders['macosx'] = { node ('macosx'){
                 sh "cmake .. -DCMAKE_PREFIX_PATH=$QT/5.7/clang_64 -DGOOGLETEST_SRC_PATH=\"${tool 'googletest'}\""
                 sh """#!/bin/bash -ex
                   set -o pipefail
-                  cmake --build . --config ${buildConfiguration} 2>&1 | tee errors_and_warnings.txt
+                  cmake --build . --config ${buildConfiguration} -- -j8 2>&1 | tee errors_and_warnings.txt
                 """
                 sh """#!/bin/bash -ex
                   set -o pipefail
-                  cmake --build . --target lint --config ${buildConfiguration} 2>&1  | tee lint_errors_and_warnings.txt
+                  cmake --build . --target lint --config ${buildConfiguration} -- -j8 2>&1  | tee lint_errors_and_warnings.txt
                 """
                 sh "cpack -D CPACK_PACKAGE_FILE_NAME=veles-osx -G \"DragNDrop;ZIP\" -C ${buildConfiguration}"
                 junit allowEmptyResults: true, keepLongStdio: true, testResults: 'results.xml'
