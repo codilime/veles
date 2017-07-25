@@ -150,14 +150,15 @@ QMap<size_t, data::BinData>::const_iterator EditEngine::itFromPos(
   }
   auto it = changes_.upperBound(byte_pos);
 
-  if (it != changes_.begin()) {
-    --it;
+  if (it == changes_.begin()) {
+    return changes_.constEnd();
   }
+  --it;
 
   size_t pos = it.key();
   auto data = it.value();
 
-  if (byte_pos < pos || (byte_pos >= pos + data.size())) {
+  if (pos + data.size() <= byte_pos) {
     return changes_.constEnd();
   }
 
@@ -173,10 +174,6 @@ uint64_t EditEngine::byteValue(size_t byte_pos) const {
 
   size_t pos = it.key();
   const auto& data = it.value();
-
-  if (byte_pos < pos || pos + data.size() <= byte_pos) {
-    return 0;
-  }
 
   return data.element64(static_cast<int>(byte_pos - pos));
 }
