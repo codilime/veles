@@ -26,9 +26,9 @@ COPY . /veles
 RUN mkdir /veles/build \
 	&& cd /veles/build \
 	&& cmake -D CMAKE_BUILD_TYPE=Debug .. \
-	&& cmake --build . -- -j5 \
-	&& cmake --build . --target lint -- -j5 \
-	&& cmake --build . --target format -- -j5 \
+	&& cmake --build . -- -j8 \
+	&& cmake --build . --target lint -- -j8 \
+	&& cmake --build . --target format -- -j8 \
 	&& cpack -D CPACK_PACKAGE_FILE_NAME=veles-docker -G ZIP -C Debug \
   && ( cd /veles/python && ./run_tests.sh )
 
