@@ -73,14 +73,13 @@ NetworkClient::ConnectionStatus NetworkClient::connectionStatus() {
   return status_;
 }
 
-void NetworkClient::connect(
-    QString server_url,
-    QString client_interface_name,
-    QString client_name,
-    QString client_version,
-    QString client_description,
-    QString client_type,
-    bool quit_on_close) {
+void NetworkClient::connect(const QString& server_url,
+                            const QString& client_interface_name,
+                            const QString& client_name,
+                            const QString& client_version,
+                            const QString& client_description,
+                            const QString& client_type,
+                            bool quit_on_close) {
 
   QString scheme = server_url.section("://", 0, 0).toLower();
   if (scheme == SCHEME_SSL) {
@@ -299,11 +298,11 @@ void NetworkClient::registerMessageHandlers() {
       = &NetworkClient::handlePluginHandlerUnregisteredMessage;
 }
 
-void NetworkClient::handleNodeTreeRelatedMessage(msg_ptr msg) {
+void NetworkClient::handleNodeTreeRelatedMessage(const msg_ptr& msg) {
   nodeTree()->addRemoteNodeTreeRelatedMessage(msg);
 }
 
-void NetworkClient::handleConnectedMessage(msg_ptr msg) {
+void NetworkClient::handleConnectedMessage(const msg_ptr& msg) {
   if (connectionStatus() != ConnectionStatus::Connecting) {
     if (output()) {
       *output() << "NetworkClient: Very confusing... "
@@ -318,7 +317,7 @@ void NetworkClient::handleConnectedMessage(msg_ptr msg) {
   }
 }
 
-void NetworkClient::handleProtoErrorMessage(msg_ptr msg) {
+void NetworkClient::handleProtoErrorMessage(const msg_ptr& msg) {
   proto::MsgProtoError* mpe
       = dynamic_cast<proto::MsgProtoError*>(msg.get());
   if (mpe) {
@@ -333,7 +332,7 @@ void NetworkClient::handleProtoErrorMessage(msg_ptr msg) {
   }
 }
 
-void NetworkClient::handleConnectionsMessage(msg_ptr msg) {
+void NetworkClient::handleConnectionsMessage(const msg_ptr& msg) {
   if (output()) {
     *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
         << "\" message." << endl;
@@ -342,7 +341,7 @@ void NetworkClient::handleConnectionsMessage(msg_ptr msg) {
   // TODO(altran01): Is this something that client should implement in a subclass?
 }
 
-void NetworkClient::handleRegistryReplyMessage(msg_ptr msg) {
+void NetworkClient::handleRegistryReplyMessage(const msg_ptr& msg) {
   if (output()) {
     *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
         << "\" message." << endl;
@@ -351,7 +350,7 @@ void NetworkClient::handleRegistryReplyMessage(msg_ptr msg) {
   // TODO(altran01): Is this something that client should implement in a subclass?
 }
 
-void NetworkClient::handleMthdResMessage(msg_ptr msg) {
+void NetworkClient::handleMthdResMessage(const msg_ptr& msg) {
   if (output()) {
     *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
         << "\" message." << endl;
@@ -359,7 +358,7 @@ void NetworkClient::handleMthdResMessage(msg_ptr msg) {
   // TODO(altran01): Is this something that client should implement in a subclass?
 }
 
-void NetworkClient::handlePluginTriggerRunMessage(msg_ptr msg) {
+void NetworkClient::handlePluginTriggerRunMessage(const msg_ptr& msg) {
   if (output()) {
     *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
         << "\" message." << endl;
@@ -368,7 +367,7 @@ void NetworkClient::handlePluginTriggerRunMessage(msg_ptr msg) {
   // TODO(altran01): Is this something that client should implement in a subclass?
 }
 
-void NetworkClient::handleConnErrorMessage(msg_ptr msg) {
+void NetworkClient::handleConnErrorMessage(const msg_ptr& msg) {
   proto::MsgConnectionError* cem
       = dynamic_cast<proto::MsgConnectionError*>(msg.get());
   if (cem) {
@@ -383,7 +382,7 @@ void NetworkClient::handleConnErrorMessage(msg_ptr msg) {
   }
 }
 
-void NetworkClient::handlePluginMethodRunMessage(msg_ptr msg) {
+void NetworkClient::handlePluginMethodRunMessage(const msg_ptr& msg) {
   if (output()) {
     *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
         << "\" message." << endl;
@@ -392,7 +391,7 @@ void NetworkClient::handlePluginMethodRunMessage(msg_ptr msg) {
   // TODO(altran01): Is this something that client should implement in a subclass?
 }
 
-void NetworkClient::handlePluginQueryGetMessage(msg_ptr msg) {
+void NetworkClient::handlePluginQueryGetMessage(const msg_ptr& msg) {
   if (output()) {
     *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
         << "\" message." << endl;
@@ -401,7 +400,7 @@ void NetworkClient::handlePluginQueryGetMessage(msg_ptr msg) {
   // TODO(altran01): Is this something that client should implement in a subclass?
 }
 
-void NetworkClient::handleBroadcastRunMessage(msg_ptr msg) {
+void NetworkClient::handleBroadcastRunMessage(const msg_ptr& msg) {
   if (output()) {
     *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
         << "\" message." << endl;
@@ -410,7 +409,7 @@ void NetworkClient::handleBroadcastRunMessage(msg_ptr msg) {
   // TODO(altran01): Is this something that client should implement in a subclass?
 }
 
-void NetworkClient::handlePluginHandlerUnregisteredMessage(msg_ptr msg) {
+void NetworkClient::handlePluginHandlerUnregisteredMessage(const msg_ptr& msg) {
   if (output()) {
     *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
         << "\" message." << endl;
@@ -419,7 +418,7 @@ void NetworkClient::handlePluginHandlerUnregisteredMessage(msg_ptr msg) {
   // TODO(altran01): Is this something that client should implement in a subclass?
 }
 
-void NetworkClient::sendMessage(msg_ptr msg) {
+void NetworkClient::sendMessage(const msg_ptr& msg) {
   if (client_socket_ && client_socket_->isValid()) {
     msgpack::sbuffer buf;
     msgpack::packer<msgpack::sbuffer> packer(buf);

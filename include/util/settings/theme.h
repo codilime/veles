@@ -27,7 +27,7 @@ namespace settings {
 namespace theme {
 
 QString currentId();
-void setCurrentId(QString currentId);
+void setCurrentId(const QString& currentId);
 QStringList availableIds();
 QPalette pallete();
 QStyle* createStyle();

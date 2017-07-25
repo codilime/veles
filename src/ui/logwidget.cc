@@ -117,7 +117,7 @@ void LogWidget::saveFileSelected(const QString& file) {
 
 void LogWidget::appendHistory() {
   QMutexLocker(io_proxy_->mutexHistory());
-  for (auto str : io_proxy_->history()) {
+  for (const auto& str : io_proxy_->history()) {
     append(str);
   }
 }

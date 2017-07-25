@@ -88,13 +88,13 @@ class DockWidget : public QDockWidget {
   void detachToNewTopLevelWindowAndMaximize();
   void topLevelChangedNotify(bool top_level);
   void switchTitleBar(bool is_default);
-  void centerTitleBarOnPosition(QPoint pos);
+  void centerTitleBarOnPosition(const QPoint& pos);
   void splitHorizontally();
   void splitVertically();
 
  protected:
-  void focusInEvent(QFocusEvent * event) Q_DECL_OVERRIDE;
-  void moveEvent(QMoveEvent *event) Q_DECL_OVERRIDE;
+  void focusInEvent(QFocusEvent* event) Q_DECL_OVERRIDE;
+  void moveEvent(QMoveEvent* event) Q_DECL_OVERRIDE;
   void timerEvent(QTimerEvent* event) Q_DECL_OVERRIDE;
   QMenu* createMoveToDesktopMenu();
   QMenu* createMoveToWindowMenu();
@@ -154,7 +154,7 @@ class View : public QMainWindow {
   Q_OBJECT
 
  public:
-  View(QString category, QString path);
+  View(const QString& category, const QString& path);
   ~View();
   virtual void reapplySettings() {};
 
@@ -162,12 +162,12 @@ class View : public QMainWindow {
   void maximize();
 
  protected:
-  void getOrCreateIcon(QString category, QString icon_path);
+  void getOrCreateIcon(const QString& category, const QString& icon_path);
   static void deleteIcons();
   void createVisualization(MainWindowWithDetachableDockWidgets* main_window,
-                           QSharedPointer<FileBlobModel> data_model);
+                           const QSharedPointer<FileBlobModel>& data_model);
   void createHexEditor(MainWindowWithDetachableDockWidgets* main_window,
-                       QSharedPointer<FileBlobModel> data_model);
+                       const QSharedPointer<FileBlobModel>& data_model);
 
   static std::map<QString, QIcon*> icons_;
 };
@@ -225,12 +225,12 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
   void updateActiveDockWidget();
   void updateDocksAndTabs();
   void focusChanged(QWidget* old, QWidget* now);
-  void delayedFocusChanged(QPointer<QWidget> now);
+  void delayedFocusChanged(const QPointer<QWidget>& now);
 
  signals:
   void childAdded(QObject* child);
   void childRemoved();
-  void updateFocus(QPointer<QWidget> now);
+  void updateFocus(const QPointer<QWidget>& now);
 
  protected:
   bool event(QEvent* event) Q_DECL_OVERRIDE;

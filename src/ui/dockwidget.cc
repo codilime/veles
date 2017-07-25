@@ -301,14 +301,14 @@ void DockWidget::splitVertically() {
   }
 }
 
-void DockWidget::centerTitleBarOnPosition(QPoint pos) {
+void DockWidget::centerTitleBarOnPosition(const QPoint& pos) {
   int local_pos_x = frameGeometry().width() / 2;
   int local_pos_y = (frameGeometry().height() - geometry().height()) / 2;
   QPoint startPos(local_pos_x, local_pos_y);
   move(pos - startPos);
 }
 
-void DockWidget::focusInEvent(QFocusEvent * event) {
+void DockWidget::focusInEvent(QFocusEvent* event) {
   if (widget()) {
     widget()->setFocus();
   }
@@ -615,7 +615,7 @@ bool TabBarEventFilter::mouseButtonDblClick(
 
 std::map<QString, QIcon*> View::icons_;
 
-View::View(QString category, QString path) {
+View::View(const QString& category, const QString& path) {
   getOrCreateIcon(category, path);
   connect(qApp, &QGuiApplication::lastWindowClosed, &View::deleteIcons);
   setFocusPolicy(Qt::StrongFocus);
@@ -624,7 +624,7 @@ View::View(QString category, QString path) {
 View::~View() {
 }
 
-void View::getOrCreateIcon(QString category, QString icon_path) {
+void View::getOrCreateIcon(const QString& category, const QString& icon_path) {
   QIcon* icon = nullptr;
   auto iter = icons_.find(category);
   if (iter == icons_.end()) {
@@ -643,8 +643,8 @@ void View::deleteIcons() {
 }
 
 void View::createVisualization(MainWindowWithDetachableDockWidgets* main_window,
-                               QSharedPointer<FileBlobModel> data_model) {
-  auto *panel = new visualization::VisualizationPanel(main_window, data_model);
+                               const QSharedPointer<FileBlobModel>& data_model) {
+  auto* panel = new visualization::VisualizationPanel(main_window, data_model);
   panel->setData(QByteArray(reinterpret_cast<const char *>(data_model->binData().rawData()),
                             static_cast<int>(data_model->binData().size())));
   panel->setAttribute(Qt::WA_DeleteOnClose);
@@ -664,7 +664,7 @@ void View::createVisualization(MainWindowWithDetachableDockWidgets* main_window,
 }
 
 void View::createHexEditor(MainWindowWithDetachableDockWidgets* main_window,
-                           QSharedPointer<FileBlobModel> data_model) {
+                           const QSharedPointer<FileBlobModel>& data_model) {
   QSharedPointer<QItemSelectionModel> new_selection_model(
         new QItemSelectionModel(data_model.data()));
   NodeWidget* node_edit = new NodeWidget(main_window, data_model,
@@ -1264,7 +1264,7 @@ void MainWindowWithDetachableDockWidgets::focusChanged(
 }
 
 void MainWindowWithDetachableDockWidgets
-    ::delayedFocusChanged(QPointer<QWidget> now) {
+    ::delayedFocusChanged(const QPointer<QWidget>& now) {
   if (!now) {
     return;
   }

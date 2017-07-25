@@ -43,8 +43,8 @@ class NodeWidget : public View {
 
  public:
   explicit NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
-      QSharedPointer<FileBlobModel>& data_model,
-      QSharedPointer<QItemSelectionModel>& selection_model);
+      const QSharedPointer<FileBlobModel>& data_model,
+      const QSharedPointer<QItemSelectionModel>& selection_model);
   virtual ~NodeWidget();
 
  public slots:

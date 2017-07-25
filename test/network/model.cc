@@ -75,15 +75,15 @@ TEST(TestModel, TestAny) {
   auto obj = pack(std::make_shared<MsgpackObject>(false));
   std::shared_ptr<Any> ptr;
   std::shared_ptr<AnyOptional> ptr2;
-  fromMsgpackObject(obj, ptr);
-  fromMsgpackObject(obj, ptr2);
+  fromMsgpackObject(obj, &ptr);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr->a->getBool(), false);
   EXPECT_EQ(ptr2->a.first, true);
   EXPECT_EQ(ptr2->a.second->getBool(), false);
 
   obj = pack(std::make_shared<MsgpackObject>());
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  fromMsgpackObject(obj, ptr2);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr2->a.first, false);
 }
 
@@ -94,20 +94,20 @@ TEST(TestModel, TestSmallInteger) {
   auto obj = pack(std::make_shared<MsgpackObject>(INT64_C(-30)));
   std::shared_ptr<SmallInteger> ptr;
   std::shared_ptr<SmallIntegerOptional> ptr2;
-  fromMsgpackObject(obj, ptr);
-  fromMsgpackObject(obj, ptr2);
+  fromMsgpackObject(obj, &ptr);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr->a, INT64_C(-30));
   EXPECT_EQ(ptr2->a.first, true);
   EXPECT_EQ(ptr2->a.second, INT64_C(-30));
 
   obj = pack(std::make_shared<MsgpackObject>());
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  fromMsgpackObject(obj, ptr2);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr2->a.first, false);
 
   obj = pack(std::make_shared<MsgpackObject>(false));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 
   SmallInteger::Builder b;
   ptr = b.build();
@@ -118,20 +118,20 @@ TEST(TestModel, TestSmallUnsignedInteger) {
   auto obj = pack(std::make_shared<MsgpackObject>(UINT64_C(30)));
   std::shared_ptr<SmallUnsignedInteger> ptr;
   std::shared_ptr<SmallUnsignedIntegerOptional> ptr2;
-  fromMsgpackObject(obj, ptr);
-  fromMsgpackObject(obj, ptr2);
+  fromMsgpackObject(obj, &ptr);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr->a, UINT64_C(30));
   EXPECT_EQ(ptr2->a.first, true);
   EXPECT_EQ(ptr2->a.second, UINT64_C(30));
 
   obj = pack(std::make_shared<MsgpackObject>());
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  fromMsgpackObject(obj, ptr2);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr2->a.first, false);
 
   obj = pack(std::make_shared<MsgpackObject>(false));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 
   SmallUnsignedInteger::Builder b;
   ptr = b.build();
@@ -142,20 +142,20 @@ TEST(TestModel, TestBoolean) {
   auto obj = pack(std::make_shared<MsgpackObject>(true));
   std::shared_ptr<Boolean> ptr;
   std::shared_ptr<BooleanOptional> ptr2;
-  fromMsgpackObject(obj, ptr);
-  fromMsgpackObject(obj, ptr2);
+  fromMsgpackObject(obj, &ptr);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr->a, true);
   EXPECT_EQ(ptr2->a.first, true);
   EXPECT_EQ(ptr2->a.second, true);
 
   obj = pack(std::make_shared<MsgpackObject>());
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  fromMsgpackObject(obj, ptr2);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr2->a.first, false);
 
   obj = pack(std::make_shared<MsgpackObject>(INT64_C(2)));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 
   Boolean::Builder b;
   ptr = b.build();
@@ -166,20 +166,20 @@ TEST(TestModel, TestFloat) {
   auto obj = pack(std::make_shared<MsgpackObject>(42.0));
   std::shared_ptr<Float> ptr;
   std::shared_ptr<FloatOptional> ptr2;
-  fromMsgpackObject(obj, ptr);
-  fromMsgpackObject(obj, ptr2);
+  fromMsgpackObject(obj, &ptr);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr->a, 42.0);
   EXPECT_EQ(ptr2->a.first, true);
   EXPECT_EQ(ptr2->a.second, 42.0);
 
   obj = pack(std::make_shared<MsgpackObject>());
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  fromMsgpackObject(obj, ptr2);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr2->a.first, false);
 
   obj = pack(std::make_shared<MsgpackObject>(false));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 
   Float::Builder b;
   ptr = b.build();
@@ -190,20 +190,20 @@ TEST(TestModel, TestString) {
   auto obj = pack(std::make_shared<MsgpackObject>("FOOBAR"));
   std::shared_ptr<String> ptr;
   std::shared_ptr<StringOptional> ptr2;
-  fromMsgpackObject(obj, ptr);
-  fromMsgpackObject(obj, ptr2);
+  fromMsgpackObject(obj, &ptr);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(*ptr->a, "FOOBAR");
   EXPECT_EQ(ptr2->a.first, true);
   EXPECT_EQ(*ptr2->a.second, "FOOBAR");
 
   obj = pack(std::make_shared<MsgpackObject>());
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  fromMsgpackObject(obj, ptr2);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr2->a.first, false);
 
   obj = pack(std::make_shared<MsgpackObject>(false));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 }
 
 TEST(TestModel, TestBinary) {
@@ -211,20 +211,20 @@ TEST(TestModel, TestBinary) {
   auto obj = pack(std::make_shared<MsgpackObject>(data));
   std::shared_ptr<Binary> ptr;
   std::shared_ptr<BinaryOptional> ptr2;
-  fromMsgpackObject(obj, ptr);
-  fromMsgpackObject(obj, ptr2);
+  fromMsgpackObject(obj, &ptr);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_THAT(*ptr->a, ContainerEq(data));
   EXPECT_EQ(ptr2->a.first, true);
   EXPECT_THAT(*ptr2->a.second, ContainerEq(data));
 
   obj = pack(std::make_shared<MsgpackObject>());
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  fromMsgpackObject(obj, ptr2);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr2->a.first, false);
 
   obj = pack(std::make_shared<MsgpackObject>(false));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 }
 
 TEST(TestModel, TestNodeIDModel) {
@@ -232,24 +232,24 @@ TEST(TestModel, TestNodeIDModel) {
   auto obj = pack(std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_NODE_ID), ext_data));
   std::shared_ptr<NodeIDModel> ptr;
   std::shared_ptr<NodeIDModelOptional> ptr2;
-  fromMsgpackObject(obj, ptr);
-  fromMsgpackObject(obj, ptr2);
+  fromMsgpackObject(obj, &ptr);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_THAT(ptr->a->asStdVector(), ContainerEq(ext_data));
   EXPECT_EQ(ptr2->a.first, true);
   EXPECT_THAT(ptr2->a.second->asStdVector(), ContainerEq(ext_data));
 
   obj = pack(std::make_shared<MsgpackObject>());
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  fromMsgpackObject(obj, ptr2);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr2->a.first, false);
 
   obj = pack(std::make_shared<MsgpackObject>(false));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 
   obj = pack(std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_NODE_ID+1), ext_data));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 }
 
 TEST(TestModel, TestBinData) {
@@ -260,8 +260,8 @@ TEST(TestModel, TestBinData) {
   auto obj = pack(std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_BINDATA), bin));
   std::shared_ptr<BinDataModel> ptr;
   std::shared_ptr<BinDataModelOptional> ptr2;
-  fromMsgpackObject(obj, ptr);
-  fromMsgpackObject(obj, ptr2);
+  fromMsgpackObject(obj, &ptr);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr->a->width(), 8u);
   EXPECT_EQ(ptr2->a.first, true);
   EXPECT_EQ(ptr2->a.second->width(), 8u);
@@ -270,21 +270,21 @@ TEST(TestModel, TestBinData) {
     EXPECT_EQ(ptr2->a.second->rawData()[i], raw_data[i]);
   }
   auto obj2 = ptr->serializeToMsgpackObject();
-  fromMsgpackObject(obj2, ptr2);
+  fromMsgpackObject(obj2, &ptr2);
   EXPECT_EQ(*ptr->a, *ptr2->a.second);
 
   obj = pack(std::make_shared<MsgpackObject>());
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  fromMsgpackObject(obj, ptr2);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr2->a.first, false);
 
   obj = pack(std::make_shared<MsgpackObject>(false));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 
   obj = pack(std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_BINDATA+1), bin));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 
 }
 
@@ -293,21 +293,21 @@ TEST(TestModel, TestList) {
   auto obj = pack(std::make_shared<MsgpackObject>(data));
   std::shared_ptr<List> ptr;
   std::shared_ptr<ListOptional> ptr2;
-  fromMsgpackObject(obj, ptr);
-  fromMsgpackObject(obj, ptr2);
+  fromMsgpackObject(obj, &ptr);
+  fromMsgpackObject(obj, &ptr2);
   std::vector<int64_t> raw_data(5, INT64_C(30));
   EXPECT_THAT(*ptr->a, ContainerEq(raw_data));
   EXPECT_EQ(ptr2->a.first, true);
   EXPECT_THAT(*ptr2->a.second, ContainerEq(raw_data));
 
   obj = pack(std::make_shared<MsgpackObject>());
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  fromMsgpackObject(obj, ptr2);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr2->a.first, false);
 
   obj = pack(std::make_shared<MsgpackObject>(false));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 }
 
 TEST(TestModel, TestSet) {
@@ -315,21 +315,21 @@ TEST(TestModel, TestSet) {
   auto obj = pack(std::make_shared<MsgpackObject>(data));
   std::shared_ptr<Set> ptr;
   std::shared_ptr<SetOptional> ptr2;
-  fromMsgpackObject(obj, ptr);
-  fromMsgpackObject(obj, ptr2);
+  fromMsgpackObject(obj, &ptr);
+  fromMsgpackObject(obj, &ptr2);
   std::unordered_set<int64_t> raw_data({INT64_C(30)});
   EXPECT_THAT(*ptr->a, ContainerEq(raw_data));
   EXPECT_EQ(ptr2->a.first, true);
   EXPECT_THAT(*ptr2->a.second, ContainerEq(raw_data));
 
   obj = pack(std::make_shared<MsgpackObject>());
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  fromMsgpackObject(obj, ptr2);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr2->a.first, false);
 
   obj = pack(std::make_shared<MsgpackObject>(false));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 }
 
 TEST(TestModel, TestMap) {
@@ -339,8 +339,8 @@ TEST(TestModel, TestMap) {
   auto obj = pack(std::make_shared<MsgpackObject>(data));
   std::shared_ptr<Map> ptr;
   std::shared_ptr<MapOptional> ptr2;
-  fromMsgpackObject(obj, ptr);
-  fromMsgpackObject(obj, ptr2);
+  fromMsgpackObject(obj, &ptr);
+  fromMsgpackObject(obj, &ptr2);
   std::unordered_map<std::string, int64_t> raw_data;
   raw_data["foo"] = INT64_C(5);
   raw_data["bar"] = INT64_C(42);
@@ -349,13 +349,13 @@ TEST(TestModel, TestMap) {
   EXPECT_THAT(*ptr2->a.second, ContainerEq(raw_data));
 
   obj = pack(std::make_shared<MsgpackObject>());
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  fromMsgpackObject(obj, ptr2);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr2->a.first, false);
 
   obj = pack(std::make_shared<MsgpackObject>(false));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 }
 
 TEST(TestModel, TestObject) {
@@ -363,40 +363,40 @@ TEST(TestModel, TestObject) {
   obj = pack(obj);
   std::shared_ptr<Object> ptr;
   std::shared_ptr<ObjectOptional> ptr2;
-  fromMsgpackObject(obj, ptr);
-  fromMsgpackObject(obj, ptr2);
+  fromMsgpackObject(obj, &ptr);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(*ptr->a->a, "FOOBAR");
   EXPECT_EQ(ptr2->a.first, true);
   EXPECT_EQ(*ptr2->a.second->a, "FOOBAR");
 
   obj = pack(std::make_shared<MsgpackObject>());
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  fromMsgpackObject(obj, ptr2);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr2->a.first, false);
 
   obj = pack(std::make_shared<MsgpackObject>(false));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 }
 
 TEST(TestModel, TestEnum) {
   auto obj = pack(std::make_shared<MsgpackObject>("OPT2"));
   std::shared_ptr<Enum> ptr;
   std::shared_ptr<EnumOptional> ptr2;
-  fromMsgpackObject(obj, ptr);
-  fromMsgpackObject(obj, ptr2);
+  fromMsgpackObject(obj, &ptr);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr->a, TestEnum::OPT2);
   EXPECT_EQ(ptr2->a.first, true);
   EXPECT_EQ(ptr2->a.second, TestEnum::OPT2);
 
   obj = pack(std::make_shared<MsgpackObject>());
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  fromMsgpackObject(obj, ptr2);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(ptr2->a.first, false);
 
   obj = pack(std::make_shared<MsgpackObject>(false));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 }
 
 TEST(TestModel, TestPolyModel) {
@@ -408,11 +408,11 @@ TEST(TestModel, TestPolyModel) {
   std::shared_ptr<SubType1> ptr;
   std::shared_ptr<SubType2> ptr2;
   std::shared_ptr<BaseModel> ptr3;
-  fromMsgpackObject(obj, ptr);
+  fromMsgpackObject(obj, &ptr);
   EXPECT_EQ(*ptr->a, "test-base-attr");
   EXPECT_EQ(*ptr->b, "test-sub-attr");
-  EXPECT_THROW(fromMsgpackObject(obj, ptr2), proto::SchemaError);
-  fromMsgpackObject(obj, ptr3);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr3);
   EXPECT_EQ(ptr3->object_type, "sub1");
   ptr = std::dynamic_pointer_cast<SubType1>(ptr3);
   EXPECT_NE(ptr, nullptr);
@@ -425,21 +425,21 @@ TEST(TestModel, TestPolyModel) {
   ptr2 = nullptr;
   ptr3 = nullptr;
   (*obj->getMap())["b"] = std::make_shared<MsgpackObject>(std::make_shared<std::vector<uint8_t>>(5,30));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  fromMsgpackObject(obj, ptr2);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(*ptr2->a, "test-base-attr");
   EXPECT_THAT(*ptr2->b, ContainerEq(std::vector<uint8_t>(5,30)));
-  EXPECT_THROW(fromMsgpackObject(obj, ptr3), proto::SchemaError);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr3), proto::SchemaError);
 
   ptr = nullptr;
   ptr2 = nullptr;
   ptr3 = nullptr;
   (*obj->getMap())["object_type"] = std::make_shared<MsgpackObject>("sub2");
-  EXPECT_THROW(fromMsgpackObject(obj, ptr), proto::SchemaError);
-  fromMsgpackObject(obj, ptr2);
+  EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
+  fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(*ptr2->a, "test-base-attr");
   EXPECT_THAT(*ptr2->b, ContainerEq(std::vector<uint8_t>(5,30)));
-  fromMsgpackObject(obj, ptr3);
+  fromMsgpackObject(obj, &ptr3);
   EXPECT_EQ(ptr3->object_type, "sub2");
   ptr = std::dynamic_pointer_cast<SubType1>(ptr3);
   EXPECT_EQ(ptr, nullptr);

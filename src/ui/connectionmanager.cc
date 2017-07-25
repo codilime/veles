@@ -307,7 +307,7 @@ void ConnectionManager::sendListConnectionsMessage() {
   }
 }
 
-void ConnectionManager::messageReceived(client::msg_ptr message) {
+void ConnectionManager::messageReceived(const client::msg_ptr& message) {
   if (message->object_type == "connections_reply") {
     std::shared_ptr<proto::MsgConnectionsReply> connections_reply
         = std::dynamic_pointer_cast<proto::MsgConnectionsReply>(message);
@@ -317,7 +317,7 @@ void ConnectionManager::messageReceived(client::msg_ptr message) {
           << endl;
 
       if (connections_reply->connections) {
-        for (auto connection : *connections_reply->connections) {
+        for (const auto& connection : *connections_reply->connections) {
           out
               << "    id = " << connection->client_id
               << " name = \"" << QString::fromStdString(*connection->client_name)
@@ -458,13 +458,13 @@ void ConnectionsWidget::updateConnectionStatus(
 }
 
 void ConnectionsWidget::updateConnections(
-      std::shared_ptr<std::vector<std::shared_ptr<proto::Connection>>>
+      const std::shared_ptr<std::vector<std::shared_ptr<proto::Connection>>>&
       connections) {
   clear();
   if(connections && connections->size()) {
     users_icon_label_->show();
 
-    for (auto connection : *connections) {
+    for (const auto& connection : *connections) {
       QLabel* client_label = new QLabel;
       client_label->setText(QString::fromStdString(*connection->client_name));
       client_label->setToolTip(QString(

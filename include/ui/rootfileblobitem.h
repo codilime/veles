@@ -31,10 +31,10 @@ class RootFileBlobItem : public FileBlobItem {
   Q_OBJECT
 
  public:
-  explicit RootFileBlobItem(dbif::ObjectHandle obj, QObject *parent = 0);
+  explicit RootFileBlobItem(const dbif::ObjectHandle& obj, QObject *parent = 0);
 
  private slots:
-  void gotChildrenResponse(veles::dbif::PInfoReply reply);
+  void gotChildrenResponse(const veles::dbif::PInfoReply& reply);
 };
 
 }  // namespace ui

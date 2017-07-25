@@ -34,7 +34,9 @@ class FileBlobModel : public QAbstractItemModel {
   Q_OBJECT
 
  public:
-  explicit FileBlobModel(dbif::ObjectHandle fileBlob_, const QStringList &path = {}, QObject *parent = 0);
+  explicit FileBlobModel(const dbif::ObjectHandle& fileBlob_,
+                         const QStringList& path = {},
+                         QObject* parent = nullptr);
 
   QModelIndex index(int row, int column,
                     const QModelIndex &parent) const override;
@@ -50,8 +52,9 @@ class FileBlobModel : public QAbstractItemModel {
                int role) override;
   bool removeRows(int row, int count, const QModelIndex &parent) override;
 
-  void addChunk(QString name, QString type, QString comment, uint64_t start,
-                uint64_t end, const QModelIndex &index = QModelIndex());
+  void addChunk(const QString& name, const QString& type,
+                const QString& comment, uint64_t start, uint64_t end,
+                const QModelIndex& index = QModelIndex());
 
   QModelIndex indexFromPos(uint64_t pos,
                            const QModelIndex &parent = QModelIndex());
@@ -59,7 +62,7 @@ class FileBlobModel : public QAbstractItemModel {
   const data::BinData& binData() const {return binData_;}
   bool isRemovable(const QModelIndex &index = QModelIndex());
   void uploadNewData(const data::BinData& bindata, uint64_t offset = 0);
-  void parse(QString parser = "", qint64 offset = 0,
+  void parse(const QString& parser = "", qint64 offset = 0,
              const QModelIndex &parent = QModelIndex());
 
   dbif::ObjectHandle blob(const QModelIndex &index = QModelIndex());
@@ -93,8 +96,8 @@ class FileBlobModel : public QAbstractItemModel {
   QVariant valueColumnData(FileBlobItem *item, int role) const;
 
  private slots:
-  void gotDescriptionResponse(veles::dbif::PInfoReply reply);
-  void gotBytesResponse(veles::dbif::PInfoReply reply);
+  void gotDescriptionResponse(const veles::dbif::PInfoReply& reply);
+  void gotBytesResponse(const veles::dbif::PInfoReply& reply);
 };
 
 }  // namespace ui

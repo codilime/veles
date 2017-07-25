@@ -35,7 +35,7 @@ class DatabaseInfo : public QWidget {
   Q_OBJECT
 
  public:
-  explicit DatabaseInfo(dbif::ObjectHandle database, QWidget *parent = 0);
+  explicit DatabaseInfo(const dbif::ObjectHandle& database, QWidget* parent = 0);
   ~DatabaseInfo();
 
  private:
@@ -50,11 +50,11 @@ class DatabaseInfo : public QWidget {
   dbif::InfoPromise *childrenPromise_;
 
  signals:
-  void goFile(dbif::ObjectHandle fileblob, QString fileName);
+  void goFile(const dbif::ObjectHandle& fileblob, const QString& fileName);
   void newFile();
 
  private slots:
-  void gotChildrenResponse(veles::dbif::PInfoReply reply);
+  void gotChildrenResponse(const veles::dbif::PInfoReply& reply);
   void goClicked();
   void newClicked();
 };

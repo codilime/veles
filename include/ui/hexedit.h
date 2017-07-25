@@ -52,7 +52,7 @@ class HexEdit : public QAbstractScrollArea {
   void scrollToByte(qint64 bytePos, bool minimal_change = false);
   void scrollRows(qint64 num_rows);
   FileBlobModel *dataModel() { return dataModel_; }
-  void setParserIds(QStringList ids);
+  void setParserIds(const QStringList& ids);
   void processEditEvent(QKeyEvent *event);
   uint64_t byteValue(qint64 pos) const;
   uint64_t originalByteValue(qint64 pos) const;
@@ -203,7 +203,7 @@ public slots:
   void parse(QAction *action);
   void resetCursor();
 
-  void transferChanges(data::BinData& bin_data, qint64 offset_shift = 0, qint64 max_bytes = -1);
+  void transferChanges(data::BinData* bin_data, qint64 offset_shift = 0, qint64 max_bytes = -1);
 
  private slots:
   void copyToClipboard(util::encoders::IEncoder *enc = nullptr);

@@ -358,7 +358,7 @@ void ConnectionDialog::defaultProfile() {
   util::settings::connection::setDefaultProfile(ui_->profile->currentText());
 }
 
-void ConnectionDialog::profileNameEdited(QString name) {
+void ConnectionDialog::profileNameEdited(const QString& name) {
   ui_->profile->setEditText(util::settings::connection::uniqueProfileName(name));
 }
 

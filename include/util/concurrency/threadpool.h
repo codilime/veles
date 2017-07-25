@@ -53,7 +53,7 @@ void mockTopic(const std::string& topic);
  * The job is run asynchronously, use callbacks or similar to communicate its
  * result.
  */
-SchedulingResult runTask(const std::string& topic, Task t);
+SchedulingResult runTask(const std::string& topic, const Task& t);
 
 
 }  // namespace threadpool

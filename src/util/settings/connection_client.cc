@@ -34,7 +34,7 @@ int default_server_port = 3135;
 QString default_default_profile("local server");
 QString current_profile;
 
-void setDefaultProfile(QString profile) {
+void setDefaultProfile(const QString& profile) {
   QSettings settings;
   settings.setValue("default_profile", profile);
 }
@@ -47,11 +47,11 @@ QString currentProfile() {
   return current_profile;
 }
 
-void setCurrentProfile(QString profile) {
+void setCurrentProfile(const QString& profile) {
   current_profile = profile;
 }
 
-void removeProfile(QString profile) {
+void removeProfile(const QString& profile) {
   QSettings settings;
   QMap<QString, QVariant> profiles = settings.value("profiles").toMap();
   profiles.remove(profile);
@@ -82,14 +82,14 @@ QStringList profileList() {
   return profiles.keys();
 }
 
-QVariant profileSettings(QString key, QVariant defaultValue) {
+QVariant profileSettings(const QString& key, const QVariant& defaultValue) {
   QSettings settings;
   QMap<QString, QVariant> profiles = settings.value("profiles", QSettings::SettingsMap()).toMap();
   QSettings::SettingsMap profile_settings = profiles.value(currentProfile(), QSettings::SettingsMap()).toMap();
   return profile_settings.value(key, defaultValue);
 }
 
-void setProfileSettings(QString key, QVariant value) {
+void setProfileSettings(const QString& key, const QVariant& value) {
   QSettings settings;
   QMap<QString, QVariant> profiles = settings.value("profiles").toMap();
   QSettings::SettingsMap profile = profiles[currentProfile()].toMap();
@@ -98,7 +98,7 @@ void setProfileSettings(QString key, QVariant value) {
   settings.setValue("profiles", profiles);
 }
 
-QString uniqueProfileName(QString prefix) {
+QString uniqueProfileName(const QString& prefix) {
   auto profile_list = profileList();
   int next_id = 0;
   QString suffix;
@@ -128,7 +128,7 @@ QString serverHost() {
   return profileSettings("connection.server", serverHostDefault()).toString();
 }
 
-void setServerHost(QString server_host) {
+void setServerHost(const QString& server_host) {
   setProfileSettings("connection.server", server_host);
 }
 
@@ -153,7 +153,7 @@ QString clientInterface() {
       clientInterfaceDefault()).toString();
 }
 
-void setClientInterface(QString client_interface) {
+void setClientInterface(const QString& client_interface) {
   setProfileSettings("connection.client_interface", client_interface);
 }
 
@@ -178,7 +178,7 @@ QString clientNameDefault() {
   return user_name;
 }
 
-void setClientName(QString client_name) {
+void setClientName(const QString& client_name) {
   setProfileSettings("connection.client_name", client_name);
 }
 
@@ -190,7 +190,7 @@ QString connectionKey() {
   return profileSettings("connection.key", connectionKeyDefault()).toString();
 }
 
-void setConnectionKey(QString connection_key) {
+void setConnectionKey(const QString& connection_key) {
   QSettings settings;
   setProfileSettings("connection.key", connection_key);
 }
@@ -204,7 +204,7 @@ QString databaseName() {
       databaseNameDefault()).toString();
 }
 
-void setDatabaseName(QString database_name) {
+void setDatabaseName(const QString& database_name) {
   setProfileSettings("connection.database", database_name);
 }
 
@@ -231,7 +231,7 @@ QString serverScript() {
       serverScriptDefault()).toString();
 }
 
-void setServerScript(QString server_script) {
+void setServerScript(const QString& server_script) {
   setProfileSettings("connection.server_script", server_script);
 }
 

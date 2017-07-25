@@ -29,7 +29,7 @@ static bool isDark_ = false;
 static bool isDarkCached_ = false;
 
 static bool isDark();
-static QColor colorInvertedIfDark(QColor color);
+static QColor colorInvertedIfDark(const QColor& color);
 
 static QVector<QColor> chunkBackgroundColors_ = {
     QColor("#FFEB3B"), QColor("#FFAB91"), QColor("#FFC107"),
@@ -40,7 +40,7 @@ QString currentId() {
   return settings.value("theme", "normal").toString();
 }
 
-void setCurrentId(QString theme) {
+void setCurrentId(const QString& theme) {
   QSettings settings;
   settings.setValue("theme", theme);
 }
@@ -128,7 +128,7 @@ static bool isDark() {
   return isDark_;
 }
 
-static QColor colorInvertedIfDark(QColor color) {
+static QColor colorInvertedIfDark(const QColor& color) {
   if (isDark()) {
     return QColor(color.red() ^ 0xFF, color.green() ^ 0xFF,
                   color.blue() ^ 0xFF);

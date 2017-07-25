@@ -43,7 +43,7 @@ class VisualizationPanel : public ui::View {
  public:
   explicit VisualizationPanel(
       ui::MainWindowWithDetachableDockWidgets* main_window,
-      QSharedPointer<ui::FileBlobModel>& data_model, QWidget *parent = 0);
+      const QSharedPointer<ui::FileBlobModel>& data_model, QWidget *parent = 0);
   ~VisualizationPanel();
 
   void setData(const QByteArray &data);

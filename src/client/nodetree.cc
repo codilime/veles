@@ -32,7 +32,7 @@ namespace client {
 NodeTree::NodeTree(NetworkClient* network_client) {
 }
 
-void NodeTree::addRemoteNodeTreeRelatedMessage(msg_ptr msg) {
+void NodeTree::addRemoteNodeTreeRelatedMessage(const msg_ptr& msg) {
 }
 
 }  // namespace client

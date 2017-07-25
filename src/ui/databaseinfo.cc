@@ -24,7 +24,7 @@
 namespace veles {
 namespace ui {
 
-DatabaseInfo::DatabaseInfo(dbif::ObjectHandle database, QWidget *parent)
+DatabaseInfo::DatabaseInfo(const dbif::ObjectHandle& database, QWidget* parent)
     : QWidget(parent),
       ui_(new Ui::DatabaseInfo),
       database_(database),
@@ -68,7 +68,7 @@ void DatabaseInfo::goClicked() {
 
 void DatabaseInfo::newClicked() { emit newFile(); }
 
-void DatabaseInfo::gotChildrenResponse(veles::dbif::PInfoReply reply) {
+void DatabaseInfo::gotChildrenResponse(const veles::dbif::PInfoReply& reply) {
   objectToIndex_.clear();
   indexToObject_.clear();
   model_->clear();

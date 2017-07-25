@@ -40,7 +40,7 @@ void GoToAddressDialog::setRange(qint64 start, qint64 end) {
     ui_->addrValue->setValue(start);
 }
 
-void GoToAddressDialog::formatChanged(QString format) {
+void GoToAddressDialog::formatChanged(const QString& format) {
   if (format == "Hex") {
     ui_->addrValue->setDisplayIntegerBase(16);
   } else if (format == "Dec") {

@@ -32,7 +32,7 @@
 namespace veles {
 namespace parser {
 
-dbif::ObjectHandle findSubChunk(dbif::ObjectHandle parent, const QString &name) {
+dbif::ObjectHandle findSubChunk(const dbif::ObjectHandle& parent, const QString& name) {
   auto parsed = parent->syncGetInfo<dbif::ChunkDataRequest>();
   for (auto &x : parsed->items) {
     if (x.type == data::ChunkDataItem::SUBCHUNK && x.name == name) {
@@ -42,7 +42,7 @@ dbif::ObjectHandle findSubChunk(dbif::ObjectHandle parent, const QString &name) 
   return dbif::ObjectHandle();
 }
 
-data::ChunkDataItem findField(dbif::ObjectHandle parent, const QString &name) {
+data::ChunkDataItem findField(const dbif::ObjectHandle& parent, const QString& name) {
   auto parsed = parent->syncGetInfo<dbif::ChunkDataRequest>();
   for (auto &x : parsed->items) {
     if ((x.type == data::ChunkDataItem::FIELD || x.type == data::ChunkDataItem::COMPUTED ||
@@ -53,7 +53,7 @@ data::ChunkDataItem findField(dbif::ObjectHandle parent, const QString &name) {
   return data::ChunkDataItem();
 }
 
-dbif::ObjectHandle makeSubBlob(dbif::ObjectHandle parent, const QString &name, const data::BinData &data) {
+dbif::ObjectHandle makeSubBlob(const dbif::ObjectHandle& parent, const QString &name, const data::BinData &data) {
   return parent->syncRunMethod<dbif::ChunkCreateSubBlobRequest>(data, name)->object;
 }
 

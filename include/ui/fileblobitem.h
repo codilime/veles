@@ -30,8 +30,9 @@ class FileBlobItem : public QObject {
 
  public:
   virtual ~FileBlobItem() {}
-  explicit FileBlobItem(QString name, QString value, QString comment,
-                        uint64_t start, uint64_t end, QObject *parent);
+  explicit FileBlobItem(const QString& name, const QString& value,
+                        const QString& comment, uint64_t start, uint64_t end,
+                        QObject* parent);
 
   virtual const QVector<FileBlobItem*>& children() const { return children_; }
   virtual int childrenCount();
@@ -44,7 +45,7 @@ class FileBlobItem : public QObject {
   virtual dbif::ObjectHandle objectHandle();
   virtual bool isRemovable();
 
-  virtual void setComment(QString comment);
+  virtual void setComment(const QString& comment);
 
   bool operator<(const FileBlobItem &other);
   QIcon icon() {return icon_;}
@@ -53,7 +54,7 @@ class FileBlobItem : public QObject {
   void setNewRoot(dbif::ObjectHandle root) {newRoot_ = root;}
 
  protected:
-  void setFields(QString name, QString comment, uint64_t start, uint64_t end);
+  void setFields(const QString& name, const QString& comment, uint64_t start, uint64_t end);
   void addChildren(const QList<FileBlobItem *> &children);
   void removeOldChildren();
 

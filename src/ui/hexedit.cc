@@ -96,7 +96,7 @@ void HexEdit::initParseMenu() {
   parsers_menu_.clear();
   parsers_menu_.addAction("auto");
   parsers_menu_.addSeparator();
-  for (auto id : parsers_ids_) {
+  for (const auto& id : parsers_ids_) {
     parsers_menu_.addAction(id);
   }
 
@@ -970,7 +970,7 @@ void HexEdit::setByteValue(qint64 pos, uint64_t byte_value) {
   setBytesValues(pos, data::BinData(bindata_width_, {byte_value}));
 }
 
-void HexEdit::transferChanges(data::BinData& bin_data, qint64 offset_shift, qint64 max_bytes) {
+void HexEdit::transferChanges(data::BinData* bin_data, qint64 offset_shift, qint64 max_bytes) {
   edit_engine_.applyChanges(bin_data, offset_shift, max_bytes);
 }
 
@@ -1086,7 +1086,7 @@ void HexEdit::copyToClipboard(util::encoders::IEncoder* enc) {
   auto selectedData =
       dataModel_->binData().data(selectionStart(), selectionEnd());
 
-  transferChanges(selectedData, selectionStart(), selectionEnd() - selectionStart());
+  transferChanges(&selectedData, selectionStart(), selectionEnd() - selectionStart());
 
   QClipboard *clipboard = QApplication::clipboard();
   // TODO(mwk): convert encoders to use BinData.
@@ -1288,7 +1288,7 @@ void HexEdit::saveDataToFile(int byte_offset, int size, const QString& path) {
   }
 
   auto data_to_save = dataModel_->binData().data(byte_offset, byte_offset + size);
-  transferChanges(data_to_save, byte_offset, size);
+  transferChanges(&data_to_save, byte_offset, size);
 
   QFile file(path);
   if (!file.open(QIODevice::WriteOnly)) {
@@ -1302,7 +1302,7 @@ void HexEdit::saveDataToFile(int byte_offset, int size, const QString& path) {
                       static_cast<int>(data_to_save.octets()));
 }
 
-void HexEdit::setParserIds(QStringList ids) {
+void HexEdit::setParserIds(const QStringList& ids) {
   parsers_ids_ = ids;
   initParseMenu();
 }

@@ -40,7 +40,7 @@ class EditEngine {
   /** Undo last changeBytes and returns first byte changed by this operation */
   size_t undo();
 
-  void applyChanges(data::BinData& data, size_t offset = 0, int64_t max_bytes = -1) const;
+  void applyChanges(data::BinData* data, size_t offset = 0, int64_t max_bytes = -1) const;
   QPair<size_t, data::BinData> popFirstChange();
 
   uint64_t byteValue(size_t byte_pos) const;

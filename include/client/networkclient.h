@@ -57,14 +57,13 @@ class NetworkClient : public QObject {
   NetworkClient(QObject* parent = nullptr);
   virtual ~NetworkClient();
   ConnectionStatus connectionStatus();
-  void connect(
-      QString server_url,
-      QString client_interface_name,
-      QString client_name,
-      QString client_version,
-      QString client_description,
-      QString client_type,
-      bool quit_on_close);
+  void connect(const QString& server_url,
+               const QString& client_interface_name,
+               const QString& client_name,
+               const QString& client_version,
+               const QString& client_description,
+               const QString& client_type,
+               bool quit_on_close);
   void disconnect();
   std::unique_ptr<NodeTree> const& nodeTree();
   uint64_t nextQid();
@@ -84,27 +83,27 @@ class NetworkClient : public QObject {
 
   void sendMsgConnect();
   virtual void registerMessageHandlers();
-  virtual void handleNodeTreeRelatedMessage(msg_ptr msg);
-  virtual void handleConnectedMessage(msg_ptr msg);
-  virtual void handleProtoErrorMessage(msg_ptr msg);
-  virtual void handleConnectionsMessage(msg_ptr msg);
-  virtual void handleRegistryReplyMessage(msg_ptr msg);
-  virtual void handleMthdResMessage(msg_ptr msg);
-  virtual void handlePluginTriggerRunMessage(msg_ptr msg);
-  virtual void handleConnErrorMessage(msg_ptr msg);
-  virtual void handlePluginMethodRunMessage(msg_ptr msg);
-  virtual void handlePluginQueryGetMessage(msg_ptr msg);
-  virtual void handleBroadcastRunMessage(msg_ptr msg);
-  virtual void handlePluginHandlerUnregisteredMessage(msg_ptr msg);
+  virtual void handleNodeTreeRelatedMessage(const msg_ptr& msg);
+  virtual void handleConnectedMessage(const msg_ptr& msg);
+  virtual void handleProtoErrorMessage(const msg_ptr& msg);
+  virtual void handleConnectionsMessage(const msg_ptr& msg);
+  virtual void handleRegistryReplyMessage(const msg_ptr& msg);
+  virtual void handleMthdResMessage(const msg_ptr& msg);
+  virtual void handlePluginTriggerRunMessage(const msg_ptr& msg);
+  virtual void handleConnErrorMessage(const msg_ptr& msg);
+  virtual void handlePluginMethodRunMessage(const msg_ptr& msg);
+  virtual void handlePluginQueryGetMessage(const msg_ptr& msg);
+  virtual void handleBroadcastRunMessage(const msg_ptr& msg);
+  virtual void handlePluginHandlerUnregisteredMessage(const msg_ptr& msg);
 
-  typedef void (NetworkClient::*MessageHandler)(msg_ptr);
+  typedef void (NetworkClient::*MessageHandler)(const msg_ptr&);
 
 signals:
   void connectionStatusChanged(ConnectionStatus connection_status);
-  void messageReceived(msg_ptr message);
+  void messageReceived(const msg_ptr& message);
 
 public slots:
-  void sendMessage(msg_ptr msg);
+  void sendMessage(const msg_ptr& msg);
   void setConnectionStatus(ConnectionStatus connection_status);
   void socketConnected();
   void socketDisconnected();

@@ -63,7 +63,7 @@ void VelesMainWindow::addFile(const QString& path) {
 
 void VelesMainWindow::dropEvent(QDropEvent *ev) {
   QList<QUrl> urls = ev->mimeData()->urls();
-  for (auto url : urls) {
+  for (const auto& url : urls) {
     if (!url.isLocalFile()) {
       continue;
     }
@@ -239,7 +239,7 @@ void VelesMainWindow::createMenus() {
   help_menu_->addAction(about_qt_act_);
 }
 
-void VelesMainWindow::updateParsers(dbif::PInfoReply reply) {
+void VelesMainWindow::updateParsers(const dbif::PInfoReply& reply) {
   parsers_list_ = reply.dynamicCast<dbif::ParsersListRequest::ReplyType>()->parserIds;
   QList<QDockWidget*> dock_widgets = findChildren<QDockWidget*>();
   for(auto dock : dock_widgets) {
@@ -361,7 +361,7 @@ void VelesMainWindow::createDb() {
   updateDocksAndTabs();
 }
 
-void VelesMainWindow::createFileBlob(QString fileName) {
+void VelesMainWindow::createFileBlob(const QString& fileName) {
   data::BinData data(8, 0);
 
   if (!fileName.isEmpty()) {
@@ -402,8 +402,8 @@ void VelesMainWindow::createFileBlob(QString fileName) {
           });
 }
 
-void VelesMainWindow::createHexEditTab(QString fileName,
-    dbif::ObjectHandle fileBlob) {
+void VelesMainWindow::createHexEditTab(const QString& fileName,
+    const dbif::ObjectHandle& fileBlob) {
   QSharedPointer<FileBlobModel> data_model(
       new FileBlobModel(fileBlob, {QFileInfo(fileName).fileName()}));
   QSharedPointer<QItemSelectionModel> selection_model(
