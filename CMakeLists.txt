@@ -481,6 +481,18 @@ if(CLANG_TIDY)
   # join the lists of the includes
   list(APPEND LINT_INC_DIRS ${LINT_VELES_NETWORK_DIRS})
 
+  # macOS hack - remove surplus include directories
+  if(APPLE)
+    foreach(LINT_INCLUDE_FILE ${LINT_INC_DIRS})
+      if(LINT_INCLUDE_FILE MATCHES "Qt[^/]+\\.framework$")
+        list(REMOVE_ITEM LINT_INC_DIRS ${LINT_INCLUDE_FILE})
+      endif()
+    endforeach()
+  endif(APPLE)
+
+  # remove duplicates
+  list(REMOVE_DUPLICATES LINT_INC_DIRS)
+
   # use this hack, so cmake will not escape space characters when passing the list
   # to COMMAND, for example by using "-I$<JOIN:${LINT_INC_DIRS}, -I>"
   string(REPLACE ";" ";-I" LINT_INCLUDES "${LINT_INC_DIRS}")
@@ -528,6 +540,8 @@ if(CLANG_TIDY)
             # Don't know how to get from CMake that he will invoke compiler with
             # -fPIC
             "$<$<NOT:$<OR:$<BOOL:${WIN32}>,$<BOOL:${WIN64}>>>:-fPIC>"
+            # Nasty hack to set -iframework flag for Qt on macOS
+            "$<$<BOOL:${APPLE}>:-iframework${CMAKE_PREFIX_PATH}/lib>"
             -I${LINT_INCLUDES}
             -I${CMAKE_BINARY_DIR}
             -I${PROJECT_SOURCE_DIR}
