@@ -48,6 +48,8 @@ class EditEngine {
 
   uint64_t byteValue(size_t byte_pos) const;
   uint64_t originalByteValue(size_t byte_pos) const;
+  data::BinData bytesValues(size_t offset, size_t size) const;
+  data::BinData originalBytesValues(size_t offset, size_t size) const;
   bool hasChanges() const;
 
   void clear();

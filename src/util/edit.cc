@@ -169,7 +169,7 @@ uint64_t EditEngine::byteValue(size_t byte_pos) const {
   const auto& it = itFromPos(byte_pos);
 
   if (it == changes_.constEnd()) {
-    return original_data_->binData()[byte_pos].element64();
+    return originalByteValue(byte_pos);
   }
 
   size_t pos = it.key();
@@ -180,6 +180,16 @@ uint64_t EditEngine::byteValue(size_t byte_pos) const {
 
 uint64_t EditEngine::originalByteValue(size_t byte_pos) const {
   return original_data_->binData()[byte_pos].element64();
+}
+
+data::BinData EditEngine::bytesValues(size_t offset, size_t size) const {
+  data::BinData result = originalBytesValues(offset, size);
+  applyChanges(&result, offset, size);
+  return result;
+}
+
+data::BinData EditEngine::originalBytesValues(size_t offset, size_t size) const {
+  return original_data_->binData().data(offset, offset + size);
 }
 
 bool EditEngine::hasChanges() const { return !changes_.isEmpty(); }
