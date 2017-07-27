@@ -133,14 +133,14 @@ FileBlobModel::FileBlobModel(const dbif::ObjectHandle& fileBlob,
 }
 
 void FileBlobModel::gotBytesResponse(const veles::dbif::PInfoReply& reply) {
-  if (auto bytesReply =
-          reply.dynamicCast<dbif::BlobDataRequest::ReplyType>()) {
+  if (auto bytesReply = reply.dynamicCast<dbif::BlobDataRequest::ReplyType>()) {
     binData_ = bytesReply->data;
     emit newBinData();
   }
 }
 
-void FileBlobModel::gotDescriptionResponse(const veles::dbif::PInfoReply& reply) {
+void FileBlobModel::gotDescriptionResponse(
+    const veles::dbif::PInfoReply& reply) {
   if (auto description = reply.dynamicCast<dbif::BlobDescriptionReply>()) {
     if (bytesCount_ != description->size) {
       bytesCount_ = description->size;
@@ -322,7 +322,7 @@ bool FileBlobModel::setData(const QModelIndex& index, const QVariant& value,
   return false;
 }
 
-bool FileBlobModel::removeRows(int row, int count, const QModelIndex &parent) {
+bool FileBlobModel::removeRows(int row, int count, const QModelIndex& parent) {
   QVector<dbif::ObjectHandle> toRemove;
   auto item = itemFromIndex(parent);
   for (auto index = row; index < row + count; ++index) {
@@ -354,10 +354,10 @@ Qt::ItemFlags FileBlobModel::flags(const QModelIndex& index) const {
   return flags;
 }
 
-void FileBlobModel::uploadNewData(const data::BinData& bindata, uint64_t offset) {
-  fileBlob_->asyncRunMethod<dbif::ChangeDataRequest>(
-      this, offset, bindata.size(),
-      bindata);
+void FileBlobModel::uploadNewData(const data::BinData& bindata,
+                                  uint64_t offset) {
+  fileBlob_->asyncRunMethod<dbif::ChangeDataRequest>(this, offset,
+                                                     bindata.size(), bindata);
 }
 
 void FileBlobModel::parse(const QString& parser, qint64 offset,
@@ -370,7 +370,7 @@ void FileBlobModel::parse(const QString& parser, qint64 offset,
                                                     parent_chunk);
 }
 
-bool FileBlobModel::isRemovable(const QModelIndex &index) {
+bool FileBlobModel::isRemovable(const QModelIndex& index) {
   auto item = itemFromIndex(index);
   return index.isValid() && item != nullptr && item->isRemovable();
 }

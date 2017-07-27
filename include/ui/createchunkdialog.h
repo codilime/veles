@@ -18,8 +18,8 @@
 
 #include <QDialog>
 #include <QItemSelectionModel>
-#include <QtCore>
 #include <QShowEvent>
+#include <QtCore>
 
 #include "ui/fileblobmodel.h"
 
@@ -34,11 +34,11 @@ class CreateChunkDialog : public QDialog {
   Q_OBJECT
 
  public:
-  explicit CreateChunkDialog(FileBlobModel *chunksModel_,
-                             QItemSelectionModel *selectionModel = nullptr,
-                             QWidget *parent_ = 0);
+  explicit CreateChunkDialog(FileBlobModel* chunksModel_,
+                             QItemSelectionModel* selectionModel = nullptr,
+                             QWidget* parent_ = 0);
   ~CreateChunkDialog();
-  Ui::CreateChunkDialog *ui;
+  Ui::CreateChunkDialog* ui;
   void updateParent(bool childOfSelected = false);
   void setRange(uint64_t begin, uint64_t end);
 
@@ -50,8 +50,8 @@ class CreateChunkDialog : public QDialog {
   virtual void updateBinDataSize();
 
  private:
-  FileBlobModel *chunksModel_;
-  QItemSelectionModel *chunkSelectionModel_;
+  FileBlobModel* chunksModel_;
+  QItemSelectionModel* chunkSelectionModel_;
   bool useChildOfSelected_;
   void init();
   void displayPath();

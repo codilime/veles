@@ -22,12 +22,12 @@
 namespace veles {
 namespace ui {
 
-SpinBox::SpinBox(QWidget *parent)
-  : QAbstractSpinBox(parent), base_(10), single_step_(1) {
+SpinBox::SpinBox(QWidget* parent)
+    : QAbstractSpinBox(parent), base_(10), single_step_(1) {
   validator_ = new SpinBoxValidator(base_, lineEdit());
   lineEdit()->setValidator(validator_);
 
-  connect(lineEdit(), &QLineEdit::textChanged, [this](const QString &text) {
+  connect(lineEdit(), &QLineEdit::textChanged, [this](const QString& text) {
     bool ok;
     uint64_t new_value = text.toULongLong(&ok, base_);
     if (value_ != new_value) {
@@ -37,16 +37,13 @@ SpinBox::SpinBox(QWidget *parent)
   });
 }
 
-uint64_t SpinBox::value() const {
-  return value_;
-}
+uint64_t SpinBox::value() const { return value_; }
 
 void SpinBox::setValue(uint64_t value) {
   int not_used;
   QString text = QString::number(value, base_);
 
-  if (validator_->validate(text, not_used)
-      == SpinBoxValidator::Acceptable) {
+  if (validator_->validate(text, not_used) == SpinBoxValidator::Acceptable) {
     lineEdit()->setText(text);
   } else {
     validator_->fixup(text);
@@ -75,21 +72,15 @@ void SpinBox::setDisplayIntegerBase(int base) {
   setValue(value_);
 }
 
-void SpinBox::setMaximum(uint64_t maximum) {
-  validator_->setTop(maximum);
-}
+void SpinBox::setMaximum(uint64_t maximum) { validator_->setTop(maximum); }
 
-void SpinBox::setMinimum(uint64_t minimum) {
-  validator_->setBottom(minimum);
-}
+void SpinBox::setMinimum(uint64_t minimum) { validator_->setBottom(minimum); }
 
 void SpinBox::setRange(uint64_t minimum, uint64_t maximum) {
   validator_->setRange(minimum, maximum);
 }
 
-void SpinBox::setSingleStep(uint64_t val) {
-  single_step_ = val;
-}
+void SpinBox::setSingleStep(uint64_t val) { single_step_ = val; }
 
 }  // namespace ui
 }  // namespace veles

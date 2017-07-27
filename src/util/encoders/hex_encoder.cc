@@ -20,13 +20,9 @@ namespace veles {
 namespace util {
 namespace encoders {
 
-QString HexEncoder::encodingDisplayName() {
-  return "Hex";
-}
+QString HexEncoder::encodingDisplayName() { return "Hex"; }
 
-QString HexEncoder::decodingDisplayName() {
-  return "Hex";
-}
+QString HexEncoder::decodingDisplayName() { return "Hex"; }
 
 QString HexEncoder::encode(const QByteArray& data) {
   QByteArray ba = data.toHex();

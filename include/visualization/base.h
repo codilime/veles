@@ -16,11 +16,11 @@
  */
 #pragma once
 
-#include <QString>
 #include <QBoxLayout>
-#include <QSpinBox>
-#include <QOpenGLWidget>
 #include <QOpenGLFunctions_3_2_Core>
+#include <QOpenGLWidget>
+#include <QSpinBox>
+#include <QString>
 
 #include <map>
 #include <memory>
@@ -37,14 +37,14 @@ class VisualizationWidget : public QOpenGLWidget,
   Q_OBJECT
 
  public:
-  explicit VisualizationWidget(QWidget *parent = 0);
+  explicit VisualizationWidget(QWidget* parent = 0);
   ~VisualizationWidget();
 
-  void setSampler(util::ISampler *sampler);
+  void setSampler(util::ISampler* sampler);
 
   // This method takes a visualization window (QMainWindow*) and adds any
   // toolbars necessary to manipulate options of this visualization.
-  virtual void prepareOptions(QMainWindow *visualization_window);
+  virtual void prepareOptions(QMainWindow* visualization_window);
 
   /**
    * Derive this if you want to produce some additional data in
@@ -55,7 +55,8 @@ class VisualizationWidget : public QOpenGLWidget,
   };
   typedef std::shared_ptr<AdditionalResampleData> AdditionalResampleDataPtr;
 
-  void refreshVisualization(const AdditionalResampleDataPtr& ad = AdditionalResampleDataPtr());
+  void refreshVisualization(
+      const AdditionalResampleDataPtr& ad = AdditionalResampleDataPtr());
 
  signals:
   void resampled(AdditionalResampleDataPtr ad);
@@ -79,17 +80,16 @@ class VisualizationWidget : public QOpenGLWidget,
    * Return value of this method will be passed along with resampled() signal
    * and in particular will be passed to refresh().
    */
-  virtual AdditionalResampleData* onAsyncResample() {return nullptr;}
+  virtual AdditionalResampleData* onAsyncResample() { return nullptr; }
 
   size_t getDataSize();
   const char* getData();
   char getByte(size_t index);
 
  private:
-
   bool initialised_;
   bool gl_initialised_, gl_broken_, error_message_set_;
-  util::ISampler *sampler_;
+  util::ISampler* sampler_;
   util::ResampleCallbackId resample_cb_id_;
 };
 

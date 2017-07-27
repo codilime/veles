@@ -44,7 +44,7 @@ size_t Repacker::repackableSize(size_t src_size) const {
   return bits / paddedWidth();
 }
 
-BinData Repacker::repack(const BinData &src, size_t start,
+BinData Repacker::repack(const BinData& src, size_t start,
                          size_t num_elements) const {
   unsigned repack_unit = repackUnit();
   unsigned src_per_unit = repack_unit / from_width;
@@ -57,33 +57,37 @@ BinData Repacker::repack(const BinData &src, size_t start,
   size_t src_end = start + repackSize(num_elements);
   assert(src_end <= src.size());
   for (size_t dst_pos = 0, src_pos = start; dst_pos < num_elements;) {
-    for (unsigned i = 0; i < src_per_unit && src_pos < src_end; i++, src_pos++) {
+    for (unsigned i = 0; i < src_per_unit && src_pos < src_end;
+         i++, src_pos++) {
       unsigned work_pos;
       switch (endian) {
-      case Endian::LITTLE:
-        work_pos = i * from_width;
-        break;
-      case Endian::BIG:
-        work_pos = (src_per_unit - i - 1) * from_width;
-        break;
-      default:
-        abort();
+        case Endian::LITTLE:
+          work_pos = i * from_width;
+          break;
+        case Endian::BIG:
+          work_pos = (src_per_unit - i - 1) * from_width;
+          break;
+        default:
+          abort();
       }
-      BinData::copyBits(workspace.rawData(), work_pos, src.rawData(src_pos), 0, from_width);
+      BinData::copyBits(workspace.rawData(), work_pos, src.rawData(src_pos), 0,
+                        from_width);
     }
-    for (unsigned i = 0; i < dst_per_unit && dst_pos < num_elements; i++, dst_pos++) {
+    for (unsigned i = 0; i < dst_per_unit && dst_pos < num_elements;
+         i++, dst_pos++) {
       unsigned work_pos;
       switch (endian) {
-      case Endian::LITTLE:
-        work_pos = i * paddedWidth() + low_pad;
-        break;
-      case Endian::BIG:
-        work_pos = (dst_per_unit - i - 1) * paddedWidth() + low_pad;
-        break;
-      default:
-        abort();
+        case Endian::LITTLE:
+          work_pos = i * paddedWidth() + low_pad;
+          break;
+        case Endian::BIG:
+          work_pos = (dst_per_unit - i - 1) * paddedWidth() + low_pad;
+          break;
+        default:
+          abort();
       }
-      BinData::copyBits(res.rawData(dst_pos), 0, workspace.rawData(), work_pos, to_width);
+      BinData::copyBits(res.rawData(dst_pos), 0, workspace.rawData(), work_pos,
+                        to_width);
     }
   }
   return res;

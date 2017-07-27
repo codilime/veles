@@ -19,37 +19,29 @@
 namespace veles {
 namespace util {
 
-FakeSampler* FakeSampler::cloneImpl() const {
-  return new FakeSampler(*this);
-}
+FakeSampler* FakeSampler::cloneImpl() const { return new FakeSampler(*this); }
 
-size_t FakeSampler::getRealSampleSize() const {
-  return getDataSize();
-}
+size_t FakeSampler::getRealSampleSize() const { return getDataSize(); }
 
 char FakeSampler::getSampleByte(size_t index) const {
   return getDataByte(index);
 }
 
-const char* FakeSampler::getData() const {
-  return getRawData();
-}
+const char* FakeSampler::getData() const { return getRawData(); }
 
-size_t FakeSampler::getFileOffsetImpl(size_t index) const {
-  return index;
-}
+size_t FakeSampler::getFileOffsetImpl(size_t index) const { return index; }
 
 size_t FakeSampler::getSampleOffsetImpl(size_t address) const {
   return address;
 }
 
-ISampler::ResampleData* FakeSampler::prepareResample(SamplerConfig *sc) {
+ISampler::ResampleData* FakeSampler::prepareResample(SamplerConfig* sc) {
   return nullptr;
 }
 
-void FakeSampler::applyResample(ISampler::ResampleData *rd) {}
+void FakeSampler::applyResample(ISampler::ResampleData* rd) {}
 
-void FakeSampler::cleanupResample(ResampleData *rd) {}
+void FakeSampler::cleanupResample(ResampleData* rd) {}
 
 }  // namespace util
 }  // namespace veles

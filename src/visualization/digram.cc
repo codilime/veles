@@ -19,8 +19,8 @@
 namespace veles {
 namespace visualization {
 
-DigramWidget::DigramWidget(QWidget *parent) : VisualizationWidget(parent),
-  texture_(nullptr) {}
+DigramWidget::DigramWidget(QWidget* parent)
+    : VisualizationWidget(parent), texture_(nullptr) {}
 
 DigramWidget::~DigramWidget() {
   if (texture_ == nullptr) return;
@@ -82,7 +82,7 @@ void DigramWidget::initTextures() {
   auto bigtab = new uint64_t[256 * 256 * 2];
   memset(bigtab, 0, 256 * 256 * 2 * sizeof(*bigtab));
   auto ftab = new float[256 * 256 * 2];
-  const uint8_t *rowdata = reinterpret_cast<const uint8_t *>(getData());
+  const uint8_t* rowdata = reinterpret_cast<const uint8_t*>(getData());
   for (size_t i = 0; i < getDataSize() - 1; i++) {
     size_t index = rowdata[i] * 512 + rowdata[i + 1] * 2;
     bigtab[index]++;
@@ -92,12 +92,12 @@ void DigramWidget::initTextures() {
     for (int j = 0; j < 256; j++) {
       size_t index = i * 512 + j * 2;
       ftab[index] = static_cast<float>(bigtab[index]) / getDataSize();
-      ftab[index+1] =
-          static_cast<float>(bigtab[index+1]) / getDataSize() / getDataSize();
+      ftab[index + 1] =
+          static_cast<float>(bigtab[index + 1]) / getDataSize() / getDataSize();
     }
   }
   texture_->setData(QOpenGLTexture::RG, QOpenGLTexture::Float32,
-                   reinterpret_cast<void *>(ftab));
+                    reinterpret_cast<void*>(ftab));
   texture_->generateMipMaps();
 
   texture_->setMinificationFilter(QOpenGLTexture::Nearest);
@@ -113,7 +113,10 @@ void DigramWidget::initTextures() {
 void DigramWidget::initGeometry() {
   square_vertex_.create();
   QVector2D v[] = {
-      {0, 0}, {0, 1}, {1, 0}, {1, 1},
+      {0, 0},
+      {0, 1},
+      {1, 0},
+      {1, 1},
   };
   square_vertex_.bind();
   square_vertex_.allocate(v, sizeof v);

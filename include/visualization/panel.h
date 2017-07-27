@@ -16,20 +16,20 @@
  */
 #pragma once
 
-#include <QWidget>
-#include <QBoxLayout>
 #include <QAction>
-#include <QToolBar>
-#include <QSplitter>
+#include <QBoxLayout>
 #include <QLabel>
+#include <QSplitter>
 #include <QString>
+#include <QToolBar>
+#include <QWidget>
 #include <QWidgetAction>
 
 #include <map>
 
 #include "ui/dockwidget.h"
-#include "ui/nodetreewidget.h"
 #include "ui/fileblobmodel.h"
+#include "ui/nodetreewidget.h"
 #include "visualization/base.h"
 #include "visualization/minimap_panel.h"
 #include "visualization/samplingmethoddialog.h"
@@ -43,18 +43,18 @@ class VisualizationPanel : public ui::View {
  public:
   explicit VisualizationPanel(
       ui::MainWindowWithDetachableDockWidgets* main_window,
-      const QSharedPointer<ui::FileBlobModel>& data_model, QWidget *parent = 0);
+      const QSharedPointer<ui::FileBlobModel>& data_model, QWidget* parent = 0);
   ~VisualizationPanel();
 
-  void setData(const QByteArray &data);
+  void setData(const QByteArray& data);
   void setRange(const size_t start, const size_t end);
-  bool eventFilter(QObject *watched, QEvent *event) override;
+  bool eventFilter(QObject* watched, QEvent* event) override;
 
  public slots:
   void visibilityChanged(bool visibility);
 
  private slots:
-  void setSamplingMethod(const QString &name);
+  void setSamplingMethod(const QString& name);
   void setSampleSize(int kilobytes);
   void showDigramVisualization();
   void showTrigramVisualization();
@@ -63,8 +63,8 @@ class VisualizationPanel : public ui::View {
   void showMoreOptions();
 
  private:
-  enum class ESampler {NO_SAMPLER, UNIFORM_SAMPLER};
-  enum class EVisualization {DIGRAM, TRIGRAM, LAYERED_DIGRAM};
+  enum class ESampler { NO_SAMPLER, UNIFORM_SAMPLER };
+  enum class EVisualization { DIGRAM, TRIGRAM, LAYERED_DIGRAM };
 
   static const std::map<QString, ESampler> k_sampler_map;
   static const ESampler k_default_sampler = ESampler::UNIFORM_SAMPLER;
@@ -72,11 +72,10 @@ class VisualizationPanel : public ui::View {
   static const int k_max_sample_size = 128 * 1024;
   static const int k_minimap_sample_size = 4096;
 
-  static util::ISampler* getSampler(ESampler type,
-                                    const QByteArray &data,
+  static util::ISampler* getSampler(ESampler type, const QByteArray& data,
                                     int sample_size);
   VisualizationWidget* getVisualization(EVisualization type,
-                                        QWidget *parent = 0);
+                                        QWidget* parent = 0);
   static QString prepareAddressString(size_t start, size_t end);
 
   void setVisualization(EVisualization type);
@@ -90,25 +89,25 @@ class VisualizationPanel : public ui::View {
   EVisualization visualization_type_;
   int sample_size_;
   util::ISampler *sampler_, *minimap_sampler_;
-  MinimapPanel *minimap_;
-  VisualizationWidget *visualization_;
-  QMainWindow *visualization_root_;
+  MinimapPanel* minimap_;
+  VisualizationWidget* visualization_;
+  QMainWindow* visualization_root_;
 
-  QSpinBox *sample_size_box_;
+  QSpinBox* sample_size_box_;
   QBoxLayout *layout_, *options_layout_;
-  QWidget *child_options_wrapper_;
+  QWidget* child_options_wrapper_;
   QAction *digram_action_, *trigram_action_, *layered_digram_action_;
-  QLabel *selection_label_;
+  QLabel* selection_label_;
 
-  QToolBar *tools_tool_bar_;
-  QAction *show_node_tree_act_;
-  QAction *show_minimap_act_;
-  QToolBar *modes_tool_bar_;
+  QToolBar* tools_tool_bar_;
+  QAction* show_node_tree_act_;
+  QAction* show_minimap_act_;
+  QToolBar* modes_tool_bar_;
 
   QPointer<QDockWidget> node_tree_dock_;
   QPointer<QDockWidget> minimap_dock_;
 
-  ui::NodeTreeWidget *node_tree_widget_;
+  ui::NodeTreeWidget* node_tree_widget_;
   QSharedPointer<ui::FileBlobModel> data_model_;
 
   SamplingMethodDialog* sampling_method_dialog_;

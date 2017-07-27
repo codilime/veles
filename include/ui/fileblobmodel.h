@@ -19,13 +19,13 @@
 #include <QAbstractItemModel>
 #include <QBuffer>
 #include <QByteArray>
-#include <QStringList>
-#include <QString>
 #include <QObject>
+#include <QString>
+#include <QStringList>
 
+#include "data/bindata.h"
 #include "dbif/types.h"
 #include "ui/fileblobitem.h"
-#include "data/bindata.h"
 
 namespace veles {
 namespace ui {
@@ -39,34 +39,33 @@ class FileBlobModel : public QAbstractItemModel {
                          QObject* parent = nullptr);
 
   QModelIndex index(int row, int column,
-                    const QModelIndex &parent) const override;
-  QModelIndex parent(const QModelIndex &child) const override;
-  int rowCount(const QModelIndex &parent) const override;
-  int columnCount(const QModelIndex &parent) const override;
-  QVariant data(const QModelIndex &index,
-                int role) const override;
-  Qt::ItemFlags flags(const QModelIndex &index) const override;
+                    const QModelIndex& parent) const override;
+  QModelIndex parent(const QModelIndex& child) const override;
+  int rowCount(const QModelIndex& parent) const override;
+  int columnCount(const QModelIndex& parent) const override;
+  QVariant data(const QModelIndex& index, int role) const override;
+  Qt::ItemFlags flags(const QModelIndex& index) const override;
   QVariant headerData(int section, Qt::Orientation orientation,
                       int role) const override;
-  bool setData(const QModelIndex &index, const QVariant &value,
+  bool setData(const QModelIndex& index, const QVariant& value,
                int role) override;
-  bool removeRows(int row, int count, const QModelIndex &parent) override;
+  bool removeRows(int row, int count, const QModelIndex& parent) override;
 
   void addChunk(const QString& name, const QString& type,
                 const QString& comment, uint64_t start, uint64_t end,
                 const QModelIndex& index = QModelIndex());
 
   QModelIndex indexFromPos(uint64_t pos,
-                           const QModelIndex &parent = QModelIndex());
+                           const QModelIndex& parent = QModelIndex());
 
-  const data::BinData& binData() const {return binData_;}
-  bool isRemovable(const QModelIndex &index = QModelIndex());
+  const data::BinData& binData() const { return binData_; }
+  bool isRemovable(const QModelIndex& index = QModelIndex());
   void uploadNewData(const data::BinData& bindata, uint64_t offset = 0);
   void parse(const QString& parser = "", qint64 offset = 0,
-             const QModelIndex &parent = QModelIndex());
+             const QModelIndex& parent = QModelIndex());
 
-  dbif::ObjectHandle blob(const QModelIndex &index = QModelIndex());
-  QStringList path() {return path_;}
+  dbif::ObjectHandle blob(const QModelIndex& index = QModelIndex());
+  QStringList path() { return path_; }
 
   static const Qt::ItemDataRole ROLE_BEGIN = Qt::UserRole;
   static const Qt::ItemDataRole ROLE_END = (Qt::ItemDataRole)(Qt::UserRole + 1);
@@ -80,20 +79,20 @@ class FileBlobModel : public QAbstractItemModel {
   void newBinData();
 
  private:
-  FileBlobItem *item_;
+  FileBlobItem* item_;
   dbif::ObjectHandle fileBlob_;
-  dbif::InfoPromise *bytesPromise_;
+  dbif::InfoPromise* bytesPromise_;
   size_t bytesCount_;
   QStringList path_;
 
   data::BinData binData_;
 
   QColor color(int colorIndex) const;
-  FileBlobItem *itemFromIndex(const QModelIndex &index) const;
-  QModelIndex indexFromItem(FileBlobItem *item) const;
-  void emitDataChanged(FileBlobItem *item);
-  QVariant positionColumnData(FileBlobItem *item, int role) const;
-  QVariant valueColumnData(FileBlobItem *item, int role) const;
+  FileBlobItem* itemFromIndex(const QModelIndex& index) const;
+  QModelIndex indexFromItem(FileBlobItem* item) const;
+  void emitDataChanged(FileBlobItem* item);
+  QVariant positionColumnData(FileBlobItem* item, int role) const;
+  QVariant valueColumnData(FileBlobItem* item, int role) const;
 
  private slots:
   void gotDescriptionResponse(const veles::dbif::PInfoReply& reply);

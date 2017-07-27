@@ -16,14 +16,14 @@
  */
 #pragma once
 
-#include <atomic>
-#include <functional>
-#include <mutex>
-#include <condition_variable>
-#include <future>
-#include <utility>
-#include <map>
 #include <QByteArray>
+#include <atomic>
+#include <condition_variable>
+#include <functional>
+#include <future>
+#include <map>
+#include <mutex>
+#include <utility>
 
 namespace veles {
 namespace util {
@@ -62,7 +62,7 @@ typedef int ResampleCallbackId;
  */
 class ISampler {
  public:
-  explicit ISampler(const QByteArray &data);
+  explicit ISampler(const QByteArray& data);
   virtual ~ISampler() {}
 
   /**
@@ -250,7 +250,7 @@ class ISampler {
    * This does not do any locking, which doesn't matter if sc != nullptr and
    * may be pretty bad otherwise.
    */
-  size_t getDataSize(SamplerConfig *sc = nullptr) const;
+  size_t getDataSize(SamplerConfig* sc = nullptr) const;
 
   /**
    * Get n-th byte of input data.
@@ -259,12 +259,12 @@ class ISampler {
    * If sc is provided it uses the range represented by sc instead of this
    * stored by sampler.
    */
-  char getDataByte(size_t index, SamplerConfig *sc = nullptr) const;
+  char getDataByte(size_t index, SamplerConfig* sc = nullptr) const;
 
   /**
    * Return the size of sample requested by user (with setSampleSize).
    */
-  size_t getRequestedSampleSize(SamplerConfig *sc = nullptr) const;
+  size_t getRequestedSampleSize(SamplerConfig* sc = nullptr) const;
 
   /**
    * Return real size of the sample. This method must be overriden by any
@@ -278,7 +278,7 @@ class ISampler {
    * If sc is provided it uses the range represented by sc instead of this
    * stored by sampler.
    */
-  const char* getRawData(SamplerConfig *sc = nullptr) const;
+  const char* getRawData(SamplerConfig* sc = nullptr) const;
 
   ISampler(const ISampler& other);
 
@@ -315,7 +315,7 @@ class ISampler {
    * Any call to method accepting SamplerConfig (getDataSize(),
    * getRawData(), etc) should pass the provided SamplerConfig.
    */
-  virtual ResampleData* prepareResample(SamplerConfig *sc) = 0;
+  virtual ResampleData* prepareResample(SamplerConfig* sc) = 0;
 
   /**
    * Apply ResampleData prepared by prepareResample method.
@@ -326,7 +326,7 @@ class ISampler {
    * This method takes ownership of passed ResampleData and is responsible
    * for ultimately freeing up the memory.
    */
-  virtual void applyResample(ResampleData *rd) = 0;
+  virtual void applyResample(ResampleData* rd) = 0;
 
   /**
    * Delete ResampleData prepared by prepareResample method.
@@ -334,20 +334,19 @@ class ISampler {
    * is outdated, etc. The method should delete the ResampleData provided
    * doing any necessary cleanup.
    */
-  virtual void cleanupResample(ResampleData *rd) = 0;
+  virtual void cleanupResample(ResampleData* rd) = 0;
 
   /**
    * Implementation of clone method.
    */
   virtual ISampler* cloneImpl() const = 0;
 
+  size_t samplingRequired(SamplerConfig* sc = nullptr);
+  void applySamplerConfig(SamplerConfig* sc);
+  void runResample(SamplerConfig* sc);
+  void resampleAsync(int target_version, SamplerConfig* sc);
 
-  size_t samplingRequired(SamplerConfig *sc = nullptr);
-  void applySamplerConfig(SamplerConfig *sc);
-  void runResample(SamplerConfig *sc);
-  void resampleAsync(int target_version, SamplerConfig *sc);
-
-  const QByteArray &data_;
+  const QByteArray& data_;
   size_t start_, end_, sample_size_;
   bool allow_async_;
 

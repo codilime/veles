@@ -22,13 +22,13 @@
 
 #include <vector>
 
-#include <QOpenGLWidget>
+#include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
+#include <QOpenGLFunctions_3_2_Core>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
-#include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
-#include <QOpenGLFunctions_3_2_Core>
+#include <QOpenGLWidget>
 
 #include "visualization/base.h"
 
@@ -39,9 +39,8 @@ class DigramWidget : public VisualizationWidget {
   Q_OBJECT
 
  public:
-  explicit DigramWidget(QWidget *parent = 0);
+  explicit DigramWidget(QWidget* parent = 0);
   ~DigramWidget();
-
 
  protected:
   void refresh(AdditionalResampleDataPtr ad) override;
@@ -56,7 +55,7 @@ class DigramWidget : public VisualizationWidget {
 
  private:
   QOpenGLShaderProgram program_;
-  QOpenGLTexture *texture_;
+  QOpenGLTexture* texture_;
 
   QOpenGLBuffer square_vertex_;
   QOpenGLVertexArrayObject vao_;

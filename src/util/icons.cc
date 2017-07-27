@@ -18,15 +18,14 @@
 #include "util/icons.h"
 
 #include <QBitmap>
-#include <QPixmap>
 #include <QImage>
-
+#include <QPixmap>
 
 namespace veles {
 namespace util {
 
-
-QIcon getColoredIcon(const QString& path, const QColor& color, bool black_on_transparent) {
+QIcon getColoredIcon(const QString& path, const QColor& color,
+                     bool black_on_transparent) {
   QPixmap pixmap(path);
   QPixmap mask;
   if (qGray(color.rgb()) < k_white_threshold) {

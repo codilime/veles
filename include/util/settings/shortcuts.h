@@ -116,13 +116,19 @@ void setShortcuts(ShortcutType type, const QList<QKeySequence>& shortcuts);
 
 class ShortcutsItem {
  public:
-  explicit ShortcutsItem(const QString& display_name = QString(""), ShortcutsItem* parent = 0);
-  ShortcutsItem(const QString& display_name, ShortcutsItem* parent, util::settings::shortcuts::ShortcutType type);
-  ShortcutsItem(const QString& name, const QString& display_name, ShortcutsItem* parent, util::settings::shortcuts::ShortcutType type);
+  explicit ShortcutsItem(const QString& display_name = QString(""),
+                         ShortcutsItem* parent = 0);
+  ShortcutsItem(const QString& display_name, ShortcutsItem* parent,
+                util::settings::shortcuts::ShortcutType type);
+  ShortcutsItem(const QString& name, const QString& display_name,
+                ShortcutsItem* parent,
+                util::settings::shortcuts::ShortcutType type);
   ~ShortcutsItem();
 
-  QAction* createQAction(QObject* parent, Qt::ShortcutContext context = Qt::WindowShortcut);
-  QAction* createQAction(QObject* parent, const QIcon& icon, Qt::ShortcutContext context = Qt::WindowShortcut);
+  QAction* createQAction(QObject* parent,
+                         Qt::ShortcutContext context = Qt::WindowShortcut);
+  QAction* createQAction(QObject* parent, const QIcon& icon,
+                         Qt::ShortcutContext context = Qt::WindowShortcut);
   QString name() const;
   QString displayName() const;
   ShortcutsItem* parent() const;
@@ -160,17 +166,24 @@ class ShortcutsModel : public QAbstractItemModel {
 
   ~ShortcutsModel();
 
-  virtual QModelIndex index(int row, int column, const QModelIndex& parent) const override;
+  virtual QModelIndex index(int row, int column,
+                            const QModelIndex& parent) const override;
   virtual QModelIndex parent(const QModelIndex& index) const override;
   virtual int rowCount(const QModelIndex& parent) const override;
   virtual int columnCount(const QModelIndex& parent) const override;
   virtual QVariant data(const QModelIndex& index, int role) const override;
-  QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+  QVariant headerData(int section, Qt::Orientation orientation,
+                      int role) const override;
   static ShortcutsModel* getShortcutsModel();
-  QAction* createQAction(util::settings::shortcuts::ShortcutType type, QObject* parent, Qt::ShortcutContext context);
-  QAction* createQAction(util::settings::shortcuts::ShortcutType type, QObject* parent, const QIcon& icon, Qt::ShortcutContext context);
-  void addShortcut(util::settings::shortcuts::ShortcutType type, const QKeySequence& shortcut);
-  void removeShortcut(util::settings::shortcuts::ShortcutType type, const QKeySequence& shortcut);
+  QAction* createQAction(util::settings::shortcuts::ShortcutType type,
+                         QObject* parent, Qt::ShortcutContext context);
+  QAction* createQAction(util::settings::shortcuts::ShortcutType type,
+                         QObject* parent, const QIcon& icon,
+                         Qt::ShortcutContext context);
+  void addShortcut(util::settings::shortcuts::ShortcutType type,
+                   const QKeySequence& shortcut);
+  void removeShortcut(util::settings::shortcuts::ShortcutType type,
+                      const QKeySequence& shortcut);
   ShortcutsItem* itemFromIndex(const QModelIndex& index) const;
   QModelIndex indexFromItem(ShortcutsItem* item) const;
   QList<ShortcutsItem*> getItemsForSequence(const QKeySequence& sequence);
@@ -184,11 +197,14 @@ class ShortcutsModel : public QAbstractItemModel {
   ShortcutsModel();
 
   ShortcutsItem* addCategory(const QString& name, ShortcutsItem* parent);
-  ShortcutsItem* addShortcutType(util::settings::shortcuts::ShortcutType type, ShortcutsItem* parent, const QString& name, const QString& display_name = QString(""));
+  ShortcutsItem* addShortcutType(util::settings::shortcuts::ShortcutType type,
+                                 ShortcutsItem* parent, const QString& name,
+                                 const QString& display_name = QString(""));
   bool checkIfConflicts(ShortcutsItem* item) const;
 
   ShortcutsItem* root_;
-  QMap<util::settings::shortcuts::ShortcutType, ShortcutsItem*> type_to_shortcut_;
+  QMap<util::settings::shortcuts::ShortcutType, ShortcutsItem*>
+      type_to_shortcut_;
   QMap<QKeySequence, QList<ShortcutsItem*>> sequence_to_shortcut_;
 };
 

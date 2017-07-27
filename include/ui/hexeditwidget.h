@@ -18,22 +18,22 @@
 
 #include <QGroupBox>
 #include <QLabel>
+#include <QMainWindow>
+#include <QSharedPointer>
 #include <QSplitter>
-#include <QTreeView>
-#include <QWidget>
 #include <QStringList>
 #include <QToolBar>
 #include <QToolButton>
-#include <QMainWindow>
-#include <QSharedPointer>
+#include <QTreeView>
+#include <QWidget>
 #include <QWidgetAction>
 
 #include "visualization/base.h"
 
+#include "ui/dockwidget.h"
 #include "ui/fileblobmodel.h"
 #include "ui/hexedit.h"
 #include "ui/searchdialog.h"
-#include "ui/dockwidget.h"
 
 #include "dbif/info.h"
 #include "dbif/types.h"
@@ -45,22 +45,23 @@ class HexEditWidget : public View {
   Q_OBJECT
 
  public:
-  explicit HexEditWidget(MainWindowWithDetachableDockWidgets *main_window,
+  explicit HexEditWidget(
+      MainWindowWithDetachableDockWidgets* main_window,
       const QSharedPointer<FileBlobModel>& data_model,
       const QSharedPointer<QItemSelectionModel>& selection_model);
   void reapplySettings() override;
   void setParserIds(const QStringList& ids);
   QString addressAsText(qint64 addr);
-  QAction* uploadAction() const {return upload_act_;}
-  QAction* undoAction() const {return undo_act_;}
-  QAction* discardAction() const {return discard_act_;}
-  QAction* findAction() const {return find_act_;}
-  QAction* findNextAction() const {return find_next_act_;}
-  QAction* showVisualizationAction() const {return visualization_act_;}
-  QAction* showHexEditAction() const {return show_hex_edit_act_;}
-  QAction* showNodeTreeAction() const {return show_node_tree_act_;}
-  QAction* addColumnAction() const {return add_column_act_;}
-  QAction* removeColumnAction() const {return remove_column_act_;}
+  QAction* uploadAction() const { return upload_act_; }
+  QAction* undoAction() const { return undo_act_; }
+  QAction* discardAction() const { return discard_act_; }
+  QAction* findAction() const { return find_act_; }
+  QAction* findNextAction() const { return find_next_act_; }
+  QAction* showVisualizationAction() const { return visualization_act_; }
+  QAction* showHexEditAction() const { return show_hex_edit_act_; }
+  QAction* showNodeTreeAction() const { return show_node_tree_act_; }
+  QAction* addColumnAction() const { return add_column_act_; }
+  QAction* removeColumnAction() const { return remove_column_act_; }
 
  signals:
   void showNodeTree(bool show);
@@ -71,7 +72,7 @@ class HexEditWidget : public View {
   void minimapVisibilityChanged(bool visibility);
 
  private slots:
-  void parse(QAction *action);
+  void parse(QAction* action);
   void findNext();
   void showSearchDialog();
   bool saveAs();
@@ -85,11 +86,11 @@ class HexEditWidget : public View {
   void removeColumn();
 
  private:
-  bool saveFile(const QString &file_name);
+  bool saveFile(const QString& file_name);
 
   void addChunk(const QString& name, const QString& type,
                 const QString& comment, uint64_t start, uint64_t end,
-                const QModelIndex &index = QModelIndex());
+                const QModelIndex& index = QModelIndex());
   void setupDataModelHandlers();
 
   void createActions();
@@ -97,35 +98,35 @@ class HexEditWidget : public View {
   void initParsersMenu();
   void createSelectionInfo();
 
-  MainWindowWithDetachableDockWidgets *main_window_;
+  MainWindowWithDetachableDockWidgets* main_window_;
 
   QFile file_;
   bool is_untitled_;
 
-  QToolBar *file_tool_bar_;
-  QToolBar *edit_tool_bar_;
-  QToolBar *tools_tool_bar_;
-  QToolBar *view_tool_bar_;
+  QToolBar* file_tool_bar_;
+  QToolBar* edit_tool_bar_;
+  QToolBar* tools_tool_bar_;
+  QToolBar* view_tool_bar_;
 
-  QAction *upload_act_;
-  QAction *save_as_act_;
-  QAction *save_readable_;
-  QAction *undo_act_;
-  QAction *discard_act_;
-  QAction *redo_act_;
-  QAction *find_act_;
-  QAction *find_next_act_;
-  QAction *visualization_act_;
-  QAction *show_node_tree_act_;
-  QAction *show_minimap_act_;
-  QAction *show_hex_edit_act_;
-  QAction *add_column_act_;
-  QAction *remove_column_act_;
+  QAction* upload_act_;
+  QAction* save_as_act_;
+  QAction* save_readable_;
+  QAction* undo_act_;
+  QAction* discard_act_;
+  QAction* redo_act_;
+  QAction* find_act_;
+  QAction* find_next_act_;
+  QAction* visualization_act_;
+  QAction* show_node_tree_act_;
+  QAction* show_minimap_act_;
+  QAction* show_hex_edit_act_;
+  QAction* add_column_act_;
+  QAction* remove_column_act_;
   QWidgetAction* auto_resize_act_;
   QCheckBox* auto_resize_checkbox_;
 
-  SearchDialog *search_dialog_;
-  HexEdit *hex_edit_;
+  SearchDialog* search_dialog_;
+  HexEdit* hex_edit_;
 
   QSharedPointer<FileBlobModel> data_model_;
   QSharedPointer<QItemSelectionModel> selection_model_;

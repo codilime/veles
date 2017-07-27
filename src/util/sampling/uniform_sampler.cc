@@ -23,7 +23,6 @@
 
 #include "util/sampling/uniform_sampler.h"
 
-
 namespace veles {
 namespace util {
 
@@ -31,9 +30,11 @@ namespace util {
 /* Public methods */
 /*****************************************************************************/
 
-UniformSampler::UniformSampler(const QByteArray &data) :
-    ISampler(data), window_size_(0), use_default_window_size_(true),
-    buffer_(nullptr) {}
+UniformSampler::UniformSampler(const QByteArray& data)
+    : ISampler(data),
+      window_size_(0),
+      use_default_window_size_(true),
+      buffer_(nullptr) {}
 
 UniformSampler::~UniformSampler() {
   if (buffer_ != nullptr) {
@@ -52,8 +53,8 @@ void UniformSampler::setWindowSize(size_t size) {
 /* Private methods */
 /*****************************************************************************/
 
-UniformSampler::UniformSampler(const UniformSampler& other) :
-    ISampler(other), window_size_(other.window_size_), buffer_(nullptr) {}
+UniformSampler::UniformSampler(const UniformSampler& other)
+    : ISampler(other), window_size_(other.window_size_), buffer_(nullptr) {}
 
 char UniformSampler::getSampleByte(size_t index) const {
   if (buffer_ != nullptr) {
@@ -63,9 +64,7 @@ char UniformSampler::getSampleByte(size_t index) const {
   return getDataByte(base_index + (index % window_size_));
 }
 
-const char* UniformSampler::getData() const {
-  return buffer_;
-}
+const char* UniformSampler::getData() const { return buffer_; }
 
 size_t UniformSampler::getRealSampleSize() const {
   return window_size_ * windows_count_;
@@ -80,15 +79,15 @@ size_t UniformSampler::getSampleOffsetImpl(size_t address) const {
   // we want the last window less or equal to address (or first window if
   // no such window exists)
   if (address < windows_[0]) return 0;
-  auto previous_window = std::upper_bound(windows_.begin(), windows_.end(),
-                                          address);
+  auto previous_window =
+      std::upper_bound(windows_.begin(), windows_.end(), address);
   if (previous_window != windows_.begin()) --previous_window;
   size_t base_index = static_cast<size_t>(
-    std::distance(windows_.begin(), previous_window) * window_size_);
+      std::distance(windows_.begin(), previous_window) * window_size_);
   return base_index + std::min(window_size_ - 1, address - (*previous_window));
 }
 
-ISampler::ResampleData* UniformSampler::prepareResample(SamplerConfig *sc) {
+ISampler::ResampleData* UniformSampler::prepareResample(SamplerConfig* sc) {
   size_t size = getRequestedSampleSize(sc);
   size_t window_size = window_size_;
   if (use_default_window_size_ || window_size_ == 0) {
@@ -126,14 +125,14 @@ ISampler::ResampleData* UniformSampler::prepareResample(SamplerConfig *sc) {
 
   // Now let's create data array (it's more efficient to do it here,
   // than later calculate values)
-  const char *raw_data = getRawData(sc);
-  char *tmp_buffer = new char[size];
+  const char* raw_data = getRawData(sc);
+  char* tmp_buffer = new char[size];
   for (size_t i = 0; i < size; ++i) {
     size_t base_index = windows[i / window_size];
     tmp_buffer[i] = raw_data[base_index + (i % window_size)];
   }
 
-  UniformSamplerResampleData *rd = new UniformSamplerResampleData;
+  UniformSamplerResampleData* rd = new UniformSamplerResampleData;
   rd->window_size = window_size;
   rd->windows_count = windows_count;
   rd->windows = std::move(windows);
@@ -141,10 +140,10 @@ ISampler::ResampleData* UniformSampler::prepareResample(SamplerConfig *sc) {
   return rd;
 }
 
-void UniformSampler::applyResample(ResampleData *rd) {
+void UniformSampler::applyResample(ResampleData* rd) {
   delete[] buffer_;
-  UniformSamplerResampleData *usrd =
-    static_cast<UniformSamplerResampleData*>(rd);
+  UniformSamplerResampleData* usrd =
+      static_cast<UniformSamplerResampleData*>(rd);
   window_size_ = usrd->window_size;
   windows_count_ = usrd->windows_count;
   windows_ = std::move(usrd->windows);
@@ -152,9 +151,9 @@ void UniformSampler::applyResample(ResampleData *rd) {
   delete usrd;
 }
 
-void UniformSampler::cleanupResample(ResampleData *rd) {
-  UniformSamplerResampleData *usrd =
-    static_cast<UniformSamplerResampleData*>(rd);
+void UniformSampler::cleanupResample(ResampleData* rd) {
+  UniformSamplerResampleData* usrd =
+      static_cast<UniformSamplerResampleData*>(rd);
   delete[] usrd->data;
   delete usrd;
 }

@@ -36,15 +36,15 @@ class Manipulator : public QObject {
 
  protected:
   static bool isMouseEvent(QEvent* event) {
-    return event->type() == QEvent::MouseButtonDblClick
-        || event->type() == QEvent::MouseButtonPress
-        || event->type() == QEvent::MouseButtonRelease
-        || event->type() == QEvent::MouseMove;
+    return event->type() == QEvent::MouseButtonDblClick ||
+           event->type() == QEvent::MouseButtonPress ||
+           event->type() == QEvent::MouseButtonRelease ||
+           event->type() == QEvent::MouseMove;
   }
 
   static bool isKeyEvent(QEvent* event) {
-    return event->type() == QEvent::KeyPress
-        || event->type() == QEvent::KeyRelease;
+    return event->type() == QEvent::KeyPress ||
+           event->type() == QEvent::KeyRelease;
   }
 
   static bool isWheelEvent(QEvent* event) {

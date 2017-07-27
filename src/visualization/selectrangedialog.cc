@@ -14,29 +14,29 @@
  * limitations under the License.
  *
  */
-#include <functional>
-#include <QComboBox>
 #include <assert.h>
+#include <QComboBox>
+#include <functional>
 
-#include "ui_selectrangedialog.h"
 #include "include/visualization/selectrangedialog.h"
-
+#include "ui_selectrangedialog.h"
 
 namespace veles {
 namespace visualization {
 
-SelectRangeDialog::SelectRangeDialog(QWidget* parent) :
-      QDialog(parent), ui(new Ui::SelectRangeDialog) {
+SelectRangeDialog::SelectRangeDialog(QWidget* parent)
+    : QDialog(parent), ui(new Ui::SelectRangeDialog) {
   ui->setupUi(this);
 
-  connect(ui->start_address_spinbox_, &veles::ui::SpinBox::valueChanged,
-          this, &SelectRangeDialog::addressChanged);
-  connect(ui->end_address_spinbox_, &veles::ui::SpinBox::valueChanged,
-          this, &SelectRangeDialog::addressChanged);
+  connect(ui->start_address_spinbox_, &veles::ui::SpinBox::valueChanged, this,
+          &SelectRangeDialog::addressChanged);
+  connect(ui->end_address_spinbox_, &veles::ui::SpinBox::valueChanged, this,
+          &SelectRangeDialog::addressChanged);
 
   // More overloaded signal bs
   auto currentIndexChangedPtr =
-    static_cast<void(QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged);
+      static_cast<void (QComboBox::*)(const QString&)>(
+          &QComboBox::currentIndexChanged);
 
   connect(ui->start_format_dropdown_, currentIndexChangedPtr,
           std::bind(&SelectRangeDialog::numberBaseChanged, this,
@@ -46,9 +46,7 @@ SelectRangeDialog::SelectRangeDialog(QWidget* parent) :
                     ui->end_address_spinbox_, std::placeholders::_1));
 }
 
-SelectRangeDialog::~SelectRangeDialog() {
-  delete ui;
-}
+SelectRangeDialog::~SelectRangeDialog() { delete ui; }
 
 void SelectRangeDialog::setRange(size_t min_address, size_t max_address) {
   ui->start_address_spinbox_->setValue(min_address);
@@ -80,18 +78,16 @@ void SelectRangeDialog::setAddressRanges() {
   ui->start_address_spinbox_->setMaximum(ui->end_address_spinbox_->value() - 1);
 }
 
-void SelectRangeDialog::addressChanged(int) {
-  setAddressRanges();
-}
+void SelectRangeDialog::addressChanged(int) { setAddressRanges(); }
 
-void SelectRangeDialog::numberBaseChanged(veles::ui::SpinBox* box, const QString& base) {
+void SelectRangeDialog::numberBaseChanged(veles::ui::SpinBox* box,
+                                          const QString& base) {
   if (base == "Hex") {
     box->setDisplayIntegerBase(16);
   } else {
     box->setDisplayIntegerBase(10);
   }
 }
-
 
 }  // namespace visualization
 }  // namespace veles

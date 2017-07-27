@@ -25,7 +25,6 @@ namespace util {
 namespace settings {
 namespace visualization {
 
-
 bool showCaptions() {
   return QSettings().value("visualization.show_captions", false).toBool();
 }
@@ -43,8 +42,9 @@ void setAutoBrightness(bool autoBrightness) {
 }
 
 int brightness() {
-  auto defaultVal = (veles::visualization::k_maximum_brightness
-                     + veles::visualization::k_minimum_brightness) / 2;
+  auto defaultVal = (veles::visualization::k_maximum_brightness +
+                     veles::visualization::k_minimum_brightness) /
+                    2;
   return QSettings().value("visualization.brightness", defaultVal).toInt();
 }
 

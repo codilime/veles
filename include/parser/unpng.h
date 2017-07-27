@@ -23,14 +23,16 @@
 namespace veles {
 namespace parser {
 
-void unpngFileBlob(const dbif::ObjectHandle& blob, uint64_t start = 0,
-                   const dbif::ObjectHandle& parent_chunk = dbif::ObjectHandle());
+void unpngFileBlob(
+    const dbif::ObjectHandle& blob, uint64_t start = 0,
+    const dbif::ObjectHandle& parent_chunk = dbif::ObjectHandle());
 
 class PngParser : public Parser {
  public:
   PngParser() : Parser("png", data::BinData(8, {0x89, 'P', 'N', 'G'})) {}
-  void parse(const dbif::ObjectHandle& blob, uint64_t start = 0,
-             const dbif::ObjectHandle& parent_chunk = dbif::ObjectHandle()) override {
+  void parse(
+      const dbif::ObjectHandle& blob, uint64_t start = 0,
+      const dbif::ObjectHandle& parent_chunk = dbif::ObjectHandle()) override {
     unpngFileBlob(blob, start, parent_chunk);
   }
 };

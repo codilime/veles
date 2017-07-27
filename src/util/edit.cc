@@ -20,8 +20,11 @@
 namespace veles {
 namespace util {
 
-void EditEngine::changeBytes(size_t pos, const data::BinData& bytes, const data::BinData& old_bytes, bool add_to_history) {
-  assert(bytes.width() == bindata_width_ && old_bytes.width() == bindata_width_);
+void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
+                             const data::BinData& old_bytes,
+                             bool add_to_history) {
+  assert(bytes.width() == bindata_width_ &&
+         old_bytes.width() == bindata_width_);
   if (add_to_history) {
     edit_stack_data_.push_back(old_bytes);
     edit_stack_.push_back(QPair<size_t, size_t>(pos, bytes.size()));
@@ -37,7 +40,6 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes, const data:
     --it;
   }
   while (it != changes_.constEnd() && it.key() <= pos + bytes.size()) {
-
     if (it.key() + it.value().size() < pos) {
       ++it;
       continue;
@@ -56,7 +58,9 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes, const data:
     size_t last_size = last_chunk.size();
     size_t size = bytes.size();
     size += pos > first_pos ? pos - first_pos : 0;
-    size += last_pos + last_size > pos + bytes.size() ? last_pos + last_size - (pos + bytes.size()) : 0;
+    size += last_pos + last_size > pos + bytes.size()
+                ? last_pos + last_size - (pos + bytes.size())
+                : 0;
     data::BinData new_bytes(bindata_width_, size);
     size_t count = 0;
 
@@ -65,15 +69,18 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes, const data:
     }
 
     for (size_t i = first_pos; i < pos; ++i, ++count) {
-      new_bytes.setElement64(count, first_chunk.element64(static_cast<int>(i - first_pos)));
+      new_bytes.setElement64(
+          count, first_chunk.element64(static_cast<int>(i - first_pos)));
     }
 
-    for (size_t i=0; i < bytes.size(); ++i, ++count) {
+    for (size_t i = 0; i < bytes.size(); ++i, ++count) {
       new_bytes.setElement64(count, bytes.element64(i));
     }
 
-    for (size_t i = pos + bytes.size(); i < last_pos + last_size; ++i, ++count) {
-      new_bytes.setElement64(count, last_chunk.element64(static_cast<int>(i - last_pos)));
+    for (size_t i = pos + bytes.size(); i < last_pos + last_size;
+         ++i, ++count) {
+      new_bytes.setElement64(
+          count, last_chunk.element64(static_cast<int>(i - last_pos)));
     }
 
     for (auto pos : overlapping) {
@@ -84,7 +91,6 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes, const data:
   } else {
     changes_[new_pos] = bytes;
   }
-
 }
 
 size_t EditEngine::undo() {
@@ -103,7 +109,8 @@ size_t EditEngine::undo() {
   return range.first;
 }
 
-void EditEngine::applyChanges(data::BinData* bindata, size_t offset, int64_t max_bytes) const {
+void EditEngine::applyChanges(data::BinData* bindata, size_t offset,
+                              int64_t max_bytes) const {
   assert(bindata->width() == bindata_width_);
   if (max_bytes == -1) {
     max_bytes = bindata->size();
@@ -127,7 +134,7 @@ QPair<size_t, data::BinData> EditEngine::popFirstChange() {
     pos = changes_.firstKey();
     auto first_chunk = changes_[pos];
     bindata = data::BinData(bindata_width_, first_chunk.size());
-    for (size_t i=0; i < first_chunk.size(); i++) {
+    for (size_t i = 0; i < first_chunk.size(); i++) {
       bindata.setElement64(i, first_chunk.element64(i));
     }
     changes_.remove(pos);
@@ -136,8 +143,8 @@ QPair<size_t, data::BinData> EditEngine::popFirstChange() {
   return QPair<size_t, data::BinData>(pos, bindata);
 }
 
-QMap<size_t, data::BinData>::const_iterator EditEngine::itFromPos(size_t byte_pos) const {
-
+QMap<size_t, data::BinData>::const_iterator EditEngine::itFromPos(
+    size_t byte_pos) const {
   if (changes_.isEmpty()) {
     return changes_.constEnd();
   }
@@ -178,11 +185,10 @@ uint64_t EditEngine::originalByteValue(size_t byte_pos) const {
   return original_data_->binData()[byte_pos].element64();
 }
 
-bool EditEngine::hasChanges() const {
-  return !changes_.isEmpty();
-}
+bool EditEngine::hasChanges() const { return !changes_.isEmpty(); }
 
-QMap<size_t, data::BinData> EditEngine::changesFromRange(size_t byte_pos, size_t size) const {
+QMap<size_t, data::BinData> EditEngine::changesFromRange(size_t byte_pos,
+                                                         size_t size) const {
   QMap<size_t, data::BinData> res;
 
   auto it = itFromPos(byte_pos);
@@ -191,7 +197,6 @@ QMap<size_t, data::BinData> EditEngine::changesFromRange(size_t byte_pos, size_t
   }
 
   while (it != changes_.constEnd() && it.key() < byte_pos + size) {
-
     size_t pos = it.key();
     auto data = it.value();
 
@@ -207,11 +212,12 @@ QMap<size_t, data::BinData> EditEngine::changesFromRange(size_t byte_pos, size_t
 
       data = new_data;
       pos = byte_pos;
-
     }
 
     if (pos + data.size() > byte_pos + size) {
-      data::BinData new_data(bindata_width_, byte_pos + size - pos > 0 ? byte_pos + size - pos : 0);
+      data::BinData new_data(bindata_width_, byte_pos + size - pos > 0
+                                                 ? byte_pos + size - pos
+                                                 : 0);
       size_t last_chunk_bytes_count = byte_pos + size - pos;
       for (size_t i = 0; i < last_chunk_bytes_count; ++i) {
         new_data.setElement64(i, data.element64(static_cast<int>(i)));

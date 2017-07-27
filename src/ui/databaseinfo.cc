@@ -37,11 +37,11 @@ DatabaseInfo::DatabaseInfo(const dbif::ObjectHandle& database, QWidget* parent)
   connect(ui_->goButton, SIGNAL(clicked()), this, SLOT(goClicked()));
   connect(ui_->newButton, SIGNAL(clicked()), this, SLOT(newClicked()));
 
-  connect(ui_->resourcesListView, &QAbstractItemView::clicked, [this]() {
-    ui_->goButton->setEnabled(true);
-  });
+  connect(ui_->resourcesListView, &QAbstractItemView::clicked,
+          [this]() { ui_->goButton->setEnabled(true); });
 
-  connect(ui_->resourcesListView, &QAbstractItemView::doubleClicked, this , &DatabaseInfo::goClicked);
+  connect(ui_->resourcesListView, &QAbstractItemView::doubleClicked, this,
+          &DatabaseInfo::goClicked);
 
   ui_->goButton->setEnabled(false);
 
@@ -74,10 +74,9 @@ void DatabaseInfo::gotChildrenResponse(const veles::dbif::PInfoReply& reply) {
   model_->clear();
   ui_->goButton->setEnabled(false);
 
-  auto objects =
-      reply.dynamicCast<dbif::ChildrenRequest::ReplyType>()->objects;
+  auto objects = reply.dynamicCast<dbif::ChildrenRequest::ReplyType>()->objects;
   int nextIndex = 0;
-  for (auto &object : objects) {
+  for (auto& object : objects) {
     if (object->type() != dbif::FILE_BLOB || objectToIndex_.contains(object)) {
       continue;
     }

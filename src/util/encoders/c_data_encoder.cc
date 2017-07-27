@@ -20,15 +20,14 @@ namespace veles {
 namespace util {
 namespace encoders {
 
-QString CDataEncoder::encodingDisplayName() {
-  return "C Data";
-}
+QString CDataEncoder::encodingDisplayName() { return "C Data"; }
 
 QString CDataEncoder::encode(const QByteArray& data) {
   QString res = "unsigned char data[] = {";
   int lineLen = 1000;  // fold after first line
   for (auto byte : data) {
-    auto byteStr = QString::asprintf("0x%02x,", static_cast<unsigned char>(byte));
+    auto byteStr =
+        QString::asprintf("0x%02x,", static_cast<unsigned char>(byte));
     lineLen += byteStr.length() + 1;
     if (lineLen > 80) {
       byteStr = "\n" + QString(this->indentation, ' ') + byteStr;

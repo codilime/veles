@@ -18,10 +18,10 @@
 
 #include <assert.h>
 
+#include "data/repack.h"
+#include "dbif/info.h"
 #include "dbif/types.h"
 #include "dbif/universe.h"
-#include "dbif/info.h"
-#include "data/repack.h"
 
 namespace veles {
 namespace parser {
@@ -52,51 +52,47 @@ class StreamParser {
     blob_size_ = desc.dynamicCast<dbif::BlobDescriptionReply>()->size;
   }
 
-  dbif::ObjectHandle startChunk(const QString &type, const QString &name) {
+  dbif::ObjectHandle startChunk(const QString& type, const QString& name) {
     dbif::ObjectHandle parent = parent_chunk_;
-    if (stack_.size())
-      parent = stack_.back().chunk;
-    dbif::ObjectHandle chunk = blob_->syncRunMethod<dbif::ChunkCreateRequest>(
-      name, type, parent, pos_, pos_)->object;
-    stack_.push_back(WorkChunk{chunk, pos_, type, name, std::vector<data::ChunkDataItem>()});
+    if (stack_.size()) parent = stack_.back().chunk;
+    dbif::ObjectHandle chunk = blob_
+                                   ->syncRunMethod<dbif::ChunkCreateRequest>(
+                                       name, type, parent, pos_, pos_)
+                                   ->object;
+    stack_.push_back(
+        WorkChunk{chunk, pos_, type, name, std::vector<data::ChunkDataItem>()});
     return chunk;
   }
 
   dbif::ObjectHandle endChunk() {
-    auto &top = stack_.back();
+    auto& top = stack_.back();
     auto res = top.chunk;
     res->syncRunMethod<dbif::SetChunkParseRequest>(top.start, pos_, top.items);
     if (stack_.size() > 1) {
       stack_[stack_.size() - 2].items.push_back(
-        data::ChunkDataItem::subchunk(top.start, pos_, top.name, top.chunk)
-      );
+          data::ChunkDataItem::subchunk(top.start, pos_, top.name, top.chunk));
     }
     stack_.pop_back();
     return res;
   }
 
-  data::BinData getData(
-      const QString &name,
-      const data::Repacker &repack,
-      size_t num_elements,
-      const data::FieldHighType &high_type) {
+  data::BinData getData(const QString& name, const data::Repacker& repack,
+                        size_t num_elements,
+                        const data::FieldHighType& high_type) {
     size_t src_sz = repack.repackSize(num_elements);
-    if (pos_ >= blob_size_)
-      return data::BinData();
-    auto data = blob_->syncGetInfo<veles::dbif::BlobDataRequest>(pos_, pos_+src_sz);
+    if (pos_ >= blob_size_) return data::BinData();
+    auto data =
+        blob_->syncGetInfo<veles::dbif::BlobDataRequest>(pos_, pos_ + src_sz);
     pos_ += src_sz;
     data::BinData res = repack.repack(data->data, 0, num_elements);
     stack_.back().items.push_back(data::ChunkDataItem::field(
-      pos_ - src_sz, pos_, name,
-      repack, num_elements, high_type, res
-    ));
+        pos_ - src_sz, pos_, name, repack, num_elements, high_type, res));
     return res;
   }
 
-  data::BinData getDataUntil(const QString &name,
-                             const data::Repacker &repack,
+  data::BinData getDataUntil(const QString& name, const data::Repacker& repack,
                              data::BinData termination,
-                             const data::FieldHighType &high_type,
+                             const data::FieldHighType& high_type,
                              bool include_termination = true) {
     assert(termination.size() == 1);
     data::BinData res(repack.to_width, 0);
@@ -138,7 +134,7 @@ class StreamParser {
     return res;
   }
 
-  float getFloat32(const QString &name, data::Endian endian) {
+  float getFloat32(const QString& name, data::Endian endian) {
     auto data = getData(
         name, data::Repacker{endian, 8, 32}, 1,
         data::FieldHighType::floating(data::FieldHighType::IEEE754_SINGLE));
@@ -151,15 +147,15 @@ class StreamParser {
     return ret;
   }
 
-  float getFloat32Le(const QString &name) {
+  float getFloat32Le(const QString& name) {
     return getFloat32(name, data::Endian::LITTLE);
   }
 
-  float getFloat32Be(const QString &name) {
+  float getFloat32Be(const QString& name) {
     return getFloat32(name, data::Endian::BIG);
   }
 
-  double getFloat64(const QString &name, data::Endian endian) {
+  double getFloat64(const QString& name, data::Endian endian) {
     auto data = getData(
         name, data::Repacker{endian, 8, 64}, 1,
         data::FieldHighType::floating(data::FieldHighType::IEEE754_DOUBLE));
@@ -172,15 +168,15 @@ class StreamParser {
     return ret;
   }
 
-  double getFloat64Le(const QString &name) {
+  double getFloat64Le(const QString& name) {
     return getFloat64(name, data::Endian::LITTLE);
   }
 
-  double getFloat64Be(const QString &name) {
+  double getFloat64Be(const QString& name) {
     return getFloat64(name, data::Endian::BIG);
   }
 
-  uint32_t get32(const QString &name,
+  uint32_t get32(const QString& name,
                  data::FieldHighType::FieldSignMode sign_mode,
                  data::Endian endian) {
     auto data = getData(name, data::Repacker{endian, 8, 32}, 1,
@@ -189,19 +185,19 @@ class StreamParser {
     return data.element64();
   }
 
-  uint32_t getLe32(const QString &name,
+  uint32_t getLe32(const QString& name,
                    data::FieldHighType::FieldSignMode sign_mode =
                        data::FieldHighType::UNSIGNED) {
     return get32(name, sign_mode, data::Endian::LITTLE);
   }
 
-  uint32_t getBe32(const QString &name,
+  uint32_t getBe32(const QString& name,
                    data::FieldHighType::FieldSignMode sign_mode =
                        data::FieldHighType::UNSIGNED) {
     return get32(name, sign_mode, data::Endian::BIG);
   }
 
-  uint64_t get64(const QString &name,
+  uint64_t get64(const QString& name,
                  data::FieldHighType::FieldSignMode sign_mode,
                  data::Endian endian) {
     auto data = getData(name, data::Repacker{endian, 8, 64}, 1,
@@ -210,22 +206,20 @@ class StreamParser {
     return data.element64();
   }
 
-  uint64_t getLe64(const QString &name,
+  uint64_t getLe64(const QString& name,
                    data::FieldHighType::FieldSignMode sign_mode =
                        data::FieldHighType::UNSIGNED) {
     return get64(name, sign_mode, data::Endian::LITTLE);
   }
 
-  uint64_t getBe64(const QString &name,
+  uint64_t getBe64(const QString& name,
                    data::FieldHighType::FieldSignMode sign_mode =
                        data::FieldHighType::UNSIGNED) {
     return get64(name, sign_mode, data::Endian::BIG);
   }
 
-  std::vector<uint8_t> getBytes(const QString &name, uint64_t len) {
-    auto data = getData(
-      name, data::Repacker(), len,
-      data::FieldHighType());
+  std::vector<uint8_t> getBytes(const QString& name, uint64_t len) {
+    auto data = getData(name, data::Repacker(), len, data::FieldHighType());
     std::vector<uint8_t> res;
     for (size_t i = 0; i < data.size(); i++) {
       res.push_back(static_cast<uint8_t>(data.element64(i)));
@@ -233,12 +227,11 @@ class StreamParser {
     return res;
   }
 
-  std::vector<uint8_t> getBytesUntil(const QString &name, uint8_t termination,
+  std::vector<uint8_t> getBytesUntil(const QString& name, uint8_t termination,
                                      bool include_termination = true) {
-    auto data =
-        getDataUntil(name, data::Repacker(),
-                     data::BinData::fromRawData(8, {termination}),
-                     data::FieldHighType(), include_termination);
+    auto data = getDataUntil(name, data::Repacker(),
+                             data::BinData::fromRawData(8, {termination}),
+                             data::FieldHighType(), include_termination);
     std::vector<uint8_t> res;
     for (size_t i = 0; i < data.size(); i++) {
       res.push_back(static_cast<uint8_t>(data.element64(i)));
@@ -246,16 +239,13 @@ class StreamParser {
     return res;
   }
 
-  uint8_t getByte(const QString &name) {
-    auto data = getData(
-      name, data::Repacker(), 1,
-      data::FieldHighType());
-    if (!data.size())
-      return 0;
+  uint8_t getByte(const QString& name) {
+    auto data = getData(name, data::Repacker(), 1, data::FieldHighType());
+    if (!data.size()) return 0;
     return data.element64();
   }
 
-  std::vector<uint16_t> get16(const QString &name, uint64_t num,
+  std::vector<uint16_t> get16(const QString& name, uint64_t num,
                               data::Endian endian) {
     std::vector<uint16_t> res;
     auto data = getData(name, data::Repacker{endian, 8, 16}, num,
@@ -266,11 +256,11 @@ class StreamParser {
     return res;
   }
 
-  std::vector<uint16_t> getLe16(const QString &name, uint64_t num) {
+  std::vector<uint16_t> getLe16(const QString& name, uint64_t num) {
     return get16(name, num, data::Endian::LITTLE);
   }
 
-  std::vector<uint16_t> getBe16(const QString &name, uint64_t num) {
+  std::vector<uint16_t> getBe16(const QString& name, uint64_t num) {
     return get16(name, num, data::Endian::BIG);
   }
 
@@ -285,13 +275,12 @@ class StreamParser {
     return blob_size_ - pos_;
   }
 
-  void skip(uint64_t bytes) {pos_ += bytes;}
+  void skip(uint64_t bytes) { pos_ += bytes; }
 
-  void setComment(const QString &comment) {
-    auto &top = stack_.back();
+  void setComment(const QString& comment) {
+    auto& top = stack_.back();
     top.chunk->syncRunMethod<dbif::SetCommentRequest>(comment);
   }
-
 };
 
 }  // namespace parser

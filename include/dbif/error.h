@@ -17,17 +17,17 @@
 #pragma once
 
 #include <stdint.h>
-#include <vector>
 #include <QString>
+#include <vector>
 
 #include "dbif/types.h"
 
 namespace veles {
 namespace dbif {
 
-
 struct Error {
   virtual ~Error() {}
+
  protected:
   Error() {}
 };

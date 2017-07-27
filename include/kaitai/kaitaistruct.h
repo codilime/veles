@@ -25,14 +25,14 @@ namespace kaitai {
 
 class kstruct {
  public:
-  kstruct(kstream *_stream) { m__io = _stream; };
-  kstream *_io() { return m__io; };
+  kstruct(kstream* _stream) { m__io = _stream; };
+  kstream* _io() { return m__io; };
 
  protected:
-  kstream *m__io;
+  kstream* m__io;
 };
 
-}  // kaitai
-}  // veles
+}  // namespace kaitai
+}  // namespace veles
 
 #endif  // VELES_KAITAI_KAITAISTRUCT_H

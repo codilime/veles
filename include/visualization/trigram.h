@@ -22,19 +22,19 @@
 
 #include <vector>
 
-#include <QOpenGLWidget>
+#include <QAction>
+#include <QBasicTimer>
+#include <QCheckBox>
+#include <QOpenGLBuffer>
 #include <QOpenGLFunctions_3_2_Core>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
-#include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
-#include <QBasicTimer>
+#include <QOpenGLWidget>
 #include <QPushButton>
 #include <QSlider>
-#include <QCheckBox>
 #include <QTime>
 #include <QToolBar>
-#include <QAction>
 
 #include "util/settings/shortcuts.h"
 #include "visualization/base.h"
@@ -52,11 +52,9 @@ extern const int k_maximum_brightness;
 
 class LabelPositionMixer {
  public:
-  LabelPositionMixer(){}
-  LabelPositionMixer(
-      QVector4D s0c0p0, QVector4D s1c0p0,
-      QVector4D s0c1p0, QVector4D s0c1p1,
-      QVector4D s0c0p1, QVector4D s1c0p1) {
+  LabelPositionMixer() {}
+  LabelPositionMixer(QVector4D s0c0p0, QVector4D s1c0p0, QVector4D s0c1p0,
+                     QVector4D s0c1p1, QVector4D s0c0p1, QVector4D s1c0p1) {
     s0c0p0_ = s0c0p0;
     s1c0p0_ = s1c0p0;
     s0c1p0_ = s0c1p0;
@@ -102,8 +100,8 @@ class TrigramWidget : public VisualizationWidget {
   Q_OBJECT
 
  public:
-  enum class EVisualizationShape {CUBE, CYLINDER, SPHERE};
-  enum class EVisualizationMode {TRIGRAM, LAYERED_DIGRAM};
+  enum class EVisualizationShape { CUBE, CYLINDER, SPHERE };
+  enum class EVisualizationMode { TRIGRAM, LAYERED_DIGRAM };
 
   explicit TrigramWidget(QWidget* parent = 0);
   ~TrigramWidget();
@@ -133,12 +131,14 @@ class TrigramWidget : public VisualizationWidget {
   AdditionalResampleData* onAsyncResample() override;
 
   void paintLabels(QMatrix4x4& scene_mp, QMatrix4x4& scene_m);
-  void paintLabel(const LabelPositionMixer& mixer, const QMatrix4x4& scene_to_screen,
-      const QMatrix4x4& screen_mp, QOpenGLTexture* texture);
+  void paintLabel(const LabelPositionMixer& mixer,
+                  const QMatrix4x4& scene_to_screen,
+                  const QMatrix4x4& screen_mp, QOpenGLTexture* texture);
   void initLabels();
   void releaseLabels();
   QVector3D calcScreenPosForLabel(QVector3D world_pos,
-      const QMatrix4x4& scene_to_screen, int width, int height);
+                                  const QMatrix4x4& scene_to_screen, int width,
+                                  int height);
   void paintRF(QMatrix4x4& mvp);
   void initRF();
   void releaseRF();
@@ -148,7 +148,8 @@ class TrigramWidget : public VisualizationWidget {
   void initTextures();
   void initGeometry();
 
-  QAction* createAction(util::settings::shortcuts::ShortcutType type, const QIcon& icon, Manipulator* manipulator);
+  QAction* createAction(util::settings::shortcuts::ShortcutType type,
+                        const QIcon& icon, Manipulator* manipulator);
   QAbstractButton* createActionButton(QAction* action);
   virtual void prepareManipulatorToolbar(QMainWindow* visualization_window);
 

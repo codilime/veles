@@ -27,14 +27,14 @@
 namespace veles {
 namespace parser {
 
-std::vector<uint8_t> do_inflate(const std::vector<uint8_t> &d) {
+std::vector<uint8_t> do_inflate(const std::vector<uint8_t>& d) {
   std::vector<uint8_t> res;
   z_stream strm;
   strm.zalloc = Z_NULL;
   strm.zfree = Z_NULL;
   strm.opaque = Z_NULL;
   strm.avail_in = static_cast<uInt>(d.size());
-  strm.next_in = const_cast<uint8_t *>(d.data());
+  strm.next_in = const_cast<uint8_t*>(d.data());
   if (inflateInit(&strm) != Z_OK) {
     return res;
   }
@@ -45,13 +45,13 @@ std::vector<uint8_t> do_inflate(const std::vector<uint8_t> &d) {
     strm.next_out = buf;
     auto ret = inflate(&strm, Z_NO_FLUSH);
     switch (ret) {
-    case Z_STREAM_ERROR:
-    case Z_BUF_ERROR:
-    case Z_DATA_ERROR:
-    case Z_NEED_DICT:
-      // :(
-      inflateEnd(&strm);
-      return std::vector<uint8_t>();
+      case Z_STREAM_ERROR:
+      case Z_BUF_ERROR:
+      case Z_DATA_ERROR:
+      case Z_NEED_DICT:
+        // :(
+        inflateEnd(&strm);
+        return std::vector<uint8_t>();
     }
     res.insert(res.end(), buf, buf + BUFSZ - strm.avail_out);
     if (ret == Z_STREAM_END) {
@@ -89,10 +89,12 @@ void unpngFileBlob(const dbif::ObjectHandle& blob, uint64_t start,
     }
   }
   auto png = parser.endChunk();
-  makeSubBlob(png, "deflated_data", data::BinData(8, jointIdats.size(), jointIdats.data()));
+  makeSubBlob(png, "deflated_data",
+              data::BinData(8, jointIdats.size(), jointIdats.data()));
   auto decompressed = do_inflate(jointIdats);
   if (decompressed.size()) {
-    makeSubBlob(png, "inflated_data", data::BinData(8, decompressed.size(), decompressed.data()));
+    makeSubBlob(png, "inflated_data",
+                data::BinData(8, decompressed.size(), decompressed.data()));
   }
 }
 

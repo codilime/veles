@@ -16,17 +16,17 @@
  */
 #pragma once
 
-#include <set>
-#include <random>
 #include <cstdint>
-#include <vector>
-#include <unordered_set>
+#include <random>
+#include <set>
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include <QString>
 
-#include "data/nodeid.h"
 #include "data/bindata.h"
+#include "data/nodeid.h"
 #include "network/msgpackwrapper.h"
 
 namespace veles {
@@ -41,8 +41,7 @@ typedef std::set<std::string> Tags;
 /* Node */
 /*****************************************************************************/
 
-class Node {
-};
+class Node {};
 
-} // client
-} // veles
+}  // namespace client
+}  // namespace veles

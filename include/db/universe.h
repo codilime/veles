@@ -19,9 +19,9 @@
 #include <QObject>
 #include <QStringList>
 #include "data/bindata.h"
+#include "db/getter.h"
 #include "dbif/types.h"
 #include "parser/parser.h"
-#include "db/getter.h"
 
 namespace veles {
 namespace db {
@@ -30,21 +30,20 @@ class ParserWorker : public QObject {
   Q_OBJECT
 
  public slots:
-  void parse(const veles::dbif::ObjectHandle& blob,
-             MethodRunner *runner,
-             const QString& parser_id,
-             quint64 start = 0,
-             const veles::dbif::ObjectHandle& parent_chunk = veles::dbif::ObjectHandle());
+  void parse(const veles::dbif::ObjectHandle& blob, MethodRunner* runner,
+             const QString& parser_id, quint64 start = 0,
+             const veles::dbif::ObjectHandle& parent_chunk =
+                 veles::dbif::ObjectHandle());
 
  public:
-  void registerParser(parser::Parser *parser);
+  void registerParser(parser::Parser* parser);
   QStringList parserIdsList();
   ~ParserWorker();
 
  private:
-  QList<parser::Parser *> _parsers;
+  QList<parser::Parser*> _parsers;
 
-signals:
+ signals:
   void newParser(QString id);
 };
 

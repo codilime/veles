@@ -30,11 +30,11 @@ class InfoGetter : public QObject {
   void gotError(veles::dbif::PError x);
 
  public:
-  template<typename Reply, typename... Args>
+  template <typename Reply, typename... Args>
   void sendInfo(Args... args) {
     emit gotInfo(QSharedPointer<Reply>::create(args...));
   }
-  template<typename Err, typename... Args>
+  template <typename Err, typename... Args>
   void sendError(Args... args) {
     emit gotError(QSharedPointer<Err>::create(args...));
   }
@@ -48,15 +48,15 @@ class MethodRunner : public QObject {
   void gotError(veles::dbif::PError x);
 
  public:
-  template<typename Err, typename... Args>
+  template <typename Err, typename... Args>
   void sendError(Args... args) {
     emit gotError(QSharedPointer<Err>::create(args...));
   }
-  template<typename Reply, typename... Args>
+  template <typename Reply, typename... Args>
   void sendResult(Args... args) {
     emit gotResult(QSharedPointer<Reply>::create(args...));
   }
-  MethodRunner *forwarder(QThread *thread);
+  MethodRunner* forwarder(QThread* thread);
 };
 
 }  // namespace db

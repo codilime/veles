@@ -14,8 +14,8 @@
  * limitations under the License.
  *
  */
-#include <QSettings>
 #include "util/settings/hexedit.h"
+#include <QSettings>
 
 namespace veles {
 namespace util {
@@ -33,8 +33,8 @@ void setColumnsNumber(int number) {
 }
 
 bool resizeColumnsToWindowWidth() {
-    QSettings settings;
-    return settings.value("hexedit.resizeColumnsToWindowWidth", false).toBool();
+  QSettings settings;
+  return settings.value("hexedit.resizeColumnsToWindowWidth", false).toBool();
 }
 
 void setResizeColumnsToWindowWidth(bool on) {

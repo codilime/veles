@@ -35,19 +35,20 @@ class DatabaseInfo : public QWidget {
   Q_OBJECT
 
  public:
-  explicit DatabaseInfo(const dbif::ObjectHandle& database, QWidget* parent = 0);
+  explicit DatabaseInfo(const dbif::ObjectHandle& database,
+                        QWidget* parent = 0);
   ~DatabaseInfo();
 
  private:
   void subscribeChildren();
 
-  Ui::DatabaseInfo *ui_;
+  Ui::DatabaseInfo* ui_;
   dbif::ObjectHandle database_;
   QMap<dbif::ObjectHandle, QModelIndex> objectToIndex_;
   QVector<dbif::ObjectHandle> indexToObject_;
-  QStandardItemModel *model_;
-  QStandardItemModel *historyModel_;
-  dbif::InfoPromise *childrenPromise_;
+  QStandardItemModel* model_;
+  QStandardItemModel* historyModel_;
+  dbif::InfoPromise* childrenPromise_;
 
  signals:
   void goFile(const dbif::ObjectHandle& fileblob, const QString& fileName);

@@ -18,19 +18,19 @@
 
 #include <memory>
 
+#include <QHBoxLayout>
+#include <QLabel>
 #include <QObject>
+#include <QPixmap>
+#include <QProcess>
+#include <QScrollArea>
 #include <QString>
 #include <QStringList>
-#include <QProcess>
-#include <QLabel>
-#include <QPixmap>
-#include <QHBoxLayout>
-#include <QScrollArea>
 
 #include "client/networkclient.h"
+#include "network/msgpackwrapper.h"
 #include "ui/connectiondialog.h"
 #include "ui_connectionnotificationwidget.h"
-#include "network/msgpackwrapper.h"
 
 namespace veles {
 namespace ui {
@@ -56,12 +56,12 @@ class ConnectionManager : public QObject {
       client::NetworkClient::ConnectionStatus connection_status);
   void connectionsChanged(
       std::shared_ptr<std::vector<std::shared_ptr<proto::Connection>>>
-      connections);
+          connections);
 
  public slots:
   void locallyCreatedServerStarted();
   void locallyCreatedServerFinished(int exit_code,
-      QProcess::ExitStatus exit_status);
+                                    QProcess::ExitStatus exit_status);
   void connectionDialogAccepted();
   void startClient();
   void startLocalServer();
@@ -133,7 +133,7 @@ class ConnectionsWidget : public QWidget {
       client::NetworkClient::ConnectionStatus connection_status);
   void updateConnections(
       const std::shared_ptr<std::vector<std::shared_ptr<proto::Connection>>>&
-      connections);
+          connections);
 
  private:
   void clear();

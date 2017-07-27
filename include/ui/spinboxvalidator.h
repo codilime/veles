@@ -27,8 +27,8 @@ class SpinBoxValidator : public QValidator {
   SpinBoxValidator(uint64_t minimum, uint64_t maximum, int base = 10,
                    QObject* parent = nullptr);
 
-  State validate(QString &input, int &pos) const override;
-  void fixup(QString &input) const override;
+  State validate(QString& input, int& pos) const override;
+  void fixup(QString& input) const override;
 
   void setBase(int base);
   void setBottom(uint64_t bottom);

@@ -22,9 +22,7 @@
 namespace veles {
 namespace ui {
 
-Qt::Key ShortcutEdit::key() const {
-  return key_;
-}
+Qt::Key ShortcutEdit::key() const { return key_; }
 
 void ShortcutEdit::reset() {
   key_ = Qt::Key_unknown;
@@ -37,14 +35,16 @@ void ShortcutEdit::keyPressEvent(QKeyEvent* event) {
     // Unknown unhandled key pressed
     return;
   }
-  if (event->modifiers() != Qt::NoModifier && event->modifiers() != Qt::KeypadModifier) {
+  if (event->modifiers() != Qt::NoModifier &&
+      event->modifiers() != Qt::KeypadModifier) {
     // Modifier pressed - we can't handle it correctly so we ignore it here
     // and handle it through checkboxes
     return;
   }
   if (key == Qt::Key_Shift || key == Qt::Key_Control || key == Qt::Key_Meta ||
       key == Qt::Key_Alt || key == Qt::Key_AltGr) {
-    // Only modifier pressed - it sometimes can be missed by above check (i.e. meta key on Windows)
+    // Only modifier pressed - it sometimes can be missed by above check (i.e.
+    // meta key on Windows)
     return;
   }
   key_ = static_cast<Qt::Key>(key);

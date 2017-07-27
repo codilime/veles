@@ -36,8 +36,8 @@
 #include "ui/nodewidget.h"
 #include "ui/veles_mainwindow.h"
 
-#include "util/settings/hexedit.h"
 #include "util/icons.h"
+#include "util/settings/hexedit.h"
 
 #include "visualization/panel.h"
 
@@ -48,15 +48,19 @@ namespace ui {
 /* Public methods */
 /*****************************************************************************/
 
-NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
+NodeWidget::NodeWidget(
+    MainWindowWithDetachableDockWidgets* main_window,
     const QSharedPointer<FileBlobModel>& data_model,
     const QSharedPointer<QItemSelectionModel>& selection_model)
     : View("Hex editor", ":/images/show_hex_edit.png"),
-      main_window_(main_window), minimap_(nullptr),
-      minimap_dock_(nullptr), data_model_(data_model),
-      selection_model_(selection_model), sampler_(nullptr) {
-  hex_edit_widget_ = new HexEditWidget(
-      main_window, data_model, selection_model);
+      main_window_(main_window),
+      minimap_(nullptr),
+      minimap_dock_(nullptr),
+      data_model_(data_model),
+      selection_model_(selection_model),
+      sampler_(nullptr) {
+  hex_edit_widget_ =
+      new HexEditWidget(main_window, data_model, selection_model);
   // This is only for shortcuts
   addAction(hex_edit_widget_->uploadAction());
   addAction(hex_edit_widget_->undoAction());
@@ -72,16 +76,16 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
 
   node_tree_dock_ = new QDockWidget;
   node_tree_dock_->setWindowTitle("Node tree");
-  node_tree_widget_ = new NodeTreeWidget(main_window, data_model,
-      selection_model);
+  node_tree_widget_ =
+      new NodeTreeWidget(main_window, data_model, selection_model);
   node_tree_dock_->setWidget(node_tree_widget_);
   node_tree_dock_->setContextMenuPolicy(Qt::PreventContextMenu);
-  node_tree_dock_->setAllowedAreas(
-      Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+  node_tree_dock_->setAllowedAreas(Qt::LeftDockWidgetArea |
+                                   Qt::RightDockWidgetArea);
   setDockNestingEnabled(true);
   addDockWidget(Qt::LeftDockWidgetArea, node_tree_dock_);
 
-#if 0 // We do not use minimap for NodeWidget yet,
+#if 0  // We do not use minimap for NodeWidget yet,
   minimap_dock_ = new QDockWidget;
   new DockWidgetVisibilityGuard(minimap_dock_);
   minimap_dock_->setWindowTitle("Minimap");
@@ -105,12 +109,12 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
       minimap_dock_, Qt::Horizontal);
 #endif
 
-  connect(hex_edit_widget_, &HexEditWidget::showNodeTree,
-      node_tree_dock_, &QDockWidget::setVisible);
-  connect(node_tree_dock_, &QDockWidget::visibilityChanged,
-        hex_edit_widget_, &HexEditWidget::nodeTreeVisibilityChanged);
+  connect(hex_edit_widget_, &HexEditWidget::showNodeTree, node_tree_dock_,
+          &QDockWidget::setVisible);
+  connect(node_tree_dock_, &QDockWidget::visibilityChanged, hex_edit_widget_,
+          &HexEditWidget::nodeTreeVisibilityChanged);
 
-#if 0 // We do not use minimap for NodeWidget yet,
+#if 0  // We do not use minimap for NodeWidget yet,
   connect(hex_edit_widget_, &HexEditWidget::showMinimap,
         minimap_dock_, &QDockWidget::setVisible);
   connect(data_model_.data(), &FileBlobModel::newBinData,
@@ -120,15 +124,14 @@ NodeWidget::NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
 #endif
 }
 
-NodeWidget::~NodeWidget() {
-  delete sampler_;
-}
+NodeWidget::~NodeWidget() { delete sampler_; }
 
 void NodeWidget::loadBinDataToMinimap() {
   delete sampler_;
 
-  sampler_data_ = QByteArray(reinterpret_cast<const char*>(data_model_->binData().rawData()),
-          static_cast<int>(data_model_->binData().octets()));
+  sampler_data_ = QByteArray(
+      reinterpret_cast<const char*>(data_model_->binData().rawData()),
+      static_cast<int>(data_model_->binData().octets()));
   sampler_ = new util::UniformSampler(sampler_data_);
   sampler_->setSampleSize(4096 * 1024);
   minimap_->setSampler(sampler_);

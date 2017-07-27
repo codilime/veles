@@ -15,20 +15,29 @@
  *
  */
 #include "visualization/minimap.h"
-#include <QImage>
-#include <cstdlib>
-#include <cmath>
 #include <assert.h>
+#include <QImage>
+#include <cmath>
+#include <cstdlib>
 
 namespace veles {
 namespace visualization {
 
-VisualizationMinimap::VisualizationMinimap(QWidget *parent) :
-  QOpenGLWidget(parent), initialised_(false), gl_initialised_(false),
-  sampler_(nullptr), rows_(0), cols_(0), selection_start_(0),
-  selection_end_(0), top_line_pos_(1.0), bottom_line_pos_(-1.0),
-  color_(k_default_color), mode_(k_default_mode), texture_(nullptr),
-  lines_texture_(nullptr) {}
+VisualizationMinimap::VisualizationMinimap(QWidget* parent)
+    : QOpenGLWidget(parent),
+      initialised_(false),
+      gl_initialised_(false),
+      sampler_(nullptr),
+      rows_(0),
+      cols_(0),
+      selection_start_(0),
+      selection_end_(0),
+      top_line_pos_(1.0),
+      bottom_line_pos_(-1.0),
+      color_(k_default_color),
+      mode_(k_default_mode),
+      texture_(nullptr),
+      lines_texture_(nullptr) {}
 
 VisualizationMinimap::~VisualizationMinimap() {
   if (gl_initialised_) {
@@ -40,7 +49,7 @@ VisualizationMinimap::~VisualizationMinimap() {
   }
 }
 
-void VisualizationMinimap::setSampler(util::ISampler *sampler) {
+void VisualizationMinimap::setSampler(util::ISampler* sampler) {
   sampler_ = sampler;
   selection_start_ = 0;
   selection_end_ = (empty()) ? 0 : sampler_->getSampleSize();
@@ -55,11 +64,12 @@ QPair<size_t, size_t> VisualizationMinimap::getSelectedRange() {
   return qMakePair(start, end);
 }
 
-void VisualizationMinimap::setSelectedRange(size_t start_address, size_t end_address) {
+void VisualizationMinimap::setSelectedRange(size_t start_address,
+                                            size_t end_address) {
   selection_start_ = sampler_->getSampleOffset(start_address);
-  selection_end_ = (end_address == sampler_->getRange().second) ?
-                    sampler_->getSampleSize() :
-                    sampler_->getSampleOffset(end_address - 1);
+  selection_end_ = (end_address == sampler_->getRange().second)
+                       ? sampler_->getSampleSize()
+                       : sampler_->getSampleOffset(end_address - 1);
   if (gl_initialised_) {
     top_line_pos_ = normaliseLinePosition(offsetToLine(selection_start_));
     bottom_line_pos_ = normaliseLinePosition(offsetToLine(selection_end_));
@@ -115,9 +125,10 @@ void VisualizationMinimap::setMinimapMode(MinimapMode mode) {
 /* calculate minimap texture methods */
 /*****************************************************************************/
 
-float* VisualizationMinimap::calculateAverageValueTexture(
-              const uint8_t *sample, size_t sample_size,
-              size_t texture_size, double point_size) {
+float* VisualizationMinimap::calculateAverageValueTexture(const uint8_t* sample,
+                                                          size_t sample_size,
+                                                          size_t texture_size,
+                                                          double point_size) {
   auto bigtab = new float[texture_size];
   memset(bigtab, 0, texture_size * sizeof(*bigtab));
   uint64_t point_sum = 0, point_count = 0;
@@ -135,29 +146,30 @@ float* VisualizationMinimap::calculateAverageValueTexture(
     point_sum += sample[i];
     point_count += 1;
   }
-  bigtab[texture_size - 1] = static_cast<float>(
-      (point_count == 0) ? 0 : point_sum / point_count);
+  bigtab[texture_size - 1] =
+      static_cast<float>((point_count == 0) ? 0 : point_sum / point_count);
   return bigtab;
 }
 
-float* VisualizationMinimap::calculateEntropyTexture(
-              const uint8_t *sample, size_t sample_size,
-              size_t texture_size, double point_size) {
+float* VisualizationMinimap::calculateEntropyTexture(const uint8_t* sample,
+                                                     size_t sample_size,
+                                                     size_t texture_size,
+                                                     double point_size) {
   if (point_size > k_minimum_entropy_window) {
-    return calculateEntropyTexturePerPixel(sample, sample_size,
-                                           texture_size, point_size);
+    return calculateEntropyTexturePerPixel(sample, sample_size, texture_size,
+                                           point_size);
   }
   if (sample_size < 2 * k_minimum_entropy_window) {
     return calculateEntropyTextureSingleWindow(sample, sample_size,
                                                texture_size, point_size);
   }
-  return calculateEntropyTextureSlidingWindow(sample, sample_size,
-                                              texture_size, point_size);
+  return calculateEntropyTextureSlidingWindow(sample, sample_size, texture_size,
+                                              point_size);
 }
 
 float* VisualizationMinimap::calculateEntropyTexturePerPixel(
-              const uint8_t *sample, size_t sample_size,
-              size_t texture_size, double point_size) {
+    const uint8_t* sample, size_t sample_size, size_t texture_size,
+    double point_size) {
   auto bigtab = new float[texture_size];
   memset(bigtab, 0, texture_size * sizeof(*bigtab));
 
@@ -183,8 +195,8 @@ float* VisualizationMinimap::calculateEntropyTexturePerPixel(
 }
 
 float* VisualizationMinimap::calculateEntropyTextureSlidingWindow(
-              const uint8_t *sample, size_t sample_size,
-              size_t texture_size, double point_size) {
+    const uint8_t* sample, size_t sample_size, size_t texture_size,
+    double point_size) {
   auto bigtab = new float[texture_size];
   memset(bigtab, 0, texture_size * sizeof(*bigtab));
 
@@ -194,10 +206,11 @@ float* VisualizationMinimap::calculateEntropyTextureSlidingWindow(
   size_t start = 0, end = 0;
   while (start < sample_size) {
     size_t mid = (start + end) / 2;
-    if (mid > 0 && std::floor(mid / point_size) != std::floor((mid - 1) / point_size)) {
+    if (mid > 0 &&
+        std::floor(mid / point_size) != std::floor((mid - 1) / point_size)) {
       size_t point_count = end - start;
-      bigtab[static_cast<size_t>(mid / point_size)] = calculateEntropyValue(
-          counts, point_count);
+      bigtab[static_cast<size_t>(mid / point_size)] =
+          calculateEntropyValue(counts, point_count);
     }
     if (end > k_minimum_entropy_window || end >= sample_size) {
       counts[sample[start++]] -= 1;
@@ -211,8 +224,8 @@ float* VisualizationMinimap::calculateEntropyTextureSlidingWindow(
 }
 
 float* VisualizationMinimap::calculateEntropyTextureSingleWindow(
-              const uint8_t *sample, size_t sample_size,
-              size_t texture_size, double point_size) {
+    const uint8_t* sample, size_t sample_size, size_t texture_size,
+    double point_size) {
   auto bigtab = new float[texture_size];
   memset(bigtab, 0, texture_size * sizeof(*bigtab));
 
@@ -241,7 +254,8 @@ float* VisualizationMinimap::calculateEntropyTextureSingleWindow(
     point_count += 1;
   }
   result = (point_count == 0) ? 0.0f : point_sum / point_count;
-  bigtab[texture_size - 1] = static_cast<float>(result) * 32;  // Normalise to 0-256
+  bigtab[texture_size - 1] =
+      static_cast<float>(result) * 32;  // Normalise to 0-256
   delete[] counts;
   return bigtab;
 }
@@ -289,17 +303,20 @@ void VisualizationMinimap::initShaders() {
                                          ":/minimap/lines_fshader.glsl");
   lines_program_.link();
 
-  background_program_.addShaderFromSourceFile(QOpenGLShader::Vertex,
-                                         ":/minimap/background_vshader.glsl");
-  background_program_.addShaderFromSourceFile(QOpenGLShader::Fragment,
-                                         ":/minimap/background_fshader.glsl");
+  background_program_.addShaderFromSourceFile(
+      QOpenGLShader::Vertex, ":/minimap/background_vshader.glsl");
+  background_program_.addShaderFromSourceFile(
+      QOpenGLShader::Fragment, ":/minimap/background_fshader.glsl");
   background_program_.link();
 }
 
 void VisualizationMinimap::initGeometry() {
   square_vertex_.create();
   QVector2D v[] = {
-      {0, 0}, {0, 1}, {1, 0}, {1, 1},
+      {0, 0},
+      {0, 1},
+      {1, 0},
+      {1, 1},
   };
   square_vertex_.bind();
   square_vertex_.allocate(v, sizeof v);
@@ -323,17 +340,16 @@ void VisualizationMinimap::initTextures() {
   if (sample_size_ < texture_size) {
     float scale_factor = std::sqrt(static_cast<float>(sample_size_) /
                                    static_cast<float>(texture_size));
-    texture_cols_ = static_cast<size_t>(
-        std::max(1.0f, cols_ * scale_factor));
-    texture_rows_ = static_cast<size_t>(
-        std::max(1.0f,
-            std::min(static_cast<float>(sample_size_) / texture_cols_,
-                     rows_ * scale_factor)));
+    texture_cols_ = static_cast<size_t>(std::max(1.0f, cols_ * scale_factor));
+    texture_rows_ = static_cast<size_t>(std::max(
+        1.0f, std::min(static_cast<float>(sample_size_) / texture_cols_,
+                       rows_ * scale_factor)));
     texture_size = texture_rows_ * texture_cols_;
   }
 
   texture_ = new QOpenGLTexture(QOpenGLTexture::Target2D);
-  texture_->setSize(static_cast<int>(texture_cols_), static_cast<int>(texture_rows_));
+  texture_->setSize(static_cast<int>(texture_cols_),
+                    static_cast<int>(texture_rows_));
   // TODO(Maciek): WTF HAX
   // I really want to use GL_R8UI here, but for some reasone it doesn't work
   // so using float32 as workaround
@@ -342,19 +358,19 @@ void VisualizationMinimap::initTextures() {
   texture_->allocateStorage();
 
   point_size_ = std::max(1.0, static_cast<double>(sample_size_) / texture_size);
-  const uint8_t *rowdata = reinterpret_cast<const uint8_t *>(sampler_->data());
+  const uint8_t* rowdata = reinterpret_cast<const uint8_t*>(sampler_->data());
 
   float* bigtab;
   if (mode_ == MinimapMode::VALUE) {
-    bigtab = calculateAverageValueTexture(rowdata, sample_size_,
-                                          texture_size, point_size_);
+    bigtab = calculateAverageValueTexture(rowdata, sample_size_, texture_size,
+                                          point_size_);
   } else {
-    bigtab = calculateEntropyTexture(rowdata, sample_size_,
-                                     texture_size, point_size_);
+    bigtab = calculateEntropyTexture(rowdata, sample_size_, texture_size,
+                                     point_size_);
   }
 
   texture_->setData(QOpenGLTexture::Red, QOpenGLTexture::Float32,
-                    reinterpret_cast<void *>(bigtab));
+                    reinterpret_cast<void*>(bigtab));
   texture_->generateMipMaps();
   texture_->setMinificationFilter(QOpenGLTexture::Nearest);
   texture_->setMagnificationFilter(QOpenGLTexture::Nearest);
@@ -388,14 +404,14 @@ void VisualizationMinimap::paintGL() {
 
   // Render top / bottom margins (bar "resting points")
   background_program_.bind();
-  QVector2D top_margin_coords[] = {
-    {-1.0f, 1.0f}, {1.0f, 1.0f},
-    {-1.0f, 1.0f - pos_info.line_width}, {1.0f, 1.0f - pos_info.line_width}
-  };
-  QVector2D bottom_margin_coords[] = {
-    {-1.0f, -1.0f}, {1.0f, -1.0f},
-    {-1.0f, -1.0f + pos_info.line_width}, {1.0f, -1.0f + pos_info.line_width}
-  };
+  QVector2D top_margin_coords[] = {{-1.0f, 1.0f},
+                                   {1.0f, 1.0f},
+                                   {-1.0f, 1.0f - pos_info.line_width},
+                                   {1.0f, 1.0f - pos_info.line_width}};
+  QVector2D bottom_margin_coords[] = {{-1.0f, -1.0f},
+                                      {1.0f, -1.0f},
+                                      {-1.0f, -1.0f + pos_info.line_width},
+                                      {1.0f, -1.0f + pos_info.line_width}};
 
   int bg_red, bg_green, bg_blue;
   palette().color(QPalette::Button).getRgb(&bg_red, &bg_green, &bg_blue);
@@ -419,7 +435,8 @@ void VisualizationMinimap::paintGL() {
   program_.setUniformValue("scale_factor", pos_info.scale_factor);
   program_.setUniformValue("tx", 0);
   program_.setUniformValue("top_line_pos", (1 + (-1.0f * top_line_pos_)) / 2);
-  program_.setUniformValue("bottom_line_pos", (1 + (-1.0f * bottom_line_pos_)) / 2);
+  program_.setUniformValue("bottom_line_pos",
+                           (1 + (-1.0f * bottom_line_pos_)) / 2);
   program_.setUniformValue("channel", static_cast<GLuint>(color_));
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -427,23 +444,22 @@ void VisualizationMinimap::paintGL() {
   lines_program_.bind();
   lines_texture_->bind();
   lines_program_.setUniformValue("tx", 0);
-  float l_texture_scaling = (static_cast<float>(cols_) / k_bar_texture_width) / 2;
-  QVector2D texture_coords[] = {
-    {0.5f - l_texture_scaling, 0.0f}, {0.5f + l_texture_scaling, 0.0f},
-    {0.5f - l_texture_scaling, 1.0f}, {0.5f + l_texture_scaling, 1.0f}
-  };
+  float l_texture_scaling =
+      (static_cast<float>(cols_) / k_bar_texture_width) / 2;
+  QVector2D texture_coords[] = {{0.5f - l_texture_scaling, 0.0f},
+                                {0.5f + l_texture_scaling, 0.0f},
+                                {0.5f - l_texture_scaling, 1.0f},
+                                {0.5f + l_texture_scaling, 1.0f}};
   QVector2D top_line_coords[] = {
-    {-1.0f, pos_info.scaled_tlp + pos_info.line_width},
-    {1.0f, pos_info.scaled_tlp + pos_info.line_width},
-    {-1.0f, pos_info.scaled_tlp},
-    {1.0f, pos_info.scaled_tlp}
-  };
+      {-1.0f, pos_info.scaled_tlp + pos_info.line_width},
+      {1.0f, pos_info.scaled_tlp + pos_info.line_width},
+      {-1.0f, pos_info.scaled_tlp},
+      {1.0f, pos_info.scaled_tlp}};
   QVector2D bottom_line_coords[] = {
-    {-1.0f, pos_info.scaled_blp},
-    {1.0f, pos_info.scaled_blp},
-    {-1.0f, pos_info.scaled_blp - pos_info.line_width},
-    {1.0f, pos_info.scaled_blp - pos_info.line_width}
-  };
+      {-1.0f, pos_info.scaled_blp},
+      {1.0f, pos_info.scaled_blp},
+      {-1.0f, pos_info.scaled_blp - pos_info.line_width},
+      {1.0f, pos_info.scaled_blp - pos_info.line_width}};
 
   lines_program_.setUniformValueArray("coords", top_line_coords, 4);
   lines_program_.setUniformValueArray("tcoords", texture_coords, 4);
@@ -474,42 +490,42 @@ void VisualizationMinimap::centerSelectionOnCoord(float coord) {
   }
 }
 
-void VisualizationMinimap::mouseMoveEvent(QMouseEvent *event){
+void VisualizationMinimap::mouseMoveEvent(QMouseEvent* event) {
   if (empty()) return;
   if (!event->buttons().testFlag(Qt::LeftButton)) return;
   float position = clickToTextureCoord(event->y());
   switch (drag_state_) {
-  case DragState::NO_DRAG:
-    return;
-  case DragState::TOP_LINE:
-    top_line_pos_ = normaliseLinePosition(position);
-    break;
-  case DragState::BOTTOM_LINE:
-    bottom_line_pos_ = normaliseLinePosition(position);
-    break;
-  case DragState::BOX:
-    centerSelectionOnCoord(position);
-    updateLinePositions(false, true);
-    return;
+    case DragState::NO_DRAG:
+      return;
+    case DragState::TOP_LINE:
+      top_line_pos_ = normaliseLinePosition(position);
+      break;
+    case DragState::BOTTOM_LINE:
+      bottom_line_pos_ = normaliseLinePosition(position);
+      break;
+    case DragState::BOX:
+      centerSelectionOnCoord(position);
+      updateLinePositions(false, true);
+      return;
   }
   updateLinePositions();
 }
 
-void VisualizationMinimap::mousePressEvent(QMouseEvent *event) {
+void VisualizationMinimap::mousePressEvent(QMouseEvent* event) {
   if (empty()) return;
   if (event->button() != Qt::LeftButton) return;
   float position = clickToTextureCoord(event->y());
   auto pos_info = calculateScaledPositions();
   // make bar hitbox slightly larger than bar itself
   float tlp_bottom = pos_info.scaled_tlp - k_line_selection_epsilon,
-        tlp_top = pos_info.scaled_tlp + pos_info.line_width
-                  + k_line_selection_epsilon,
+        tlp_top = pos_info.scaled_tlp + pos_info.line_width +
+                  k_line_selection_epsilon,
         blp_top = pos_info.scaled_blp + k_line_selection_epsilon,
-        blp_bottom = pos_info.scaled_blp - pos_info.line_width
-                     - k_line_selection_epsilon;
+        blp_bottom = pos_info.scaled_blp - pos_info.line_width -
+                     k_line_selection_epsilon;
   bool grab_top = position >= tlp_bottom && position <= tlp_top,
-    grab_bot = position >= blp_bottom && position <= blp_top,
-    between = position < tlp_bottom && position > blp_top;
+       grab_bot = position >= blp_bottom && position <= blp_top,
+       between = position < tlp_bottom && position > blp_top;
 
   if (grab_top) {
     drag_state_ = DragState::TOP_LINE;
@@ -528,12 +544,12 @@ void VisualizationMinimap::mousePressEvent(QMouseEvent *event) {
   updateLinePositions(false, true);
 }
 
-void VisualizationMinimap::mouseReleaseEvent(QMouseEvent *event) {
+void VisualizationMinimap::mouseReleaseEvent(QMouseEvent* event) {
   if (event->button() != Qt::LeftButton) return;
   drag_state_ = DragState::NO_DRAG;
 }
 
-void VisualizationMinimap::wheelEvent(QWheelEvent *event) {
+void VisualizationMinimap::wheelEvent(QWheelEvent* event) {
   if (empty()) return;
   if (drag_state_ != DragState::NO_DRAG) {
     // we're already dragging the box, let's ignore the wheel
@@ -568,12 +584,11 @@ void VisualizationMinimap::updateLinePositions(bool keep_selection,
   float row_size = 2.0 / texture_rows_;
   float minimum_distance = std::max(k_minimum_line_distance, row_size);
 
-  top_line_pos_ = std::max(top_line_pos_,
-                           bottom_line_pos_ + minimum_distance);
+  top_line_pos_ = std::max(top_line_pos_, bottom_line_pos_ + minimum_distance);
   top_line_pos_ = std::min(top_line_pos_, 1.0f);
 
-  bottom_line_pos_ = std::min(bottom_line_pos_,
-                              top_line_pos_ - minimum_distance);
+  bottom_line_pos_ =
+      std::min(bottom_line_pos_, top_line_pos_ - minimum_distance);
   bottom_line_pos_ = std::max(bottom_line_pos_, -1.0f);
 
   update();
@@ -596,7 +611,6 @@ void VisualizationMinimap::updateLinePositions(bool keep_selection,
   size_t end = lineToOffset(bottom_line_pos_);
 
   if (start != selection_start_ || end != selection_end_) {
-
     // when moving a window we want to keep constant selection size,
     // even if it doesn't exactly fit to where line is
     if (keep_size) {
@@ -668,8 +682,8 @@ size_t VisualizationMinimap::lineToOffset(float line_position) {
 float VisualizationMinimap::offsetToLine(size_t offset) {
   double row_size = 2.0 / texture_rows_;
   double row_bytes = point_size_ * texture_cols_;
-  float position = static_cast<float>(
-      -1.0 * (((offset / row_bytes) * row_size) - 1));
+  float position =
+      static_cast<float>(-1.0 * (((offset / row_bytes) * row_size) - 1));
   return std::min(1.0f, std::max(-1.0f, position));
 }
 

@@ -16,11 +16,11 @@
  */
 #include <QThread>
 
-#include "db/universe.h"
-#include "dbif/promise.h"
-#include "dbif/method.h"
-#include "dbif/error.h"
 #include "db/getter.h"
+#include "db/universe.h"
+#include "dbif/error.h"
+#include "dbif/method.h"
+#include "dbif/promise.h"
 
 #include "parser/utils.h"
 
@@ -29,7 +29,7 @@ namespace db {
 
 ParserWorker::~ParserWorker() { qDeleteAll(_parsers); }
 
-void ParserWorker::registerParser(parser::Parser *parser) {
+void ParserWorker::registerParser(parser::Parser* parser) {
   _parsers.append(parser);
   emit newParser(parser->id());
 }
@@ -43,7 +43,7 @@ QStringList ParserWorker::parserIdsList() {
   return res;
 }
 
-void ParserWorker::parse(const dbif::ObjectHandle& blob, MethodRunner *runner,
+void ParserWorker::parse(const dbif::ObjectHandle& blob, MethodRunner* runner,
                          const QString& parser_id, quint64 start,
                          const veles::dbif::ObjectHandle& parent_chunk) {
   for (auto parser : _parsers) {

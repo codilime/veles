@@ -22,12 +22,12 @@
 namespace veles {
 namespace ui {
 
-GoToAddressDialog::GoToAddressDialog(QWidget *parent)
-    : QDialog(parent),
-      ui_(new Ui::GoToAddressDialog) {
+GoToAddressDialog::GoToAddressDialog(QWidget* parent)
+    : QDialog(parent), ui_(new Ui::GoToAddressDialog) {
   ui_->setupUi(this);
 
-  connect(ui_->addrFormat, SIGNAL(currentIndexChanged(QString)), this, SLOT(formatChanged(QString)));
+  connect(ui_->addrFormat, SIGNAL(currentIndexChanged(QString)), this,
+          SLOT(formatChanged(QString)));
 
   formatChanged(ui_->addrFormat->currentText());
 }
@@ -35,9 +35,9 @@ GoToAddressDialog::GoToAddressDialog(QWidget *parent)
 GoToAddressDialog::~GoToAddressDialog() { delete ui_; }
 
 void GoToAddressDialog::setRange(qint64 start, qint64 end) {
-    ui_->addrValue->setMinimum(start);
-    ui_->addrValue->setMaximum(end);
-    ui_->addrValue->setValue(start);
+  ui_->addrValue->setMinimum(start);
+  ui_->addrValue->setMaximum(end);
+  ui_->addrValue->setValue(start);
 }
 
 void GoToAddressDialog::formatChanged(const QString& format) {
@@ -48,9 +48,7 @@ void GoToAddressDialog::formatChanged(const QString& format) {
   }
 }
 
-qint64 GoToAddressDialog::address() {
-  return ui_->addrValue->value();
-}
+qint64 GoToAddressDialog::address() { return ui_->addrValue->value(); }
 
 void GoToAddressDialog::showEvent(QShowEvent* event) {
   ui_->addrValue->setFocus(Qt::OtherFocusReason);

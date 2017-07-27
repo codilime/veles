@@ -18,8 +18,6 @@
 
 namespace veles {
 namespace util {
-namespace math {
-
-}  // namespace math
+namespace math {}  // namespace math
 }  // namespace util
 }  // namespace veles

@@ -25,7 +25,9 @@ bool Parser::verifyAndParse(const dbif::ObjectHandle& blob, uint64_t start,
                             const dbif::ObjectHandle& parent_chunk) {
   if (_magic.size() > 0) {
     for (const auto& magic : _magic) {
-      auto data = blob->syncGetInfo<dbif::BlobDataRequest>(start, start + magic.size())->data;
+      auto data =
+          blob->syncGetInfo<dbif::BlobDataRequest>(start, start + magic.size())
+              ->data;
       if (data == magic) {
         parse(blob, start, parent_chunk);
         return true;

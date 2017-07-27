@@ -24,15 +24,16 @@ namespace util {
 
 class UniformSampler : public ISampler {
  public:
-  explicit UniformSampler(const QByteArray &data);
+  explicit UniformSampler(const QByteArray& data);
   ~UniformSampler();
 
   void setWindowSize(size_t size);
+
  private:
   struct UniformSamplerResampleData : public ResampleData {
     size_t window_size, windows_count;
     std::vector<size_t> windows;
-    char *data;
+    char* data;
   };
 
   UniformSampler(const UniformSampler& other);
@@ -41,15 +42,15 @@ class UniformSampler : public ISampler {
   size_t getRealSampleSize() const override;
   size_t getFileOffsetImpl(size_t index) const override;
   size_t getSampleOffsetImpl(size_t address) const override;
-  ResampleData* prepareResample(SamplerConfig *sc) override;
-  void applyResample(ResampleData *rd) override;
-  void cleanupResample(ResampleData *rd) override;
+  ResampleData* prepareResample(SamplerConfig* sc) override;
+  void applyResample(ResampleData* rd) override;
+  void cleanupResample(ResampleData* rd) override;
   UniformSampler* cloneImpl() const override;
 
   size_t window_size_, windows_count_;
   bool use_default_window_size_;
   std::vector<size_t> windows_;
-  char *buffer_;
+  char* buffer_;
 };
 
 }  // namespace util

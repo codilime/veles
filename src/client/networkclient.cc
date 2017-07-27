@@ -15,8 +15,8 @@
  *
  */
 
-#include <functional>
 #include <cstring>
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -24,10 +24,10 @@
 #include <QSslConfiguration>
 #include <QSslSocket>
 
-#include "proto/exceptions.h"
+#include "client/networkclient.h"
 #include "client/node.h"
 #include "client/nodetree.h"
-#include "client/networkclient.h"
+#include "proto/exceptions.h"
 
 namespace veles {
 namespace client {
@@ -38,36 +38,44 @@ namespace client {
 
 QString NetworkClient::connStatusStr(ConnectionStatus status) {
   switch (status) {
-  case ConnectionStatus::Connected:
-    return QString("Connected");
-    break;
-  case ConnectionStatus::Connecting:
-    return QString("Connecting");
-    break;
-  case ConnectionStatus::NotConnected:
-    return QString("Not Connected");
-    break;
-  default:
-    return QString("Unknown status");
-    break;
+    case ConnectionStatus::Connected:
+      return QString("Connected");
+      break;
+    case ConnectionStatus::Connecting:
+      return QString("Connecting");
+      break;
+    case ConnectionStatus::NotConnected:
+      return QString("Not Connected");
+      break;
+    default:
+      return QString("Unknown status");
+      break;
   }
 }
 
-NetworkClient::NetworkClient(QObject* parent) : QObject(parent),
-    client_socket_(nullptr), node_tree_(nullptr),
-    status_(ConnectionStatus::NotConnected),
-    server_name_("127.0.0.1"), server_port_(3135),
-    client_interface_name_("127.0.0.1"),
-    protocol_version_(1), client_name_(""),
-    client_version_("[unspecified version]"), client_description_(""),
-    client_type_(""), authentication_key_(""), fingerprint_(""),
-    quit_on_close_(false), ssl_enabled_(true),
-    output_stream_(nullptr), qid_(0) {
+NetworkClient::NetworkClient(QObject* parent)
+    : QObject(parent),
+      client_socket_(nullptr),
+      node_tree_(nullptr),
+      status_(ConnectionStatus::NotConnected),
+      server_name_("127.0.0.1"),
+      server_port_(3135),
+      client_interface_name_("127.0.0.1"),
+      protocol_version_(1),
+      client_name_(""),
+      client_version_("[unspecified version]"),
+      client_description_(""),
+      client_type_(""),
+      authentication_key_(""),
+      fingerprint_(""),
+      quit_on_close_(false),
+      ssl_enabled_(true),
+      output_stream_(nullptr),
+      qid_(0) {
   NetworkClient::NetworkClient::registerMessageHandlers();
 }
 
-NetworkClient::~NetworkClient() {
-}
+NetworkClient::~NetworkClient() {}
 
 NetworkClient::ConnectionStatus NetworkClient::connectionStatus() {
   return status_;
@@ -78,9 +86,7 @@ void NetworkClient::connect(const QString& server_url,
                             const QString& client_name,
                             const QString& client_version,
                             const QString& client_description,
-                            const QString& client_type,
-                            bool quit_on_close) {
-
+                            const QString& client_type, bool quit_on_close) {
   QString scheme = server_url.section("://", 0, 0).toLower();
   if (scheme == SCHEME_SSL) {
     if (QSslSocket::supportsSsl()) {
@@ -88,7 +94,8 @@ void NetworkClient::connect(const QString& server_url,
     } else {
       if (output()) {
         *output() << "NetworkClient:: SSL error - check if "
-                     "OpenSSL is available" << endl;
+                     "OpenSSL is available"
+                  << endl;
       }
       return;
     }
@@ -97,7 +104,8 @@ void NetworkClient::connect(const QString& server_url,
   } else if (scheme == SCHEME_UNIX) {
     if (output()) {
       *output() << "NetworkClient:: Unix sockets are "
-                   "currently unsupported" << endl;
+                   "currently unsupported"
+                << endl;
     }
     return;
   } else {
@@ -106,7 +114,7 @@ void NetworkClient::connect(const QString& server_url,
     }
     return;
   }
-  QString url = server_url.section("://",1);
+  QString url = server_url.section("://", 1);
   QString auth = url.section("@", 0, 0);
   QString loc = url.section("@", 1);
 
@@ -124,42 +132,45 @@ void NetworkClient::connect(const QString& server_url,
   const int target_size = 64;
   int key_size = authentication_key_.size();
   authentication_key_.resize(target_size);
-  for(int i = key_size; i < target_size; ++i) {
+  for (int i = key_size; i < target_size; ++i) {
     authentication_key_[i] = 0;
   }
 
-  if (status_ != ConnectionStatus::Connected
-      && status_ != ConnectionStatus::Connecting) {
+  if (status_ != ConnectionStatus::Connected &&
+      status_ != ConnectionStatus::Connecting) {
     client_socket_ = new QSslSocket(this);
     if (ssl_enabled_) {
-      QObject::connect(client_socket_, &QSslSocket::encrypted,
-          this, &NetworkClient::socketConnected, Qt::QueuedConnection);
+      QObject::connect(client_socket_, &QSslSocket::encrypted, this,
+                       &NetworkClient::socketConnected, Qt::QueuedConnection);
       QObject::connect(
           client_socket_,
-          static_cast<void(QSslSocket::*)(const QList<QSslError>&)>(&QSslSocket::sslErrors),
+          static_cast<void (QSslSocket::*)(const QList<QSslError>&)>(
+              &QSslSocket::sslErrors),
           this, &NetworkClient::checkFingerprint);
     } else {
-      QObject::connect(client_socket_, &QAbstractSocket::connected,
-          this, &NetworkClient::socketConnected, Qt::QueuedConnection);
+      QObject::connect(client_socket_, &QAbstractSocket::connected, this,
+                       &NetworkClient::socketConnected, Qt::QueuedConnection);
     }
-    QObject::connect(client_socket_, &QAbstractSocket::disconnected,
-        this, &NetworkClient::socketDisconnected, Qt::QueuedConnection);
-    QObject::connect(client_socket_, &QIODevice::readyRead,
-        this, &NetworkClient::newDataAvailable);
-    QObject::connect(client_socket_,
-        static_cast<void(QAbstractSocket::*)(QAbstractSocket::SocketError)>(
-        &QAbstractSocket::error), this, &NetworkClient::socketError);
+    QObject::connect(client_socket_, &QAbstractSocket::disconnected, this,
+                     &NetworkClient::socketDisconnected, Qt::QueuedConnection);
+    QObject::connect(client_socket_, &QIODevice::readyRead, this,
+                     &NetworkClient::newDataAvailable);
+    QObject::connect(
+        client_socket_,
+        static_cast<void (QAbstractSocket::*)(QAbstractSocket::SocketError)>(
+            &QAbstractSocket::error),
+        this, &NetworkClient::socketError);
 
     if (output()) {
-    *output() << "NetworkClient::connect" << endl
-        << "    client interface: " << client_interface_name_ << endl
-        << "    server host: " << server_name_ << endl
-        << "    server port: " << server_port_ << endl;
+      *output() << "NetworkClient::connect" << endl
+                << "    client interface: " << client_interface_name_ << endl
+                << "    server host: " << server_name_ << endl
+                << "    server port: " << server_port_ << endl;
     }
 
     if (1) {
-    // TODO(altran01): Why is bind causing a problem here?
-    // if (client_socket_->bind(QHostAddress(client_interface_name))) {
+      // TODO(altran01): Why is bind causing a problem here?
+      // if (client_socket_->bind(QHostAddress(client_interface_name))) {
       if (output()) {
         *output() << "NetworkClient: bind successful." << endl;
       }
@@ -184,7 +195,7 @@ void NetworkClient::disconnect() {
 
   setConnectionStatus(ConnectionStatus::NotConnected);
 
-  if(client_socket_) {
+  if (client_socket_) {
     client_socket_->disconnectFromHost();
   }
 }
@@ -193,41 +204,23 @@ std::unique_ptr<NodeTree> const& NetworkClient::nodeTree() {
   return node_tree_;
 }
 
-uint64_t NetworkClient::nextQid() {
-  return ++qid_;
-}
+uint64_t NetworkClient::nextQid() { return ++qid_; }
 
-unsigned int NetworkClient::protocolVersion() {
-  return protocol_version_;
-}
+unsigned int NetworkClient::protocolVersion() { return protocol_version_; }
 
-QString NetworkClient::clientName() {
-  return client_name_;
-}
+QString NetworkClient::clientName() { return client_name_; }
 
-QString NetworkClient::clientVersion() {
-  return client_version_;
-}
+QString NetworkClient::clientVersion() { return client_version_; }
 
-QString NetworkClient::clientDescription() {
-  return client_description_;
-}
+QString NetworkClient::clientDescription() { return client_description_; }
 
-QString NetworkClient::clientType() {
-  return client_type_;
-}
+QString NetworkClient::clientType() { return client_type_; }
 
-QString NetworkClient::authenticationKey() {
-  return authentication_key_;
-}
+QString NetworkClient::authenticationKey() { return authentication_key_; }
 
-QTextStream* NetworkClient::output() {
-  return output_stream_;
-}
+QTextStream* NetworkClient::output() { return output_stream_; }
 
-void NetworkClient::setOutput(QTextStream* stream) {
-  output_stream_ = stream;
-}
+void NetworkClient::setOutput(QTextStream* stream) { output_stream_ = stream; }
 
 void NetworkClient::sendMsgConnect() {
   std::shared_ptr<std::string> client_name_ptr(
@@ -240,62 +233,52 @@ void NetworkClient::sendMsgConnect() {
       new std::string(client_type_.toStdString()));
 
   msg_ptr msg(new proto::MsgConnect(
-      1,
-      pair_str(true, client_name_ptr),
-      pair_str(true, client_version_ptr),
-      pair_str(true, client_description_ptr),
-      pair_str(true, client_type_ptr),
-      quit_on_close_
-      ));
+      1, pair_str(true, client_name_ptr), pair_str(true, client_version_ptr),
+      pair_str(true, client_description_ptr), pair_str(true, client_type_ptr),
+      quit_on_close_));
 
   sendMessage(msg);
 }
 
 void NetworkClient::registerMessageHandlers() {
-  message_handlers_["subscription_cancelled"]
-      = &NetworkClient::handleNodeTreeRelatedMessage;
-  message_handlers_["get_reply"]
-      = &NetworkClient::handleNodeTreeRelatedMessage;
-  message_handlers_["connected"]
-      = &NetworkClient::handleConnectedMessage;
-  message_handlers_["proto_error"]
-      = &NetworkClient::handleProtoErrorMessage;
-  message_handlers_["connections_reply"]
-      = &NetworkClient::handleConnectionsMessage;
-  message_handlers_["registry_reply"]
-      = &NetworkClient::handleRegistryReplyMessage;
-  message_handlers_["method_result"]
-      = &NetworkClient::handleMthdResMessage;
-  message_handlers_["method_error"]
-      = &NetworkClient::handleMthdResMessage;
-  message_handlers_["broadcast_result"]
-      = &NetworkClient::handleMthdResMessage;
-  message_handlers_["plugin_trigger_run"]
-      = &NetworkClient::handlePluginTriggerRunMessage;
-  message_handlers_["request_error"]
-      = &NetworkClient::handleNodeTreeRelatedMessage;
-  message_handlers_["get_list_reply"]
-      = &NetworkClient::handleNodeTreeRelatedMessage;
-  message_handlers_["get_data_reply"]
-      = &NetworkClient::handleNodeTreeRelatedMessage;
-  message_handlers_["get_query_reply"]
-      = &NetworkClient::handleNodeTreeRelatedMessage;
-  message_handlers_["query_error"]
-      = &NetworkClient::handleNodeTreeRelatedMessage;
-  message_handlers_["request_ack"]
-      = &NetworkClient::handleNodeTreeRelatedMessage;
-  message_handlers_["get_bindata_reply"]
-      = &NetworkClient::handleNodeTreeRelatedMessage;
-  message_handlers_["connection_error"]
-      = &NetworkClient::handleConnErrorMessage;
-  message_handlers_["plugin_method_run"]
-      = &NetworkClient::handlePluginMethodRunMessage;
-  message_handlers_["plugin_query_get"]
-      = &NetworkClient::handlePluginQueryGetMessage;
-  message_handlers_["plugin_broadcast_run"]
-      = &NetworkClient::handleBroadcastRunMessage;
-  message_handlers_["plugin_handler_unregistered"]
-      = &NetworkClient::handlePluginHandlerUnregisteredMessage;
+  message_handlers_["subscription_cancelled"] =
+      &NetworkClient::handleNodeTreeRelatedMessage;
+  message_handlers_["get_reply"] = &NetworkClient::handleNodeTreeRelatedMessage;
+  message_handlers_["connected"] = &NetworkClient::handleConnectedMessage;
+  message_handlers_["proto_error"] = &NetworkClient::handleProtoErrorMessage;
+  message_handlers_["connections_reply"] =
+      &NetworkClient::handleConnectionsMessage;
+  message_handlers_["registry_reply"] =
+      &NetworkClient::handleRegistryReplyMessage;
+  message_handlers_["method_result"] = &NetworkClient::handleMthdResMessage;
+  message_handlers_["method_error"] = &NetworkClient::handleMthdResMessage;
+  message_handlers_["broadcast_result"] = &NetworkClient::handleMthdResMessage;
+  message_handlers_["plugin_trigger_run"] =
+      &NetworkClient::handlePluginTriggerRunMessage;
+  message_handlers_["request_error"] =
+      &NetworkClient::handleNodeTreeRelatedMessage;
+  message_handlers_["get_list_reply"] =
+      &NetworkClient::handleNodeTreeRelatedMessage;
+  message_handlers_["get_data_reply"] =
+      &NetworkClient::handleNodeTreeRelatedMessage;
+  message_handlers_["get_query_reply"] =
+      &NetworkClient::handleNodeTreeRelatedMessage;
+  message_handlers_["query_error"] =
+      &NetworkClient::handleNodeTreeRelatedMessage;
+  message_handlers_["request_ack"] =
+      &NetworkClient::handleNodeTreeRelatedMessage;
+  message_handlers_["get_bindata_reply"] =
+      &NetworkClient::handleNodeTreeRelatedMessage;
+  message_handlers_["connection_error"] =
+      &NetworkClient::handleConnErrorMessage;
+  message_handlers_["plugin_method_run"] =
+      &NetworkClient::handlePluginMethodRunMessage;
+  message_handlers_["plugin_query_get"] =
+      &NetworkClient::handlePluginQueryGetMessage;
+  message_handlers_["plugin_broadcast_run"] =
+      &NetworkClient::handleBroadcastRunMessage;
+  message_handlers_["plugin_handler_unregistered"] =
+      &NetworkClient::handlePluginHandlerUnregisteredMessage;
 }
 
 void NetworkClient::handleNodeTreeRelatedMessage(const msg_ptr& msg) {
@@ -306,11 +289,12 @@ void NetworkClient::handleConnectedMessage(const msg_ptr& msg) {
   if (connectionStatus() != ConnectionStatus::Connecting) {
     if (output()) {
       *output() << "NetworkClient: Very confusing... "
-        "Received \"connected\" message while already connected." << endl;
+                   "Received \"connected\" message while already connected."
+                << endl;
     }
   } else {
     if (output()) {
-        *output() << "NetworkClient: Received \"connected\" message." << endl;
+      *output() << "NetworkClient: Received \"connected\" message." << endl;
     }
 
     setConnectionStatus(ConnectionStatus::Connected);
@@ -318,14 +302,13 @@ void NetworkClient::handleConnectedMessage(const msg_ptr& msg) {
 }
 
 void NetworkClient::handleProtoErrorMessage(const msg_ptr& msg) {
-  proto::MsgProtoError* mpe
-      = dynamic_cast<proto::MsgProtoError*>(msg.get());
+  proto::MsgProtoError* mpe = dynamic_cast<proto::MsgProtoError*>(msg.get());
   if (mpe) {
     if (output()) {
-      *output()
-          << "Received protocol error message. Aborting connection..." << endl
-          << "    code: " << mpe->err->code.c_str()
-          << "  msg: " << mpe->err->msg.c_str() << endl;
+      *output() << "Received protocol error message. Aborting connection..."
+                << endl
+                << "    code: " << mpe->err->code.c_str()
+                << "  msg: " << mpe->err->msg.c_str() << endl;
     }
 
     disconnect();
@@ -334,48 +317,56 @@ void NetworkClient::handleProtoErrorMessage(const msg_ptr& msg) {
 
 void NetworkClient::handleConnectionsMessage(const msg_ptr& msg) {
   if (output()) {
-    *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
-        << "\" message." << endl;
+    *output() << "NetworkClient: Received \""
+              << QString::fromStdString(msg->object_type) << "\" message."
+              << endl;
   }
 
-  // TODO(altran01): Is this something that client should implement in a subclass?
+  // TODO(altran01): Is this something that client should implement in a
+  // subclass?
 }
 
 void NetworkClient::handleRegistryReplyMessage(const msg_ptr& msg) {
   if (output()) {
-    *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
-        << "\" message." << endl;
+    *output() << "NetworkClient: Received \""
+              << QString::fromStdString(msg->object_type) << "\" message."
+              << endl;
   }
 
-  // TODO(altran01): Is this something that client should implement in a subclass?
+  // TODO(altran01): Is this something that client should implement in a
+  // subclass?
 }
 
 void NetworkClient::handleMthdResMessage(const msg_ptr& msg) {
   if (output()) {
-    *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
-        << "\" message." << endl;
+    *output() << "NetworkClient: Received \""
+              << QString::fromStdString(msg->object_type) << "\" message."
+              << endl;
   }
-  // TODO(altran01): Is this something that client should implement in a subclass?
+  // TODO(altran01): Is this something that client should implement in a
+  // subclass?
 }
 
 void NetworkClient::handlePluginTriggerRunMessage(const msg_ptr& msg) {
   if (output()) {
-    *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
-        << "\" message." << endl;
+    *output() << "NetworkClient: Received \""
+              << QString::fromStdString(msg->object_type) << "\" message."
+              << endl;
   }
 
-  // TODO(altran01): Is this something that client should implement in a subclass?
+  // TODO(altran01): Is this something that client should implement in a
+  // subclass?
 }
 
 void NetworkClient::handleConnErrorMessage(const msg_ptr& msg) {
-  proto::MsgConnectionError* cem
-      = dynamic_cast<proto::MsgConnectionError*>(msg.get());
+  proto::MsgConnectionError* cem =
+      dynamic_cast<proto::MsgConnectionError*>(msg.get());
   if (cem) {
     if (output()) {
-      *output()
-          << "Received connection error message. Aborting connection..."
-          << endl << "    code: " << cem->err->code.c_str()
-          << "  msg: " << cem->err->msg.c_str() << endl;
+      *output() << "Received connection error message. Aborting connection..."
+                << endl
+                << "    code: " << cem->err->code.c_str()
+                << "  msg: " << cem->err->msg.c_str() << endl;
     }
 
     disconnect();
@@ -384,38 +375,46 @@ void NetworkClient::handleConnErrorMessage(const msg_ptr& msg) {
 
 void NetworkClient::handlePluginMethodRunMessage(const msg_ptr& msg) {
   if (output()) {
-    *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
-        << "\" message." << endl;
+    *output() << "NetworkClient: Received \""
+              << QString::fromStdString(msg->object_type) << "\" message."
+              << endl;
   }
 
-  // TODO(altran01): Is this something that client should implement in a subclass?
+  // TODO(altran01): Is this something that client should implement in a
+  // subclass?
 }
 
 void NetworkClient::handlePluginQueryGetMessage(const msg_ptr& msg) {
   if (output()) {
-    *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
-        << "\" message." << endl;
+    *output() << "NetworkClient: Received \""
+              << QString::fromStdString(msg->object_type) << "\" message."
+              << endl;
   }
 
-  // TODO(altran01): Is this something that client should implement in a subclass?
+  // TODO(altran01): Is this something that client should implement in a
+  // subclass?
 }
 
 void NetworkClient::handleBroadcastRunMessage(const msg_ptr& msg) {
   if (output()) {
-    *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
-        << "\" message." << endl;
+    *output() << "NetworkClient: Received \""
+              << QString::fromStdString(msg->object_type) << "\" message."
+              << endl;
   }
 
-  // TODO(altran01): Is this something that client should implement in a subclass?
+  // TODO(altran01): Is this something that client should implement in a
+  // subclass?
 }
 
 void NetworkClient::handlePluginHandlerUnregisteredMessage(const msg_ptr& msg) {
   if (output()) {
-    *output() << "NetworkClient: Received \"" << QString::fromStdString(msg->object_type)
-        << "\" message." << endl;
+    *output() << "NetworkClient: Received \""
+              << QString::fromStdString(msg->object_type) << "\" message."
+              << endl;
   }
 
-  // TODO(altran01): Is this something that client should implement in a subclass?
+  // TODO(altran01): Is this something that client should implement in a
+  // subclass?
 }
 
 void NetworkClient::sendMessage(const msg_ptr& msg) {
@@ -432,7 +431,7 @@ void NetworkClient::setConnectionStatus(ConnectionStatus connection_status) {
     status_ = connection_status;
     if (output()) {
       *output() << "NetworkClient: New connection status: "
-          << connStatusStr(connection_status) << "." << endl;
+                << connStatusStr(connection_status) << "." << endl;
     }
     emit connectionStatusChanged(status_);
   }
@@ -441,7 +440,8 @@ void NetworkClient::setConnectionStatus(ConnectionStatus connection_status) {
 void NetworkClient::socketConnected() {
   if (output()) {
     *output() << "NetworkClient: TCP socket connected - sending an "
-        "authentication key and \"connect\" message." << endl;
+                 "authentication key and \"connect\" message."
+              << endl;
   }
 
   node_tree_ = std::unique_ptr<NodeTree>(new NodeTree(this));
@@ -451,7 +451,7 @@ void NetworkClient::socketConnected() {
 
 void NetworkClient::socketDisconnected() {
   setConnectionStatus(ConnectionStatus::NotConnected);
-  if(output()) {
+  if (output()) {
     *output() << "NetworkClient: TCP socket disconnected." << endl;
   }
 
@@ -473,19 +473,20 @@ void NetworkClient::newDataAvailable() {
     } catch (proto::SchemaError& schema_error) {
       if (output()) {
         *output() << "NetworkClient: SchemaError - "
-            << QString::fromStdString(schema_error.msg) << endl;
+                  << QString::fromStdString(schema_error.msg) << endl;
       }
     }
 
     if (msg) {
       auto handler_iter = message_handlers_.find(msg->object_type);
-      if(handler_iter != message_handlers_.end()) {
+      if (handler_iter != message_handlers_.end()) {
         MessageHandler handler = handler_iter->second;
         (this->*handler)(msg);
       } else {
         if (output()) {
           *output() << "NetworkClient: Received message of not handled "
-              "type: \"" << msg->object_type.c_str() << "\"." << endl;
+                       "type: \""
+                    << msg->object_type.c_str() << "\"." << endl;
         }
       }
       emit messageReceived(msg);
@@ -499,29 +500,33 @@ void NetworkClient::socketError(QAbstractSocket::SocketError socketError) {
   setConnectionStatus(ConnectionStatus::NotConnected);
   if (output() && client_socket_) {
     *output() << "NetworkClient: Socket error - "
-        << client_socket_->errorString() << endl;
+              << client_socket_->errorString() << endl;
   }
 }
 
 void NetworkClient::checkFingerprint(const QList<QSslError>& errors) {
   bool fingerprint_valid = false;
   for (const auto& err : errors) {
-    if (err.error() == QSslError::SelfSignedCertificate || err.error() == QSslError::HostNameMismatch) {
+    if (err.error() == QSslError::SelfSignedCertificate ||
+        err.error() == QSslError::HostNameMismatch) {
       if (!fingerprint_valid) {
         QSslCertificate cert = err.certificate();
         if (cert.isNull()) {
-          // This shouldn't happen for those 2 errors, but better safe than sorry
+          // This shouldn't happen for those 2 errors, but better safe than
+          // sorry
           if (output()) {
             *output() << "NetworkClient: received null certificate!" << endl;
           }
           return;
         }
-        QByteArray remote_fingerprint = cert.digest(QCryptographicHash::Algorithm::Sha256).toHex();
+        QByteArray remote_fingerprint =
+            cert.digest(QCryptographicHash::Algorithm::Sha256).toHex();
         if (fingerprint_ == remote_fingerprint) {
           fingerprint_valid = true;
         } else {
           if (output()) {
-            *output() << "NetworkClient: Certificate fingerprint mismatch! Expected: "
+            *output()
+                << "NetworkClient: Certificate fingerprint mismatch! Expected: "
                 << fingerprint_ << ", got: " << remote_fingerprint << endl;
           }
           return;
@@ -529,8 +534,8 @@ void NetworkClient::checkFingerprint(const QList<QSslError>& errors) {
       }
     } else {
       if (output()) {
-        *output() << "NetworkClient: unexpected error: "
-            << err.errorString() << endl;
+        *output() << "NetworkClient: unexpected error: " << err.errorString()
+                  << endl;
       }
       return;
     }

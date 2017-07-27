@@ -19,7 +19,7 @@
 namespace veles {
 namespace util {
 
-template<typename T>
+template <typename T>
 T bytesToIntLe(const uint8_t* bytes, size_t num_bytes) {
   assert(num_bytes <= sizeof(T));
   T res = T();
@@ -29,7 +29,7 @@ T bytesToIntLe(const uint8_t* bytes, size_t num_bytes) {
   return res;
 }
 
-template<typename T>
+template <typename T>
 void intToBytesLe(T val, size_t num_bytes, uint8_t* out) {
   assert(num_bytes <= sizeof(T));
   for (size_t i = 0; i < num_bytes; ++i) {

@@ -23,7 +23,8 @@
 namespace veles {
 namespace ui {
 
-RootFileBlobItem::RootFileBlobItem(const dbif::ObjectHandle& obj, QObject *parent)
+RootFileBlobItem::RootFileBlobItem(const dbif::ObjectHandle& obj,
+                                   QObject* parent)
     : FileBlobItem("", "", "", 0, 0, parent) {
   dataObj_ = obj;
   auto childrenPromise = dataObj_->asyncSubInfo<dbif::ChildrenRequest>(this);
@@ -31,14 +32,14 @@ RootFileBlobItem::RootFileBlobItem(const dbif::ObjectHandle& obj, QObject *paren
           SLOT(gotChildrenResponse(veles::dbif::PInfoReply)));
 }
 
-void RootFileBlobItem::gotChildrenResponse(const veles::dbif::PInfoReply& reply) {
+void RootFileBlobItem::gotChildrenResponse(
+    const veles::dbif::PInfoReply& reply) {
   FileBlobItem::removeOldChildren();
-  auto objects =
-      reply.dynamicCast<dbif::ChildrenRequest::ReplyType>()->objects;
+  auto objects = reply.dynamicCast<dbif::ChildrenRequest::ReplyType>()->objects;
 
-  QList<FileBlobItem *> newChildren;
+  QList<FileBlobItem*> newChildren;
 
-  for (auto &object : objects) {
+  for (auto& object : objects) {
     newChildren.append(new SubchunkFileBlobItem(object, this));
   }
 

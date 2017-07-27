@@ -15,12 +15,12 @@
  *
  */
 
-#include <functional>
 #include <cstring>
+#include <functional>
 
+#include "client/networkclient.h"
 #include "client/node.h"
 #include "client/nodetree.h"
-#include "client/networkclient.h"
 
 namespace veles {
 namespace client {
@@ -29,11 +29,9 @@ namespace client {
 /* NodeTree */
 /*****************************************************************************/
 
-NodeTree::NodeTree(NetworkClient* network_client) {
-}
+NodeTree::NodeTree(NetworkClient* network_client) {}
 
-void NodeTree::addRemoteNodeTreeRelatedMessage(const msg_ptr& msg) {
-}
+void NodeTree::addRemoteNodeTreeRelatedMessage(const msg_ptr& msg) {}
 
 }  // namespace client
 }  // namespace veles

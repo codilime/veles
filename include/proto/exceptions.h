@@ -26,16 +26,15 @@ class VelesException {
  public:
   std::string code;
   std::string msg;
-  VelesException(const std::string &code, const std::string &msg)
-    : code(code), msg(msg) {}
+  VelesException(const std::string& code, const std::string& msg)
+      : code(code), msg(msg) {}
   virtual ~VelesException() {}
 };
 
 class SchemaError : public VelesException {
  public:
-  SchemaError(const std::string &msg) : VelesException("schema_error", msg) {}
+  SchemaError(const std::string& msg) : VelesException("schema_error", msg) {}
 };
 
 }  // namespace proto
 }  // namespace veles
-

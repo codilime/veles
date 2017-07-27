@@ -20,7 +20,7 @@
 namespace veles {
 namespace ui {
 
-SearchDialog::SearchDialog(HexEdit *hexEdit, QWidget *parent)
+SearchDialog::SearchDialog(HexEdit* hexEdit, QWidget* parent)
     : QDialog(parent),
       ui(new Ui::SearchDialog),
       _lastFoundPos(-1),
@@ -29,39 +29,47 @@ SearchDialog::SearchDialog(HexEdit *hexEdit, QWidget *parent)
   _hexEdit = hexEdit;
   message_box_not_found_ = new QMessageBox(this);
   message_box_not_found_->setWindowTitle(tr("HexEdit"));
-  message_box_not_found_->setText(
-      tr("Not found, wrapping to the beginning."));
+  message_box_not_found_->setText(tr("Not found, wrapping to the beginning."));
   message_box_not_found_->setStandardButtons(QMessageBox::Close);
   message_box_not_found_->setDefaultButton(QMessageBox::Close);
   message_box_not_found_->setIcon(QMessageBox::Information);
 
-  message_box_not_valid_hex_string_= new QMessageBox(this);
+  message_box_not_valid_hex_string_ = new QMessageBox(this);
   message_box_not_valid_hex_string_->setWindowTitle(tr("HexEdit"));
   message_box_not_valid_hex_string_->setStandardButtons(QMessageBox::Close);
   message_box_not_valid_hex_string_->setDefaultButton(QMessageBox::Close);
 
-  connect(_hexEdit, &HexEdit::selectionChanged, [this](qint64 start_addr, qint64 selection_size) {
-    _lastFoundPos = start_addr;
-    _lastFoundSize = 0;
-  });
+  connect(_hexEdit, &HexEdit::selectionChanged,
+          [this](qint64 start_addr, qint64 selection_size) {
+            _lastFoundPos = start_addr;
+            _lastFoundSize = 0;
+          });
 
   ui->warning_label->setVisible(false);
 
-  connect(ui->cbFind, &QComboBox::editTextChanged, this, &SearchDialog::findTextChanged);
-  connect(ui->cbReplace, &QComboBox::editTextChanged, this, &SearchDialog::replaceTextChanged);
-  connect(ui->cbFindFormat, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this](int) {
-    enableReplace(ui->cbFind->currentText(), ui->cbReplace->currentText());
-  });
-  connect(ui->cbReplaceFormat, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this](int) {
-    enableReplace(ui->cbFind->currentText(), ui->cbReplace->currentText());
-  });
+  connect(ui->cbFind, &QComboBox::editTextChanged, this,
+          &SearchDialog::findTextChanged);
+  connect(ui->cbReplace, &QComboBox::editTextChanged, this,
+          &SearchDialog::replaceTextChanged);
+  connect(
+      ui->cbFindFormat,
+      static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+      [this](int) {
+        enableReplace(ui->cbFind->currentText(), ui->cbReplace->currentText());
+      });
+  connect(
+      ui->cbReplaceFormat,
+      static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+      [this](int) {
+        enableReplace(ui->cbFind->currentText(), ui->cbReplace->currentText());
+      });
 }
 
 SearchDialog::~SearchDialog() { delete ui; }
 
-qint64 SearchDialog::indexOf(const data::BinData &pattern, qint64 startPos) {
+qint64 SearchDialog::indexOf(const data::BinData& pattern, qint64 startPos) {
   // TODO(mwk): implement this as BinData method or as separate util
-  const data::BinData &data = _hexEdit->dataModel()->binData();
+  const data::BinData& data = _hexEdit->dataModel()->binData();
   if (startPos == -1) {
     startPos = 0;
   }
@@ -72,7 +80,6 @@ qint64 SearchDialog::indexOf(const data::BinData &pattern, qint64 startPos) {
            numberOfMatches + index < data.size() &&
            pattern.element64(numberOfMatches) ==
                _hexEdit->byteValue(index + numberOfMatches)) {
-
       ++numberOfMatches;
     }
 
@@ -86,10 +93,10 @@ qint64 SearchDialog::indexOf(const data::BinData &pattern, qint64 startPos) {
   return -1;
 }
 
-qint64 SearchDialog::lastIndexOf(const data::BinData &pattern,
+qint64 SearchDialog::lastIndexOf(const data::BinData& pattern,
                                  qint64 startPos) {
   // TODO(mwk): implement this as BinData method or as separate util
-  const data::BinData &data = _hexEdit->dataModel()->binData();
+  const data::BinData& data = _hexEdit->dataModel()->binData();
   if (startPos == -1) {
     startPos = data.size();
   }
@@ -174,7 +181,8 @@ qint64 SearchDialog::findNext(bool include_overlapping, bool interactive) {
   } else {
     _lastFoundSize = 0;
     if (backwards) {
-      _hexEdit->setSelection(_hexEdit->dataModel()->binData().size() - 1, 0, false);
+      _hexEdit->setSelection(_hexEdit->dataModel()->binData().size() - 1, 0,
+                             false);
     } else {
       _hexEdit->setSelection(0, 0, false);
     }
@@ -196,10 +204,9 @@ void SearchDialog::on_pbReplace_clicked() {
   _findBa =
       getContent(ui->cbFindFormat->currentIndex(), ui->cbFind->currentText());
 
-
   if (indexOf(_findBa, _lastFoundPos) == _lastFoundPos) {
     auto replaceData = getContent(ui->cbReplaceFormat->currentIndex(),
-                                      ui->cbReplace->currentText());
+                                  ui->cbReplace->currentText());
     replaceOccurrence(_lastFoundPos, replaceData);
   }
 
@@ -214,14 +221,15 @@ void SearchDialog::on_pbReplaceAll_clicked() {
     idx = findNext(/*include_overlapping=*/false, /*interactive=*/false);
     if (idx >= 0) {
       data::BinData replaceBa = getContent(ui->cbReplaceFormat->currentIndex(),
-                                        ui->cbReplace->currentText());
+                                           ui->cbReplace->currentText());
       replaceOccurrence(idx, replaceBa);
       replaceCounter += 1;
     }
   }
 
   if (replaceCounter > 0) {
-    QMessageBox::information(this, tr("HexEdit"),
+    QMessageBox::information(
+        this, tr("HexEdit"),
         QString(tr("%1 occurrences replaced.")).arg(replaceCounter));
   }
 }
@@ -236,11 +244,12 @@ void SearchDialog::replaceTextChanged(const QString& text) {
 
 bool SearchDialog::isHexStr(const QString& hexStr) {
   auto hexCharsPerByte = _hexEdit->dataModel()->binData().width() / 4;
-  QRegExp hexMatcher(QString("^(([0-9A-F]{%1})|\\s)*$").arg(hexCharsPerByte), Qt::CaseInsensitive);
+  QRegExp hexMatcher(QString("^(([0-9A-F]{%1})|\\s)*$").arg(hexCharsPerByte),
+                     Qt::CaseInsensitive);
   return hexMatcher.exactMatch(hexStr);
 }
 
-data::BinData SearchDialog::getContent(int comboIndex, const QString &input) {
+data::BinData SearchDialog::getContent(int comboIndex, const QString& input) {
   std::vector<uint64_t> findBa;
   int hexCharsPerByte = _hexEdit->dataModel()->binData().width() / 4;
   switch (comboIndex) {
@@ -250,23 +259,22 @@ data::BinData SearchDialog::getContent(int comboIndex, const QString &input) {
             QString(tr("\"%1\" is not valid hex string.")).arg(input));
         message_box_not_valid_hex_string_->show();
       } else {
-
         QString currentByte;
-        for (QChar hexChar: input.toLatin1()) {
+        for (QChar hexChar : input.toLatin1()) {
           if (hexChar.isSpace()) {
-              continue;
+            continue;
           }
           currentByte += hexChar;
 
           if (currentByte.length() == hexCharsPerByte) {
-              findBa.push_back(currentByte.toInt(nullptr, 16));
-              currentByte = "";
+            findBa.push_back(currentByte.toInt(nullptr, 16));
+            currentByte = "";
           }
         }
       }
       break;
     case 1:  // text
-      for (auto byte: input.toUtf8()) {
+      for (auto byte : input.toUtf8()) {
         findBa.push_back(byte);
       }
       break;
@@ -281,7 +289,7 @@ data::BinData SearchDialog::getContent(int comboIndex, const QString &input) {
 }
 
 void SearchDialog::replaceOccurrence(qint64 idx,
-                                     const data::BinData &replaceBa) {
+                                     const data::BinData& replaceBa) {
   replace(idx, replaceBa);
 }
 

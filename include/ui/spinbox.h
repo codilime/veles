@@ -51,7 +51,7 @@ class SpinBox : public QAbstractSpinBox {
   int base_;
   uint64_t value_;
   uint64_t single_step_;
-  SpinBoxValidator *validator_;
+  SpinBoxValidator* validator_;
 };
 
 }  // namespace ui

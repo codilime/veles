@@ -16,9 +16,9 @@
  */
 #include <QApplication>
 #include <QDir>
+#include <QFileInfo>
 #include <QSettings>
 #include <QStandardPaths>
-#include <QFileInfo>
 
 #include "util/settings/connection_client.h"
 
@@ -42,14 +42,13 @@ void setDefaultProfile(const QString& profile) {
 QString currentProfile() {
   if (current_profile.isEmpty()) {
     QSettings settings;
-    current_profile = settings.value("default_profile", default_default_profile).toString();
+    current_profile =
+        settings.value("default_profile", default_default_profile).toString();
   }
   return current_profile;
 }
 
-void setCurrentProfile(const QString& profile) {
-  current_profile = profile;
-}
+void setCurrentProfile(const QString& profile) { current_profile = profile; }
 
 void removeProfile(const QString& profile) {
   QSettings settings;
@@ -78,14 +77,17 @@ QStringList profileList() {
   QSettings settings;
   QMap<QString, QVariant> default_profiles;
   default_profiles[default_default_profile] = QSettings::SettingsMap();
-  QMap<QString, QVariant> profiles = settings.value("profiles", default_profiles).toMap();
+  QMap<QString, QVariant> profiles =
+      settings.value("profiles", default_profiles).toMap();
   return profiles.keys();
 }
 
 QVariant profileSettings(const QString& key, const QVariant& defaultValue) {
   QSettings settings;
-  QMap<QString, QVariant> profiles = settings.value("profiles", QSettings::SettingsMap()).toMap();
-  QSettings::SettingsMap profile_settings = profiles.value(currentProfile(), QSettings::SettingsMap()).toMap();
+  QMap<QString, QVariant> profiles =
+      settings.value("profiles", QSettings::SettingsMap()).toMap();
+  QSettings::SettingsMap profile_settings =
+      profiles.value(currentProfile(), QSettings::SettingsMap()).toMap();
   return profile_settings.value(key, defaultValue);
 }
 
@@ -108,9 +110,7 @@ QString uniqueProfileName(const QString& prefix) {
   return prefix + suffix;
 }
 
-bool runServerDefault() {
-  return default_run_server;
-}
+bool runServerDefault() { return default_run_server; }
 
 bool runServer() {
   return profileSettings("connection.run_server", runServerDefault()).toBool();
@@ -120,9 +120,7 @@ void setRunServer(bool run_server) {
   setProfileSettings("connection.run_server", run_server);
 }
 
-QString serverHostDefault() {
-  return localhost;
-}
+QString serverHostDefault() { return localhost; }
 
 QString serverHost() {
   return profileSettings("connection.server", serverHostDefault()).toString();
@@ -132,9 +130,7 @@ void setServerHost(const QString& server_host) {
   setProfileSettings("connection.server", server_host);
 }
 
-int serverPortDefault() {
-  return default_server_port;
-}
+int serverPortDefault() { return default_server_port; }
 
 int serverPort() {
   return profileSettings("connection.server_port", serverPortDefault()).toInt();
@@ -144,13 +140,12 @@ void setServerPort(int server_port) {
   setProfileSettings("connection.server_port", server_port);
 }
 
-QString clientInterfaceDefault() {
-  return localhost;
-}
+QString clientInterfaceDefault() { return localhost; }
 
 QString clientInterface() {
   return profileSettings("connection.client_interface",
-      clientInterfaceDefault()).toString();
+                         clientInterfaceDefault())
+      .toString();
 }
 
 void setClientInterface(const QString& client_interface) {
@@ -158,7 +153,8 @@ void setClientInterface(const QString& client_interface) {
 }
 
 QString clientName() {
-  return profileSettings("connection.client_name", clientNameDefault()).toString();
+  return profileSettings("connection.client_name", clientNameDefault())
+      .toString();
 }
 
 QString clientNameDefault() {
@@ -182,9 +178,7 @@ void setClientName(const QString& client_name) {
   setProfileSettings("connection.client_name", client_name);
 }
 
-QString connectionKeyDefault() {
-  return QString("");
-}
+QString connectionKeyDefault() { return QString(""); }
 
 QString connectionKey() {
   return profileSettings("connection.key", connectionKeyDefault()).toString();
@@ -196,12 +190,14 @@ void setConnectionKey(const QString& connection_key) {
 }
 
 QString databaseNameDefault() {
-  return QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/" + default_database_file;
+  return QStandardPaths::writableLocation(
+             QStandardPaths::AppLocalDataLocation) +
+         "/" + default_database_file;
 }
 
 QString databaseName() {
-  return profileSettings("connection.database",
-      databaseNameDefault()).toString();
+  return profileSettings("connection.database", databaseNameDefault())
+      .toString();
 }
 
 void setDatabaseName(const QString& database_name) {
@@ -215,9 +211,11 @@ QString serverScriptDefault() {
 #elif defined(Q_OS_LINUX)
   server_script = qApp->applicationDirPath() + "/../share/veles-server/srv.py";
 #elif defined(Q_OS_MAC)
-  server_script = qApp->applicationDirPath() + "/../Resources/veles-server/srv.py";
+  server_script =
+      qApp->applicationDirPath() + "/../Resources/veles-server/srv.py";
 #else
-  #warning "This OS is not officially supported, you may need to set this path manually."
+#warning \
+    "This OS is not officially supported, you may need to set this path manually."
 #endif
   QFileInfo check_file(server_script);
   if (!check_file.exists()) {
@@ -227,8 +225,8 @@ QString serverScriptDefault() {
 }
 
 QString serverScript() {
-  return profileSettings("connection.server_script",
-      serverScriptDefault()).toString();
+  return profileSettings("connection.server_script", serverScriptDefault())
+      .toString();
 }
 
 void setServerScript(const QString& server_script) {
@@ -240,34 +238,30 @@ QString certDirectoryDefault() {
 }
 
 QString certDirectory() {
-  return profileSettings("connection.cert_dir",
-      certDirectoryDefault()).toString();
+  return profileSettings("connection.cert_dir", certDirectoryDefault())
+      .toString();
 }
 
 void setCertDirectory(const QString& cert_directory) {
   setProfileSettings("connection.cert_dir", cert_directory);
 }
 
-QString serverUrlDefault() {
-  return "";
-}
+QString serverUrlDefault() { return ""; }
 
 QString serverUrl() {
-  return profileSettings("connection.server_url",
-      serverUrlDefault()).toString();
+  return profileSettings("connection.server_url", serverUrlDefault())
+      .toString();
 }
 
 void setServerUrl(const QString& server_url) {
   setProfileSettings("connection.server_url", server_url);
 }
 
-bool sslEnabledDefault() {
-  return true;
-}
+bool sslEnabledDefault() { return true; }
 
 bool sslEnabled() {
-  return profileSettings("connection.ssl_enabled",
-      sslEnabledDefault()).toBool();
+  return profileSettings("connection.ssl_enabled", sslEnabledDefault())
+      .toBool();
 }
 
 void setSslEnabled(bool ssl_enabled) {
