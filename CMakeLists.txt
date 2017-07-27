@@ -566,7 +566,7 @@ if(CLANG_FORMAT)
     format
     COMMAND
       ${CLANG_FORMAT}
-      -style=Google
+      -style=file
       -sort-includes
       -i
       ${LINT_ALL_SOURCE_FILES}
