@@ -534,6 +534,7 @@ if(CLANG_TIDY)
         COMMAND
             ${CLANG_TIDY}
             -checks=${LINT_CHECKS_STR}
+            -header-filter=${INCLUDE_DIR}
             ${LINT_SOURCE_FILE}
             --
             ${LINT_CXX_FLAGS}
