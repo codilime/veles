@@ -22,6 +22,23 @@ return new Warning(fileName, lineNumber, "Clang-tidy", category, message, priori
 
  */
 
+/**
+ * clang-format uses custom Warning parser.
+ * Jenkins / Manage Jenkins / Configure System
+ * In section "Compiler Warnings" following parser needs to be configured:
+ * Name: clang-format
+ * Regular Expression: ^([^:]+):@@ -(\d+).*
+ * Mapping script:
+import hudson.plugins.warnings.parser.Warning
+import hudson.plugins.analysis.util.model.Priority
+
+String fileName = matcher.group(1)
+int lineNumber = Integer.parseInt(matcher.group(2))
+Priority priority = Priority.NORMAL
+
+return new Warning(fileName, lineNumber, "Clang-format", "",  "")
+*/
+
 
 def getBranch = {
     env.BRANCH_NAME.tokenize("/").last()
