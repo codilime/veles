@@ -561,7 +561,7 @@ find_program(CLANG_FORMAT NAMES clang-format clang-format-4.0 clang-format-3.9 c
 
 if(CLANG_FORMAT)
   message(STATUS "Looking for clang-format - found")
-  file(GLOB_RECURSE LINT_ALL_SOURCE_FILES src/*.cc)
+  file(GLOB_RECURSE LINT_ALL_SOURCE_FILES src/*.cc include/*.h)
   add_custom_target(
     format
     COMMAND
