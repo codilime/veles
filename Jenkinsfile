@@ -328,7 +328,7 @@ builders['clang-format'] = { node ('ubuntu-16.04'){
               fi
             done
             echo Using clang-format: \$CLANG_FORMAT
-            find . -name *.h -or -name *.cc | xargs \$CLANG_FORMAT -style=Google -sort-includes -i
+            find . -name *.h -or -name *.cc | xargs \$CLANG_FORMAT -style=file -sort-includes -i
           """
           dir('build') {
             sh """#!/bin/bash -ex
