@@ -525,10 +525,10 @@ if(CLANG_TIDY)
 
   # foreach is needed so maximum command line length is not reached
   # create intermediary targets to allow parallel checks with -jN
+  set(LINT_INDEX 0)
   foreach(LINT_SOURCE_FILE ${LINT_ALL_SOURCE_FILES})
-    list(APPEND LINT_ADDED_TARGETS ${LINT_SOURCE_FILE})
-    list(LENGTH LINT_ADDED_TARGETS LINT_ADDED_TARGETS_LEN)
-    set(LINT_TARGET_NAME "lint-${LINT_ADDED_TARGETS_LEN}")
+    set(LINT_TARGET_NAME "lint-${LINT_INDEX}")
+    math(EXPR LINT_INDEX "${LINT_INDEX}+1")
     add_custom_target(
         ${LINT_TARGET_NAME}
         COMMAND
@@ -561,16 +561,39 @@ find_program(CLANG_FORMAT NAMES clang-format clang-format-4.0 clang-format-3.9 c
 
 if(CLANG_FORMAT)
   message(STATUS "Looking for clang-format - found")
-  file(GLOB_RECURSE LINT_ALL_SOURCE_FILES src/*.cc include/*.h)
-  add_custom_target(
-    format
-    COMMAND
-      ${CLANG_FORMAT}
-      -style=file
-      -sort-includes
-      -i
-      ${LINT_ALL_SOURCE_FILES}
-  )
+  file(GLOB_RECURSE FORMAT_ALL_SOURCE_FILES src/*.cc include/*.h)
+  string(LENGTH "${FORMAT_ALL_SOURCE_FILES}" FORMAT_ALL_SOURCE_FILES_LEN)
+  if(WIN32 AND FORMAT_ALL_SOURCE_FILES_LEN GREATER 8191)
+    # use multiple targets to overcome cmd 8191 length limit
+    add_custom_target(format)
+
+    set(FORMAT_INDEX 0)
+    foreach(FORMAT_SOURCE_FILE ${FORMAT_ALL_SOURCE_FILES})
+      set(FORMAT_TARGET_NAME "format-${FORMAT_INDEX}")
+      math(EXPR FORMAT_INDEX "${FORMAT_INDEX}+1")
+      add_custom_target(
+          ${FORMAT_TARGET_NAME}
+          COMMAND
+              ${CLANG_FORMAT}
+              -style=file
+              -sort-includes
+              -i
+              ${FORMAT_SOURCE_FILE}
+      )
+      add_dependencies(format ${FORMAT_TARGET_NAME})
+    endforeach()
+
+  else()
+    add_custom_target(
+      format
+      COMMAND
+        ${CLANG_FORMAT}
+        -style=file
+        -sort-includes
+        -i
+        ${FORMAT_ALL_SOURCE_FILES}
+    )
+  endif()
 else()
     message(STATUS "Looking for clang-format - not found")
     message(STATUS "  Build target 'format' will not be available.")
