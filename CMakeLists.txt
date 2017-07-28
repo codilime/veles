@@ -304,8 +304,6 @@ qt5_use_modules(veles_db Core)
 add_dependencies(veles_db veles_network)
 target_link_libraries(veles_db veles_dbif parser)
 
-#target_link_libraries(test_veles veles)
-
 # Resources
 qt5_add_resources(RESOURCES resources/veles.qrc)
 qt5_wrap_ui(FORMS
@@ -457,7 +455,6 @@ else(GTEST_FOUND AND GMOCK_FOUND)
 endif(GTEST_FOUND AND GMOCK_FOUND)
 
 
-#target_link_libraries(test_veles veles)
 target_link_libraries(main_ui veles_base veles_db veles_network veles_client veles_visualization Qt5::Widgets parser)
 set_target_properties(main_ui PROPERTIES OUTPUT_NAME "veles")
 
