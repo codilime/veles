@@ -497,18 +497,16 @@ if(CLANG_TIDY)
   # to COMMAND, for example by using "-I$<JOIN:${LINT_INC_DIRS}, -I>"
   string(REPLACE ";" ";-I" LINT_INCLUDES "${LINT_INC_DIRS}")
 
-  # checks
-  list(APPEND LINT_CHECKS "google-*")
-  list(APPEND LINT_CHECKS "performance-*")
-
-  string(REPLACE ";" "," LINT_CHECKS_STR "${LINT_CHECKS}")
   message(STATUS "clang-tidy includes: -I${LINT_INCLUDES} -I${CMAKE_BINARY_DIR} -I${PROJECT_SOURCE_DIR}")
-  message(STATUS "clang-tidy checks: ${LINT_CHECKS_STR}")
   # parse CMAKE_CXX_FLAGS to list, so spaces will not be escaped in COMMANDs
   separate_arguments(LINT_CXX_FLAGS UNIX_COMMAND ${CMAKE_CXX_FLAGS})
 
-  # as an alternative - we could use
-  # set(CMAKE_CXX_CLANG_TIDY clang-tidy;-style=google;-checks=${LINT_CHECKS_STR}")
+  # as an alternative - we could use:
+  ### list(APPEND LINT_CHECKS "google-*")
+  ### list(APPEND LINT_CHECKS "performance-*")
+  ### string(REPLACE ";" "," LINT_CHECKS_STR "${LINT_CHECKS}")
+  ### set(CMAKE_CXX_CLANG_TIDY clang-tidy;-style=google;-checks=${LINT_CHECKS_STR}")
+  #
   # and then all the magic should happen at compile time
   # cmake 3.6+ required (Ubuntu 18.04 LTS)
   add_custom_target(lint)
@@ -533,7 +531,6 @@ if(CLANG_TIDY)
         ${LINT_TARGET_NAME}
         COMMAND
             ${CLANG_TIDY}
-            -checks=${LINT_CHECKS_STR}
             -header-filter=${INCLUDE_DIR}
             ${LINT_SOURCE_FILE}
             --
