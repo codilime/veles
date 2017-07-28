@@ -182,10 +182,10 @@ class HexEdit : public QAbstractScrollArea {
   WindowArea pointToWindowArea(QPoint pos);
   QString addressAsText(qint64 pos);
   QString hexRepresentationFromByte(uint64_t byte_val);
-  QString asciiRepresentationFromByte(uint64_t byte_val);
+  static QString asciiRepresentationFromByte(uint64_t byte_val);
 
   void setByteValue(qint64 pos, uint64_t byte_value);
-  QColor byteTextColorFromByteValue(uint64_t byte_val);
+  static QColor byteTextColorFromByteValue(uint64_t byte_val);
   QColor byteBackroundColorFromPos(qint64 pos);
 
   qint64 selectionStart();

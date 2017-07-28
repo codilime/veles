@@ -581,11 +581,7 @@ uint64_t HexEdit::originalByteValue(qint64 pos) const {
 void HexEdit::setBytesValues(qint64 pos, const data::BinData& new_data) {
   qint64 size = std::min<qint64>(new_data.size(), dataBytesCount_ - pos);
 
-  data::BinData old_data(bindata_width_, size);
-  for (int i = 0; i < size; ++i) {
-    old_data.setElement64(i, byteValue(pos + i));
-  }
-  edit_engine_.changeBytes(pos, new_data, old_data);
+  edit_engine_.changeBytes(pos, new_data, edit_engine_.bytesValues(pos, size));
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
 }
 
@@ -769,11 +765,16 @@ void HexEdit::paintEvent(QPaintEvent* event) {
                    lineWidth_ - endMargin_ / 2 - startPosX_, separator_length);
   painter.setPen(old_pen);
 
+  auto end_row = std::min(startRow_ + rowsOnScreen_, rowsCount_);
+  auto start_byte = startRow_ * bytesPerRow_;
+  auto size_to_paint = std::min(rowsOnScreen_ * bytesPerRow_, dataBytesCount_ - start_byte);
+
+  veles::data::BinData bytes_values = edit_engine_.bytesValues(start_byte, size_to_paint);
+
   // Draw background.
   // This code will be optimized in another commit to reduce number of calls to
   // fillRect().
-  for (auto row_num = startRow_;
-       row_num < std::min(startRow_ + rowsOnScreen_, rowsCount_); ++row_num) {
+  for (auto row_num = startRow_; row_num < end_row; ++row_num) {
     auto first_byte_rect = bytePosToRect(row_num * bytesPerRow_);
     if (first_byte_rect.bottom() < invalidated_rect.y() ||
         first_byte_rect.y() >
@@ -801,8 +802,7 @@ void HexEdit::paintEvent(QPaintEvent* event) {
   }
 
   // Draw all text.
-  for (auto row_num = startRow_;
-       row_num < std::min(startRow_ + rowsOnScreen_, rowsCount_); ++row_num) {
+  for (auto row_num = startRow_; row_num < end_row; ++row_num) {
     auto y_pos = (row_num - startRow_ + 1) * charHeight_;
 
     auto first_byte_rect = bytePosToRect(row_num * bytesPerRow_);
@@ -827,7 +827,7 @@ void HexEdit::paintEvent(QPaintEvent* event) {
         bool redraw_ascii = invalidated_rect.intersects(ascii_rect);
 
         if (redraw_hex || redraw_ascii) {
-          auto byte_val = byteValue(byte_num);
+          auto byte_val = bytes_values.element64(byte_num - start_byte);
           painter.setPen(QPen(byteTextColorFromByteValue(byte_val)));
           // We use drawStaticText() where possible, as it's much faster than
           // drawText(). Unfortunately, both functions use different
