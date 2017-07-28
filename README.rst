@@ -36,7 +36,7 @@ corresponding to the dependencies above.
 
 On Ubuntu it can be done like this::
 
-    apt-get install cmake zlib1g-dev qtbase5-dev g++ python3 python3-venv python3-dev libffi-dev libssl-dev clang-tidy-3.9 clang-format-3.9 libclang-common-3.9-dev
+    apt-get install cmake zlib1g-dev qtbase5-dev g++ python3 python3-venv python3-dev libffi-dev libssl-dev clang-tidy-4.0 clang-format-4.0 libclang-common-4.0-dev
 
 To build ::
 
