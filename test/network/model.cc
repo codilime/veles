@@ -15,11 +15,9 @@
  *
  */
 
-#include "models.h"
-
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
-
+#include "gtest/gtest.h"
+#include "models.h"
 #include "network/msgpackobject.h"
 #include "network/msgpackwrapper.h"
 
@@ -120,8 +118,8 @@ TEST(TestModel, TestAny) {
   EXPECT_EQ(ptr2->a.first, false);
 }
 
-// TODO(mwk): test integers that use bignums - currently it would be identical with
-// small integers
+// TODO(mwk): Test integers that use bignums - currently it would be identical
+// with small integers.
 
 TEST(TestModel, TestSmallInteger) {
   auto obj = pack(std::make_shared<MsgpackObject>(INT64_C(-30)));
@@ -262,7 +260,8 @@ TEST(TestModel, TestBinary) {
 
 TEST(TestModel, TestNodeIDModel) {
   std::vector<uint8_t> ext_data(24, 0x30);
-  auto obj = pack(std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_NODE_ID), ext_data));
+  auto obj = pack(std::make_shared<MsgpackObject>(
+      static_cast<int>(proto::EXT_NODE_ID), ext_data));
   std::shared_ptr<NodeIDModel> ptr;
   std::shared_ptr<NodeIDModelOptional> ptr2;
   fromMsgpackObject(obj, &ptr);
@@ -280,7 +279,8 @@ TEST(TestModel, TestNodeIDModel) {
   EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
   EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 
-  obj = pack(std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_NODE_ID+1), ext_data));
+  obj = pack(std::make_shared<MsgpackObject>(
+      static_cast<int>(proto::EXT_NODE_ID + 1), ext_data));
   EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
   EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 }
@@ -290,7 +290,8 @@ TEST(TestModel, TestBinData) {
   bin[0] = 8;
   std::vector<uint8_t> raw_data({11, 12, 13, 14});
   bin.insert(bin.end(), raw_data.begin(), raw_data.end());
-  auto obj = pack(std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_BINDATA), bin));
+  auto obj = pack(std::make_shared<MsgpackObject>(
+      static_cast<int>(proto::EXT_BINDATA), bin));
   std::shared_ptr<BinDataModel> ptr;
   std::shared_ptr<BinDataModelOptional> ptr2;
   fromMsgpackObject(obj, &ptr);
@@ -315,14 +316,15 @@ TEST(TestModel, TestBinData) {
   EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
   EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
 
-  obj = pack(std::make_shared<MsgpackObject>(static_cast<int>(proto::EXT_BINDATA+1), bin));
+  obj = pack(std::make_shared<MsgpackObject>(
+      static_cast<int>(proto::EXT_BINDATA + 1), bin));
   EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
   EXPECT_THROW(fromMsgpackObject(obj, &ptr2), proto::SchemaError);
-
 }
 
 TEST(TestModel, TestList) {
-  std::vector<std::shared_ptr<MsgpackObject>> data(5, std::make_shared<MsgpackObject>(INT64_C(30)));
+  std::vector<std::shared_ptr<MsgpackObject>> data(
+      5, std::make_shared<MsgpackObject>(INT64_C(30)));
   auto obj = pack(std::make_shared<MsgpackObject>(data));
   std::shared_ptr<List> ptr;
   std::shared_ptr<ListOptional> ptr2;
@@ -344,7 +346,8 @@ TEST(TestModel, TestList) {
 }
 
 TEST(TestModel, TestSet) {
-  std::vector<std::shared_ptr<MsgpackObject>> data(5, std::make_shared<MsgpackObject>(INT64_C(30)));
+  std::vector<std::shared_ptr<MsgpackObject>> data(
+      5, std::make_shared<MsgpackObject>(INT64_C(30)));
   auto obj = pack(std::make_shared<MsgpackObject>(data));
   std::shared_ptr<Set> ptr;
   std::shared_ptr<SetOptional> ptr2;
@@ -457,11 +460,12 @@ TEST(TestModel, TestPolyModel) {
   ptr = nullptr;
   ptr2 = nullptr;
   ptr3 = nullptr;
-  (*obj->getMap())["b"] = std::make_shared<MsgpackObject>(std::make_shared<std::vector<uint8_t>>(5,30));
+  (*obj->getMap())["b"] = std::make_shared<MsgpackObject>(
+      std::make_shared<std::vector<uint8_t>>(5, 30));
   EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
   fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(*ptr2->a, "test-base-attr");
-  EXPECT_THAT(*ptr2->b, ContainerEq(std::vector<uint8_t>(5,30)));
+  EXPECT_THAT(*ptr2->b, ContainerEq(std::vector<uint8_t>(5, 30)));
   EXPECT_THROW(fromMsgpackObject(obj, &ptr3), proto::SchemaError);
 
   ptr = nullptr;
@@ -471,7 +475,7 @@ TEST(TestModel, TestPolyModel) {
   EXPECT_THROW(fromMsgpackObject(obj, &ptr), proto::SchemaError);
   fromMsgpackObject(obj, &ptr2);
   EXPECT_EQ(*ptr2->a, "test-base-attr");
-  EXPECT_THAT(*ptr2->b, ContainerEq(std::vector<uint8_t>(5,30)));
+  EXPECT_THAT(*ptr2->b, ContainerEq(std::vector<uint8_t>(5, 30)));
   fromMsgpackObject(obj, &ptr3);
   EXPECT_EQ(ptr3->object_type, "sub2");
   ptr = std::dynamic_pointer_cast<SubType1>(ptr3);
@@ -479,7 +483,7 @@ TEST(TestModel, TestPolyModel) {
   ptr2 = std::dynamic_pointer_cast<SubType2>(ptr3);
   EXPECT_NE(ptr2, nullptr);
   EXPECT_EQ(*ptr2->a, "test-base-attr");
-  EXPECT_THAT(*ptr2->b, ContainerEq(std::vector<uint8_t>(5,30)));
+  EXPECT_THAT(*ptr2->b, ContainerEq(std::vector<uint8_t>(5, 30)));
 }
 
 }  // namespace messages

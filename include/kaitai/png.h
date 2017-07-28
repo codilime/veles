@@ -42,14 +42,14 @@ class png_t : public kaitai::kstruct {
   enum phys_unit_t { PHYS_UNIT_UNKNOWN = 0, PHYS_UNIT_METER = 1 };
 
   explicit png_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent = 0,
-        png_t* p_root = 0);
+                 png_t* p_root = 0);
   veles::dbif::ObjectHandle veles_obj;
   ~png_t();
 
   class rgb_t : public kaitai::kstruct {
    public:
     explicit rgb_t(kaitai::kstream* p_io, png_t::plte_chunk_t* p_parent = 0,
-          png_t* p_root = 0);
+                   png_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~rgb_t();
 
@@ -70,7 +70,8 @@ class png_t : public kaitai::kstruct {
 
   class chunk_t : public kaitai::kstruct {
    public:
-    explicit chunk_t(kaitai::kstream* p_io, png_t* p_parent = 0, png_t* p_root = 0);
+    explicit chunk_t(kaitai::kstream* p_io, png_t* p_parent = 0,
+                     png_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~chunk_t();
 
@@ -97,8 +98,9 @@ class png_t : public kaitai::kstruct {
 
   class bkgd_indexed_t : public kaitai::kstruct {
    public:
-    explicit bkgd_indexed_t(kaitai::kstream* p_io, png_t::bkgd_chunk_t* p_parent = 0,
-                   png_t* p_root = 0);
+    explicit bkgd_indexed_t(kaitai::kstream* p_io,
+                            png_t::bkgd_chunk_t* p_parent = 0,
+                            png_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~bkgd_indexed_t();
 
@@ -116,7 +118,7 @@ class png_t : public kaitai::kstruct {
   class point_t : public kaitai::kstruct {
    public:
     explicit point_t(kaitai::kstream* p_io, png_t::chrm_chunk_t* p_parent = 0,
-            png_t* p_root = 0);
+                     png_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~point_t();
 
@@ -149,8 +151,9 @@ class png_t : public kaitai::kstruct {
 
   class bkgd_greyscale_t : public kaitai::kstruct {
    public:
-    explicit bkgd_greyscale_t(kaitai::kstream* p_io, png_t::bkgd_chunk_t* p_parent = 0,
-                     png_t* p_root = 0);
+    explicit bkgd_greyscale_t(kaitai::kstream* p_io,
+                              png_t::bkgd_chunk_t* p_parent = 0,
+                              png_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~bkgd_greyscale_t();
 
@@ -168,7 +171,7 @@ class png_t : public kaitai::kstruct {
   class chrm_chunk_t : public kaitai::kstruct {
    public:
     explicit chrm_chunk_t(kaitai::kstream* p_io, png_t::chunk_t* p_parent = 0,
-                 png_t* p_root = 0);
+                          png_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~chrm_chunk_t();
 
@@ -191,7 +194,8 @@ class png_t : public kaitai::kstruct {
 
   class ihdr_chunk_t : public kaitai::kstruct {
    public:
-    explicit ihdr_chunk_t(kaitai::kstream* p_io, png_t* p_parent = 0, png_t* p_root = 0);
+    explicit ihdr_chunk_t(kaitai::kstream* p_io, png_t* p_parent = 0,
+                          png_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~ihdr_chunk_t();
 
@@ -221,7 +225,7 @@ class png_t : public kaitai::kstruct {
   class plte_chunk_t : public kaitai::kstruct {
    public:
     explicit plte_chunk_t(kaitai::kstream* p_io, png_t::chunk_t* p_parent = 0,
-                 png_t* p_root = 0);
+                          png_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~plte_chunk_t();
 
@@ -246,7 +250,7 @@ class png_t : public kaitai::kstruct {
     };
 
     explicit srgb_chunk_t(kaitai::kstream* p_io, png_t::chunk_t* p_parent = 0,
-                 png_t* p_root = 0);
+                          png_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~srgb_chunk_t();
 
@@ -263,8 +267,9 @@ class png_t : public kaitai::kstruct {
 
   class bkgd_truecolor_t : public kaitai::kstruct {
    public:
-    explicit bkgd_truecolor_t(kaitai::kstream* p_io, png_t::bkgd_chunk_t* p_parent = 0,
-                     png_t* p_root = 0);
+    explicit bkgd_truecolor_t(kaitai::kstream* p_io,
+                              png_t::bkgd_chunk_t* p_parent = 0,
+                              png_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~bkgd_truecolor_t();
 
@@ -286,7 +291,7 @@ class png_t : public kaitai::kstruct {
   class gama_chunk_t : public kaitai::kstruct {
    public:
     explicit gama_chunk_t(kaitai::kstream* p_io, png_t::chunk_t* p_parent = 0,
-                 png_t* p_root = 0);
+                          png_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~gama_chunk_t();
 
@@ -311,7 +316,7 @@ class png_t : public kaitai::kstruct {
   class bkgd_chunk_t : public kaitai::kstruct {
    public:
     explicit bkgd_chunk_t(kaitai::kstream* p_io, png_t::chunk_t* p_parent = 0,
-                 png_t* p_root = 0);
+                          png_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~bkgd_chunk_t();
 
@@ -329,7 +334,7 @@ class png_t : public kaitai::kstruct {
   class phys_chunk_t : public kaitai::kstruct {
    public:
     explicit phys_chunk_t(kaitai::kstream* p_io, png_t::chunk_t* p_parent = 0,
-                 png_t* p_root = 0);
+                          png_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~phys_chunk_t();
 
@@ -351,7 +356,7 @@ class png_t : public kaitai::kstruct {
   class text_chunk_t : public kaitai::kstruct {
    public:
     explicit text_chunk_t(kaitai::kstream* p_io, png_t::chunk_t* p_parent = 0,
-                 png_t* p_root = 0);
+                          png_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~text_chunk_t();
 
@@ -371,7 +376,7 @@ class png_t : public kaitai::kstruct {
   class time_chunk_t : public kaitai::kstruct {
    public:
     explicit time_chunk_t(kaitai::kstream* p_io, png_t::chunk_t* p_parent = 0,
-                 png_t* p_root = 0);
+                          png_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~time_chunk_t();
 

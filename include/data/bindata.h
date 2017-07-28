@@ -209,7 +209,9 @@ class BinData {
     uint8_t octets[8] = {0};
     uint64_t res = 0;
     copyBits(octets, 0, rawData(el), start_bit, num_bits);
-    for (int i = 0; i < 8; i++) res |= static_cast<uint64_t>(octets[i]) << (8 * i);
+    for (int i = 0; i < 8; i++) {
+      res |= static_cast<uint64_t>(octets[i]) << (8 * i);
+    }
     return res;
   }
 

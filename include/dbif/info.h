@@ -147,7 +147,8 @@ struct BlobDataReply : InfoReply {
 
 struct ChunkDataReply : InfoReply {
   std::vector<data::ChunkDataItem> items;
-  explicit ChunkDataReply(const std::vector<data::ChunkDataItem>& items) : items(items) {}
+  explicit ChunkDataReply(const std::vector<data::ChunkDataItem>& items)
+      : items(items) {}
 };
 
 }  // namespace dbif

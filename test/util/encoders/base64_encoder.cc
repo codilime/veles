@@ -14,11 +14,11 @@
  * limitations under the License.
  *
  */
-#include "gtest/gtest.h"
 #include "util/encoders/base64_encoder.h"
+#include "gtest/gtest.h"
 
-#include <QString>
 #include <QByteArray>
+#include <QString>
 
 namespace veles {
 namespace util {

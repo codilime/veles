@@ -118,14 +118,14 @@ class elf_t : public kaitai::kstruct {
   };
 
   explicit elf_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent = 0,
-        elf_t* p_root = 0);
+                 elf_t* p_root = 0);
   veles::dbif::ObjectHandle veles_obj;
   ~elf_t();
 
   class file_header_t : public kaitai::kstruct {
    public:
     explicit file_header_t(kaitai::kstream* p_io, elf_t* p_parent = 0,
-                  elf_t* p_root = 0);
+                           elf_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~file_header_t();
 
@@ -214,7 +214,7 @@ class elf_t : public kaitai::kstruct {
   class program_header_t : public kaitai::kstruct {
    public:
     explicit program_header_t(kaitai::kstream* p_io, elf_t* p_parent = 0,
-                     elf_t* p_root = 0);
+                              elf_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~program_header_t();
 
@@ -266,7 +266,7 @@ class elf_t : public kaitai::kstruct {
   class section_header_t : public kaitai::kstruct {
    public:
     explicit section_header_t(kaitai::kstream* p_io, elf_t* p_parent = 0,
-                     elf_t* p_root = 0);
+                              elf_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~section_header_t();
 
@@ -315,7 +315,8 @@ class elf_t : public kaitai::kstruct {
 
   class strings_t : public kaitai::kstruct {
    public:
-    explicit strings_t(kaitai::kstream* p_io, elf_t* p_parent = 0, elf_t* p_root = 0);
+    explicit strings_t(kaitai::kstream* p_io, elf_t* p_parent = 0,
+                       elf_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~strings_t();
 

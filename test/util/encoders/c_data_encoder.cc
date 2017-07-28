@@ -14,8 +14,8 @@
  * limitations under the License.
  *
  */
-#include "gtest/gtest.h"
 #include "util/encoders/c_data_encoder.h"
+#include "gtest/gtest.h"
 
 namespace veles {
 namespace util {
@@ -27,22 +27,29 @@ TEST(CDataEncoder, encode) {
 
   EXPECT_EQ(encoder.encode(QByteArray::fromHex("")),
             "unsigned char data[] = {\n};\n");
+
+  // clang-format off
   EXPECT_EQ(encoder.encode(QByteArray::fromHex("00")),
             "unsigned char data[] = {\n"
             + tab + "0x00,\n"
             "};\n");
-  EXPECT_EQ(encoder.encode(nullptr, 0),
-            "unsigned char data[] = {\n};\n");
+  // clang-format on
+
+  EXPECT_EQ(encoder.encode(nullptr, 0), "unsigned char data[] = {\n};\n");
   uint8_t test[] = {0xAA, 0xBB, 0xCC, 0xDD};
+
+  // clang-format off
   EXPECT_EQ(encoder.encode(test, 4),
             "unsigned char data[] = {\n"
             + tab + "0xaa, 0xbb, 0xcc, 0xdd,\n"
             "};\n");
+  // clang-format on
 
   QByteArray allBytes;
   for (int i = 0; i < 256; i++) {
     allBytes.append(static_cast<char>(i));
   }
+  // clang-format off
   auto encodedBytes = "unsigned char data[] = {\n"
                       + tab + "0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b,\n"
                       + tab + "0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,\n"
@@ -67,6 +74,7 @@ TEST(CDataEncoder, encode) {
                       + tab + "0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb,\n"
                       + tab + "0xfc, 0xfd, 0xfe, 0xff,\n"
                       "};\n";
+  // clang-format on
   EXPECT_EQ(encoder.encode(allBytes), encodedBytes);
 }
 

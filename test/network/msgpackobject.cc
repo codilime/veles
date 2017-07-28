@@ -19,8 +19,8 @@
 
 #include <cstdint>
 
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 #include "proto/exceptions.h"
 
@@ -82,7 +82,8 @@ TEST(MsgpackObject, SimpleAccess) {
   EXPECT_THAT(*bin.getBin(), ContainerEq(bin_data));
   EXPECT_THROW(bin.getBool(), proto::SchemaError);
 
-  std::vector<std::shared_ptr<MsgpackObject>> array_data(5, std::make_shared<MsgpackObject>(true));
+  std::vector<std::shared_ptr<MsgpackObject>> array_data(
+      5, std::make_shared<MsgpackObject>(true));
   MsgpackObject array(array_data);
   EXPECT_EQ(array.type(), ObjectType::ARRAY);
   EXPECT_THAT(*array.getArray(), ContainerEq(array_data));
@@ -141,7 +142,8 @@ TEST(MsgpackObject, TestComparison) {
   MsgpackObject sign_pos(INT64_C(42));
   EXPECT_EQ(pos, sign_pos);
   MsgpackObject opposite(uint64_t(-42));
-  EXPECT_EQ(opposite.getUnsignedInt(), static_cast<uint64_t>(neg.getSignedInt()));
+  EXPECT_EQ(opposite.getUnsignedInt(),
+            static_cast<uint64_t>(neg.getSignedInt()));
   EXPECT_NE(opposite, neg);
 
   MsgpackObject dbl(5.0);
@@ -167,9 +169,12 @@ TEST(MsgpackObject, TestComparison) {
   bin3.getBin()->pop_back();
   EXPECT_EQ(bin, bin3);
 
-  MsgpackObject array(std::vector<std::shared_ptr<MsgpackObject>>(5, std::make_shared<MsgpackObject>(true)));
-  MsgpackObject array2(std::vector<std::shared_ptr<MsgpackObject>>(5, std::make_shared<MsgpackObject>(true)));
-  MsgpackObject array3(std::vector<std::shared_ptr<MsgpackObject>>(4, std::make_shared<MsgpackObject>(true)));
+  MsgpackObject array(std::vector<std::shared_ptr<MsgpackObject>>(
+      5, std::make_shared<MsgpackObject>(true)));
+  MsgpackObject array2(std::vector<std::shared_ptr<MsgpackObject>>(
+      5, std::make_shared<MsgpackObject>(true)));
+  MsgpackObject array3(std::vector<std::shared_ptr<MsgpackObject>>(
+      4, std::make_shared<MsgpackObject>(true)));
   EXPECT_EQ(array, array2);
   EXPECT_NE(array, array3);
   EXPECT_NE(array, nil);
@@ -230,7 +235,8 @@ TEST(MsgpackObject, SimpleMsgpackConversion) {
   MsgpackObject bin(std::vector<uint8_t>(5, 30));
   pack_unpack_check(bin, "bin");
 
-  MsgpackObject array(std::vector<std::shared_ptr<MsgpackObject>>(5, std::make_shared<MsgpackObject>(true)));
+  MsgpackObject array(std::vector<std::shared_ptr<MsgpackObject>>(
+      5, std::make_shared<MsgpackObject>(true)));
   pack_unpack_check(array, "array");
 
   std::map<std::string, std::shared_ptr<MsgpackObject>> map_data;
@@ -324,7 +330,9 @@ TEST(MsgpackObject, TestUnpack) {
   mo = oh.get();
   unp_obj = std::make_shared<MsgpackObject>(mo);
   EXPECT_EQ(unp_obj->getExt().first, 30);
-  EXPECT_THAT(*unp_obj->getExt().second, ContainerEq(std::vector<uint8_t>({0x00, 0x01, 0x02, 0x03, 0x04})));
+  EXPECT_THAT(
+      *unp_obj->getExt().second,
+      ContainerEq(std::vector<uint8_t>({0x00, 0x01, 0x02, 0x03, 0x04})));
 }
 
 TEST(MsgpackObject, TestPack) {
@@ -376,14 +384,17 @@ TEST(MsgpackObject, TestPack) {
   packer.pack(bin);
   oh = msgpack::unpack(sbuf.data(), sbuf.size());
   mo = oh.get();
-  EXPECT_THAT(mo.as<std::vector<uint8_t>>(), ContainerEq(std::vector<uint8_t>(5, 30)));
+  EXPECT_THAT(mo.as<std::vector<uint8_t>>(),
+              ContainerEq(std::vector<uint8_t>(5, 30)));
 
   sbuf.clear();
-  MsgpackObject array(std::vector<std::shared_ptr<MsgpackObject>>(5, std::make_shared<MsgpackObject>(true)));
+  MsgpackObject array(std::vector<std::shared_ptr<MsgpackObject>>(
+      5, std::make_shared<MsgpackObject>(true)));
   packer.pack(array);
   oh = msgpack::unpack(sbuf.data(), sbuf.size());
   mo = oh.get();
-  EXPECT_THAT(mo.as<std::vector<bool>>(), ContainerEq(std::vector<bool>(5, true)));
+  EXPECT_THAT(mo.as<std::vector<bool>>(),
+              ContainerEq(std::vector<bool>(5, true)));
 
   sbuf.clear();
   std::map<std::string, std::shared_ptr<MsgpackObject>> map_data;

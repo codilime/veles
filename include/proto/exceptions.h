@@ -33,7 +33,8 @@ class VelesException {
 
 class SchemaError : public VelesException {
  public:
-  explicit SchemaError(const std::string& msg) : VelesException("schema_error", msg) {}
+  explicit SchemaError(const std::string& msg)
+      : VelesException("schema_error", msg) {}
 };
 
 }  // namespace proto

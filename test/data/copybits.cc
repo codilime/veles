@@ -14,15 +14,15 @@
  * limitations under the License.
  *
  */
-#include "gtest/gtest.h"
 #include "data/bindata.h"
+#include "gtest/gtest.h"
 
 namespace veles {
 namespace data {
 
 TEST(CopyTest, SimpleCopy) {
-  uint8_t dst[3] = { 0 };
-  const uint8_t src[3] = { 0x12, 0x34, 0x56 };
+  uint8_t dst[3] = {0};
+  const uint8_t src[3] = {0x12, 0x34, 0x56};
   BinData::copyBits(dst, 0, src, 0, 18);
   EXPECT_EQ(dst[0], 0x12);
   EXPECT_EQ(dst[1], 0x34);
@@ -30,8 +30,8 @@ TEST(CopyTest, SimpleCopy) {
 }
 
 TEST(CopyTest, SimpleCopyOffset) {
-  uint8_t dst[4] = { 0 };
-  const uint8_t src[4] = { 0x12, 0x34, 0x56, 0x78 };
+  uint8_t dst[4] = {0};
+  const uint8_t src[4] = {0x12, 0x34, 0x56, 0x78};
   BinData::copyBits(dst, 2, src, 2, 26);
   EXPECT_EQ(dst[0], 0x10);
   EXPECT_EQ(dst[1], 0x34);
@@ -40,8 +40,8 @@ TEST(CopyTest, SimpleCopyOffset) {
 }
 
 TEST(CopyTest, SimpleMask) {
-  uint8_t dst[4] = { 0xff, 0xff, 0xff, 0xff };
-  const uint8_t src[4] = { 0, 0, 0, 0 };
+  uint8_t dst[4] = {0xff, 0xff, 0xff, 0xff};
+  const uint8_t src[4] = {0, 0, 0, 0};
   BinData::copyBits(dst, 2, src, 2, 26);
   EXPECT_EQ(dst[0], 0x03);
   EXPECT_EQ(dst[1], 0x00);
@@ -50,22 +50,22 @@ TEST(CopyTest, SimpleMask) {
 }
 
 TEST(CopyTest, MicroInsert) {
-  uint8_t dst[1] = { 0xff };
-  const uint8_t src[1] = { 6 };
+  uint8_t dst[1] = {0xff};
+  const uint8_t src[1] = {6};
   BinData::copyBits(dst, 2, src, 0, 4);
   EXPECT_EQ(dst[0], 0xdb);
 }
 
 TEST(CopyTest, MicroExtract) {
-  uint8_t dst[1] = { 0xff };
-  const uint8_t src[1] = { 0xdb };
+  uint8_t dst[1] = {0xff};
+  const uint8_t src[1] = {0xdb};
   BinData::copyBits(dst, 0, src, 2, 4);
   EXPECT_EQ(dst[0], 0xf6);
 }
 
 TEST(CopyTest, Shift) {
-  uint8_t dst[5] = { 0xaa, 0xaa, 0xaa, 0xaa, 0xaa };
-  const uint8_t src[4] = { 0x10, 0x32, 0x54, 0x76 };
+  uint8_t dst[5] = {0xaa, 0xaa, 0xaa, 0xaa, 0xaa};
+  const uint8_t src[4] = {0x10, 0x32, 0x54, 0x76};
   BinData::copyBits(dst, 4, src, 0, 32);
   EXPECT_EQ(dst[0], 0x0a);
   EXPECT_EQ(dst[1], 0x21);
@@ -75,8 +75,8 @@ TEST(CopyTest, Shift) {
 }
 
 TEST(CopyTest, ShiftOffset) {
-  uint8_t dst[8] = { 0x55, 0x55, 0x55, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa };
-  const uint8_t src[6] = { 0x33, 0x33, 0x10, 0x32, 0x54, 0x76 };
+  uint8_t dst[8] = {0x55, 0x55, 0x55, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa};
+  const uint8_t src[6] = {0x33, 0x33, 0x10, 0x32, 0x54, 0x76};
   BinData::copyBits(dst, 28, src, 16, 32);
   EXPECT_EQ(dst[0], 0x55);
   EXPECT_EQ(dst[1], 0x55);

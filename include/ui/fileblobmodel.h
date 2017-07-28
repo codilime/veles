@@ -68,7 +68,8 @@ class FileBlobModel : public QAbstractItemModel {
   QStringList path() { return path_; }
 
   static const Qt::ItemDataRole ROLE_BEGIN = Qt::UserRole;
-  static const Qt::ItemDataRole ROLE_END = static_cast<Qt::ItemDataRole>(Qt::UserRole + 1);
+  static const Qt::ItemDataRole ROLE_END =
+      static_cast<Qt::ItemDataRole>(Qt::UserRole + 1);
 
   static const int COLUMN_INDEX_MAIN = 0;
   static const int COLUMN_INDEX_VALUE = 1;

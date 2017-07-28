@@ -32,7 +32,7 @@ typedef std::shared_ptr<proto::MsgpackMsg> msg_ptr;
 
 class NodeTree {
  public:
-   explicit NodeTree(NetworkClient* network_client);
+  explicit NodeTree(NetworkClient* network_client);
   void addRemoteNodeTreeRelatedMessage(const msg_ptr& msg);
 };
 

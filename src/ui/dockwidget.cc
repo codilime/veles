@@ -832,7 +832,7 @@ void MainWindowWithDetachableDockWidgets::moveDockWidgetToWindow(
 }
 
 void MainWindowWithDetachableDockWidgets::findTwoNonTabifiedDocks(
-  DockWidget** sibling1, DockWidget** sibling2) {
+    DockWidget** sibling1, DockWidget** sibling2) {
   auto dock_widgets = findChildren<DockWidget*>();
   for (auto dock_widget : dock_widgets) {
     if (*sibling1 == nullptr) {
