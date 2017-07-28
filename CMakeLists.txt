@@ -470,7 +470,7 @@ find_program(CLANG_TIDY NAMES clang-tidy clang-tidy-4.0 clang-tidy-3.9 clang-tid
 
 if(CLANG_TIDY)
   message(STATUS "Looking for clang-tidy - found")
-  file(GLOB_RECURSE LINT_ALL_SOURCE_FILES src/*.cc)
+  file(GLOB_RECURSE LINT_ALL_SOURCE_FILES src/*.cc test/*.cc)
 
   # Get includes from main file
   get_property(LINT_INC_DIRS TARGET main_ui PROPERTY INCLUDE_DIRECTORIES)
@@ -559,7 +559,7 @@ find_program(CLANG_FORMAT NAMES clang-format clang-format-4.0 clang-format-3.9 c
 
 if(CLANG_FORMAT)
   message(STATUS "Looking for clang-format - found")
-  file(GLOB_RECURSE FORMAT_ALL_SOURCE_FILES src/*.cc include/*.h)
+  file(GLOB_RECURSE FORMAT_ALL_SOURCE_FILES src/*.cc include/*.h test/*.cc test/*.h)
   string(LENGTH "${FORMAT_ALL_SOURCE_FILES}" FORMAT_ALL_SOURCE_FILES_LEN)
   if(WIN32 AND FORMAT_ALL_SOURCE_FILES_LEN GREATER 8191)
     # use multiple targets to overcome cmd 8191 length limit
