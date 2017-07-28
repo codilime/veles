@@ -52,7 +52,7 @@ class Manipulator : public QObject {
   }
 
  public:
-  Manipulator(QObject* parent = nullptr);
+  explicit Manipulator(QObject* parent = nullptr);
   virtual QMatrix4x4 transform() = 0;
   virtual void initFromMatrix(QMatrix4x4 m) {}
   virtual void update(float dt) {}
@@ -69,7 +69,7 @@ class TrackballManipulator : public Manipulator {
   Q_OBJECT
 
  public:
-  TrackballManipulator(QObject* parent = nullptr);
+  explicit TrackballManipulator(QObject* parent = nullptr);
   QMatrix4x4 transform() override;
   void initFromMatrix(QMatrix4x4 m) override;
   void update(float dt) override;
@@ -101,7 +101,7 @@ class FreeManipulator : public Manipulator {
   Q_OBJECT
 
  public:
-  FreeManipulator(QObject* parent = nullptr);
+  explicit FreeManipulator(QObject* parent = nullptr);
   QMatrix4x4 transform() override;
   void initFromMatrix(QMatrix4x4 m) override;
   void update(float dt) override;
@@ -140,7 +140,7 @@ class SpinManipulator : public Manipulator {
   Q_OBJECT
 
  public:
-  SpinManipulator(QObject* parent = nullptr);
+  explicit SpinManipulator(QObject* parent = nullptr);
   QMatrix4x4 transform() override;
   void initFromMatrix(QMatrix4x4 m) override;
   void update(float dt) override;

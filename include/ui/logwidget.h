@@ -69,7 +69,7 @@ class LogWidget : public QMainWindow {
   Q_OBJECT
 
  public:
-  LogWidget(QWidget* parent = nullptr);
+  explicit LogWidget(QWidget* parent = nullptr);
   virtual ~LogWidget();
   static QIODevice* output();
 

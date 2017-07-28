@@ -43,7 +43,7 @@ class ConnectionManager : public QObject {
   Q_OBJECT
 
  public:
-  ConnectionManager(QWidget* parent = nullptr);
+   explicit ConnectionManager(QWidget* parent = nullptr);
   virtual ~ConnectionManager();
 
   client::NetworkClient* networkClient();
@@ -94,7 +94,7 @@ class ConnectionNotificationWidget : public QWidget {
   Q_OBJECT
 
  public:
-  ConnectionNotificationWidget(QWidget* parent = nullptr);
+  explicit ConnectionNotificationWidget(QWidget* parent = nullptr);
   virtual ~ConnectionNotificationWidget();
 
  public slots:
@@ -125,7 +125,7 @@ class ConnectionsWidget : public QWidget {
   Q_OBJECT
 
  public:
-  ConnectionsWidget(QWidget* parent = nullptr);
+  explicit ConnectionsWidget(QWidget* parent = nullptr);
   virtual ~ConnectionsWidget();
 
  public slots:

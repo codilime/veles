@@ -123,7 +123,7 @@ struct ChunkDataItem {
   // For COMPUTED, FIELD, BITFIELD, SUBCHUNK.
   std::vector<ObjectHandle> ref;
 
-  operator bool() const { return type != NONE; }
+  explicit operator bool() const { return type != NONE; }
 
   ChunkDataItem() : type(NONE) {}
 

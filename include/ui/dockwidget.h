@@ -47,7 +47,7 @@ class QProxyStyleForDockWidgetWithIconOnTitleBar : public QProxyStyle {
   Q_OBJECT
 
  public:
-  QProxyStyleForDockWidgetWithIconOnTitleBar(QStyle* default_style);
+  explicit QProxyStyleForDockWidgetWithIconOnTitleBar(QStyle* default_style);
 
   void drawControl(QStyle::ControlElement element, const QStyleOption* option,
                    QPainter* painter, const QWidget* widget) const override;
@@ -60,7 +60,7 @@ class ActivateDockEventFilter : public QObject {
   Q_OBJECT
 
  public:
-  ActivateDockEventFilter(QObject* parent = nullptr);
+  explicit ActivateDockEventFilter(QObject* parent = nullptr);
 
  protected:
   bool eventFilter(QObject* watched, QEvent* event) override;
@@ -127,7 +127,7 @@ class TabBarEventFilter : public QObject {
   Q_OBJECT
 
  public:
-  TabBarEventFilter(QObject* parent = nullptr);
+  explicit TabBarEventFilter(QObject* parent = nullptr);
 
  public slots:
   void tabMoved(int from, int to);
@@ -180,13 +180,13 @@ class MainWindowWithDetachableDockWidgets : public QMainWindow {
   Q_OBJECT
 
  public:
-  MainWindowWithDetachableDockWidgets(QWidget* parent = nullptr);
+  explicit MainWindowWithDetachableDockWidgets(QWidget* parent = nullptr);
   virtual ~MainWindowWithDetachableDockWidgets();
   DockWidget* addTab(QWidget* widget, const QString& title,
                      DockWidget* sibling = nullptr);
   void bringDockWidgetToFront(QDockWidget* dock_widget);
   void moveDockWidgetToWindow(DockWidget* dock_widget);
-  void findTwoNonTabifiedDocks(DockWidget*& sibling1, DockWidget*& sibling2);
+  void findTwoNonTabifiedDocks(DockWidget** sibling1, DockWidget** sibling2);
   DockWidget* findDockNotTabifiedWith(DockWidget* dock_widget);
   DockWidget* findDockNotTabifiedWith(QWidget* widget);
   QDockWidget* findSibling(QDockWidget* dock_widget);

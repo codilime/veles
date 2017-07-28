@@ -42,7 +42,7 @@ class NCWrapper;
 
 class NCObjectHandle : public dbif::ObjectHandleBase {
  public:
-  NCObjectHandle(NCWrapper* nc = nullptr,
+  explicit NCObjectHandle(NCWrapper* nc = nullptr,
                  const data::NodeID& id = *data::NodeID::getNilId(),
                  dbif::ObjectType type = dbif::ObjectType::CHUNK);
   data::NodeID id();
@@ -94,7 +94,7 @@ class NCWrapper : public QObject {
   typedef std::map<data::NodeID, NCObjectHandle> ChildrenMap;
   typedef void (NCWrapper::*MessageHandler)(const msg_ptr&);
 
-  NCWrapper(NetworkClient* network_client, QObject* parent = nullptr);
+  explicit NCWrapper(NetworkClient* network_client, QObject* parent = nullptr);
   static dbif::ObjectType typeFromTags(
       const std::shared_ptr<std::unordered_set<std::shared_ptr<std::string>>>&
           tags);

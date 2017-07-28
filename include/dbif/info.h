@@ -141,13 +141,13 @@ struct ParsersListReply : InfoReply {
 
 struct BlobDataReply : InfoReply {
   data::BinData data;
-  BlobDataReply(const data::BinData& data) : data(data) {}
-  BlobDataReply(data::BinData&& data) : data(data) {}
+  explicit BlobDataReply(const data::BinData& data) : data(data) {}
+  explicit BlobDataReply(data::BinData&& data) : data(data) {}
 };
 
 struct ChunkDataReply : InfoReply {
   std::vector<data::ChunkDataItem> items;
-  ChunkDataReply(std::vector<data::ChunkDataItem>& items) : items(items) {}
+  explicit ChunkDataReply(const std::vector<data::ChunkDataItem>& items) : items(items) {}
 };
 
 }  // namespace dbif

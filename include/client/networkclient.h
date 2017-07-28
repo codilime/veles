@@ -54,7 +54,7 @@ class NetworkClient : public QObject {
   enum class ConnectionStatus { NotConnected, Connecting, Connected };
   static QString connStatusStr(ConnectionStatus status);
 
-  NetworkClient(QObject* parent = nullptr);
+  explicit NetworkClient(QObject* parent = nullptr);
   virtual ~NetworkClient();
   ConnectionStatus connectionStatus();
   void connect(const QString& server_url, const QString& client_interface_name,

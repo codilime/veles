@@ -20,7 +20,9 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-using namespace testing;
+using testing::AllOf;
+using testing::Ne;
+using testing::ContainerEq;
 
 namespace veles {
 namespace data {

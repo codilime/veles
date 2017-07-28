@@ -110,8 +110,9 @@ TEST(Repack, Split8To1Little) {
   BinData b = format.repack(a, 1, 12);
   EXPECT_EQ(b.size(), 12u);
   EXPECT_EQ(b.width(), 1u);
-  for (int i = 0; i < 12; i++)
+  for (int i = 0; i < 12; i++) {
     EXPECT_EQ(b.element64(i), (0x634u >> i) & 1);
+  }
 }
 
 TEST(Repack, Split8To1Big) {
@@ -122,8 +123,9 @@ TEST(Repack, Split8To1Big) {
   BinData b = format.repack(a, 1, 12);
   EXPECT_EQ(b.size(), 12u);
   EXPECT_EQ(b.width(), 1u);
-  for (int i = 0; i < 12; i++)
+  for (int i = 0; i < 12; i++) {
     EXPECT_EQ(b.element64(i), (0x345u >> (11 - i)) & 1);
+  }
 }
 
 TEST(Repack, Split60To20Little) {

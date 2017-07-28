@@ -25,7 +25,7 @@ namespace kaitai {
 
 class kstruct {
  public:
-  kstruct(kstream* _stream) { m__io = _stream; };
+  explicit kstruct(kstream* _stream) { m__io = _stream; };
   kstream* _io() { return m__io; };
 
  protected:

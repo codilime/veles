@@ -23,7 +23,7 @@ namespace ui {
 
 class SpinBoxValidator : public QValidator {
  public:
-  SpinBoxValidator(int base = 10, QObject* parent = nullptr);
+  explicit SpinBoxValidator(int base = 10, QObject* parent = nullptr);
   SpinBoxValidator(uint64_t minimum, uint64_t maximum, int base = 10,
                    QObject* parent = nullptr);
 

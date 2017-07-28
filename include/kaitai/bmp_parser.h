@@ -6,8 +6,8 @@ class BmpParser : public parser::Parser {
  public:
   BmpParser() : parser::Parser("bmp (ksy)") {}
   void parse(
-      const dbif::ObjectHandle& blob, uint64_t start = 0,
-      const dbif::ObjectHandle& parent_chunk = dbif::ObjectHandle()) override {
+      const dbif::ObjectHandle& blob, uint64_t start,
+      const dbif::ObjectHandle& parent_chunk) override {
     try {
       auto stream = kaitai::kstream(blob, start, parent_chunk);
       auto parser = kaitai::bmp::bmp_t(&stream);
