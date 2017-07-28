@@ -21,7 +21,7 @@
 namespace veles {
 namespace ui {
 
-bool FileBlobItem::operator<(const FileBlobItem &other) {
+bool FileBlobItem::operator<(const FileBlobItem& other) {
   uint64_t start, end;
   if (!range(&start, &end)) {
     return false;
@@ -45,16 +45,16 @@ FileBlobItem::FileBlobItem(const QString& name, const QString& value,
       start_(start),
       end_(end) {}
 
-void FileBlobItem::insertingChildrenHandle(FileBlobItem *item, bool before,
+void FileBlobItem::insertingChildrenHandle(FileBlobItem* item, bool before,
                                            int count) {
   emit insertingChildren(item, before, count);
 }
 
-void FileBlobItem::removingChildrenHandle(FileBlobItem *item, bool before) {
+void FileBlobItem::removingChildrenHandle(FileBlobItem* item, bool before) {
   emit removingChildren(item, before);
 }
 
-bool compareItems(FileBlobItem *a, FileBlobItem *b) { return *a < *b; }
+bool compareItems(FileBlobItem* a, FileBlobItem* b) { return *a < *b; }
 
 bool FileBlobItem::sortChildren() {
   if (std::is_sorted(children_.begin(), children_.end(), compareItems)) {
@@ -64,7 +64,7 @@ bool FileBlobItem::sortChildren() {
   return true;
 }
 
-void FileBlobItem::dataUpdatedHandle(FileBlobItem *item) {
+void FileBlobItem::dataUpdatedHandle(FileBlobItem* item) {
   emit dataUpdated(item);
   if (sortChildren()) {
     emit removingChildren(this, true);
@@ -78,34 +78,34 @@ void FileBlobItem::dataUpdatedHandle(FileBlobItem *item) {
   }
 }
 
-void FileBlobItem::addChildren(const QList<FileBlobItem *> &children) {
+void FileBlobItem::addChildren(const QList<FileBlobItem*>& children) {
   if (children.size() == 0) {
     return;
   }
 
   emit insertingChildren(this, true, children.size());
 
-  for (auto &child : children) {
+  for (auto& child : children) {
     children_.append(child);
-    connect(child, SIGNAL(insertingChildren(FileBlobItem *, bool, int)), this,
-            SLOT(insertingChildrenHandle(FileBlobItem *, bool, int)));
-    connect(child, SIGNAL(removingChildren(FileBlobItem *, bool)), this,
-            SLOT(removingChildrenHandle(FileBlobItem *, bool)));
-    connect(child, SIGNAL(dataUpdated(FileBlobItem *)), this,
-            SLOT(dataUpdatedHandle(FileBlobItem *)));
+    connect(child, SIGNAL(insertingChildren(FileBlobItem*, bool, int)), this,
+            SLOT(insertingChildrenHandle(FileBlobItem*, bool, int)));
+    connect(child, SIGNAL(removingChildren(FileBlobItem*, bool)), this,
+            SLOT(removingChildrenHandle(FileBlobItem*, bool)));
+    connect(child, SIGNAL(dataUpdated(FileBlobItem*)), this,
+            SLOT(dataUpdatedHandle(FileBlobItem*)));
   }
 
   emit insertingChildren(this, false, children.size());
 }
 
-FileBlobItem *FileBlobItem::child(int num) {
+FileBlobItem* FileBlobItem::child(int num) {
   if (num >= children_.size()) {
     return nullptr;
   }
   return children_[num];
 }
 
-int FileBlobItem::childIndex(FileBlobItem *child) {
+int FileBlobItem::childIndex(FileBlobItem* child) {
   return children_.indexOf(child);
 }
 
@@ -115,7 +115,7 @@ QString FileBlobItem::value() { return value_; }
 
 QString FileBlobItem::name() { return name_; }
 
-bool FileBlobItem::range(uint64_t *start, uint64_t *end) const {
+bool FileBlobItem::range(uint64_t* start, uint64_t* end) const {
   *start = start_;
   *end = end_;
   return true;
@@ -133,9 +133,7 @@ void FileBlobItem::setFields(const QString& name, const QString& comment,
 
 dbif::ObjectHandle FileBlobItem::objectHandle() { return dataObj_; }
 
-bool FileBlobItem::isRemovable() {
-  return objectHandle();
-}
+bool FileBlobItem::isRemovable() { return objectHandle(); }
 
 void FileBlobItem::removeOldChildren() {
   bool hasChilds = children_.size() > 0;

@@ -18,12 +18,12 @@
 #include <QFileDialog>
 #include <QTimer>
 
-#include "ui/logwidget.h"
 #include "ui/connectiondialog.h"
 #include "ui/connectionmanager.h"
-#include "util/version.h"
+#include "ui/logwidget.h"
 #include "util/settings/connection_client.h"
 #include "util/settings/shortcuts.h"
+#include "util/version.h"
 
 namespace veles {
 namespace ui {
@@ -35,26 +35,32 @@ using util::settings::shortcuts::ShortcutsModel;
 /*****************************************************************************/
 
 ConnectionManager::ConnectionManager(QWidget* parent)
-    : QObject(parent), server_process_(nullptr),
-    network_client_output_(nullptr) {
+    : QObject(parent),
+      server_process_(nullptr),
+      network_client_output_(nullptr) {
   connection_dialog_ = new ConnectionDialog(parent);
-  show_connection_dialog_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
-      util::settings::shortcuts::SHOW_CONNECT_DIALOG, this, Qt::ApplicationShortcut);
+  show_connection_dialog_action_ =
+      ShortcutsModel::getShortcutsModel()->createQAction(
+          util::settings::shortcuts::SHOW_CONNECT_DIALOG, this,
+          Qt::ApplicationShortcut);
   disconnect_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::DISCONNECT_FROM_SERVER, this, Qt::ApplicationShortcut);
-  kill_locally_created_server_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::KILL_LOCAL_SERVER, this, Qt::ApplicationShortcut);
+      util::settings::shortcuts::DISCONNECT_FROM_SERVER, this,
+      Qt::ApplicationShortcut);
+  kill_locally_created_server_action_ =
+      ShortcutsModel::getShortcutsModel()->createQAction(
+          util::settings::shortcuts::KILL_LOCAL_SERVER, this,
+          Qt::ApplicationShortcut);
   kill_locally_created_server_action_->setEnabled(false);
   disconnect_action_->setEnabled(false);
 
   connect(show_connection_dialog_action_, &QAction::triggered,
-      connection_dialog_, &QDialog::show);
-  connect(connection_dialog_, &QDialog::accepted,
-      this, &ConnectionManager::connectionDialogAccepted);
-  connect(kill_locally_created_server_action_, &QAction::triggered,
-      this, &ConnectionManager::killLocalServer);
-  connect(disconnect_action_, &QAction::triggered,
-        this, &ConnectionManager::disconnect);
+          connection_dialog_, &QDialog::show);
+  connect(connection_dialog_, &QDialog::accepted, this,
+          &ConnectionManager::connectionDialogAccepted);
+  connect(kill_locally_created_server_action_, &QAction::triggered, this,
+          &ConnectionManager::killLocalServer);
+  connect(disconnect_action_, &QAction::triggered, this,
+          &ConnectionManager::disconnect);
 
   network_client_ = new client::NetworkClient(this);
   network_client_output_ = new QTextStream(LogWidget::output());
@@ -62,9 +68,9 @@ ConnectionManager::ConnectionManager(QWidget* parent)
   network_client_->setOutput(network_client_output_);
 
   connect(network_client_, &client::NetworkClient::connectionStatusChanged,
-      this, &ConnectionManager::updateConnectionStatus);
-  connect(network_client_, &client::NetworkClient::messageReceived,
-        this, &ConnectionManager::messageReceived);
+          this, &ConnectionManager::updateConnectionStatus);
+  connect(network_client_, &client::NetworkClient::messageReceived, this,
+          &ConnectionManager::messageReceived);
 }
 
 ConnectionManager::~ConnectionManager() {
@@ -84,9 +90,7 @@ QAction* ConnectionManager::showConnectionDialogAction() {
   return show_connection_dialog_action_;
 }
 
-QAction* ConnectionManager::disconnectAction() {
-  return disconnect_action_;
-}
+QAction* ConnectionManager::disconnectAction() { return disconnect_action_; }
 
 QAction* ConnectionManager::killLocallyCreatedServerAction() {
   return kill_locally_created_server_action_;
@@ -98,13 +102,13 @@ void ConnectionManager::locallyCreatedServerStarted() {
   kill_locally_created_server_action_->setEnabled(true);
 }
 
-void ConnectionManager::locallyCreatedServerFinished(int exit_code,
-    QProcess::ExitStatus exit_status) {
+void ConnectionManager::locallyCreatedServerFinished(
+    int exit_code, QProcess::ExitStatus exit_status) {
   serverProcessReadyRead();
 
   QTextStream out(LogWidget::output());
-  out << "Process of locally created server finished. Exit code: "
-      << exit_code << "." << endl;
+  out << "Process of locally created server finished. Exit code: " << exit_code
+      << "." << endl;
   kill_locally_created_server_action_->setEnabled(false);
   server_process_->deleteLater();
   server_process_ = nullptr;
@@ -123,35 +127,32 @@ void ConnectionManager::connectionDialogAccepted() {
 
 void ConnectionManager::startClient() {
   network_client_->connect(
-      connection_dialog_->serverUrl(),
-      connection_dialog_->clientInterface(),
-      connection_dialog_->clientName(),
-      veles::util::version::string,
-      "Veles UI",
-      "Veles UI",
-      is_local_server_);
+      connection_dialog_->serverUrl(), connection_dialog_->clientInterface(),
+      connection_dialog_->clientName(), veles::util::version::string,
+      "Veles UI", "Veles UI", is_local_server_);
 }
 
 void ConnectionManager::startLocalServer() {
-  if(server_process_) {
+  if (server_process_) {
     server_process_->deleteLater();
   }
   server_process_ = new QProcess(this);
   server_process_->setProcessChannelMode(QProcess::MergedChannels);
-  connect(server_process_, &QProcess::started,
-      this, &ConnectionManager::locallyCreatedServerStarted);
-  connect(server_process_, static_cast<void(QProcess::*)
-      (int, QProcess::ExitStatus)>(&QProcess::finished),
-      this, &ConnectionManager::locallyCreatedServerFinished);
-  connect(server_process_, &QIODevice::readyRead,
-        this, &ConnectionManager::serverProcessReadyRead);
+  connect(server_process_, &QProcess::started, this,
+          &ConnectionManager::locallyCreatedServerStarted);
+  connect(server_process_,
+          static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(
+              &QProcess::finished),
+          this, &ConnectionManager::locallyCreatedServerFinished);
+  connect(server_process_, &QIODevice::readyRead, this,
+          &ConnectionManager::serverProcessReadyRead);
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
-  connect(server_process_, &QProcess::errorOccurred,
-        this, &ConnectionManager::serverProcessErrorOccurred);
+  connect(server_process_, &QProcess::errorOccurred, this,
+          &ConnectionManager::serverProcessErrorOccurred);
 #else
-  connect(server_process_, SIGNAL(error(QProcess::ProcessError)),
-        this, SLOT(serverProcessErrorOccurred(QProcess::ProcessError)));
+  connect(server_process_, SIGNAL(error(QProcess::ProcessError)), this,
+          SLOT(serverProcessErrorOccurred(QProcess::ProcessError)));
 #endif
 
   QString server_file_path = connection_dialog_->serverScript();
@@ -174,45 +175,49 @@ void ConnectionManager::startLocalServer() {
   }
 
   QStringList arguments;
-  arguments
-      << server_file_name
-      << "--cert-dir" << connection_dialog_->certificateDir()
-      << QString("%1://%2@%3:%4").arg(scheme)
-      .arg(connection_dialog_->authenticationKey())
-      .arg(connection_dialog_->serverHost())
-      .arg(connection_dialog_->serverPort())
-      << connection_dialog_->databaseFile();
+  arguments << server_file_name << "--cert-dir"
+            << connection_dialog_->certificateDir()
+            << QString("%1://%2@%3:%4")
+                   .arg(scheme)
+                   .arg(connection_dialog_->authenticationKey())
+                   .arg(connection_dialog_->serverHost())
+                   .arg(connection_dialog_->serverPort())
+            << connection_dialog_->databaseFile();
 
 #if defined(Q_OS_LINUX)
-  QString python_interpreter_executable("/usr/share/veles-server/venv/bin/python3");
+  QString python_interpreter_executable(
+      "/usr/share/veles-server/venv/bin/python3");
   QFileInfo check_file(python_interpreter_executable);
   if (!check_file.exists()) {
     python_interpreter_executable = QString("python3");
   }
 #elif defined(Q_OS_WIN)
-  QString python_interpreter_executable(qApp->applicationDirPath() + "/../veles-server/python/python.exe");
+  QString python_interpreter_executable(qApp->applicationDirPath() +
+                                        "/../veles-server/python/python.exe");
   QFileInfo check_file(python_interpreter_executable);
   if (!check_file.exists()) {
     python_interpreter_executable = QString("py.exe");
   }
 #elif defined(Q_OS_MAC)
-  QString python_interpreter_executable(qApp->applicationDirPath() + "/../Resources/veles-server/venv/bin/python3");
+  QString python_interpreter_executable(
+      qApp->applicationDirPath() +
+      "/../Resources/veles-server/venv/bin/python3");
   QFileInfo check_file(python_interpreter_executable);
   if (!check_file.exists()) {
     python_interpreter_executable = QString("python3");
   }
 #else
-  #warning "This OS is not officially supported, you may need to set this string manually."
+#warning \
+    "This OS is not officially supported, you may need to set this string manually."
   python_interpreter_executable = QString("python3");
 #endif
 
   QTextStream out(veles::ui::LogWidget::output());
-  out
-      << "Trying to start a new server..." << endl
+  out << "Trying to start a new server..." << endl
       << "    working directory: " << directory_path << endl
       << "    python script name: " << server_file_name << endl
-      << "    python interpreter executable: "
-      << python_interpreter_executable << endl
+      << "    python interpreter executable: " << python_interpreter_executable
+      << endl
       << "    arguments:" << endl;
   for (const auto& arg : arguments) {
     out << "        " << arg << endl;
@@ -220,11 +225,11 @@ void ConnectionManager::startLocalServer() {
   out << endl;
 
   server_process_->start(python_interpreter_executable, arguments,
-      QIODevice::ReadWrite | QIODevice::Text);
+                         QIODevice::ReadWrite | QIODevice::Text);
 }
 
 void ConnectionManager::killLocalServer() {
-  if(server_process_) {
+  if (server_process_) {
 #ifdef Q_OS_WIN
     server_process_->kill();
 #else
@@ -240,10 +245,11 @@ void ConnectionManager::disconnect() {
 }
 
 void ConnectionManager::serverProcessReadyRead() {
-  if(server_process_ && server_process_->bytesAvailable() > 0) {
+  if (server_process_ && server_process_->bytesAvailable() > 0) {
     QByteArray out = server_process_->read(server_process_->bytesAvailable());
     if (out.size() > 0) {
-      if (network_client_->connectionStatus() == client::NetworkClient::ConnectionStatus::NotConnected) {
+      if (network_client_->connectionStatus() ==
+          client::NetworkClient::ConnectionStatus::NotConnected) {
         QString marker("Client url: ");
         int start_pos = out.indexOf(marker);
         if (start_pos != -1) {
@@ -251,19 +257,16 @@ void ConnectionManager::serverProcessReadyRead() {
           int end_pos = out.indexOf("\n", start_pos);
           if (end_pos == -1) {
             server_process_->waitForReadyRead();
-            QByteArray additional = server_process_->readLine(server_process_->bytesAvailable());
+            QByteArray additional =
+                server_process_->readLine(server_process_->bytesAvailable());
             out += additional;
             end_pos = out.indexOf("\n", start_pos);
           }
           QByteArray url = out.mid(start_pos, end_pos - start_pos);
           network_client_->connect(
-              QString::fromUtf8(url),
-              connection_dialog_->clientInterface(),
-              connection_dialog_->clientName(),
-              veles::util::version::string,
-              "Veles UI",
-              "Veles UI",
-              is_local_server_);
+              QString::fromUtf8(url), connection_dialog_->clientInterface(),
+              connection_dialog_->clientName(), veles::util::version::string,
+              "Veles UI", "Veles UI", is_local_server_);
         }
       }
       LogWidget::output()->write(out);
@@ -271,24 +274,26 @@ void ConnectionManager::serverProcessReadyRead() {
   }
 }
 
-void ConnectionManager::serverProcessErrorOccurred(QProcess::ProcessError error) {
+void ConnectionManager::serverProcessErrorOccurred(
+    QProcess::ProcessError error) {
   QTextStream out(veles::ui::LogWidget::output());
 
   if (error == QProcess::FailedToStart) {
-      out << "*************************************" << endl
-          << "Failed to run python interpreter." << endl
-          << "Make sure that python >= 3.5 is installed and" << endl
-          << "server script location is set correctly." << endl
-          << "*************************************" << endl;
+    out << "*************************************" << endl
+        << "Failed to run python interpreter." << endl
+        << "Make sure that python >= 3.5 is installed and" << endl
+        << "server script location is set correctly." << endl
+        << "*************************************" << endl;
   }
 }
 
 void ConnectionManager::updateConnectionStatus(
-      client::NetworkClient::ConnectionStatus connection_status) {
+    client::NetworkClient::ConnectionStatus connection_status) {
   emit connectionStatusChanged(connection_status);
   disconnect_action_->setEnabled(
-      connection_status != client::NetworkClient::ConnectionStatus::NotConnected);
-  if(connection_status == client::NetworkClient::ConnectionStatus::Connected) {
+      connection_status !=
+      client::NetworkClient::ConnectionStatus::NotConnected);
+  if (connection_status == client::NetworkClient::ConnectionStatus::Connected) {
     sendListConnectionsMessage();
   }
 }
@@ -299,31 +304,29 @@ void ConnectionManager::raiseConnectionDialog() {
 }
 
 void ConnectionManager::sendListConnectionsMessage() {
-  if(network_client_) {
-    std::shared_ptr<proto::MsgListConnections> list_connections_message
-        = std::make_shared<proto::MsgListConnections>(
-        network_client_->nextQid(), true);
+  if (network_client_) {
+    std::shared_ptr<proto::MsgListConnections> list_connections_message =
+        std::make_shared<proto::MsgListConnections>(network_client_->nextQid(),
+                                                    true);
     network_client_->sendMessage(list_connections_message);
   }
 }
 
 void ConnectionManager::messageReceived(const client::msg_ptr& message) {
   if (message->object_type == "connections_reply") {
-    std::shared_ptr<proto::MsgConnectionsReply> connections_reply
-        = std::dynamic_pointer_cast<proto::MsgConnectionsReply>(message);
+    std::shared_ptr<proto::MsgConnectionsReply> connections_reply =
+        std::dynamic_pointer_cast<proto::MsgConnectionsReply>(message);
     if (connections_reply) {
       QTextStream& out = *network_client_output_;
-      out << "ConnectionManager: received updated list of connections:"
-          << endl;
+      out << "ConnectionManager: received updated list of connections:" << endl;
 
       if (connections_reply->connections) {
         for (const auto& connection : *connections_reply->connections) {
-          out
-              << "    id = " << connection->client_id
-              << " name = \"" << QString::fromStdString(*connection->client_name)
-              << "\""
-              << " type = \"" << QString::fromStdString(*connection->client_type)
-              << "\"" << endl;
+          out << "    id = " << connection->client_id << " name = \""
+              << QString::fromStdString(*connection->client_name) << "\""
+              << " type = \""
+              << QString::fromStdString(*connection->client_type) << "\""
+              << endl;
         }
       } else {
         out << "    -" << endl;
@@ -341,7 +344,8 @@ void ConnectionManager::messageReceived(const client::msg_ptr& message) {
 ConnectionNotificationWidget::ConnectionNotificationWidget(QWidget* parent)
     : QWidget(parent),
       connection_status_(client::NetworkClient::ConnectionStatus::NotConnected),
-    frame_(0), last_status_change_(-10) {
+      frame_(0),
+      last_status_change_(-10) {
   ui_ = new Ui::ConnectionNotificationWidget;
   ui_->setupUi(this);
 
@@ -362,40 +366,39 @@ void ConnectionNotificationWidget::updateConnectionStatus(
   }
 
   switch (connection_status) {
-  case client::NetworkClient::ConnectionStatus::NotConnected:
-    ui_->connection_status_text_label->setText("Not Connected");
-    ui_->connection_status_icon_label->setPixmap(icon_not_connected_);
-    break;
-  case client::NetworkClient::ConnectionStatus::Connecting:
-    ui_->connection_status_text_label->setText("Connecting: " +
-        util::settings::connection::currentProfile());
-    ui_->connection_status_icon_label->setPixmap(icon_not_connected_);
-    break;
-  case client::NetworkClient::ConnectionStatus::Connected:
-    ui_->connection_status_text_label->setText("Connected: " +
-        util::settings::connection::currentProfile());
-    ui_->connection_status_icon_label->setPixmap(icon_connected_);
-    break;
+    case client::NetworkClient::ConnectionStatus::NotConnected:
+      ui_->connection_status_text_label->setText("Not Connected");
+      ui_->connection_status_icon_label->setPixmap(icon_not_connected_);
+      break;
+    case client::NetworkClient::ConnectionStatus::Connecting:
+      ui_->connection_status_text_label->setText(
+          "Connecting: " + util::settings::connection::currentProfile());
+      ui_->connection_status_icon_label->setPixmap(icon_not_connected_);
+      break;
+    case client::NetworkClient::ConnectionStatus::Connected:
+      ui_->connection_status_text_label->setText(
+          "Connected: " + util::settings::connection::currentProfile());
+      ui_->connection_status_icon_label->setPixmap(icon_connected_);
+      break;
   }
 
   connection_status_ = connection_status;
-
 }
 
 void ConnectionNotificationWidget::timerEvent(QTimerEvent* event) {
   ++frame_;
 
-  if (connection_status_ == client::NetworkClient::ConnectionStatus::Connecting) {
+  if (connection_status_ ==
+      client::NetworkClient::ConnectionStatus::Connecting) {
     ui_->connection_status_icon_label->setPixmap(
         frame_ % 2 ? icon_connected_ : icon_not_connected_);
-  } else if (connection_status_
-      == client::NetworkClient::ConnectionStatus::NotConnected) {
-    if(frame_ - last_status_change_ < 10) {
+  } else if (connection_status_ ==
+             client::NetworkClient::ConnectionStatus::NotConnected) {
+    if (frame_ - last_status_change_ < 10) {
       ui_->connection_status_icon_label->setPixmap(
           frame_ % 2 ? icon_alarm_ : icon_not_connected_);
     } else {
-      ui_->connection_status_icon_label->setPixmap(
-          icon_not_connected_);
+      ui_->connection_status_icon_label->setPixmap(icon_not_connected_);
     }
   }
 }
@@ -416,7 +419,8 @@ ConnectionsWidget::ConnectionsWidget(QWidget* parent) : QWidget(parent) {
   scroll_area->setWidgetResizable(true);
   QWidget* scroll_area_contents = new QWidget(scroll_area);
   scroll_area_layout_ = new QHBoxLayout(scroll_area_contents);
-  scroll_area_contents->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+  scroll_area_contents->setSizePolicy(QSizePolicy::Expanding,
+                                      QSizePolicy::Minimum);
   scroll_area->setMaximumHeight(users_icon_label_->sizeHint().height());
   scroll_area_contents->setLayout(scroll_area_layout_);
   scroll_area_layout_->setSizeConstraint(QLayout::SetMinAndMaxSize);
@@ -445,37 +449,35 @@ ConnectionsWidget::ConnectionsWidget(QWidget* parent) : QWidget(parent) {
       "}");
 }
 
-ConnectionsWidget::~ConnectionsWidget() {
-
-}
+ConnectionsWidget::~ConnectionsWidget() {}
 
 void ConnectionsWidget::updateConnectionStatus(
     client::NetworkClient::ConnectionStatus connection_status) {
-  if(connection_status ==
+  if (connection_status ==
       client::NetworkClient::ConnectionStatus::NotConnected) {
     clear();
   }
 }
 
 void ConnectionsWidget::updateConnections(
-      const std::shared_ptr<std::vector<std::shared_ptr<proto::Connection>>>&
-      connections) {
+    const std::shared_ptr<std::vector<std::shared_ptr<proto::Connection>>>&
+        connections) {
   clear();
-  if(connections && connections->size()) {
+  if (connections && connections->size()) {
     users_icon_label_->show();
 
     for (const auto& connection : *connections) {
       QLabel* client_label = new QLabel;
       client_label->setText(QString::fromStdString(*connection->client_name));
-      client_label->setToolTip(QString(
-          "<p><b>Client name:</b> %1</p>"
-          "<p><b>Client type:</b> %2</p>"
-          "<p><b>Client version:</b> %3</p>"
-          "<p><b>Client description:</b> %4</p>")
-          .arg(QString::fromStdString(*connection->client_name))
-          .arg(QString::fromStdString(*connection->client_type))
-          .arg(QString::fromStdString(*connection->client_version))
-          .arg(QString::fromStdString(*connection->client_description)));
+      client_label->setToolTip(
+          QString("<p><b>Client name:</b> %1</p>"
+                  "<p><b>Client type:</b> %2</p>"
+                  "<p><b>Client version:</b> %3</p>"
+                  "<p><b>Client description:</b> %4</p>")
+              .arg(QString::fromStdString(*connection->client_name))
+              .arg(QString::fromStdString(*connection->client_type))
+              .arg(QString::fromStdString(*connection->client_version))
+              .arg(QString::fromStdString(*connection->client_description)));
       client_label->setStyleSheet(label_stylesheet_);
       scroll_area_layout_->addWidget(client_label);
       user_labels_.push_back(client_label);
@@ -485,7 +487,7 @@ void ConnectionsWidget::updateConnections(
 
 void ConnectionsWidget::clear() {
   for (auto label : user_labels_) {
-      label->deleteLater();
+    label->deleteLater();
   }
 
   user_labels_.clear();

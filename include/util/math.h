@@ -23,7 +23,7 @@ namespace util {
 namespace math {
 
 // Will be replaced by std::gcd after switching to C++17.
-template<typename T1, typename T2>
+template <typename T1, typename T2>
 typename std::common_type<T1, T2>::type gcd(T1 a, T2 b) {
   while (b) {
     auto tmp = a % b;

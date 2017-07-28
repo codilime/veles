@@ -30,11 +30,9 @@ class SimpleFileBlobItem : public FileBlobItem {
   Q_OBJECT
 
  public:
-  SimpleFileBlobItem(QString name, QString comment, QObject *parent = 0)
-    : FileBlobItem(name, "", comment, 0, 0, parent) {}
-  bool range(uint64_t *start, uint64_t *end) const override {
-    return false;
-  }
+  SimpleFileBlobItem(QString name, QString comment, QObject* parent = 0)
+      : FileBlobItem(name, "", comment, 0, 0, parent) {}
+  bool range(uint64_t* start, uint64_t* end) const override { return false; }
 };
 
 }  // namespace ui

@@ -16,21 +16,21 @@
  */
 #pragma once
 
-#include <set>
 #include <map>
+#include <set>
 
-#include <QObject>
-#include <QDropEvent>
+#include <QDateTime>
 #include <QDockWidget>
+#include <QDropEvent>
+#include <QIcon>
 #include <QMainWindow>
 #include <QMenu>
+#include <QObject>
+#include <QPointer>
+#include <QProxyStyle>
+#include <QRubberBand>
 #include <QString>
 #include <QStringList>
-#include <QRubberBand>
-#include <QPointer>
-#include <QIcon>
-#include <QProxyStyle>
-#include <QDateTime>
 
 #include "ui/fileblobmodel.h"
 
@@ -46,11 +46,11 @@ class MainWindowWithDetachableDockWidgets;
 class QProxyStyleForDockWidgetWithIconOnTitleBar : public QProxyStyle {
   Q_OBJECT
 
-public:
+ public:
   QProxyStyleForDockWidgetWithIconOnTitleBar(QStyle* default_style);
 
-  void drawControl(QStyle::ControlElement element, const QStyleOption *option,
-      QPainter *painter, const QWidget *widget) const override;
+  void drawControl(QStyle::ControlElement element, const QStyleOption* option,
+                   QPainter* painter, const QWidget* widget) const override;
 };
 
 /*****************************************************************************/
@@ -63,7 +63,7 @@ class ActivateDockEventFilter : public QObject {
   ActivateDockEventFilter(QObject* parent = nullptr);
 
  protected:
-   bool eventFilter(QObject *watched, QEvent *event) override;
+  bool eventFilter(QObject* watched, QEvent* event) override;
 };
 
 /*****************************************************************************/
@@ -134,7 +134,7 @@ class TabBarEventFilter : public QObject {
   void currentChanged(int index);
 
  protected:
-  bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;
+  bool eventFilter(QObject* watched, QEvent* event) Q_DECL_OVERRIDE;
   virtual bool mouseMove(QTabBar* tab_bar, QMouseEvent* event);
   virtual bool mouseButtonPress(QTabBar* tab_bar, QMouseEvent* event);
   virtual bool mouseButtonRelease(QTabBar* tab_bar, QMouseEvent* event);
@@ -156,7 +156,7 @@ class View : public QMainWindow {
  public:
   View(const QString& category, const QString& path);
   ~View();
-  virtual void reapplySettings() {};
+  virtual void reapplySettings(){};
 
  signals:
   void maximize();
@@ -176,14 +176,14 @@ class View : public QMainWindow {
 /* MainWindowWithDetachableDockWidgets */
 /*****************************************************************************/
 
-class MainWindowWithDetachableDockWidgets: public QMainWindow {
+class MainWindowWithDetachableDockWidgets : public QMainWindow {
   Q_OBJECT
 
  public:
   MainWindowWithDetachableDockWidgets(QWidget* parent = nullptr);
   virtual ~MainWindowWithDetachableDockWidgets();
-  DockWidget* addTab(QWidget *widget, const QString &title,
-      DockWidget* sibling = nullptr);
+  DockWidget* addTab(QWidget* widget, const QString& title,
+                     DockWidget* sibling = nullptr);
   void bringDockWidgetToFront(QDockWidget* dock_widget);
   void moveDockWidgetToWindow(DockWidget* dock_widget);
   void findTwoNonTabifiedDocks(DockWidget*& sibling1, DockWidget*& sibling2);
@@ -195,13 +195,13 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
   QDockWidget* tabToDockWidget(QTabBar* tab_bar, int index);
   QPair<QTabBar*, int> dockWidgetToTab(QDockWidget* dock_widget);
   void splitDockWidget2(QDockWidget* first, QDockWidget* second,
-      Qt::Orientation orientation);
+                        Qt::Orientation orientation);
   void showRubberBand(bool show);
 
   static void splitDockWidget2(QMainWindow* main_window, QDockWidget* first,
-      QDockWidget* second, Qt::Orientation orientation);
-  static MainWindowWithDetachableDockWidgets* getParentMainWindow(
-      QObject* obj);
+                               QDockWidget* second,
+                               Qt::Orientation orientation);
+  static MainWindowWithDetachableDockWidgets* getParentMainWindow(QObject* obj);
   static bool intersectsWithAnyMainWindow(DockWidget* dock_widget);
   static MainWindowWithDetachableDockWidgets* getParentCandidateForDockWidget(
       DockWidget* dock_widget);
@@ -210,7 +210,7 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
   static MainWindowWithDetachableDockWidgets* getOrCreateWindowForScreen(
       int screen);
   static MainWindowWithDetachableDockWidgets* getOwnerOfDockWidget(
-        DockWidget* dock_widget);
+      DockWidget* dock_widget);
   static void hideAllRubberBands();
   static void setActiveDockWidget(DockWidget* dock_widget);
   static void focusNextPrevDock(DockWidget* dock_widget, bool next);
@@ -234,8 +234,9 @@ class MainWindowWithDetachableDockWidgets: public QMainWindow {
 
  protected:
   bool event(QEvent* event) Q_DECL_OVERRIDE;
-  static bool splitDockWidgetImpl(QMainWindow* main_window,
-      QDockWidget* first, QDockWidget* second, Qt::Orientation orientation);
+  static bool splitDockWidgetImpl(QMainWindow* main_window, QDockWidget* first,
+                                  QDockWidget* second,
+                                  Qt::Orientation orientation);
 
  private:
   static std::set<MainWindowWithDetachableDockWidgets*> main_windows_;

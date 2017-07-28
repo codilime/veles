@@ -18,9 +18,9 @@
 
 #include <msgpack.hpp>
 
-#include "fwd_models.h"
 #include "data/bindata.h"
 #include "data/nodeid.h"
+#include "fwd_models.h"
 #include "proto/exceptions.h"
 
 namespace veles {
@@ -42,7 +42,7 @@ enum class ObjectType {
 class MsgpackObject {
   ObjectType obj_type;
 
-  union ObjectValue{
+  union ObjectValue {
     bool boolean;
     int64_t sint;
     uint64_t uint;
@@ -60,16 +60,29 @@ class MsgpackObject {
     ObjectValue(uint64_t val) : uint(val) {}
     ObjectValue(double val) : dbl(val) {}
     ObjectValue(const char* val) : str(std::make_shared<std::string>(val)) {}
-    ObjectValue(const std::string& val) : str(std::make_shared<std::string>(val)) {}
+    ObjectValue(const std::string& val)
+        : str(std::make_shared<std::string>(val)) {}
     ObjectValue(const std::shared_ptr<std::string>& val) : str(val) {}
-    ObjectValue(const std::vector<uint8_t>& val) : bin(std::make_shared<std::vector<uint8_t>>(val)) {}
+    ObjectValue(const std::vector<uint8_t>& val)
+        : bin(std::make_shared<std::vector<uint8_t>>(val)) {}
     ObjectValue(const std::shared_ptr<std::vector<uint8_t>>& val) : bin(val) {}
-    ObjectValue(const std::vector<std::shared_ptr<MsgpackObject>>& val) : array(std::make_shared<std::vector<std::shared_ptr<MsgpackObject>>>(val)) {}
-    ObjectValue(const std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>>& val) : array(val) {}
-    ObjectValue(const std::map<std::string, std::shared_ptr<MsgpackObject>>& val) : map(std::make_shared<std::map<std::string, std::shared_ptr<MsgpackObject>>>(val)) {}
-    ObjectValue(const std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>>& val) : map(val) {}
-    ObjectValue(int code, const std::vector<uint8_t>& val) : ext(code, std::make_shared<std::vector<uint8_t>>(val)) {}
-    ObjectValue(int code, const std::shared_ptr<std::vector<uint8_t>>& val) : ext(code, val) {}
+    ObjectValue(const std::vector<std::shared_ptr<MsgpackObject>>& val)
+        : array(std::make_shared<std::vector<std::shared_ptr<MsgpackObject>>>(
+              val)) {}
+    ObjectValue(
+        const std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>>& val)
+        : array(val) {}
+    ObjectValue(
+        const std::map<std::string, std::shared_ptr<MsgpackObject>>& val)
+        : map(std::make_shared<
+              std::map<std::string, std::shared_ptr<MsgpackObject>>>(val)) {}
+    ObjectValue(const std::shared_ptr<
+                std::map<std::string, std::shared_ptr<MsgpackObject>>>& val)
+        : map(val) {}
+    ObjectValue(int code, const std::vector<uint8_t>& val)
+        : ext(code, std::make_shared<std::vector<uint8_t>>(val)) {}
+    ObjectValue(int code, const std::shared_ptr<std::vector<uint8_t>>& val)
+        : ext(code, val) {}
     ~ObjectValue() {}
   } value;
 
@@ -77,23 +90,42 @@ class MsgpackObject {
   void destroyValue();
 
  public:
-
   MsgpackObject() : obj_type(ObjectType::NIL) {}
-  explicit MsgpackObject(bool val) : obj_type(ObjectType::BOOLEAN), value(val) {}
-  explicit MsgpackObject(int64_t val): obj_type(ObjectType::SIGNED_INTEGER), value(val) {}
-  explicit MsgpackObject(uint64_t val): obj_type(ObjectType::UNSIGNED_INTEGER), value(val) {}
-  explicit MsgpackObject(double val): obj_type(ObjectType::DOUBLE), value(val) {}
-  explicit MsgpackObject(const char* val): obj_type(ObjectType::STR), value(val) {}
-  explicit MsgpackObject(const std::string& val): obj_type(ObjectType::STR), value(val) {}
-  explicit MsgpackObject(const std::shared_ptr<std::string>& val): obj_type(ObjectType::STR), value(val) {}
-  explicit MsgpackObject(const std::vector<uint8_t>& val): obj_type(ObjectType::BIN), value(val) {}
-  explicit MsgpackObject(const std::shared_ptr<std::vector<uint8_t>>& val): obj_type(ObjectType::BIN), value(val) {}
-  explicit MsgpackObject(const std::vector<std::shared_ptr<MsgpackObject>>& val): obj_type(ObjectType::ARRAY), value(val) {}
-  explicit MsgpackObject(const std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>>& val): obj_type(ObjectType::ARRAY), value(val) {}
-  explicit MsgpackObject(const std::map<std::string, std::shared_ptr<MsgpackObject>>& val): obj_type(ObjectType::MAP), value(val) {}
-  explicit MsgpackObject(const std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>>& val): obj_type(ObjectType::MAP), value(val) {}
-  explicit MsgpackObject(int code, const std::vector<uint8_t>& val): obj_type(ObjectType::EXT), value(code, val) {}
-  explicit MsgpackObject(int code, const std::shared_ptr<std::vector<uint8_t>>& val): obj_type(ObjectType::EXT), value(code, val) {}
+  explicit MsgpackObject(bool val)
+      : obj_type(ObjectType::BOOLEAN), value(val) {}
+  explicit MsgpackObject(int64_t val)
+      : obj_type(ObjectType::SIGNED_INTEGER), value(val) {}
+  explicit MsgpackObject(uint64_t val)
+      : obj_type(ObjectType::UNSIGNED_INTEGER), value(val) {}
+  explicit MsgpackObject(double val)
+      : obj_type(ObjectType::DOUBLE), value(val) {}
+  explicit MsgpackObject(const char* val)
+      : obj_type(ObjectType::STR), value(val) {}
+  explicit MsgpackObject(const std::string& val)
+      : obj_type(ObjectType::STR), value(val) {}
+  explicit MsgpackObject(const std::shared_ptr<std::string>& val)
+      : obj_type(ObjectType::STR), value(val) {}
+  explicit MsgpackObject(const std::vector<uint8_t>& val)
+      : obj_type(ObjectType::BIN), value(val) {}
+  explicit MsgpackObject(const std::shared_ptr<std::vector<uint8_t>>& val)
+      : obj_type(ObjectType::BIN), value(val) {}
+  explicit MsgpackObject(const std::vector<std::shared_ptr<MsgpackObject>>& val)
+      : obj_type(ObjectType::ARRAY), value(val) {}
+  explicit MsgpackObject(
+      const std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>>& val)
+      : obj_type(ObjectType::ARRAY), value(val) {}
+  explicit MsgpackObject(
+      const std::map<std::string, std::shared_ptr<MsgpackObject>>& val)
+      : obj_type(ObjectType::MAP), value(val) {}
+  explicit MsgpackObject(
+      const std::shared_ptr<
+          std::map<std::string, std::shared_ptr<MsgpackObject>>>& val)
+      : obj_type(ObjectType::MAP), value(val) {}
+  explicit MsgpackObject(int code, const std::vector<uint8_t>& val)
+      : obj_type(ObjectType::EXT), value(code, val) {}
+  explicit MsgpackObject(int code,
+                         const std::shared_ptr<std::vector<uint8_t>>& val)
+      : obj_type(ObjectType::EXT), value(code, val) {}
   MsgpackObject(const msgpack::object& obj);
   MsgpackObject(const MsgpackObject& other);
   ~MsgpackObject();
@@ -106,52 +138,57 @@ class MsgpackObject {
 
   template <typename Packer>
   void msgpack_pack(Packer& pk) const {
-    switch(obj_type) {
-    case ObjectType::NIL:
-      pk.pack_nil();
-      break;
-    case ObjectType::BOOLEAN:
-      if (value.boolean) {
-        pk.pack_true();
-      } else {
-        pk.pack_false();
-      }
-      break;
-    case ObjectType::UNSIGNED_INTEGER:
-      pk.pack_uint64(value.uint);
-      break;
-    case ObjectType::SIGNED_INTEGER:
-      pk.pack_int64(value.sint);
-      break;
-    case ObjectType::DOUBLE:
-      pk.pack_double(value.dbl);
-      break;
-    case ObjectType::STR:
-      pk.pack_str(static_cast<uint32_t>(value.str->size()));
-      pk.pack_str_body(value.str->data(), static_cast<uint32_t>(value.str->size()));
-      break;
-    case ObjectType::BIN:
-      pk.pack_bin(static_cast<uint32_t>(value.bin->size()));
-      pk.pack_bin_body(reinterpret_cast<const char *>(value.bin->data()), static_cast<uint32_t>(value.bin->size()));
-      break;
-    case ObjectType::ARRAY:
-      pk.pack_array(static_cast<uint32_t>(value.array->size()));
-      for (const auto& el : *value.array) {
-        pk.pack(el);
-      }
-      break;
-    case ObjectType::MAP:
-      pk.pack_map(static_cast<uint32_t>(value.map->size()));
-      for (const auto& el : *value.map) {
-        pk.pack_str(static_cast<uint32_t>(el.first.size()));
-        pk.pack_str_body(el.first.data(), static_cast<uint32_t>(el.first.size()));
-        pk.pack(el.second);
-      }
-      break;
-    case ObjectType::EXT:
-      pk.pack_ext(value.ext.second->size(), value.ext.first);
-      pk.pack_ext_body(reinterpret_cast<const char *>(value.ext.second->data()), static_cast<uint32_t>(value.ext.second->size()));
-      break;
+    switch (obj_type) {
+      case ObjectType::NIL:
+        pk.pack_nil();
+        break;
+      case ObjectType::BOOLEAN:
+        if (value.boolean) {
+          pk.pack_true();
+        } else {
+          pk.pack_false();
+        }
+        break;
+      case ObjectType::UNSIGNED_INTEGER:
+        pk.pack_uint64(value.uint);
+        break;
+      case ObjectType::SIGNED_INTEGER:
+        pk.pack_int64(value.sint);
+        break;
+      case ObjectType::DOUBLE:
+        pk.pack_double(value.dbl);
+        break;
+      case ObjectType::STR:
+        pk.pack_str(static_cast<uint32_t>(value.str->size()));
+        pk.pack_str_body(value.str->data(),
+                         static_cast<uint32_t>(value.str->size()));
+        break;
+      case ObjectType::BIN:
+        pk.pack_bin(static_cast<uint32_t>(value.bin->size()));
+        pk.pack_bin_body(reinterpret_cast<const char*>(value.bin->data()),
+                         static_cast<uint32_t>(value.bin->size()));
+        break;
+      case ObjectType::ARRAY:
+        pk.pack_array(static_cast<uint32_t>(value.array->size()));
+        for (const auto& el : *value.array) {
+          pk.pack(el);
+        }
+        break;
+      case ObjectType::MAP:
+        pk.pack_map(static_cast<uint32_t>(value.map->size()));
+        for (const auto& el : *value.map) {
+          pk.pack_str(static_cast<uint32_t>(el.first.size()));
+          pk.pack_str_body(el.first.data(),
+                           static_cast<uint32_t>(el.first.size()));
+          pk.pack(el.second);
+        }
+        break;
+      case ObjectType::EXT:
+        pk.pack_ext(value.ext.second->size(), value.ext.first);
+        pk.pack_ext_body(
+            reinterpret_cast<const char*>(value.ext.second->data()),
+            static_cast<uint32_t>(value.ext.second->size()));
+        break;
     }
   }
 
@@ -172,31 +209,41 @@ class MsgpackObject {
   const std::shared_ptr<std::vector<uint8_t>> getBin() const;
   void setBin(const std::shared_ptr<std::vector<uint8_t>>& val);
   std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>> getArray();
-  const std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>> getArray() const;
-  void setArray(const std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>>& val);
-  std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>> getMap();
-  const std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>> getMap() const;
-  void setMap(const std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>>& val);
+  const std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>> getArray()
+      const;
+  void setArray(
+      const std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>>& val);
+  std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>>
+  getMap();
+  const std::shared_ptr<std::map<std::string, std::shared_ptr<MsgpackObject>>>
+  getMap() const;
+  void setMap(const std::shared_ptr<
+              std::map<std::string, std::shared_ptr<MsgpackObject>>>& val);
   std::pair<int, std::shared_ptr<std::vector<uint8_t>>> getExt();
   const std::pair<int, std::shared_ptr<std::vector<uint8_t>>> getExt() const;
   void setExt(const std::pair<int, std::shared_ptr<std::vector<uint8_t>>>& val);
-private:
+
+ private:
   void fromAnother(const MsgpackObject& other);
 };
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const bool val);
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::string& val);
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::string>& val);
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::shared_ptr<std::string>& val);
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const uint64_t val);
 std::shared_ptr<MsgpackObject> toMsgpackObject(const int64_t val);
 std::shared_ptr<MsgpackObject> toMsgpackObject(const double val);
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const data::NodeID& val);
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::NodeID>& val);
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<data::BinData>& val);
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<proto::VelesException>& val);
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::shared_ptr<data::NodeID>& val);
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::shared_ptr<data::BinData>& val);
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::shared_ptr<proto::VelesException>& val);
 
 namespace details_ {
 
@@ -211,26 +258,28 @@ std::shared_ptr<MsgpackObject> convertNodeIDHelper(const data::NodeID& val);
 }  // namespace details_
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::unordered_set<T>& val) {
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::unordered_set<T>& val) {
   return details_::convertCollectionHelper(val);
 }
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::unordered_set<T>>& val_ptr) {
-  if (!val_ptr)
-    throw proto::SchemaError("Unexpected nullptr");
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::shared_ptr<std::unordered_set<T>>& val_ptr) {
+  if (!val_ptr) throw proto::SchemaError("Unexpected nullptr");
   return details_::convertCollectionHelper(*val_ptr);
 }
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::unordered_set<std::shared_ptr<T>>& val) {
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::unordered_set<std::shared_ptr<T>>& val) {
   return details_::convertCollectionHelper(val);
 }
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::unordered_set<std::shared_ptr<T>>>& val_ptr) {
-  if (!val_ptr)
-    throw proto::SchemaError("Unexpected nullptr");
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::shared_ptr<std::unordered_set<std::shared_ptr<T>>>& val_ptr) {
+  if (!val_ptr) throw proto::SchemaError("Unexpected nullptr");
   return details_::convertCollectionHelper(*val_ptr);
 }
 
@@ -240,70 +289,84 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::vector<T>& val) {
 }
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::vector<T>>& val_ptr) {
-  if (!val_ptr)
-    throw proto::SchemaError("Unexpected nullptr");
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::shared_ptr<std::vector<T>>& val_ptr) {
+  if (!val_ptr) throw proto::SchemaError("Unexpected nullptr");
   return details_::convertCollectionHelper(*val_ptr);
 }
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::vector<std::shared_ptr<T>>& val) {
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::vector<std::shared_ptr<T>>& val) {
   return details_::convertCollectionHelper(val);
 }
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::vector<std::shared_ptr<T>>>& val_ptr) {
-  if (!val_ptr)
-    throw proto::SchemaError("Unexpected nullptr");
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::shared_ptr<std::vector<std::shared_ptr<T>>>& val_ptr) {
+  if (!val_ptr) throw proto::SchemaError("Unexpected nullptr");
   return details_::convertCollectionHelper(*val_ptr);
 }
 
-template<>
+template <>
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::vector<uint8_t>& val);
 
-template<>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::vector<uint8_t>>& val);
+template <>
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::shared_ptr<std::vector<uint8_t>>& val);
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::unordered_map<std::string, T>& val) {
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::unordered_map<std::string, T>& val) {
   return details_::convertMapHelper(val);
 }
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::unordered_map<std::string, T>>& val_ptr) {
-  if (!val_ptr)
-    throw proto::SchemaError("Unexpected nullptr");
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::shared_ptr<std::unordered_map<std::string, T>>& val_ptr) {
+  if (!val_ptr) throw proto::SchemaError("Unexpected nullptr");
   return details_::convertMapHelper(*val_ptr);
 }
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::unordered_map<std::string, std::shared_ptr<T>>& val) {
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::unordered_map<std::string, std::shared_ptr<T>>& val) {
   return details_::convertMapHelper(val);
 }
 
 template <class T>
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<T>>>& val_ptr) {
-  if (!val_ptr)
-    throw proto::SchemaError("Unexpected nullptr");
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<T>>>&
+        val_ptr) {
+  if (!val_ptr) throw proto::SchemaError("Unexpected nullptr");
   return details_::convertMapHelper(*val_ptr);
 }
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const MsgpackObject& obj);
-std::shared_ptr<MsgpackObject> toMsgpackObject(const std::shared_ptr<MsgpackObject>& obj);
+std::shared_ptr<MsgpackObject> toMsgpackObject(
+    const std::shared_ptr<MsgpackObject>& obj);
 
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, bool* out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, int64_t* out);
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, uint64_t* out);
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj,
+                       uint64_t* out);
 void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, double* out);
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, std::shared_ptr<data::NodeID>* out);
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, std::shared_ptr<data::BinData>* out);
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, std::shared_ptr<proto::VelesException>* out);
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, std::shared_ptr<MsgpackObject>* out);
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, std::shared_ptr<std::string>* out);
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, std::shared_ptr<std::vector<uint8_t>>* out);
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj,
+                       std::shared_ptr<data::NodeID>* out);
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj,
+                       std::shared_ptr<data::BinData>* out);
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj,
+                       std::shared_ptr<proto::VelesException>* out);
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj,
+                       std::shared_ptr<MsgpackObject>* out);
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj,
+                       std::shared_ptr<std::string>* out);
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj,
+                       std::shared_ptr<std::vector<uint8_t>>* out);
 
 template <class T>
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, std::shared_ptr<std::vector<T>>* out) {
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj,
+                       std::shared_ptr<std::vector<T>>* out) {
   if (obj == nullptr) {
     *out = nullptr;
   } else {
@@ -318,7 +381,8 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, std::shared_pt
 }
 
 template <class T>
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, std::shared_ptr<std::unordered_set<T>>* out) {
+void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj,
+                       std::shared_ptr<std::unordered_set<T>>* out) {
   if (obj == nullptr) {
     *out = nullptr;
   } else {
@@ -333,7 +397,9 @@ void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj, std::shared_pt
 }
 
 template <class T>
-void fromMsgpackObject(const std::shared_ptr<MsgpackObject>& obj_ptr, std::shared_ptr<std::unordered_map<std::string, T>>* out) {
+void fromMsgpackObject(
+    const std::shared_ptr<MsgpackObject>& obj_ptr,
+    std::shared_ptr<std::unordered_map<std::string, T>>* out) {
   if (!obj_ptr) {
     *out = nullptr;
   } else {

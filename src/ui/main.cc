@@ -15,20 +15,20 @@
  *
  */
 #include <QApplication>
+#include <QHostAddress>
 #include <QSurfaceFormat>
 #include <QTranslator>
-#include <QHostAddress>
 
 #include "ui/dockwidget.h"
 #include "ui/veles_mainwindow.h"
+#include "util/concurrency/threadpool.h"
+#include "util/settings/theme.h"
+#include "util/version.h"
 #include "visualization/base.h"
 #include "visualization/digram.h"
 #include "visualization/trigram.h"
-#include "util/settings/theme.h"
-#include "util/concurrency/threadpool.h"
-#include "util/version.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   Q_INIT_RESOURCE(veles);
 
   QSurfaceFormat format;
@@ -55,7 +55,9 @@ int main(int argc, char *argv[]) {
 
   veles::util::threadpool::createTopic("visualization", 3);
 
-  qRegisterMetaType<veles::visualization::VisualizationWidget::AdditionalResampleDataPtr>("AdditionalResampleDataPtr");
+  qRegisterMetaType<
+      veles::visualization::VisualizationWidget::AdditionalResampleDataPtr>(
+      "AdditionalResampleDataPtr");
   qRegisterMetaType<veles::client::NetworkClient::ConnectionStatus>(
       "veles::client::NetworkClient::ConnectionStatus");
 
@@ -64,7 +66,7 @@ int main(int argc, char *argv[]) {
   parser.addVersionOption();
   parser.process(app);
 
-  veles::ui::VelesMainWindow *mainWin = new veles::ui::VelesMainWindow;
+  veles::ui::VelesMainWindow* mainWin = new veles::ui::VelesMainWindow;
   mainWin->showMaximized();
 
   auto files = parser.positionalArguments();

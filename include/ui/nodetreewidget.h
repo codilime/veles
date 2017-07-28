@@ -18,18 +18,18 @@
 
 #include <QGroupBox>
 #include <QLabel>
+#include <QSharedPointer>
 #include <QSplitter>
+#include <QToolBar>
 #include <QTreeView>
 #include <QWidget>
-#include <QToolBar>
-#include <QSharedPointer>
 
 #include "visualization/base.h"
 
+#include "ui/dockwidget.h"
 #include "ui/fileblobmodel.h"
 #include "ui/hexedit.h"
 #include "ui/searchdialog.h"
-#include "ui/dockwidget.h"
 
 #include "dbif/info.h"
 #include "dbif/types.h"
@@ -41,16 +41,17 @@ class NodeTreeWidget : public View {
   Q_OBJECT
 
  public:
-  explicit NodeTreeWidget(MainWindowWithDetachableDockWidgets *main_window,
+  explicit NodeTreeWidget(
+      MainWindowWithDetachableDockWidgets* main_window,
       const QSharedPointer<FileBlobModel>& data_model,
       const QSharedPointer<QItemSelectionModel>& selection_model);
   void setParserIds(const QStringList& ids);
 
  private slots:
   void updateLineEditWithAddress(qint64 address);
-  void parse(QAction *action);
+  void parse(QAction* action);
   void removeChunk();
-  void currentSelectionChanged(const QModelIndex &currentIndex);
+  void currentSelectionChanged(const QModelIndex& currentIndex);
   void newBinData();
 
  private:
@@ -58,8 +59,8 @@ class NodeTreeWidget : public View {
 
   void addDummySlices(dbif::ObjectHandle);
   void addChunk(const QString& name, const QString& type,
-                const QString& comment, uint64_t start,
-                uint64_t end, const QModelIndex &index = QModelIndex());
+                const QString& comment, uint64_t start, uint64_t end,
+                const QModelIndex& index = QModelIndex());
   void setupTreeViewHandlers();
   void setupDataModelHandlers();
 
@@ -67,26 +68,26 @@ class NodeTreeWidget : public View {
   void createToolBars();
   void createSliceCreatorWidget();
 
-  void registerLineEdit(QLineEdit *line_edit);
-  bool getRangeValues(qint64 *begin, qint64 *end);
+  void registerLineEdit(QLineEdit* line_edit);
+  bool getRangeValues(qint64* begin, qint64* end);
 
-  MainWindowWithDetachableDockWidgets *main_window_;
+  MainWindowWithDetachableDockWidgets* main_window_;
 
-  QToolBar *file_tool_bar_;
-  QToolBar *edit_tool_bar_;
-  QToolBar *tools_tool_bar_;
+  QToolBar* file_tool_bar_;
+  QToolBar* edit_tool_bar_;
+  QToolBar* tools_tool_bar_;
 
-  QAction *undo_act_;
-  QAction *redo_act_;
-  QAction *parser_act_;
-  QAction *remove_action_;
+  QAction* undo_act_;
+  QAction* redo_act_;
+  QAction* parser_act_;
+  QAction* remove_action_;
 
-  QTreeView *tree_view_;
+  QTreeView* tree_view_;
 
   QSharedPointer<FileBlobModel> data_model_;
   QSharedPointer<QItemSelectionModel> selection_model_;
 
-  QLineEdit *registered_line_edit_;
+  QLineEdit* registered_line_edit_;
 
   QStringList parsers_ids_;
   QMenu parsers_menu_;

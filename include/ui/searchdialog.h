@@ -17,11 +17,11 @@
 #pragma once
 
 #include <QDialog>
-#include <QtCore>
 #include <QMessageBox>
+#include <QtCore>
 
-#include "include/ui/hexedit.h"
 #include "data/bindata.h"
+#include "include/ui/hexedit.h"
 
 namespace Ui {
 class SearchDialog;
@@ -33,10 +33,10 @@ namespace ui {
 class SearchDialog : public QDialog {
   Q_OBJECT
  public:
-  explicit SearchDialog(HexEdit *hexEdit, QWidget *parent = 0);
+  explicit SearchDialog(HexEdit* hexEdit, QWidget* parent = 0);
   ~SearchDialog();
   qint64 findNext(bool include_overlapping = true, bool interactive = true);
-  Ui::SearchDialog *ui;
+  Ui::SearchDialog* ui;
 
  signals:
   void enableFindNext(bool enable);
@@ -52,16 +52,16 @@ class SearchDialog : public QDialog {
   void replaceTextChanged(const QString& text);
 
  private:
-  data::BinData getContent(int comboIndex, const QString &input);
+  data::BinData getContent(int comboIndex, const QString& input);
   bool isHexStr(const QString& hexStr);
-  void replaceOccurrence(qint64 idx, const data::BinData &replaceBa);
+  void replaceOccurrence(qint64 idx, const data::BinData& replaceBa);
   qint64 findIndex(qint64 startSearchPos);
   qint64 lastIndexOf(const data::BinData& pattern, qint64 startPos);
   qint64 indexOf(const data::BinData& pattern, qint64 startPos);
   void replace(qint64 pos, const data::BinData& data);
   void enableReplace(const QString& find, const QString& replace);
 
-  HexEdit *_hexEdit;
+  HexEdit* _hexEdit;
   data::BinData _findBa;
   qint64 _lastFoundPos;
   qint64 _lastFoundSize;

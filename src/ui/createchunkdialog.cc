@@ -20,9 +20,9 @@
 namespace veles {
 namespace ui {
 
-CreateChunkDialog::CreateChunkDialog(FileBlobModel *chunksModel,
-                                     QItemSelectionModel *selectionModel,
-                                     QWidget *parent)
+CreateChunkDialog::CreateChunkDialog(FileBlobModel* chunksModel,
+                                     QItemSelectionModel* selectionModel,
+                                     QWidget* parent)
     : QDialog(parent),
       ui(new Ui::CreateChunkDialog),
       chunksModel_(chunksModel),
@@ -43,7 +43,8 @@ void CreateChunkDialog::init() {
   ui->typeBox->setCurrentIndex(0);
   displayPath();
   updateBinDataSize();
-  connect(chunksModel_, &FileBlobModel::newBinData, this, &CreateChunkDialog::updateBinDataSize);
+  connect(chunksModel_, &FileBlobModel::newBinData, this,
+          &CreateChunkDialog::updateBinDataSize);
 }
 
 QModelIndex CreateChunkDialog::parentChunk() {

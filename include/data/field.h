@@ -16,9 +16,9 @@
  */
 #pragma once
 
-#include "data/types.h"
 #include "data/bindata.h"
 #include "data/repack.h"
+#include "data/types.h"
 
 namespace veles {
 namespace data {
@@ -79,7 +79,8 @@ struct FieldHighType {
     return res;
   }
 
-  static FieldHighType floating(FieldFloatMode float_mode, bool float_complex = false) {
+  static FieldHighType floating(FieldFloatMode float_mode,
+                                bool float_complex = false) {
     FieldHighType res;
     res.mode = FLOAT;
     res.float_mode = float_mode;
@@ -87,14 +88,14 @@ struct FieldHighType {
     return res;
   }
 
-  static FieldHighType string(FieldStringMode string_mode, FieldStringEncoding string_encoding = ENC_RAW) {
+  static FieldHighType string(FieldStringMode string_mode,
+                              FieldStringEncoding string_encoding = ENC_RAW) {
     FieldHighType res;
     res.mode = STRING;
     res.string_mode = string_mode;
     res.string_encoding = string_encoding;
     return res;
   }
-
 };
 
 struct ChunkDataItem {
@@ -122,15 +123,12 @@ struct ChunkDataItem {
   // For COMPUTED, FIELD, BITFIELD, SUBCHUNK.
   std::vector<ObjectHandle> ref;
 
-  operator bool() const {
-    return type != NONE;
-  }
+  operator bool() const { return type != NONE; }
 
   ChunkDataItem() : type(NONE) {}
 
-  static ChunkDataItem subchunk(
-      uint64_t start, uint64_t end,
-      const QString &name, ObjectHandle chunk) {
+  static ChunkDataItem subchunk(uint64_t start, uint64_t end,
+                                const QString& name, ObjectHandle chunk) {
     ChunkDataItem res;
     res.type = SUBCHUNK;
     res.start = start;
@@ -140,7 +138,7 @@ struct ChunkDataItem {
     return res;
   }
 
-  static ChunkDataItem subblob(const QString &name, ObjectHandle blob) {
+  static ChunkDataItem subblob(const QString& name, ObjectHandle blob) {
     ChunkDataItem res;
     res.type = SUBBLOB;
     res.name = name;
@@ -148,11 +146,11 @@ struct ChunkDataItem {
     return res;
   }
 
-  static ChunkDataItem field(
-      uint64_t start, uint64_t end,
-      const QString &name, const Repacker &repack, uint64_t num_elements,
-      const FieldHighType &high_type, const BinData &raw_value,
-      const std::vector<ObjectHandle> &ref = {}) {
+  static ChunkDataItem field(uint64_t start, uint64_t end, const QString& name,
+                             const Repacker& repack, uint64_t num_elements,
+                             const FieldHighType& high_type,
+                             const BinData& raw_value,
+                             const std::vector<ObjectHandle>& ref = {}) {
     ChunkDataItem res;
     res.type = FIELD;
     res.start = start;

@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  */
+#include "dbif/error.h"
 #include "dbif/info.h"
 #include "dbif/method.h"
-#include "dbif/error.h"
 #include "dbif/universe.h"
 
 namespace veles {
@@ -31,7 +31,8 @@ class Register {
     qRegisterMetaType<veles::dbif::ObjectHandle>("veles::dbif::ObjectHandle");
     qRegisterMetaType<veles::dbif::PInfoRequest>("veles::dbif::PInfoRequest");
     qRegisterMetaType<veles::dbif::PInfoReply>("veles::dbif::PInfoReply");
-    qRegisterMetaType<veles::dbif::PMethodRequest>("veles::dbif::PMethodRequest");
+    qRegisterMetaType<veles::dbif::PMethodRequest>(
+        "veles::dbif::PMethodRequest");
     qRegisterMetaType<veles::dbif::PMethodReply>("veles::dbif::PMethodReply");
     qRegisterMetaType<veles::dbif::PError>("veles::dbif::PError");
   }
@@ -40,4 +41,3 @@ class Register {
 
 }  // namespace dbif
 }  // namespace veles
-

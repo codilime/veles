@@ -15,13 +15,12 @@
  *
  */
 #include "util/concurrency/threadpool.h"
-#include <thread>
-#include <mutex>
 #include <condition_variable>
-#include <map>
-#include <vector>
 #include <deque>
-
+#include <map>
+#include <mutex>
+#include <thread>
+#include <vector>
 
 namespace veles {
 namespace util {
@@ -38,7 +37,7 @@ struct TopicInfo {
 std::map<std::string, TopicInfo*> topics_;
 std::mutex map_mutex_;
 
-void threadFunction(TopicInfo *ti) {
+void threadFunction(TopicInfo* ti) {
   while (true) {
     std::unique_lock<std::mutex> lc(ti->mutex);
     while (ti->tasks.empty()) {
@@ -54,7 +53,7 @@ void threadFunction(TopicInfo *ti) {
 void createTopic(const std::string& topic, size_t workers) {
   std::unique_lock<std::mutex> lc(map_mutex_);
   if (topics_.find(topic) != topics_.end()) return;
-  TopicInfo *ti = new TopicInfo();
+  TopicInfo* ti = new TopicInfo();
   ti->mock = false;
   topics_[topic] = ti;
   std::unique_lock<std::mutex> topic_lc(ti->mutex);
@@ -66,7 +65,7 @@ void createTopic(const std::string& topic, size_t workers) {
 void mockTopic(const std::string& topic) {
   std::unique_lock<std::mutex> lc(map_mutex_);
   if (topics_.find(topic) != topics_.end()) return;
-  TopicInfo *ti = new TopicInfo();
+  TopicInfo* ti = new TopicInfo();
   ti->mock = true;
   topics_[topic] = ti;
 }
@@ -76,7 +75,7 @@ SchedulingResult runTask(const std::string& topic, const Task& t) {
   if (topics_.find(topic) == topics_.end()) {
     return SchedulingResult::ERR_UNKNOWN_TOPIC;
   }
-  TopicInfo *ti = topics_[topic];
+  TopicInfo* ti = topics_[topic];
   std::unique_lock<std::mutex> topic_lc(ti->mutex);
   lc.unlock();
   if (ti->mock) {
@@ -91,7 +90,6 @@ SchedulingResult runTask(const std::string& topic, const Task& t) {
   ti->cv.notify_one();
   return SchedulingResult::SCHEDULED;
 }
-
 
 }  // namespace threadpool
 }  // namespace util

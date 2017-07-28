@@ -24,11 +24,13 @@
 namespace veles {
 namespace parser {
 
-dbif::ObjectHandle findSubChunk(const dbif::ObjectHandle& parent, const QString &name);
-data::ChunkDataItem findField(const dbif::ObjectHandle& parent, const QString &name);
-dbif::ObjectHandle makeSubBlob(const dbif::ObjectHandle& parent, const QString &name,
-                               const data::BinData &data);
-QList<Parser *> createAllParsers();
+dbif::ObjectHandle findSubChunk(const dbif::ObjectHandle& parent,
+                                const QString& name);
+data::ChunkDataItem findField(const dbif::ObjectHandle& parent,
+                              const QString& name);
+dbif::ObjectHandle makeSubBlob(const dbif::ObjectHandle& parent,
+                               const QString& name, const data::BinData& data);
+QList<Parser*> createAllParsers();
 
 }  // namespace parser
 }  // namespace veles

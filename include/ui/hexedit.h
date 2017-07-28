@@ -39,9 +39,10 @@ namespace ui {
 class HexEdit : public QAbstractScrollArea {
   Q_OBJECT
  public:
-  HexEdit(FileBlobModel *dataModel,
-          QItemSelectionModel *selectionModel = nullptr, QWidget *parent = 0);
-  /** Mark bytes as selected and optionally scroll screen to make these bytes visible */
+  HexEdit(FileBlobModel* dataModel,
+          QItemSelectionModel* selectionModel = nullptr, QWidget* parent = 0);
+  /** Mark bytes as selected and optionally scroll screen to make these bytes
+   * visible */
   void setSelection(qint64 start, qint64 size, bool set_visible = false);
   int getBytesPerRow() const { return bytesPerRow_; }
   /** Sets how many bytes should be displayed in the single hex row or optionaly
@@ -51,14 +52,14 @@ class HexEdit : public QAbstractScrollArea {
   /** Scroll screen to make byte visible */
   void scrollToByte(qint64 bytePos, bool minimal_change = false);
   void scrollRows(qint64 num_rows);
-  FileBlobModel *dataModel() { return dataModel_; }
+  FileBlobModel* dataModel() { return dataModel_; }
   void setParserIds(const QStringList& ids);
-  void processEditEvent(QKeyEvent *event);
+  void processEditEvent(QKeyEvent* event);
   uint64_t byteValue(qint64 pos) const;
   uint64_t originalByteValue(qint64 pos) const;
   void setBytesValues(qint64 pos, const data::BinData& new_data);
 
-public slots:
+ public slots:
   void newBinData();
   void dataChanged();
   void modelSelectionChanged();
@@ -67,13 +68,13 @@ public slots:
   void discardChanges();
 
  protected:
-  void paintEvent(QPaintEvent *event) override;
-  void resizeEvent(QResizeEvent *event) override;
-  void mousePressEvent(QMouseEvent *event) override;
-  void mouseMoveEvent(QMouseEvent *event) override;
-  void mouseDoubleClickEvent(QMouseEvent *event) override;
-  void contextMenuEvent(QContextMenuEvent *event) override;
-  void keyPressEvent(QKeyEvent *event) override;
+  void paintEvent(QPaintEvent* event) override;
+  void resizeEvent(QResizeEvent* event) override;
+  void mousePressEvent(QMouseEvent* event) override;
+  void mouseMoveEvent(QMouseEvent* event) override;
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
+  void contextMenuEvent(QContextMenuEvent* event) override;
+  void keyPressEvent(QKeyEvent* event) override;
   bool focusNextPrevChild(bool next) override;
 
  signals:
@@ -81,35 +82,40 @@ public slots:
   void editStateChanged(bool has_changes, bool has_undo);
 
  private:
-  FileBlobModel *dataModel_;
+  FileBlobModel* dataModel_;
   uint32_t bindata_width_;
-  QItemSelectionModel *chunkSelectionModel_;
+  QItemSelectionModel* chunkSelectionModel_;
 
   /** Total number of bytes in the blob */
   qint64 dataBytesCount_;
   /** Number of bytes displayed in singled hex edit row */
   qint64 bytesPerRow_;
-  /** Indicates if bytes per row should be automatically adjusted to window width */
+  /** Indicates if bytes per row should be automatically adjusted to window
+   * width */
   bool autoBytesPerRow_;
   /** Byte offset of whole blob */
   qint64 startOffset_;
   /** Total number of rows in hex edit (counting last address only row) */
   qint64 rowsCount_;
-  /** Number of rows displayed on the screen (calculated from window and font height) */
+  /** Number of rows displayed on the screen (calculated from window and font
+   * height) */
   qint64 rowsOnScreen_;
   /** Number of hex chars used to display one byte */
   qint64 byteCharsCount_;
   /** maximum value of byte */
   quint64 byte_max_value_;
-  /** Number of pixels between two bytes in hex view (calculated from char width) */
+  /** Number of pixels between two bytes in hex view (calculated from char
+   * width) */
   qint64 spaceAfterByte_;
-  /** Number of pixels between two bytes in ASCII view (calculated from char width) */
+  /** Number of pixels between two bytes in ASCII view (calculated from char
+   * width) */
   qint64 spaceAfterAsciiByte_;
   /** Width of single character in pixels */
   qint64 charWidth_;
   /** Height of single character in pixels */
   qint64 charHeight_;
-  /** Number of pixels between two bytes (vertically) in hex view (calculated from char height)  */
+  /** Number of pixels between two bytes (vertically) in hex view (calculated
+   * from char height)  */
   qint64 verticalByteBorderMargin_;
   /** Number of bytes (8 bit) used to represent offset addr */
   qint64 addressBytes_;
@@ -146,16 +152,16 @@ public slots:
   qint64 cursor_pos_in_byte_;
   bool cursor_visible_;
 
-  CreateChunkDialog *createChunkDialog_;
-  GoToAddressDialog *goToAddressDialog_;
+  CreateChunkDialog* createChunkDialog_;
+  GoToAddressDialog* goToAddressDialog_;
 
-  QAction *createChunkAction_;
-  QAction *createChildChunkAction_;
-  QAction *goToAddressAction_;
-  QAction *removeChunkAction_;
-  QAction *selectChunkAction_;
-  QAction *saveChunkAction_;
-  QAction *saveSelectionAction_;
+  QAction* createChunkAction_;
+  QAction* createChildChunkAction_;
+  QAction* goToAddressAction_;
+  QAction* removeChunkAction_;
+  QAction* selectChunkAction_;
+  QAction* saveChunkAction_;
+  QAction* saveSelectionAction_;
   QStringList parsers_ids_;
   QMenu menu_;
   QMenu parsers_menu_;
@@ -186,9 +192,10 @@ public slots:
   qint64 selectionSize();
 
   QModelIndex selectedChunk();
-  void createAction(util::settings::shortcuts::ShortcutType type, const std::function<void()>& f);
+  void createAction(util::settings::shortcuts::ShortcutType type,
+                    const std::function<void()>& f);
 
-  void getRangeFromIndex(QModelIndex index, qint64 *begin, qint64 *size);
+  void getRangeFromIndex(QModelIndex index, qint64* begin, qint64* size);
   void drawBorder(qint64 start, qint64 size, bool asciiArea = false,
                   bool dotted = false);
 
@@ -200,13 +207,14 @@ public slots:
   void saveChunkToFile(const QString& path);
   void saveDataToFile(int byte_offset, int size, const QString& path);
   void scrollToCurrentChunk();
-  void parse(QAction *action);
+  void parse(QAction* action);
   void resetCursor();
 
-  void transferChanges(data::BinData* bin_data, qint64 offset_shift = 0, qint64 max_bytes = -1);
+  void transferChanges(data::BinData* bin_data, qint64 offset_shift = 0,
+                       qint64 max_bytes = -1);
 
  private slots:
-  void copyToClipboard(util::encoders::IEncoder *enc = nullptr);
+  void copyToClipboard(util::encoders::IEncoder* enc = nullptr);
   void pasteFromClipboard(util::encoders::IDecoder* enc = nullptr);
 };
 

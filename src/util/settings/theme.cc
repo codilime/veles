@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  */
+#include <QFont>
 #include <QSettings>
 #include <QStyleFactory>
-#include <QFont>
 
 #include "util/settings/theme.h"
 
@@ -71,7 +71,7 @@ QPalette pallete() {
   return pallete;
 }
 
-QStyle*createStyle() {
+QStyle* createStyle() {
   if (currentId() == "dark") {
     return QStyleFactory::create("Fusion");
   }
@@ -136,9 +136,7 @@ static QColor colorInvertedIfDark(const QColor& color) {
   return color;
 }
 
-QColor editedBackground() {
-  return colorInvertedIfDark(QColor("#bc7874"));
-}
+QColor editedBackground() { return colorInvertedIfDark(QColor("#bc7874")); }
 
 }  // namespace theme
 }  // namespace settings

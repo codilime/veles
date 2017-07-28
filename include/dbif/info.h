@@ -17,12 +17,12 @@
 #pragma once
 
 #include <stdint.h>
-#include <vector>
 #include <QString>
+#include <vector>
 
-#include "dbif/types.h"
-#include "data/field.h"
 #include "data/bindata.h"
+#include "data/field.h"
+#include "dbif/types.h"
 
 namespace veles {
 namespace dbif {
@@ -31,6 +31,7 @@ namespace dbif {
 
 struct InfoRequest {
   virtual ~InfoRequest() {}
+
  protected:
   InfoRequest() {}
 };
@@ -56,8 +57,8 @@ struct ParsersListRequest : InfoRequest {
 struct BlobDataRequest : InfoRequest {
   const uint64_t start;
   const uint64_t end;
-  explicit BlobDataRequest(uint64_t start, uint64_t end) :
-    start(start), end(end) {}
+  explicit BlobDataRequest(uint64_t start, uint64_t end)
+      : start(start), end(end) {}
   typedef BlobDataReply ReplyType;
 };
 
@@ -69,6 +70,7 @@ struct ChunkDataRequest : InfoRequest {
 
 struct InfoReply {
   virtual ~InfoReply() {}
+
  protected:
   InfoReply() {}
 };
@@ -76,34 +78,34 @@ struct InfoReply {
 struct DescriptionReply : InfoReply {
   const QString name;
   const QString comment;
-  explicit DescriptionReply(const QString &name, const QString &comment) :
-    name(name), comment(comment) {}
+  explicit DescriptionReply(const QString& name, const QString& comment)
+      : name(name), comment(comment) {}
 };
 
 struct BlobDescriptionReply : DescriptionReply {
   const uint64_t base;
   const uint64_t size;
   const int width;
-  explicit BlobDescriptionReply(const QString &name, const QString &comment,
-                       uint64_t base, uint64_t size, int width) :
-    DescriptionReply(name, comment),
-    base(base), size(size), width(width) {}
+  explicit BlobDescriptionReply(const QString& name, const QString& comment,
+                                uint64_t base, uint64_t size, int width)
+      : DescriptionReply(name, comment), base(base), size(size), width(width) {}
 };
 
 struct FileBlobDescriptionReply : BlobDescriptionReply {
   const QString path;
-  explicit FileBlobDescriptionReply(const QString &name, const QString &comment,
-                           uint64_t base, uint64_t size, int width,
-                           const QString &path) :
-    BlobDescriptionReply(name, comment, base, size, width), path(path) {}
+  explicit FileBlobDescriptionReply(const QString& name, const QString& comment,
+                                    uint64_t base, uint64_t size, int width,
+                                    const QString& path)
+      : BlobDescriptionReply(name, comment, base, size, width), path(path) {}
 };
 
 struct SubBlobDescriptionReply : BlobDescriptionReply {
   ObjectHandle parent;
-  explicit SubBlobDescriptionReply(const QString &name, const QString &comment,
-                           uint64_t base, uint64_t size, int width,
-                           const ObjectHandle &parent) :
-    BlobDescriptionReply(name, comment, base, size, width), parent(parent) {}
+  explicit SubBlobDescriptionReply(const QString& name, const QString& comment,
+                                   uint64_t base, uint64_t size, int width,
+                                   const ObjectHandle& parent)
+      : BlobDescriptionReply(name, comment, base, size, width),
+        parent(parent) {}
 };
 
 struct ChunkDescriptionReply : DescriptionReply {
@@ -112,40 +114,40 @@ struct ChunkDescriptionReply : DescriptionReply {
   const uint64_t start;
   const uint64_t end;
   const QString chunk_type;
-  explicit ChunkDescriptionReply(const QString &name, const QString &comment,
+  explicit ChunkDescriptionReply(const QString& name, const QString& comment,
                                  const ObjectHandle blob,
                                  const ObjectHandle parent_chunk,
                                  uint64_t start, uint64_t end,
-                                 const QString &chunk_type) :
-    DescriptionReply(name, comment), blob(blob), parent_chunk(parent_chunk),
-    start(start), end(end), chunk_type(chunk_type) {}
+                                 const QString& chunk_type)
+      : DescriptionReply(name, comment),
+        blob(blob),
+        parent_chunk(parent_chunk),
+        start(start),
+        end(end),
+        chunk_type(chunk_type) {}
   uint64_t size() const { return end - start; }
 };
 
 struct ChildrenReply : InfoReply {
   const std::vector<ObjectHandle> objects;
-  explicit ChildrenReply(const std::vector<ObjectHandle> &objects) :
-    objects(objects) {}
+  explicit ChildrenReply(const std::vector<ObjectHandle>& objects)
+      : objects(objects) {}
 };
 
-struct ParsersListReply : InfoReply  {
+struct ParsersListReply : InfoReply {
   const QStringList parserIds;
-  explicit ParsersListReply(const QStringList &ids) :
-    parserIds(ids) {}
+  explicit ParsersListReply(const QStringList& ids) : parserIds(ids) {}
 };
 
 struct BlobDataReply : InfoReply {
   data::BinData data;
-  BlobDataReply(const data::BinData &data) :
-    data(data) {}
-  BlobDataReply(data::BinData &&data) :
-    data(data) {}
+  BlobDataReply(const data::BinData& data) : data(data) {}
+  BlobDataReply(data::BinData&& data) : data(data) {}
 };
 
 struct ChunkDataReply : InfoReply {
   std::vector<data::ChunkDataItem> items;
-  ChunkDataReply(std::vector<data::ChunkDataItem> &items) :
-    items(items) {}
+  ChunkDataReply(std::vector<data::ChunkDataItem>& items) : items(items) {}
 };
 
 }  // namespace dbif

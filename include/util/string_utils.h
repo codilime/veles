@@ -16,9 +16,9 @@
  */
 #pragma once
 
-#include <functional>
 #include <QChar>
 #include <QString>
+#include <functional>
 
 namespace veles {
 namespace util {

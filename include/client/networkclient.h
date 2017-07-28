@@ -16,20 +16,20 @@
  */
 #pragma once
 
-#include <set>
-#include <map>
-#include <random>
-#include <memory>
 #include <cstdint>
 #include <iostream>
+#include <map>
+#include <memory>
+#include <random>
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
 
-#include <QString>
 #include <QSslSocket>
+#include <QString>
 
-#include "network/msgpackwrapper.h"
 #include "data/nodeid.h"
+#include "network/msgpackwrapper.h"
 
 namespace veles {
 namespace client {
@@ -51,18 +51,15 @@ class NetworkClient : public QObject {
   Q_OBJECT
 
  public:
-  enum class ConnectionStatus{NotConnected, Connecting, Connected};
+  enum class ConnectionStatus { NotConnected, Connecting, Connected };
   static QString connStatusStr(ConnectionStatus status);
 
   NetworkClient(QObject* parent = nullptr);
   virtual ~NetworkClient();
   ConnectionStatus connectionStatus();
-  void connect(const QString& server_url,
-               const QString& client_interface_name,
-               const QString& client_name,
-               const QString& client_version,
-               const QString& client_description,
-               const QString& client_type,
+  void connect(const QString& server_url, const QString& client_interface_name,
+               const QString& client_name, const QString& client_version,
+               const QString& client_description, const QString& client_type,
                bool quit_on_close);
   void disconnect();
   std::unique_ptr<NodeTree> const& nodeTree();
@@ -98,11 +95,11 @@ class NetworkClient : public QObject {
 
   typedef void (NetworkClient::*MessageHandler)(const msg_ptr&);
 
-signals:
+ signals:
   void connectionStatusChanged(ConnectionStatus connection_status);
   void messageReceived(const msg_ptr& message);
 
-public slots:
+ public slots:
   void sendMessage(const msg_ptr& msg);
   void setConnectionStatus(ConnectionStatus connection_status);
   void socketConnected();

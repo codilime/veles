@@ -23,10 +23,10 @@
 #include <limits>
 #include <random>
 
-#include <QtGlobal>
-#include <QSettings>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
+#include <QSettings>
+#include <QtGlobal>
 
 #include "client/networkclient.h"
 #include "util/settings/connection_client.h"
@@ -35,35 +35,35 @@ namespace veles {
 namespace ui {
 
 ConnectionDialog::ConnectionDialog(QWidget* parent)
-    : QDialog(parent),
-      ui_(new Ui::ConnectionDialog) {
+    : QDialog(parent), ui_(new Ui::ConnectionDialog) {
   ui_->setupUi(this);
 
-  QRegularExpressionValidator* validator
-      = new QRegularExpressionValidator(QRegularExpression(
-      "^[0-9A-F]{0,128}$", QRegularExpression::CaseInsensitiveOption), this);
+  QRegularExpressionValidator* validator = new QRegularExpressionValidator(
+      QRegularExpression("^[0-9A-F]{0,128}$",
+                         QRegularExpression::CaseInsensitiveOption),
+      this);
   ui_->key_line_edit->setValidator(validator);
 
   connect(ui_->ok_button, &QPushButton::clicked, this, &QDialog::accept);
   connect(ui_->cancel_button, &QPushButton::clicked, this, &QDialog::reject);
-  connect(ui_->server_localhost_button, &QPushButton::clicked,
-      this, &ConnectionDialog::serverLocalhost);
-  connect(ui_->client_localhost_button, &QPushButton::clicked,
-        this, &ConnectionDialog::clientLocalhost);
-  connect(ui_->random_key_button, &QPushButton::clicked,
-      this, &ConnectionDialog::randomKey);
-  connect(ui_->new_server_radio_button, &QPushButton::toggled,
-      this, &ConnectionDialog::newServerToggled);
+  connect(ui_->server_localhost_button, &QPushButton::clicked, this,
+          &ConnectionDialog::serverLocalhost);
+  connect(ui_->client_localhost_button, &QPushButton::clicked, this,
+          &ConnectionDialog::clientLocalhost);
+  connect(ui_->random_key_button, &QPushButton::clicked, this,
+          &ConnectionDialog::randomKey);
+  connect(ui_->new_server_radio_button, &QPushButton::toggled, this,
+          &ConnectionDialog::newServerToggled);
 
   db_file_dialog_ = new QFileDialog(this);
   db_file_dialog_->setAcceptMode(QFileDialog::AcceptOpen);
   db_file_dialog_->setFileMode(QFileDialog::AnyFile);
   db_file_dialog_->setNameFilters({"All files (*.*)"});
 
-  connect(ui_->select_database_button, &QPushButton::clicked,
-        db_file_dialog_, &QFileDialog::show);
-  connect(db_file_dialog_, &QFileDialog::fileSelected,
-      this, &ConnectionDialog::databaseFileSelected);
+  connect(ui_->select_database_button, &QPushButton::clicked, db_file_dialog_,
+          &QFileDialog::show);
+  connect(db_file_dialog_, &QFileDialog::fileSelected, this,
+          &ConnectionDialog::databaseFileSelected);
 
   server_file_dialog_ = new QFileDialog(this);
   server_file_dialog_->setAcceptMode(QFileDialog::AcceptOpen);
@@ -71,51 +71,59 @@ ConnectionDialog::ConnectionDialog(QWidget* parent)
   server_file_dialog_->setNameFilters({"Python scripts (*.py)"});
 
   connect(ui_->select_server_executable_button, &QPushButton::clicked,
-      server_file_dialog_, &QFileDialog::show);
-  connect(server_file_dialog_, &QFileDialog::fileSelected,
-      this, &ConnectionDialog::serverFileSelected);
+          server_file_dialog_, &QFileDialog::show);
+  connect(server_file_dialog_, &QFileDialog::fileSelected, this,
+          &ConnectionDialog::serverFileSelected);
 
   certificate_dir_dialog_ = new QFileDialog(this);
   certificate_dir_dialog_->setFileMode(QFileDialog::Directory);
 
   connect(ui_->certificate_dir_button, &QPushButton::clicked,
-      certificate_dir_dialog_, &QFileDialog::show);
-  connect(certificate_dir_dialog_, &QFileDialog::fileSelected,
-      this, &ConnectionDialog::certificateDirSelected);
+          certificate_dir_dialog_, &QFileDialog::show);
+  connect(certificate_dir_dialog_, &QFileDialog::fileSelected, this,
+          &ConnectionDialog::certificateDirSelected);
 
-  connect(ui_->load_defaults_button, &QPushButton::clicked,
-      this, &ConnectionDialog::loadDefaultValues);
+  connect(ui_->load_defaults_button, &QPushButton::clicked, this,
+          &ConnectionDialog::loadDefaultValues);
   connect(this, &QDialog::accepted, this, &ConnectionDialog::dialogAccepted);
-  connect(ui_->profile, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ConnectionDialog::profileChanged);
-  connect(ui_->profile, &QComboBox::editTextChanged, this, &ConnectionDialog::profileNameEdited);
-  connect(ui_->remove_profile_button, &QPushButton::clicked, this, &ConnectionDialog::profileRemoved);
-  connect(ui_->new_profile_button, &QPushButton::clicked, this, &ConnectionDialog::newProfile);
-  connect(ui_->default_profile, &QPushButton::clicked, this, &ConnectionDialog::defaultProfile);
-  connect(ui_->ssl_checkbox, &QCheckBox::toggled, this, &ConnectionDialog::sslEnabledToggled);
-  connect(ui_->server_url_line_edit, &QLineEdit::textEdited, [this](const QString& text) {
-    QString trimmed_text = text.trimmed();
-    ui_->server_url_line_edit->setText(trimmed_text);
-    QString scheme = trimmed_text.section("://", 0, 0).toLower();
-    if (scheme == client::SCHEME_SSL) {
-      ui_->ssl_checkbox->setChecked(true);
-    } else if (scheme == client::SCHEME_TCP) {
-      ui_->ssl_checkbox->setChecked(false);
-    } else {
-      ui_->ssl_checkbox->setChecked(false);
-      ui_->server_host_line_edit->setText("");
-      ui_->port_spin_box->setValue(0);
-      ui_->key_line_edit->setText("");
-      return;
-    }
+  connect(ui_->profile, static_cast<void (QComboBox::*)(int)>(
+                            &QComboBox::currentIndexChanged),
+          this, &ConnectionDialog::profileChanged);
+  connect(ui_->profile, &QComboBox::editTextChanged, this,
+          &ConnectionDialog::profileNameEdited);
+  connect(ui_->remove_profile_button, &QPushButton::clicked, this,
+          &ConnectionDialog::profileRemoved);
+  connect(ui_->new_profile_button, &QPushButton::clicked, this,
+          &ConnectionDialog::newProfile);
+  connect(ui_->default_profile, &QPushButton::clicked, this,
+          &ConnectionDialog::defaultProfile);
+  connect(ui_->ssl_checkbox, &QCheckBox::toggled, this,
+          &ConnectionDialog::sslEnabledToggled);
+  connect(ui_->server_url_line_edit, &QLineEdit::textEdited,
+          [this](const QString& text) {
+            QString trimmed_text = text.trimmed();
+            ui_->server_url_line_edit->setText(trimmed_text);
+            QString scheme = trimmed_text.section("://", 0, 0).toLower();
+            if (scheme == client::SCHEME_SSL) {
+              ui_->ssl_checkbox->setChecked(true);
+            } else if (scheme == client::SCHEME_TCP) {
+              ui_->ssl_checkbox->setChecked(false);
+            } else {
+              ui_->ssl_checkbox->setChecked(false);
+              ui_->server_host_line_edit->setText("");
+              ui_->port_spin_box->setValue(0);
+              ui_->key_line_edit->setText("");
+              return;
+            }
 
-    QString url = trimmed_text.section("://",1);
-    QString auth = url.section("@", 0, 0);
-    QString loc = url.section("@", 1);
+            QString url = trimmed_text.section("://", 1);
+            QString auth = url.section("@", 0, 0);
+            QString loc = url.section("@", 1);
 
-    ui_->server_host_line_edit->setText(loc.section(":", 0, -2));
-    ui_->port_spin_box->setValue(loc.section(":", -1, -1).toInt());
-    ui_->key_line_edit->setText(auth.section(":", 0, 0));
-  });
+            ui_->server_host_line_edit->setText(loc.section(":", 0, -2));
+            ui_->port_spin_box->setValue(loc.section(":", -1, -1).toInt());
+            ui_->key_line_edit->setText(auth.section(":", 0, 0));
+          });
 
   newServerToggled(ui_->new_server_radio_button->isChecked());
   sslEnabledToggled(ui_->ssl_checkbox->isChecked());
@@ -135,9 +143,7 @@ QString ConnectionDialog::serverHost() {
   return ui_->server_host_line_edit->text();
 }
 
-int ConnectionDialog::serverPort() {
-  return ui_->port_spin_box->value();
-}
+int ConnectionDialog::serverPort() { return ui_->port_spin_box->value(); }
 
 QString ConnectionDialog::clientInterface() {
   return ui_->client_interface_line_edit->text();
@@ -186,12 +192,12 @@ void ConnectionDialog::randomKey() {
   // isn't explicitely guaranteed by the standard. We should fix it someday.
   std::random_device rd;
   std::uniform_int_distribution<uint32_t> uniform;
-  auto gen_key_part = [&rd, &uniform](){
+  auto gen_key_part = [&rd, &uniform]() {
     return QString("%1").arg(uniform(rd), 8 /* width */, 16 /* base */,
                              QChar('0'));
   };
-  ui_->key_line_edit->setText(gen_key_part() + gen_key_part() + gen_key_part()
-                              + gen_key_part());
+  ui_->key_line_edit->setText(gen_key_part() + gen_key_part() + gen_key_part() +
+                              gen_key_part());
 }
 
 void ConnectionDialog::newServerToggled(bool toggled) {
@@ -244,8 +250,7 @@ void ConnectionDialog::loadDefaultValues() {
       util::settings::connection::runServerDefault());
   ui_->server_host_line_edit->setText(
       util::settings::connection::serverHostDefault());
-  ui_->port_spin_box->setValue(
-      util::settings::connection::serverPortDefault());
+  ui_->port_spin_box->setValue(util::settings::connection::serverPortDefault());
   ui_->key_line_edit->setText(
       util::settings::connection::connectionKeyDefault());
   ui_->client_interface_line_edit->setText(
@@ -282,12 +287,10 @@ void ConnectionDialog::loadSettings() {
         util::settings::connection::serverHost());
     ui_->port_spin_box->setValue(util::settings::connection::serverPort());
     ui_->key_line_edit->setText(util::settings::connection::connectionKey());
-    ui_->ssl_checkbox->setChecked(
-        util::settings::connection::sslEnabled());
+    ui_->ssl_checkbox->setChecked(util::settings::connection::sslEnabled());
   } else {
     ui_->existing_server_radio_button->setChecked(true);
-    ui_->server_url_line_edit->setText(
-        util::settings::connection::serverUrl());
+    ui_->server_url_line_edit->setText(util::settings::connection::serverUrl());
     emit ui_->server_url_line_edit->textEdited(
         util::settings::connection::serverUrl());
   }
@@ -295,8 +298,7 @@ void ConnectionDialog::loadSettings() {
       util::settings::connection::clientInterface());
   QString client_name = util::settings::connection::clientName();
   ui_->client_name_line_edit->setText(client_name);
-  ui_->database_line_edit->setText(
-      util::settings::connection::databaseName());
+  ui_->database_line_edit->setText(util::settings::connection::databaseName());
   ui_->server_executable_line_edit->setText(
       util::settings::connection::serverScript());
   ui_->certificate_dir_line_edit->setText(
@@ -307,34 +309,25 @@ void ConnectionDialog::saveSettings() {
   util::settings::connection::setCurrentProfile(ui_->profile->currentText());
   util::settings::connection::setRunServer(
       ui_->new_server_radio_button->isChecked());
-  util::settings::connection::setServerHost(
-      ui_->server_host_line_edit->text());
-  util::settings::connection::setServerPort(
-      ui_->port_spin_box->value());
+  util::settings::connection::setServerHost(ui_->server_host_line_edit->text());
+  util::settings::connection::setServerPort(ui_->port_spin_box->value());
   util::settings::connection::setClientInterface(
       ui_->client_interface_line_edit->text());
-  util::settings::connection::setClientName(
-      ui_->client_name_line_edit->text());
+  util::settings::connection::setClientName(ui_->client_name_line_edit->text());
   util::settings::connection::setConnectionKey(
-      ui_->save_key_check_box->isChecked() ?
-      ui_->key_line_edit->text() : "");
-  util::settings::connection::setDatabaseName(
-      ui_->database_line_edit->text());
+      ui_->save_key_check_box->isChecked() ? ui_->key_line_edit->text() : "");
+  util::settings::connection::setDatabaseName(ui_->database_line_edit->text());
   util::settings::connection::setServerScript(
       ui_->server_executable_line_edit->text());
   util::settings::connection::setCertDirectory(
       ui_->certificate_dir_line_edit->text());
-  util::settings::connection::setServerUrl(
-      ui_->server_url_line_edit->text());
-  util::settings::connection::setSslEnabled(
-      ui_->ssl_checkbox->isChecked());
+  util::settings::connection::setServerUrl(ui_->server_url_line_edit->text());
+  util::settings::connection::setSslEnabled(ui_->ssl_checkbox->isChecked());
 
   loadProfiles();
 }
 
-void ConnectionDialog::dialogAccepted() {
-  saveSettings();
-}
+void ConnectionDialog::dialogAccepted() { saveSettings(); }
 
 void ConnectionDialog::profileChanged(int index) {
   ui_->profile->setEditable(false);
@@ -359,7 +352,8 @@ void ConnectionDialog::defaultProfile() {
 }
 
 void ConnectionDialog::profileNameEdited(const QString& name) {
-  ui_->profile->setEditText(util::settings::connection::uniqueProfileName(name));
+  ui_->profile->setEditText(
+      util::settings::connection::uniqueProfileName(name));
 }
 
 void ConnectionDialog::showEvent(QShowEvent* event) {

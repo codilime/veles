@@ -39,7 +39,8 @@ namespace kaitai {
 class kstream {
  public:
   kstream(const veles::dbif::ObjectHandle& blob, uint64_t start = 0,
-          const veles::dbif::ObjectHandle& parent_chunk = veles::dbif::ObjectHandle(),
+          const veles::dbif::ObjectHandle& parent_chunk =
+              veles::dbif::ObjectHandle(),
           uint64_t max_size = 0, bool error = false);
   ~kstream();
 
@@ -75,35 +76,34 @@ class kstream {
   float read_f4le();
   double read_f8le();
 
-  std::string read_str_eos(const char *);
-  std::string read_str_byte_limit(size_t, const char *);
-  std::string read_strz(const char *, char, bool, bool, bool);
+  std::string read_str_eos(const char*);
+  std::string read_str_byte_limit(size_t, const char*);
+  std::string read_strz(const char*, char, bool, bool, bool);
 
   std::vector<uint8_t> read_bytes(size_t);
   std::vector<uint8_t> read_bytes_full();
   std::vector<uint8_t> ensure_fixed_contents(const std::string&);
 
-  static std::string bytes_to_string(std::vector<uint8_t>, const char *);
+  static std::string bytes_to_string(std::vector<uint8_t>, const char*);
 
   /** additional methods required by Veles */
-  void pushName(const char *);
+  void pushName(const char*);
   void popName();
-  const char* currentName() {return current_name_;}
-  veles::dbif::ObjectHandle startChunk(const char *);
+  const char* currentName() { return current_name_; }
+  veles::dbif::ObjectHandle startChunk(const char*);
   veles::dbif::ObjectHandle endChunk();
-  veles::parser::StreamParser *parser() { return parser_; }
+  veles::parser::StreamParser* parser() { return parser_; }
   veles::dbif::ObjectHandle blob() { return obj_; }
   bool error() { return error_; }
 
  private:
   veles::dbif::ObjectHandle obj_;
-  veles::parser::StreamParser *parser_;
+  veles::parser::StreamParser* parser_;
   std::vector<std::string> names_stack_;
-  const char *current_name_;
+  const char* current_name_;
   bool error_;
   uint64_t max_size_;
 };
 
 }  // namespace kaitai
 }  // namespace veles
-

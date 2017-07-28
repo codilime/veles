@@ -16,42 +16,39 @@
  */
 #include <QComboBox>
 
-#include "ui_samplingmethoddialog.h"
 #include "include/visualization/samplingmethoddialog.h"
-
+#include "ui_samplingmethoddialog.h"
 
 namespace veles {
 namespace visualization {
 
-SamplingMethodDialog::SamplingMethodDialog(QWidget* parent) :
-      QDialog(parent), ui(new Ui::SamplingMethodDialog) {
+SamplingMethodDialog::SamplingMethodDialog(QWidget* parent)
+    : QDialog(parent), ui(new Ui::SamplingMethodDialog) {
   ui->setupUi(this);
 
-  connect(ui->sampling_method_uniform, &QRadioButton::toggled,
-          ui->sample_size, &QWidget::setEnabled);
-  connect(ui->sampling_method_uniform, &QRadioButton::toggled,
-            this, &SamplingMethodDialog::samplingMethodToggled);
+  connect(ui->sampling_method_uniform, &QRadioButton::toggled, ui->sample_size,
+          &QWidget::setEnabled);
+  connect(ui->sampling_method_uniform, &QRadioButton::toggled, this,
+          &SamplingMethodDialog::samplingMethodToggled);
   connect(ui->sample_size,
-      static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-      this, &SamplingMethodDialog::sampleSizeChanged);
+          static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this,
+          &SamplingMethodDialog::sampleSizeChanged);
 }
 
-SamplingMethodDialog::~SamplingMethodDialog() {
-  delete ui;
-}
+SamplingMethodDialog::~SamplingMethodDialog() { delete ui; }
 
 void SamplingMethodDialog::setMaximumSampleSize(int size) {
   ui->sample_size->setMaximum(size);
 }
 
 void SamplingMethodDialog::samplingMethodToggled(bool uniform) {
-  emit samplingMethodChanged(
-      uniform ? "Uniform random sampling" : "No sampling");
+  emit samplingMethodChanged(uniform ? "Uniform random sampling"
+                                     : "No sampling");
 }
 
 void SamplingMethodDialog::setSampleSize(int size) {
   ui->sample_size->setValue(size);
 }
 
-} // namespace visualization
-} // namespace veles
+}  // namespace visualization
+}  // namespace veles

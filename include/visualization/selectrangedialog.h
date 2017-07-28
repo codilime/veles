@@ -32,7 +32,7 @@ class SelectRangeDialog : public QDialog {
   Q_OBJECT
 
  public:
-  explicit SelectRangeDialog(QWidget *parent = 0);
+  explicit SelectRangeDialog(QWidget* parent = 0);
   ~SelectRangeDialog();
 
   void setRange(size_t min_address, size_t max_address);
@@ -47,8 +47,7 @@ class SelectRangeDialog : public QDialog {
  private:
   void setAddressRanges();
 
-  Ui::SelectRangeDialog *ui;
-
+  Ui::SelectRangeDialog* ui;
 };
 
 }  // namespace visualization

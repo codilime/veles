@@ -14,27 +14,28 @@
  * limitations under the License.
  *
  */
-#include "dbif/universe.h"
 #include "parser/utils.h"
+#include "dbif/universe.h"
 
 #include "parser/unpng.h"
 #include "parser/unpyc.h"
 
-#include "kaitai/zip_parser.h"
-#include "kaitai/microsoft_pe_parser.h"
-#include "kaitai/gif_parser.h"
-#include "kaitai/png_parser.h"
-#include "kaitai/elf_parser.h"
-#include "kaitai/bmp_parser.h"
 #include "kaitai/avi_parser.h"
+#include "kaitai/bmp_parser.h"
+#include "kaitai/elf_parser.h"
+#include "kaitai/gif_parser.h"
+#include "kaitai/microsoft_pe_parser.h"
+#include "kaitai/png_parser.h"
 #include "kaitai/quicktime_mov_parser.h"
+#include "kaitai/zip_parser.h"
 
 namespace veles {
 namespace parser {
 
-dbif::ObjectHandle findSubChunk(const dbif::ObjectHandle& parent, const QString& name) {
+dbif::ObjectHandle findSubChunk(const dbif::ObjectHandle& parent,
+                                const QString& name) {
   auto parsed = parent->syncGetInfo<dbif::ChunkDataRequest>();
-  for (auto &x : parsed->items) {
+  for (auto& x : parsed->items) {
     if (x.type == data::ChunkDataItem::SUBCHUNK && x.name == name) {
       return x.ref[0];
     }
@@ -42,23 +43,28 @@ dbif::ObjectHandle findSubChunk(const dbif::ObjectHandle& parent, const QString&
   return dbif::ObjectHandle();
 }
 
-data::ChunkDataItem findField(const dbif::ObjectHandle& parent, const QString& name) {
+data::ChunkDataItem findField(const dbif::ObjectHandle& parent,
+                              const QString& name) {
   auto parsed = parent->syncGetInfo<dbif::ChunkDataRequest>();
-  for (auto &x : parsed->items) {
-    if ((x.type == data::ChunkDataItem::FIELD || x.type == data::ChunkDataItem::COMPUTED ||
-        x.type == data::ChunkDataItem::BITFIELD) && x.name == name) {
+  for (auto& x : parsed->items) {
+    if ((x.type == data::ChunkDataItem::FIELD ||
+         x.type == data::ChunkDataItem::COMPUTED ||
+         x.type == data::ChunkDataItem::BITFIELD) &&
+        x.name == name) {
       return x;
     }
   }
   return data::ChunkDataItem();
 }
 
-dbif::ObjectHandle makeSubBlob(const dbif::ObjectHandle& parent, const QString &name, const data::BinData &data) {
-  return parent->syncRunMethod<dbif::ChunkCreateSubBlobRequest>(data, name)->object;
+dbif::ObjectHandle makeSubBlob(const dbif::ObjectHandle& parent,
+                               const QString& name, const data::BinData& data) {
+  return parent->syncRunMethod<dbif::ChunkCreateSubBlobRequest>(data, name)
+      ->object;
 }
 
-QList<Parser *> createAllParsers() {
-  QList<Parser *> res;
+QList<Parser*> createAllParsers() {
+  QList<Parser*> res;
   res.append(new PycParser());
   res.append(new PngParser());
   res.append(new kaitai::ZipParser());

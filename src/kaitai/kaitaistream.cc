@@ -29,9 +29,7 @@ kaitai::kstream::kstream(const veles::dbif::ObjectHandle& blob, uint64_t start,
   parser_ = new veles::parser::StreamParser(blob, start, parent_chunk);
 }
 
-kaitai::kstream::~kstream() {
-  delete parser_;
-}
+kaitai::kstream::~kstream() { delete parser_; }
 
 veles::dbif::ObjectHandle kaitai::kstream::startChunk(const char* name) {
   return parser_->startChunk(name, name);
@@ -190,7 +188,7 @@ double kaitai::kstream::read_f8le() {
   return parser_->getFloat64Le(current_name_);
 }
 
-std::string kaitai::kstream::read_str_eos(const char *enc) {
+std::string kaitai::kstream::read_str_eos(const char* enc) {
   if (error_) {
     return "";
   }
@@ -198,14 +196,14 @@ std::string kaitai::kstream::read_str_eos(const char *enc) {
                          enc);
 }
 
-std::string kaitai::kstream::read_str_byte_limit(size_t len, const char *enc) {
+std::string kaitai::kstream::read_str_byte_limit(size_t len, const char* enc) {
   if (error_) {
     return "";
   }
   return bytes_to_string(parser_->getBytes(current_name_, len), enc);
 }
 
-std::string kaitai::kstream::read_strz(const char *enc, char term, bool include,
+std::string kaitai::kstream::read_strz(const char* enc, char term, bool include,
                                        bool consume, bool eos_error) {
   if (error_) {
     return "";
@@ -256,7 +254,7 @@ std::vector<uint8_t> kaitai::kstream::ensure_fixed_contents(
 }
 
 std::string kaitai::kstream::bytes_to_string(std::vector<uint8_t> bytes,
-                                             const char *src_enc) {
+                                             const char* src_enc) {
   std::string res;
   for (auto byte : bytes) {
     res += byte;
@@ -264,7 +262,7 @@ std::string kaitai::kstream::bytes_to_string(std::vector<uint8_t> bytes,
   return res;
 }
 
-void kaitai::kstream::pushName(const char *name) {
+void kaitai::kstream::pushName(const char* name) {
   names_stack_.push_back(name);
   current_name_ = names_stack_.back().c_str();
 }

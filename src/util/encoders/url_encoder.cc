@@ -22,13 +22,9 @@ namespace veles {
 namespace util {
 namespace encoders {
 
-QString UrlEncoder::encodingDisplayName() {
-  return "Url-encoded";
-}
+QString UrlEncoder::encodingDisplayName() { return "Url-encoded"; }
 
-QString UrlEncoder::decodingDisplayName() {
-  return "Url-encoded";
-}
+QString UrlEncoder::decodingDisplayName() { return "Url-encoded"; }
 
 QString UrlEncoder::encode(const QByteArray& data) {
   QString hex = QString::fromLatin1(data.toHex());
@@ -42,10 +38,9 @@ QString UrlEncoder::encode(const QByteArray& data) {
 QByteArray UrlEncoder::decode(const QString& str) {
   QByteArray res;
   for (int i = 0; i < str.length(); i++) {
-    if (str.at(i) == '%'
-        && i + 2 < str.length()
-        && isxdigit(str.at(i + 1).toLatin1())
-        && isxdigit(str.at(i + 2).toLatin1())) {
+    if (str.at(i) == '%' && i + 2 < str.length() &&
+        isxdigit(str.at(i + 1).toLatin1()) &&
+        isxdigit(str.at(i + 2).toLatin1())) {
       res += static_cast<unsigned char>(str.mid(i + 1, 2).toInt(nullptr, 16));
       i += 2;
     } else {

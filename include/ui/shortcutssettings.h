@@ -28,8 +28,9 @@ namespace ui {
 class ShortcutsFilter : public QSortFilterProxyModel {
   using QSortFilterProxyModel::QSortFilterProxyModel;
 
-protected:
-  virtual bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
+ protected:
+  virtual bool filterAcceptsRow(
+      int source_row, const QModelIndex& source_parent) const override;
 };
 
 class ShortcutEditDialog : public QDialog {
@@ -42,7 +43,7 @@ class ShortcutEditDialog : public QDialog {
   QKeySequence getSequence() const;
 
  protected:
-  virtual void showEvent(QShowEvent *event) override;
+  virtual void showEvent(QShowEvent* event) override;
 
  private:
   Ui::ShortcutEditDialog* ui;
@@ -75,7 +76,8 @@ class ShortcutsDialog : public QDialog {
   void showShortcutSelectionDialog(const QModelIndex& index);
 
  private slots:
-  void showShortcutSelectionDialog(util::settings::shortcuts::ShortcutType type);
+  void showShortcutSelectionDialog(
+      util::settings::shortcuts::ShortcutType type);
 };
 
 }  // namespace ui

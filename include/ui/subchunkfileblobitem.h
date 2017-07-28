@@ -31,7 +31,8 @@ class SubchunkFileBlobItem : public FileBlobItem {
   Q_OBJECT
 
  public:
-  explicit SubchunkFileBlobItem(const dbif::ObjectHandle& obj, QObject *parent = 0);
+  explicit SubchunkFileBlobItem(const dbif::ObjectHandle& obj,
+                                QObject* parent = 0);
 
   int childrenCount() override;
   void setComment(const QString& comment_) override;

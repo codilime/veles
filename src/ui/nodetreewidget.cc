@@ -33,14 +33,14 @@
 #include "dbif/info.h"
 #include "dbif/types.h"
 #include "dbif/universe.h"
-#include "ui/nodewidget.h"
 #include "ui/hexeditwidget.h"
 #include "ui/nodetreewidget.h"
+#include "ui/nodewidget.h"
 #include "ui/veles_mainwindow.h"
 
+#include "util/icons.h"
 #include "util/settings/hexedit.h"
 #include "util/settings/shortcuts.h"
-#include "util/icons.h"
 
 namespace veles {
 namespace ui {
@@ -56,7 +56,8 @@ NodeTreeWidget::NodeTreeWidget(
     const QSharedPointer<FileBlobModel>& data_model,
     const QSharedPointer<QItemSelectionModel>& selection_model)
     : View("Node tree", ":/images/show_node_tree.png"),
-      main_window_(main_window), data_model_(data_model),
+      main_window_(main_window),
+      data_model_(data_model),
       selection_model_(selection_model) {
   tree_view_ = new QTreeView();
   tree_view_->setModel(data_model_.data());
@@ -81,17 +82,17 @@ NodeTreeWidget::NodeTreeWidget(
   setWindowTitle(data_model_->path().join(" : "));
 
   // We don't need this now, but it might be useful in the future.
-  //connect(&parsers_menu_, &QMenu::triggered, this, &NodeTreeWidget::parse);
+  // connect(&parsers_menu_, &QMenu::triggered, this, &NodeTreeWidget::parse);
   setParserIds(dynamic_cast<VelesMainWindow*>(
-        MainWindowWithDetachableDockWidgets::getFirstMainWindow())
-        ->parsersList());
+                   MainWindowWithDetachableDockWidgets::getFirstMainWindow())
+                   ->parsersList());
 }
 
 void NodeTreeWidget::setParserIds(const QStringList& ids) {
   parsers_ids_ = ids;
 
   // We don't need this now, but it might be useful in the future.
-  //initParsersMenu();
+  // initParsersMenu();
 }
 
 /*****************************************************************************/
@@ -99,25 +100,25 @@ void NodeTreeWidget::setParserIds(const QStringList& ids) {
 /*****************************************************************************/
 
 void NodeTreeWidget::createActions() {
-//  Not implemented yet.
-//  undo_act_ = new QAction(QIcon(":/images/undo.png"), tr("&Undo"), this);
-//  undo_act_->setShortcuts(QKeySequence::Undo);
-//  undo_act_->setEnabled(false);
+  //  Not implemented yet.
+  //  undo_act_ = new QAction(QIcon(":/images/undo.png"), tr("&Undo"), this);
+  //  undo_act_->setShortcuts(QKeySequence::Undo);
+  //  undo_act_->setEnabled(false);
 
-//  redo_act_ = new QAction(QIcon(":/images/redo.png"), tr("&Redo"), this);
-//  redo_act_->setShortcuts(QKeySequence::Redo);
-//  redo_act_->setEnabled(false);
+  //  redo_act_ = new QAction(QIcon(":/images/redo.png"), tr("&Redo"), this);
+  //  redo_act_->setShortcuts(QKeySequence::Redo);
+  //  redo_act_->setEnabled(false);
 }
 
 void NodeTreeWidget::createToolBars() {
-  //Not implemented yet.
-  //edit_tool_bar_ = new QToolBar(tr("Edit"));
-  //edit_tool_bar_->addAction(undo_act_);
-  //edit_tool_bar_->addAction(redo_act_);
-  //addToolBar(edit_tool_bar_);
+  // Not implemented yet.
+  // edit_tool_bar_ = new QToolBar(tr("Edit"));
+  // edit_tool_bar_->addAction(undo_act_);
+  // edit_tool_bar_->addAction(redo_act_);
+  // addToolBar(edit_tool_bar_);
 
-  //tools_tool_bar_ = new QToolBar(tr("Tools"));
-  //addToolBar(tools_tool_bar_);
+  // tools_tool_bar_ = new QToolBar(tr("Tools"));
+  // addToolBar(tools_tool_bar_);
 }
 
 void NodeTreeWidget::addChunk(const QString& name, const QString& type,
@@ -129,37 +130,41 @@ void NodeTreeWidget::addChunk(const QString& name, const QString& type,
 void NodeTreeWidget::setupTreeViewHandlers() {
   tree_view_->setContextMenuPolicy(Qt::ActionsContextMenu);
   remove_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
-        util::settings::shortcuts::REMOVE_CHUNK, this, Qt::WidgetWithChildrenShortcut);
+      util::settings::shortcuts::REMOVE_CHUNK, this,
+      Qt::WidgetWithChildrenShortcut);
   tree_view_->addAction(remove_action_);
   remove_action_->setEnabled(false);
 
   connect(tree_view_->selectionModel(), &QItemSelectionModel::currentChanged,
           this, &NodeTreeWidget::currentSelectionChanged);
 
-  connect(remove_action_, &QAction::triggered,
-      this, &NodeTreeWidget::removeChunk);
+  connect(remove_action_, &QAction::triggered, this,
+          &NodeTreeWidget::removeChunk);
 
   connect(tree_view_, &QAbstractItemView::doubleClicked,
-      [this](const QModelIndex &index) {
-    auto mainIndex = data_model_->index(
-        index.row(), FileBlobModel::COLUMN_INDEX_MAIN, index.parent());
-    dbif::ObjectHandle new_root = data_model_->blob(mainIndex);
-    if (new_root) {
-      auto new_path = data_model_->path();
-      new_path.append(mainIndex.data().toString());
-      QSharedPointer<FileBlobModel> new_model(
-          new FileBlobModel(new_root, new_path));
-      QSharedPointer<QItemSelectionModel> new_selection_model(
-          new QItemSelectionModel(new_model.data()));
+          [this](const QModelIndex& index) {
+            auto mainIndex = data_model_->index(
+                index.row(), FileBlobModel::COLUMN_INDEX_MAIN, index.parent());
+            dbif::ObjectHandle new_root = data_model_->blob(mainIndex);
+            if (new_root) {
+              auto new_path = data_model_->path();
+              new_path.append(mainIndex.data().toString());
+              QSharedPointer<FileBlobModel> new_model(
+                  new FileBlobModel(new_root, new_path));
+              QSharedPointer<QItemSelectionModel> new_selection_model(
+                  new QItemSelectionModel(new_model.data()));
 
-      NodeWidget* node_widget = new NodeWidget(main_window_, new_model, new_selection_model);
-      main_window_->addTab(node_widget, new_model->path().join(" : "), nullptr);
-    }
-  });
+              NodeWidget* node_widget =
+                  new NodeWidget(main_window_, new_model, new_selection_model);
+              main_window_->addTab(node_widget, new_model->path().join(" : "),
+                                   nullptr);
+            }
+          });
 }
 
 void NodeTreeWidget::setupDataModelHandlers() {
-  connect(data_model_.data(), &FileBlobModel::newBinData, this, &NodeTreeWidget::newBinData);
+  connect(data_model_.data(), &FileBlobModel::newBinData, this,
+          &NodeTreeWidget::newBinData);
 }
 
 /*****************************************************************************/
@@ -190,7 +195,8 @@ void NodeTreeWidget::parse(QAction* action) {
 void NodeTreeWidget::removeChunk() {
   auto selectedChunk = tree_view_->selectionModel()->currentIndex();
 
-  auto result = QMessageBox::warning(this, tr("remove chunk"),
+  auto result = QMessageBox::warning(
+      this, tr("remove chunk"),
       tr("Remove chunk %1 ?").arg(selectedChunk.data().toString()),
       QMessageBox::Yes | QMessageBox::No);
   if (result != QMessageBox::Yes) {
@@ -204,8 +210,7 @@ void NodeTreeWidget::currentSelectionChanged(const QModelIndex& currentIndex) {
   remove_action_->setEnabled(data_model_->isRemovable(currentIndex));
 }
 
-void NodeTreeWidget::newBinData() {
-}
+void NodeTreeWidget::newBinData() {}
 
 void NodeTreeWidget::registerLineEdit(QLineEdit* line_edit) {
   registered_line_edit_ = line_edit;

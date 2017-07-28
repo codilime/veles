@@ -23,7 +23,7 @@
 namespace veles {
 namespace ui {
 
-OptionsDialog::OptionsDialog(QWidget *parent)
+OptionsDialog::OptionsDialog(QWidget* parent)
     : QDialog(parent), ui(new Ui::OptionsDialog) {
   ui->setupUi(this);
   ui->colorsBox->addItems(util::settings::theme::availableIds());

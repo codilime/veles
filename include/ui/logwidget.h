@@ -16,12 +16,12 @@
  */
 #pragma once
 
-#include <QMainWindow>
-#include <QIODevice>
-#include <QTextStream>
 #include <QFileDialog>
+#include <QIODevice>
 #include <QList>
+#include <QMainWindow>
 #include <QMutex>
+#include <QTextStream>
 
 #include "ui_logwidget.h"
 
@@ -34,13 +34,13 @@ namespace ui {
 
 class IODeviceProxy : public QIODevice {
   Q_OBJECT
-public:
+ public:
   QMutex* mutexHistory();
   QList<QString>& history();
 
  protected:
-  qint64 readData(char *data, qint64 maxSize) Q_DECL_OVERRIDE;
-  qint64 writeData(const char *data, qint64 maxSize) Q_DECL_OVERRIDE;
+  qint64 readData(char* data, qint64 maxSize) Q_DECL_OVERRIDE;
+  qint64 writeData(const char* data, qint64 maxSize) Q_DECL_OVERRIDE;
 
  signals:
   void newString(QString str);

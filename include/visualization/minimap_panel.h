@@ -33,10 +33,10 @@ class MinimapPanel : public QWidget {
   Q_OBJECT
 
  public:
-  explicit MinimapPanel(QWidget *parent = 0);
+  explicit MinimapPanel(QWidget* parent = 0);
   ~MinimapPanel();
 
-  void setSampler(util::ISampler *sampler);
+  void setSampler(util::ISampler* sampler);
   QPair<size_t, size_t> getSelection();
 
  signals:
@@ -54,7 +54,7 @@ class MinimapPanel : public QWidget {
   void initLayout();
   VisualizationMinimap::MinimapColor getMinimapColor();
 
-  util::ISampler *sampler_;
+  util::ISampler* sampler_;
   QVector<util::ISampler*> minimap_samplers_;
   QVector<VisualizationMinimap*> minimaps_;
   QVector<QSpacerItem*> minimap_spacers_;
@@ -67,7 +67,7 @@ class MinimapPanel : public QWidget {
   QPushButton *add_minimap_button_, *remove_minimap_button_;
   QPushButton *change_mode_button_, *select_range_button_;
 
-  SelectRangeDialog *select_range_dialog_;
+  SelectRangeDialog* select_range_dialog_;
 };
 
 }  //  namespace visualization

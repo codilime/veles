@@ -16,8 +16,8 @@
  */
 #pragma once
 
-#include <QTabBar>
 #include <QDockWidget>
+#include <QTabBar>
 
 namespace veles {
 namespace ui {

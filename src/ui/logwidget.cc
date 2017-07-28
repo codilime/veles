@@ -26,25 +26,19 @@ namespace ui {
 /* IODeviceProxy */
 /*****************************************************************************/
 
-QMutex* IODeviceProxy::mutexHistory() {
-  return &mutex_;
-}
+QMutex* IODeviceProxy::mutexHistory() { return &mutex_; }
 
-QList<QString>& IODeviceProxy::history() {
-  return history_;
-}
+QList<QString>& IODeviceProxy::history() { return history_; }
 
-qint64 IODeviceProxy::readData(char *data, qint64 maxSize) {
-  return 0;
-}
+qint64 IODeviceProxy::readData(char* data, qint64 maxSize) { return 0; }
 
-qint64 IODeviceProxy::writeData(const char *data, qint64 maxSize) {
+qint64 IODeviceProxy::writeData(const char* data, qint64 maxSize) {
   QString message = QString::fromUtf8(data, maxSize);
 
   {
     QMutexLocker locker(&mutex_);
     history_.push_back(message);
-    if(history_.size() > max_history_size_) {
+    if (history_.size() > max_history_size_) {
       history_.pop_front();
     }
   }
@@ -67,28 +61,24 @@ LogWidget::LogWidget(QWidget* parent) : QMainWindow(parent) {
   connect(ui_->action_clear_, SIGNAL(triggered()), this, SLOT(clearLog()));
 
   checkIODevice();
-  connect(io_proxy_, SIGNAL(newString(QString)),
-      this, SLOT(append(QString)), Qt::QueuedConnection);
+  connect(io_proxy_, SIGNAL(newString(QString)), this, SLOT(append(QString)),
+          Qt::QueuedConnection);
 
   setupSaveFileDialog();
   appendHistory();
 }
 
-LogWidget::~LogWidget() {
-  delete ui_;
-}
+LogWidget::~LogWidget() { delete ui_; }
 
 QIODevice* LogWidget::output() {
   checkIODevice();
   return io_proxy_;
 }
 
-void LogWidget::clearLog() {
-  ui_->text_edit_->clear();
-}
+void LogWidget::clearLog() { ui_->text_edit_->clear(); }
 
 void LogWidget::append(QString text) {
-  if(text.endsWith("\n")) {
+  if (text.endsWith("\n")) {
     text.chop(1);
   }
   ui_->text_edit_->appendPlainText(text);
@@ -104,11 +94,11 @@ void LogWidget::saveFileSelected(const QString& file) {
     save_file.close();
 
     if (result == data.size()) {
-      out << tr("DONE: Log messages successfully saved to a file.")
-          << endl;
+      out << tr("DONE: Log messages successfully saved to a file.") << endl;
     } else {
       out << tr("ERROR: File %1 successfully opened but write attempt failed.")
-          .arg(file) << endl;
+                 .arg(file)
+          << endl;
     }
   } else {
     out << tr("ERROR: Could not open a file: %1.").arg(file) << endl;
@@ -129,7 +119,7 @@ void LogWidget::setupSaveFileDialog() {
   file_dialog_->setWindowTitle("Save log to a file");
   connect(ui_->action_save_, SIGNAL(triggered()), file_dialog_, SLOT(show()));
   connect(file_dialog_, SIGNAL(fileSelected(const QString&)), this,
-      SLOT(saveFileSelected(const QString&)));
+          SLOT(saveFileSelected(const QString&)));
 }
 
 void LogWidget::checkIODevice() {

@@ -23,9 +23,7 @@ namespace veles {
 namespace util {
 namespace encoders {
 
-QString TextEncoder::encodingDisplayName() {
-  return "Text";
-}
+QString TextEncoder::encodingDisplayName() { return "Text"; }
 
 QString TextEncoder::decodingDisplayName() {
   return "Raw data";  // User can paste anything, not only text.
@@ -37,9 +35,7 @@ QString TextEncoder::encode(const QByteArray& data) {
   return stripNulls(QString::fromLatin1(data.data(), data.size()));
 }
 
-QByteArray TextEncoder::decode(const QString& str) {
-  return str.toLatin1();
-}
+QByteArray TextEncoder::decode(const QString& str) { return str.toLatin1(); }
 
 }  // namespace encoders
 }  // namespace util

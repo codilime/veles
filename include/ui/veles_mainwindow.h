@@ -16,25 +16,25 @@
  */
 #pragma once
 
-#include <QDropEvent>
 #include <QDockWidget>
+#include <QDropEvent>
+#include <QIcon>
+#include <QLabel>
 #include <QMainWindow>
 #include <QMenu>
+#include <QProcess>
 #include <QString>
 #include <QStringList>
-#include <QIcon>
-#include <QProcess>
-#include <QLabel>
 
+#include "client/networkclient.h"
 #include "dbif/promise.h"
 #include "dbif/types.h"
-#include "client/networkclient.h"
 
+#include "ui/connectiondialog.h"
+#include "ui/connectionmanager.h"
 #include "ui/dockwidget.h"
 #include "ui/optionsdialog.h"
 #include "ui/shortcutssettings.h"
-#include "ui/connectiondialog.h"
-#include "ui/connectionmanager.h"
 
 namespace veles {
 namespace ui {
@@ -49,7 +49,7 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
  public:
   VelesMainWindow();
   void addFile(const QString& path);
-  QStringList parsersList() {return parsers_list_;}
+  QStringList parsersList() { return parsers_list_; }
 
  protected:
   void dropEvent(QDropEvent* ev) override;
@@ -64,7 +64,7 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   void showDatabase();
   void showLog();
   void updateConnectionStatus(
-        client::NetworkClient::ConnectionStatus connection_status);
+      client::NetworkClient::ConnectionStatus connection_status);
 
  signals:
   void shown();
@@ -79,25 +79,25 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
                         const dbif::ObjectHandle& fileBlob);
   void createLogWindow();
 
-  QMenu *file_menu_;
-  QMenu *view_menu_;
-  QMenu *help_menu_;
+  QMenu* file_menu_;
+  QMenu* view_menu_;
+  QMenu* help_menu_;
 
-  QAction *new_file_act_;
-  QAction *open_act_;
-  QAction *exit_act_;
-  QAction *options_act_;
-  QAction *shortcuts_act_;
+  QAction* new_file_act_;
+  QAction* open_act_;
+  QAction* exit_act_;
+  QAction* options_act_;
+  QAction* shortcuts_act_;
 
-  QAction *about_act_;
-  QAction *about_qt_act_;
+  QAction* about_act_;
+  QAction* about_qt_act_;
 
-  QAction *show_database_act_;
-  QAction *show_log_act_;
+  QAction* show_database_act_;
+  QAction* show_log_act_;
 
   dbif::ObjectHandle database_;
-  OptionsDialog *options_dialog_;
-  ShortcutsDialog *shortcuts_dialog_;
+  OptionsDialog* options_dialog_;
+  ShortcutsDialog* shortcuts_dialog_;
 
   QStringList parsers_list_;
 

@@ -30,8 +30,8 @@ extern const unsigned patch;
 extern const QString codename;
 extern const QString string;
 
-}
-}
-}
+}  // namespace version
+}  // namespace util
+}  // namespace veles
 
 #endif

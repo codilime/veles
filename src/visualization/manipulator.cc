@@ -23,19 +23,15 @@
 namespace veles {
 namespace visualization {
 
-float len(QPoint p) {
-  return std::sqrt(p.x() * p.x() + p.y() * p.y());
-}
+float len(QPoint p) { return std::sqrt(p.x() * p.x() + p.y() * p.y()); }
 
 // It is assumed that transformation described by m consists of
 // translation and rotation only.
 void decompose(const QMatrix4x4& m, QVector3D* v, QQuaternion* r) {
   *v = m.column(3).toVector3D();
-  float data[] = {
-      m.data()[0], m.data()[1], m.data()[2],
-      m.data()[4], m.data()[5], m.data()[6],
-      m.data()[8], m.data()[9], m.data()[10]
-  };
+  float data[] = {m.data()[0], m.data()[1], m.data()[2],
+                  m.data()[4], m.data()[5], m.data()[6],
+                  m.data()[8], m.data()[9], m.data()[10]};
   *r = QQuaternion::fromRotationMatrix(QMatrix3x3(data));
 }
 
@@ -49,16 +45,16 @@ bool Manipulator::processEvent(QObject* watched, QEvent* event) {
   return eventFilter(watched, event);
 }
 
-bool Manipulator::handlesPause() {
-  return false;
-}
+bool Manipulator::handlesPause() { return false; }
 
 /*****************************************************************************/
 /* TrackballManipulator */
 /*****************************************************************************/
 
 TrackballManipulator::TrackballManipulator(QObject* parent)
-    : Manipulator(parent), distance_(5.f), min_distance_(1.5f),
+    : Manipulator(parent),
+      distance_(5.f),
+      min_distance_(1.5f),
       max_distance_(6.5f) {
   rotation_ = QQuaternion();
   lmb_drag_ = false;
@@ -113,12 +109,12 @@ bool TrackballManipulator::eventFilter(QObject* watched, QEvent* event) {
 }
 
 bool TrackballManipulator::mouseEvent(QWidget* widget, QMouseEvent* event) {
-  if (event->type() == QEvent::MouseButtonPress
-      && event->button() == Qt::LeftButton) {
+  if (event->type() == QEvent::MouseButtonPress &&
+      event->button() == Qt::LeftButton) {
     lmb_drag_ = true;
     prev_pos_ = event->pos();
-  } else if (event->type() == QEvent::MouseButtonRelease
-             && event->button() == Qt::LeftButton) {
+  } else if (event->type() == QEvent::MouseButtonRelease &&
+             event->button() == Qt::LeftButton) {
     lmb_drag_ = false;
   } else if (event->type() == QEvent::MouseMove) {
     if (event->buttons() & Qt::LeftButton) {
@@ -127,9 +123,11 @@ bool TrackballManipulator::mouseEvent(QWidget* widget, QMouseEvent* event) {
         prev_pos_ = event->pos();
       } else {
         QPoint delta = event->pos() - prev_pos_;
-        rotation_ = QQuaternion::fromAxisAndAngle(delta.y(), delta.x(), 0.f,
-            280.f * len(delta) / std::min(widget->width(), widget->height()))
-            * rotation_;
+        rotation_ = QQuaternion::fromAxisAndAngle(
+                        delta.y(), delta.x(), 0.f,
+                        280.f * len(delta) /
+                            std::min(widget->width(), widget->height())) *
+                    rotation_;
         prev_pos_ = event->pos();
       }
     } else {
@@ -142,8 +140,7 @@ bool TrackballManipulator::mouseEvent(QWidget* widget, QMouseEvent* event) {
 }
 
 bool TrackballManipulator::wheelEvent(QWidget* widget, QWheelEvent* event) {
-  distance_ -= static_cast<float>(event->angleDelta().y())
-      * (1.f / 8.f / 90.f);
+  distance_ -= static_cast<float>(event->angleDelta().y()) * (1.f / 8.f / 90.f);
   if (distance_ < min_distance_) {
     distance_ = min_distance_;
   } else if (distance_ > max_distance_) {
@@ -175,8 +172,7 @@ QMatrix4x4 FreeManipulator::transform() {
 
 void FreeManipulator::initFromMatrix(QMatrix4x4 m) {
   decompose(m, &position_, &eye_rotation_);
-  position_ = QMatrix4x4(eye_rotation_.toRotationMatrix())
-      .mapVector(position_);
+  position_ = QMatrix4x4(eye_rotation_.toRotationMatrix()).mapVector(position_);
   eye_rotation_ = eye_rotation_.conjugated();
   cube_rotation_ = QQuaternion();
 }
@@ -192,18 +188,14 @@ void FreeManipulator::update(float dt) {
   dpos_local *= 1.f * dt;
 
   position_ += QMatrix4x4(eye_rotation_.conjugated().toRotationMatrix())
-      .mapVector(-dpos_local);
+                   .mapVector(-dpos_local);
 }
 
-QString FreeManipulator::manipulatorName() {
-  return tr("Free manipulator");
-}
+QString FreeManipulator::manipulatorName() { return tr("Free manipulator"); }
 
 bool FreeManipulator::isCtrlButton(int key) {
-  return
-      key == key_left || key == key_right
-      || key == key_up || key == key_down
-      || key == key_forward || key == key_back;
+  return key == key_left || key == key_right || key == key_up ||
+         key == key_down || key == key_forward || key == key_back;
 }
 
 bool FreeManipulator::eventFilter(QObject* watched, QEvent* event) {
@@ -247,12 +239,12 @@ bool FreeManipulator::mouseEvent(QObject* watched, QMouseEvent* event) {
     return false;
   }
 
-  if (event->type() == QEvent::MouseButtonPress
-      && event->button() == Qt::LeftButton) {
+  if (event->type() == QEvent::MouseButtonPress &&
+      event->button() == Qt::LeftButton) {
     lmb_drag_ = true;
     prev_pos_ = event->pos();
-  } else if (event->type() == QEvent::MouseButtonRelease
-             && event->button() == Qt::LeftButton) {
+  } else if (event->type() == QEvent::MouseButtonRelease &&
+             event->button() == Qt::LeftButton) {
     lmb_drag_ = false;
   } else if (event->type() == QEvent::MouseMove) {
     if (event->buttons() & Qt::LeftButton) {
@@ -263,15 +255,18 @@ bool FreeManipulator::mouseEvent(QObject* watched, QMouseEvent* event) {
         QPoint delta = event->pos() - prev_pos_;
         if (event->modifiers() & Qt::ControlModifier) {
           cube_rotation_ =
-              eye_rotation_.conjugated()
-              * QQuaternion::fromAxisAndAngle(delta.y(), delta.x(), 0.f,
-              280.f * len(delta) / std::min(widget->width(), widget->height()))
-              * eye_rotation_
-              * cube_rotation_;
+              eye_rotation_.conjugated() *
+              QQuaternion::fromAxisAndAngle(
+                  delta.y(), delta.x(), 0.f,
+                  280.f * len(delta) /
+                      std::min(widget->width(), widget->height())) *
+              eye_rotation_ * cube_rotation_;
         } else {
-          eye_rotation_ = QQuaternion::fromAxisAndAngle(delta.y(), delta.x(), 0.f,
-              90.f * len(delta) / std::min(widget->width(), widget->height()))
-              * eye_rotation_;
+          eye_rotation_ = QQuaternion::fromAxisAndAngle(
+                              delta.y(), delta.x(), 0.f,
+                              90.f * len(delta) /
+                                  std::min(widget->width(), widget->height())) *
+                          eye_rotation_;
         }
         prev_pos_ = event->pos();
       }
@@ -286,8 +281,8 @@ bool FreeManipulator::mouseEvent(QObject* watched, QMouseEvent* event) {
 
 bool FreeManipulator::wheelEvent(QObject* watched, QWheelEvent* event) {
   position_ += QMatrix4x4(eye_rotation_.conjugated().toRotationMatrix())
-      .mapVector(QVector3D(0.f, 0.f, 1.f)
-      * (1.f / 8.f / 90.f) * event->angleDelta().y());
+                   .mapVector(QVector3D(0.f, 0.f, 1.f) * (1.f / 8.f / 90.f) *
+                              event->angleDelta().y());
   return true;
 }
 
@@ -295,14 +290,13 @@ bool FreeManipulator::wheelEvent(QObject* watched, QWheelEvent* event) {
 /* SpinManipulator */
 /*****************************************************************************/
 
-SpinManipulator::SpinManipulator(QObject* parent)
-    : Manipulator(parent) {
+SpinManipulator::SpinManipulator(QObject* parent) : Manipulator(parent) {
   distance_ = 5.f;
   angle_ = 0.f;
   factor_ = 1.f;
   time_ = 2.f;
-  base_rotation_ = QQuaternion::fromAxisAndAngle(
-        QVector3D(0.f, 0.f, 1.f), 90.f);
+  base_rotation_ =
+      QQuaternion::fromAxisAndAngle(QVector3D(0.f, 0.f, 1.f), 90.f);
 }
 
 QMatrix4x4 SpinManipulator::transform() {
@@ -338,13 +332,9 @@ void SpinManipulator::update(float dt) {
   }
 }
 
-QString SpinManipulator::manipulatorName() {
-  return tr("Spin manipulator");
-}
+QString SpinManipulator::manipulatorName() { return tr("Spin manipulator"); }
 
-bool SpinManipulator::handlesPause() {
-  return true;
-}
+bool SpinManipulator::handlesPause() { return true; }
 
 }  // namespace visualization
 }  // namespace veles

@@ -18,8 +18,8 @@
 #pragma once
 
 #include "data/nodeid.h"
-#include "node.h"
 #include "networkclient.h"
+#include "node.h"
 
 namespace veles {
 namespace client {
@@ -36,5 +36,5 @@ class NodeTree {
   void addRemoteNodeTreeRelatedMessage(const msg_ptr& msg);
 };
 
-} // client
-} // veles
+}  // namespace client
+}  // namespace veles

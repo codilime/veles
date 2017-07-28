@@ -16,8 +16,8 @@
  */
 #pragma once
 
-#include <string>
 #include <functional>
+#include <string>
 
 namespace veles {
 namespace util {
@@ -54,7 +54,6 @@ void mockTopic(const std::string& topic);
  * result.
  */
 SchedulingResult runTask(const std::string& topic, const Task& t);
-
 
 }  // namespace threadpool
 }  // namespace util

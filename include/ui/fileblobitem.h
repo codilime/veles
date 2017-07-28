@@ -16,10 +16,10 @@
  */
 #pragma once
 
+#include <QIcon>
 #include <QList>
 #include <QObject>
 #include <QString>
-#include <QIcon>
 #include "dbif/types.h"
 
 namespace veles {
@@ -36,26 +36,27 @@ class FileBlobItem : public QObject {
 
   virtual const QVector<FileBlobItem*>& children() const { return children_; }
   virtual int childrenCount();
-  virtual FileBlobItem *child(int index);
-  virtual int childIndex(FileBlobItem *child);
+  virtual FileBlobItem* child(int index);
+  virtual int childIndex(FileBlobItem* child);
   virtual QString name();
   virtual QString comment();
   virtual QString value();
-  virtual bool range(uint64_t *start, uint64_t *end) const;
+  virtual bool range(uint64_t* start, uint64_t* end) const;
   virtual dbif::ObjectHandle objectHandle();
   virtual bool isRemovable();
 
   virtual void setComment(const QString& comment);
 
-  bool operator<(const FileBlobItem &other);
-  QIcon icon() {return icon_;}
-  void setIcon(const QIcon icon) {icon_ = icon;}
-  dbif::ObjectHandle newRoot() {return newRoot_;}
-  void setNewRoot(dbif::ObjectHandle root) {newRoot_ = root;}
+  bool operator<(const FileBlobItem& other);
+  QIcon icon() { return icon_; }
+  void setIcon(const QIcon icon) { icon_ = icon; }
+  dbif::ObjectHandle newRoot() { return newRoot_; }
+  void setNewRoot(dbif::ObjectHandle root) { newRoot_ = root; }
 
  protected:
-  void setFields(const QString& name, const QString& comment, uint64_t start, uint64_t end);
-  void addChildren(const QList<FileBlobItem *> &children);
+  void setFields(const QString& name, const QString& comment, uint64_t start,
+                 uint64_t end);
+  void addChildren(const QList<FileBlobItem*>& children);
   void removeOldChildren();
 
   QString name_;
@@ -67,21 +68,21 @@ class FileBlobItem : public QObject {
   dbif::ObjectHandle newRoot_;
 
   dbif::ObjectHandle dataObj_;
-  QVector<FileBlobItem *> children_;
+  QVector<FileBlobItem*> children_;
 
  private:
   bool sortChildren();
 
  protected slots:
-  virtual void insertingChildrenHandle(FileBlobItem *item, bool before,
+  virtual void insertingChildrenHandle(FileBlobItem* item, bool before,
                                        int count);
-  virtual void removingChildrenHandle(FileBlobItem *item, bool before);
-  virtual void dataUpdatedHandle(FileBlobItem *item);
+  virtual void removingChildrenHandle(FileBlobItem* item, bool before);
+  virtual void dataUpdatedHandle(FileBlobItem* item);
 
  signals:
-  void insertingChildren(FileBlobItem *item, bool before, int count);
-  void removingChildren(FileBlobItem *item, bool before);
-  void dataUpdated(FileBlobItem *item);
+  void insertingChildren(FileBlobItem* item, bool before, int count);
+  void removingChildren(FileBlobItem* item, bool before);
+  void dataUpdated(FileBlobItem* item);
 };
 
 }  // namespace ui

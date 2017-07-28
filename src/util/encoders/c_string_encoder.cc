@@ -21,9 +21,7 @@ namespace veles {
 namespace util {
 namespace encoders {
 
-QString CStringEncoder::encodingDisplayName() {
-  return "C String";
-}
+QString CStringEncoder::encodingDisplayName() { return "C String"; }
 
 QString CStringEncoder::encode(const QByteArray& data) {
   QString res = "\"";

@@ -21,15 +21,14 @@
 namespace veles {
 namespace ui {
 
-SpinBoxValidator::SpinBoxValidator(int base, QObject *parent)
-  : QValidator(parent), base_(base), bottom_(0), top_(UINT64_MAX) {
-}
+SpinBoxValidator::SpinBoxValidator(int base, QObject* parent)
+    : QValidator(parent), base_(base), bottom_(0), top_(UINT64_MAX) {}
 
-SpinBoxValidator::SpinBoxValidator(uint64_t minimum, uint64_t maximum, int base, QObject *parent)
-  : QValidator(parent), base_(base), bottom_(minimum), top_(maximum) {
-}
+SpinBoxValidator::SpinBoxValidator(uint64_t minimum, uint64_t maximum, int base,
+                                   QObject* parent)
+    : QValidator(parent), base_(base), bottom_(minimum), top_(maximum) {}
 
-QValidator::State SpinBoxValidator::validate(QString &input, int &pos) const{
+QValidator::State SpinBoxValidator::validate(QString& input, int& pos) const {
   uint64_t value;
 
   if (input.isEmpty()) {
@@ -53,8 +52,7 @@ QValidator::State SpinBoxValidator::validate(QString &input, int &pos) const{
   return Acceptable;
 }
 
-void SpinBoxValidator::fixup(QString &input) const
-{
+void SpinBoxValidator::fixup(QString& input) const {
   uint64_t value;
   bool ok;
 
@@ -75,32 +73,23 @@ void SpinBoxValidator::fixup(QString &input) const
   }
 }
 
-void SpinBoxValidator::setBase(int base)
-{
+void SpinBoxValidator::setBase(int base) {
   // I wanted to handle input of numbers bigger than max uint64_t
   // but I didn't want to create regex for any possible base at this point
   assert(base == 10 || base == 16);
   base_ = base;
 }
 
-void SpinBoxValidator::setBottom(uint64_t bottom)
-{
-  bottom_ = bottom;
-}
+void SpinBoxValidator::setBottom(uint64_t bottom) { bottom_ = bottom; }
 
-void SpinBoxValidator::setTop(uint64_t top)
-{
-  top_ = top;
-}
+void SpinBoxValidator::setTop(uint64_t top) { top_ = top; }
 
-void SpinBoxValidator::setRange(uint64_t bottom, uint64_t top)
-{
+void SpinBoxValidator::setRange(uint64_t bottom, uint64_t top) {
   bottom_ = bottom;
   top_ = top;
 }
 
-bool SpinBoxValidator::isValidNum(const QString& input) const
-{
+bool SpinBoxValidator::isValidNum(const QString& input) const {
   QRegularExpression re;
 
   re.setPatternOptions(QRegularExpression::CaseInsensitiveOption);

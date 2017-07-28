@@ -20,13 +20,9 @@ namespace veles {
 namespace util {
 namespace encoders {
 
-QString Base64Encoder::encodingDisplayName() {
-  return "Base64";
-}
+QString Base64Encoder::encodingDisplayName() { return "Base64"; }
 
-QString Base64Encoder::decodingDisplayName() {
-  return "Base64";
-}
+QString Base64Encoder::decodingDisplayName() { return "Base64"; }
 
 QString Base64Encoder::encode(const QByteArray& data) {
   return QString::fromLatin1(data.toBase64());

@@ -28,7 +28,7 @@ namespace ui {
 class GoToAddressDialog : public QDialog {
   Q_OBJECT
  public:
-  explicit GoToAddressDialog(QWidget *parent = 0);
+  explicit GoToAddressDialog(QWidget* parent = 0);
   ~GoToAddressDialog();
   void setRange(qint64 start, qint64 end);
   qint64 address();
@@ -37,10 +37,9 @@ class GoToAddressDialog : public QDialog {
   void showEvent(QShowEvent* event) override;
 
  private:
-  Ui::GoToAddressDialog *ui_;
+  Ui::GoToAddressDialog* ui_;
  private slots:
   void formatChanged(const QString& format);
-
 };
 
 }  // namespace ui

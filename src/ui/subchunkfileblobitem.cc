@@ -27,7 +27,8 @@ int SubchunkFileBlobItem::childrenCount() {
   return FileBlobItem::childrenCount();
 }
 
-void SubchunkFileBlobItem::gotChunkDataResponse(const veles::dbif::PInfoReply& reply) {
+void SubchunkFileBlobItem::gotChunkDataResponse(
+    const veles::dbif::PInfoReply& reply) {
   FileBlobItem::removeOldChildren();
 
   auto items = reply.dynamicCast<dbif::ChunkDataRequest::ReplyType>()->items;
@@ -49,17 +50,16 @@ void SubchunkFileBlobItem::gotChunkDataResponse(const veles::dbif::PInfoReply& r
         comment += "BE";
       }
       comment += ")";
-      newChildren.append(new FileBlobItem(item.name, item.raw_value.toString(16),
-                                          comment, item.start, item.end, this));
+      newChildren.append(new FileBlobItem(item.name,
+                                          item.raw_value.toString(16), comment,
+                                          item.start, item.end, this));
     } else if (item.type == data::ChunkDataItem::ChunkDataItemType::SUBBLOB) {
-      auto child =
-          new SimpleFileBlobItem(item.name, "open in new tab", this);
+      auto child = new SimpleFileBlobItem(item.name, "open in new tab", this);
       child->setIcon(QIcon::fromTheme(":/images/newTab.png"));
       child->setNewRoot(item.ref[0]);
       newChildren.append(child);
     } else {
-      auto child =
-          new SimpleFileBlobItem(item.name, "unsupported", this);
+      auto child = new SimpleFileBlobItem(item.name, "unsupported", this);
       child->setIcon(QIcon::fromTheme(":/images/error.ico"));
       newChildren.append(child);
     }

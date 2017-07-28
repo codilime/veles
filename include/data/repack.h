@@ -25,8 +25,9 @@ namespace data {
 /** Represents data repacking format.  */
 class Repacker : public RepackerModel {
  public:
-  Repacker(Endian endian = Endian::LITTLE, uint64_t from_width = 8, uint64_t to_width = 8, uint64_t high_pad = 0, uint64_t low_pad = 0) :
-    RepackerModel(endian, from_width, to_width, high_pad, low_pad) {}
+  Repacker(Endian endian = Endian::LITTLE, uint64_t from_width = 8,
+           uint64_t to_width = 8, uint64_t high_pad = 0, uint64_t low_pad = 0)
+      : RepackerModel(endian, from_width, to_width, high_pad, low_pad) {}
   using RepackerModel::RepackerModel;
 
   /** Element width, including padding.  */
@@ -65,7 +66,7 @@ class Repacker : public RepackerModel {
       elements as are actually necessary to determine the output.  This number
       can be determined by the repackSize() function.  It is an error if fewer
       elements than that are available in the source.  */
-  BinData repack(const BinData &src, size_t start, size_t num_elements) const;
+  BinData repack(const BinData& src, size_t start, size_t num_elements) const;
 };
 
 }  // namespace data

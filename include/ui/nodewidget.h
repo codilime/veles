@@ -16,24 +16,24 @@
  */
 #pragma once
 
-#include <QWidget>
+#include <QMainWindow>
+#include <QSharedPointer>
 #include <QStringList>
 #include <QToolBar>
 #include <QToolButton>
-#include <QMainWindow>
-#include <QSharedPointer>
+#include <QWidget>
 
 #include "util/sampling/uniform_sampler.h"
 
 #include "visualization/base.h"
 #include "visualization/minimap_panel.h"
 
+#include "ui/dockwidget.h"
 #include "ui/fileblobmodel.h"
 #include "ui/hexedit.h"
-#include "ui/searchdialog.h"
-#include "ui/dockwidget.h"
 #include "ui/hexeditwidget.h"
 #include "ui/nodetreewidget.h"
+#include "ui/searchdialog.h"
 
 namespace veles {
 namespace ui {
@@ -42,7 +42,8 @@ class NodeWidget : public View {
   Q_OBJECT
 
  public:
-  explicit NodeWidget(MainWindowWithDetachableDockWidgets *main_window,
+  explicit NodeWidget(
+      MainWindowWithDetachableDockWidgets* main_window,
       const QSharedPointer<FileBlobModel>& data_model,
       const QSharedPointer<QItemSelectionModel>& selection_model);
   virtual ~NodeWidget();
@@ -51,7 +52,7 @@ class NodeWidget : public View {
   void loadBinDataToMinimap();
 
  private:
-  MainWindowWithDetachableDockWidgets *main_window_;
+  MainWindowWithDetachableDockWidgets* main_window_;
 
   HexEditWidget* hex_edit_widget_;
   visualization::MinimapPanel* minimap_;

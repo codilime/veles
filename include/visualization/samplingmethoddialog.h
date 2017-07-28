@@ -30,7 +30,7 @@ class SamplingMethodDialog : public QDialog {
   Q_OBJECT
 
  public:
-  explicit SamplingMethodDialog(QWidget *parent = 0);
+  explicit SamplingMethodDialog(QWidget* parent = 0);
   ~SamplingMethodDialog();
 
  signals:
@@ -43,8 +43,7 @@ class SamplingMethodDialog : public QDialog {
   void setSampleSize(int size);
 
  private:
-  Ui::SamplingMethodDialog *ui;
-
+  Ui::SamplingMethodDialog* ui;
 };
 
 }  // namespace visualization

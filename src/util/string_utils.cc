@@ -31,11 +31,11 @@ QString filter(QString src, const std::function<bool(const QChar&)>& pred) {
 }
 
 QString stripNulls(const QString& src) {
-  return filter(src, [](const QChar& x){ return !x.isNull(); });
+  return filter(src, [](const QChar& x) { return !x.isNull(); });
 }
 
 QString stripSpaces(const QString& src) {
-  return filter(src, [](const QChar& x){ return !x.isSpace(); });
+  return filter(src, [](const QChar& x) { return !x.isSpace(); });
 }
 
 }  // namespace string

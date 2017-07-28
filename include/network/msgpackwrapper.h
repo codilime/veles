@@ -18,12 +18,12 @@
 
 #include <cstdint>
 
-#include <msgpack.hpp>
 #include <QtNetwork/QTcpSocket>
+#include <msgpack.hpp>
 
+#include "models.h"
 #include "network/msgpackobject.h"
 #include "proto/exceptions.h"
-#include "models.h"
 
 namespace veles {
 namespace messages {
@@ -33,7 +33,8 @@ class MsgpackWrapper {
   static const int READ_SIZE_ = 1024;
 
  public:
-  static std::shared_ptr<proto::MsgpackMsg> parseMessage(msgpack::object_handle* handle) {
+  static std::shared_ptr<proto::MsgpackMsg> parseMessage(
+      msgpack::object_handle* handle) {
     msgpack::object obj = handle->get();
     return proto::MsgpackMsg::polymorphicLoad(obj);
   }
