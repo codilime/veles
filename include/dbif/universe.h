@@ -63,13 +63,15 @@ class ObjectHandleBase {
                      [&err](PError error) { err = error; });
     while (true) {
       if (res) {
-        if (!promise.isNull())
+        if (!promise.isNull()) {
           delete static_cast<MethodResultPromise*>(promise);
+        }
         return res;
       }
       if (err) {
-        if (!promise.isNull())
+        if (!promise.isNull()) {
           delete static_cast<MethodResultPromise*>(promise);
+        }
         throw err;
       }
       QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);

@@ -588,7 +588,7 @@ void TrigramWidget::paintGLImpl() {
   }
 }
 
-void TrigramWidget::paintLabels(QMatrix4x4& scene_mp, QMatrix4x4& scene_m) {
+void TrigramWidget::paintLabels(const QMatrix4x4& scene_mp, const QMatrix4x4& scene_m) {
   QMatrix4x4 screen_mp;
   screen_mp.ortho(0, width_, 0, height_, -1.f, 1.f);
 
@@ -730,7 +730,7 @@ QVector3D TrigramWidget::calcScreenPosForLabel(
   return label_pos;
 }
 
-void TrigramWidget::paintRF(QMatrix4x4& mvp) {
+void TrigramWidget::paintRF(const QMatrix4x4& mvp) {
   glEnable(GL_LINE_SMOOTH);
 
   rf_vao_.bind();

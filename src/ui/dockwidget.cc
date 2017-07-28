@@ -832,13 +832,13 @@ void MainWindowWithDetachableDockWidgets::moveDockWidgetToWindow(
 }
 
 void MainWindowWithDetachableDockWidgets::findTwoNonTabifiedDocks(
-    DockWidget*& sibling1, DockWidget*& sibling2) {
-  QList<DockWidget*> dock_widgets = findChildren<DockWidget*>();
+  DockWidget** sibling1, DockWidget** sibling2) {
+  auto dock_widgets = findChildren<DockWidget*>();
   for (auto dock_widget : dock_widgets) {
-    if (sibling1 == nullptr) {
-      sibling1 = sibling2 = dock_widget;
-    } else if (!tabifiedDockWidgets(dock_widget).contains(sibling1)) {
-      sibling2 = dock_widget;
+    if (*sibling1 == nullptr) {
+      *sibling1 = *sibling2 = dock_widget;
+    } else if (!tabifiedDockWidgets(dock_widget).contains(*sibling1)) {
+      *sibling2 = dock_widget;
       break;
     }
   }

@@ -88,5 +88,5 @@ TEST(CopyTest, ShiftOffset) {
   EXPECT_EQ(dst[7], 0xa7);
 }
 
-}
-}
+}  // namespace data
+}  // namespace veles

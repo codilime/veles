@@ -36,7 +36,7 @@ QString NodeID::toHexString() const {
   return HexEncoder().encode(value, WIDTH);
 }
 
-std::shared_ptr<NodeID> NodeID::fromHexString(QString& val) {
+std::shared_ptr<NodeID> NodeID::fromHexString(const QString& val) {
   if (val.size() != WIDTH * 2) {
     return nullptr;
   }

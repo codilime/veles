@@ -24,7 +24,7 @@
 
 #include "proto/exceptions.h"
 
-using namespace testing;
+using testing::ContainerEq;
 
 namespace veles {
 namespace messages {
@@ -199,7 +199,7 @@ TEST(MsgpackObject, TestComparison) {
   EXPECT_EQ(ext, ext3);
 }
 
-void pack_unpack_check(MsgpackObject& obj, std::string msg) {
+void pack_unpack_check(const MsgpackObject& obj, const std::string& msg) {
   msgpack::sbuffer sbuf;
   msgpack::pack(sbuf, obj);
   msgpack::object_handle oh = msgpack::unpack(sbuf.data(), sbuf.size());

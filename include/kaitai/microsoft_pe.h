@@ -24,7 +24,7 @@ class microsoft_pe_t : public kaitai::kstruct {
   class optional_header_std_t;
   class coff_header_t;
 
-  microsoft_pe_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent = 0,
+  explicit microsoft_pe_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent = 0,
                  microsoft_pe_t* p_root = 0);
   veles::dbif::ObjectHandle veles_obj;
   ~microsoft_pe_t();
@@ -45,7 +45,7 @@ class microsoft_pe_t : public kaitai::kstruct {
       SUBSYSTEM_XBOX = 14
     };
 
-    optional_header_windows_t(kaitai::kstream* p_io,
+    explicit optional_header_windows_t(kaitai::kstream* p_io,
                               microsoft_pe_t::optional_header_t* p_parent = 0,
                               microsoft_pe_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
@@ -214,7 +214,7 @@ class microsoft_pe_t : public kaitai::kstruct {
 
   class optional_header_data_dirs_t : public kaitai::kstruct {
    public:
-    optional_header_data_dirs_t(kaitai::kstream* p_io,
+    explicit optional_header_data_dirs_t(kaitai::kstream* p_io,
                                 microsoft_pe_t::optional_header_t* p_parent = 0,
                                 microsoft_pe_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
@@ -265,7 +265,7 @@ class microsoft_pe_t : public kaitai::kstruct {
 
   class data_dir_t : public kaitai::kstruct {
    public:
-    data_dir_t(kaitai::kstream* p_io,
+    explicit data_dir_t(kaitai::kstream* p_io,
                microsoft_pe_t::optional_header_data_dirs_t* p_parent = 0,
                microsoft_pe_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
@@ -288,7 +288,7 @@ class microsoft_pe_t : public kaitai::kstruct {
 
   class optional_header_t : public kaitai::kstruct {
    public:
-    optional_header_t(kaitai::kstream* p_io, microsoft_pe_t* p_parent = 0,
+    explicit optional_header_t(kaitai::kstream* p_io, microsoft_pe_t* p_parent = 0,
                       microsoft_pe_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~optional_header_t();
@@ -310,7 +310,7 @@ class microsoft_pe_t : public kaitai::kstruct {
 
   class section_t : public kaitai::kstruct {
    public:
-    section_t(kaitai::kstream* p_io, microsoft_pe_t* p_parent = 0,
+    explicit section_t(kaitai::kstream* p_io, microsoft_pe_t* p_parent = 0,
               microsoft_pe_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~section_t();
@@ -353,7 +353,7 @@ class microsoft_pe_t : public kaitai::kstruct {
 
   class mz_placeholder_t : public kaitai::kstruct {
    public:
-    mz_placeholder_t(kaitai::kstream* p_io, microsoft_pe_t* p_parent = 0,
+    explicit mz_placeholder_t(kaitai::kstream* p_io, microsoft_pe_t* p_parent = 0,
                      microsoft_pe_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~mz_placeholder_t();
@@ -381,7 +381,7 @@ class microsoft_pe_t : public kaitai::kstruct {
       PE_FORMATX_PE32_PLUS = 523
     };
 
-    optional_header_std_t(kaitai::kstream* p_io,
+    explicit optional_header_std_t(kaitai::kstream* p_io,
                           microsoft_pe_t::optional_header_t* p_parent = 0,
                           microsoft_pe_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
@@ -456,7 +456,7 @@ class microsoft_pe_t : public kaitai::kstruct {
       MACHINE_TYPE_M32R = 36929
     };
 
-    coff_header_t(kaitai::kstream* p_io, microsoft_pe_t* p_parent = 0,
+    explicit coff_header_t(kaitai::kstream* p_io, microsoft_pe_t* p_parent = 0,
                   microsoft_pe_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~coff_header_t();

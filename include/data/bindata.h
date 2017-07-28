@@ -46,10 +46,11 @@ class BinData {
       : width_(width), size_(size) {
     assert(width != 0);
     if (!isInline()) data_ = new uint8_t[octets()];
-    if (init_data)
+    if (init_data) {
       memcpy(rawData(), init_data, octets());
-    else
+    } else {
       memset(rawData(), 0, octets());
+    }
   }
 
   /** Constructs a BinData instance from given width and data given as
@@ -208,7 +209,7 @@ class BinData {
     uint8_t octets[8] = {0};
     uint64_t res = 0;
     copyBits(octets, 0, rawData(el), start_bit, num_bits);
-    for (int i = 0; i < 8; i++) res |= (uint64_t)octets[i] << (8 * i);
+    for (int i = 0; i < 8; i++) res |= static_cast<uint64_t>(octets[i]) << (8 * i);
     return res;
   }
 

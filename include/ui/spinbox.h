@@ -26,7 +26,7 @@ namespace ui {
 class SpinBox : public QAbstractSpinBox {
   Q_OBJECT
  public:
-  SpinBox(QWidget* parent = nullptr);
+  explicit SpinBox(QWidget* parent = nullptr);
 
   uint64_t value() const;
   void stepBy(int steps) override;

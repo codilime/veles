@@ -19,8 +19,6 @@
 
 #include "gtest/gtest.h"
 
-using namespace testing;
-
 namespace veles {
 namespace util {
 

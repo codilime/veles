@@ -31,15 +31,15 @@ class Parser {
   Parser(const QString& id, const data::BinData& magic) : _id(id) {
     _magic.append(magic);
   }
-  Parser(const QString& id) : _id(id) {}
+  explicit Parser(const QString& id) : _id(id) {}
   QString id() const { return _id; }
   QList<data::BinData> magic() const { return _magic; }
   bool verifyAndParse(
-      const dbif::ObjectHandle& blob, uint64_t start = 0,
-      const dbif::ObjectHandle& parent_chunk = dbif::ObjectHandle());
+      const dbif::ObjectHandle& blob, uint64_t start,
+      const dbif::ObjectHandle& parent_chunk);
   virtual void parse(
-      const dbif::ObjectHandle& blob, uint64_t start = 0,
-      const dbif::ObjectHandle& parent_chunk = dbif::ObjectHandle()) = 0;
+      const dbif::ObjectHandle& blob, uint64_t start,
+      const dbif::ObjectHandle& parent_chunk) = 0;
 
  private:
   QString _id;

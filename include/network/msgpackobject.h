@@ -55,28 +55,28 @@ class MsgpackObject {
     std::pair<int, std::shared_ptr<std::vector<uint8_t>>> ext;
 
     ObjectValue() {}
-    ObjectValue(bool val) : boolean(val) {}
-    ObjectValue(int64_t val) : sint(val) {}
-    ObjectValue(uint64_t val) : uint(val) {}
-    ObjectValue(double val) : dbl(val) {}
-    ObjectValue(const char* val) : str(std::make_shared<std::string>(val)) {}
-    ObjectValue(const std::string& val)
+    explicit ObjectValue(bool val) : boolean(val) {}
+    explicit ObjectValue(int64_t val) : sint(val) {}
+    explicit ObjectValue(uint64_t val) : uint(val) {}
+    explicit ObjectValue(double val) : dbl(val) {}
+    explicit ObjectValue(const char* val) : str(std::make_shared<std::string>(val)) {}
+    explicit ObjectValue(const std::string& val)
         : str(std::make_shared<std::string>(val)) {}
-    ObjectValue(const std::shared_ptr<std::string>& val) : str(val) {}
-    ObjectValue(const std::vector<uint8_t>& val)
+    explicit ObjectValue(const std::shared_ptr<std::string>& val) : str(val) {}
+    explicit ObjectValue(const std::vector<uint8_t>& val)
         : bin(std::make_shared<std::vector<uint8_t>>(val)) {}
-    ObjectValue(const std::shared_ptr<std::vector<uint8_t>>& val) : bin(val) {}
-    ObjectValue(const std::vector<std::shared_ptr<MsgpackObject>>& val)
+    explicit ObjectValue(const std::shared_ptr<std::vector<uint8_t>>& val) : bin(val) {}
+    explicit ObjectValue(const std::vector<std::shared_ptr<MsgpackObject>>& val)
         : array(std::make_shared<std::vector<std::shared_ptr<MsgpackObject>>>(
               val)) {}
-    ObjectValue(
+    explicit ObjectValue(
         const std::shared_ptr<std::vector<std::shared_ptr<MsgpackObject>>>& val)
         : array(val) {}
-    ObjectValue(
+    explicit ObjectValue(
         const std::map<std::string, std::shared_ptr<MsgpackObject>>& val)
         : map(std::make_shared<
               std::map<std::string, std::shared_ptr<MsgpackObject>>>(val)) {}
-    ObjectValue(const std::shared_ptr<
+    explicit ObjectValue(const std::shared_ptr<
                 std::map<std::string, std::shared_ptr<MsgpackObject>>>& val)
         : map(val) {}
     ObjectValue(int code, const std::vector<uint8_t>& val)
@@ -126,7 +126,7 @@ class MsgpackObject {
   explicit MsgpackObject(int code,
                          const std::shared_ptr<std::vector<uint8_t>>& val)
       : obj_type(ObjectType::EXT), value(code, val) {}
-  MsgpackObject(const msgpack::object& obj);
+  explicit MsgpackObject(const msgpack::object& obj);
   MsgpackObject(const MsgpackObject& other);
   ~MsgpackObject();
 

@@ -19,7 +19,7 @@
 #include "gmock/gmock.h"
 #include "util/int_bytes.h"
 
-using namespace testing;
+using testing::ContainerEq;
 
 namespace veles {
 namespace util {

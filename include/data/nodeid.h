@@ -43,7 +43,7 @@ class NodeID {
   NodeID(const NodeID& other);
 
   QString toHexString() const;
-  static std::shared_ptr<NodeID> fromHexString(QString& val);
+  static std::shared_ptr<NodeID> fromHexString(const QString& val);
   std::vector<uint8_t> asStdVector() const;
   // functions for more convenient getting of special values
   static std::shared_ptr<NodeID> getRootNodeId();

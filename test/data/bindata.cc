@@ -35,10 +35,12 @@ TEST(BinData, SimpleInline8) {
 TEST(BinData, SimpleLong8) {
   uint8_t d[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
   BinData a(8, 10, d);
-  for (int i = 0; i < 10; i++)
-    EXPECT_EQ(a.rawData()[i], i+1);
-  for (int i = 0; i < 10; i++)
-    EXPECT_EQ(a.rawData(i)[0], i+1);
+  for (int i = 0; i < 10; i++) {
+    EXPECT_EQ(a.rawData()[i], i + 1);
+  }
+  for (int i = 0; i < 10; i++) {
+    EXPECT_EQ(a.rawData(i)[0], i + 1);
+  }
   EXPECT_EQ(a.width(), 8u);
   EXPECT_EQ(a.size(), 10u);
   EXPECT_EQ(a.octetsPerElement(), 1u);
@@ -47,10 +49,12 @@ TEST(BinData, SimpleLong8) {
 
 TEST(BinData, SimpleInit) {
   BinData a(8, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
-  for (int i = 0; i < 10; i++)
-    EXPECT_EQ(a.rawData()[i], i+1);
-  for (int i = 0; i < 10; i++)
-    EXPECT_EQ(a.rawData(i)[0], i+1);
+  for (int i = 0; i < 10; i++) {
+    EXPECT_EQ(a.rawData()[i], i + 1);
+  }
+  for (int i = 0; i < 10; i++) {
+    EXPECT_EQ(a.rawData(i)[0], i + 1);
+  }
   EXPECT_EQ(a.width(), 8u);
   EXPECT_EQ(a.size(), 10u);
   EXPECT_EQ(a.octetsPerElement(), 1u);
@@ -126,8 +130,9 @@ TEST(BinData, SimpleVec19) {
 TEST(BinData, Simple128) {
   uint8_t d[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
   BinData a(128, 1, d);
-  for (int i = 0; i < 16; i++)
-    EXPECT_EQ(a.rawData()[i], i+1);
+  for (int i = 0; i < 16; i++) {
+    EXPECT_EQ(a.rawData()[i], i + 1);
+  }
   EXPECT_EQ(a.width(), 128u);
   EXPECT_EQ(a.size(), 1u);
   EXPECT_EQ(a.octetsPerElement(), 16u);
@@ -146,8 +151,9 @@ TEST(BinData, SimpleZero13) {
 
 TEST(BinData, SimpleZero129) {
   BinData a(129, 1);
-  for (int i = 0; i < 17; i++)
+  for (int i = 0; i < 17; i++) {
     EXPECT_EQ(a.rawData()[i], 0);
+  }
   EXPECT_EQ(a.width(), 129u);
   EXPECT_EQ(a.size(), 1u);
   EXPECT_EQ(a.octetsPerElement(), 17u);
@@ -478,5 +484,5 @@ TEST(BinData, Equal) {
   EXPECT_FALSE(BinData::fromRawData(8, {1}) == BinData::fromRawData(7, {1}));
 }
 
-}
-}
+}  // namespace data
+}  // namespace veles

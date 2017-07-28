@@ -38,7 +38,7 @@ namespace kaitai {
  */
 class kstream {
  public:
-  kstream(const veles::dbif::ObjectHandle& blob, uint64_t start = 0,
+   explicit kstream(const veles::dbif::ObjectHandle& blob, uint64_t start = 0,
           const veles::dbif::ObjectHandle& parent_chunk =
               veles::dbif::ObjectHandle(),
           uint64_t max_size = 0, bool error = false);

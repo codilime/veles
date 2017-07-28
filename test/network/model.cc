@@ -23,8 +23,41 @@
 #include "network/msgpackobject.h"
 #include "network/msgpackwrapper.h"
 
-using namespace testing;
-using namespace veles::tests::schema;
+using testing::ContainerEq;
+
+namespace proto = veles::proto;
+using veles::tests::schema::Any;
+using veles::tests::schema::AnyOptional;
+using veles::tests::schema::SmallInteger;
+using veles::tests::schema::SmallIntegerOptional;
+using veles::tests::schema::SmallUnsignedInteger;
+using veles::tests::schema::SmallUnsignedIntegerOptional;
+using veles::tests::schema::Boolean;
+using veles::tests::schema::BooleanOptional;
+using veles::tests::schema::Float;
+using veles::tests::schema::FloatOptional;
+using veles::tests::schema::String;
+using veles::tests::schema::StringOptional;
+using veles::tests::schema::Binary;
+using veles::tests::schema::BinaryOptional;
+using veles::tests::schema::NodeIDModel;
+using veles::tests::schema::NodeIDModelOptional;
+using veles::tests::schema::BinDataModel;
+using veles::tests::schema::BinDataModelOptional;
+using veles::tests::schema::List;
+using veles::tests::schema::ListOptional;
+using veles::tests::schema::Set;
+using veles::tests::schema::SetOptional;
+using veles::tests::schema::Map;
+using veles::tests::schema::MapOptional;
+using veles::tests::schema::Object;
+using veles::tests::schema::ObjectOptional;
+using veles::tests::schema::Enum;
+using veles::tests::schema::EnumOptional;
+using veles::tests::schema::SubType1;
+using veles::tests::schema::SubType2;
+using veles::tests::schema::TestEnum;
+using veles::tests::schema::BaseModel;
 
 namespace veles {
 namespace messages {
@@ -87,7 +120,7 @@ TEST(TestModel, TestAny) {
   EXPECT_EQ(ptr2->a.first, false);
 }
 
-// TODO test integers that use bignums - currently it would be identical with
+// TODO(mwk): test integers that use bignums - currently it would be identical with
 // small integers
 
 TEST(TestModel, TestSmallInteger) {

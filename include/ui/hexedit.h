@@ -39,7 +39,7 @@ namespace ui {
 class HexEdit : public QAbstractScrollArea {
   Q_OBJECT
  public:
-  HexEdit(FileBlobModel* dataModel,
+  explicit HexEdit(FileBlobModel* dataModel,
           QItemSelectionModel* selectionModel = nullptr, QWidget* parent = 0);
   /** Mark bytes as selected and optionally scroll screen to make these bytes
    * visible */

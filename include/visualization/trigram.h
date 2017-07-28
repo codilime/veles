@@ -130,7 +130,7 @@ class TrigramWidget : public VisualizationWidget {
 
   AdditionalResampleData* onAsyncResample() override;
 
-  void paintLabels(QMatrix4x4& scene_mp, QMatrix4x4& scene_m);
+  void paintLabels(const QMatrix4x4& scene_mp, const QMatrix4x4& scene_m);
   void paintLabel(const LabelPositionMixer& mixer,
                   const QMatrix4x4& scene_to_screen,
                   const QMatrix4x4& screen_mp, QOpenGLTexture* texture);
@@ -139,7 +139,7 @@ class TrigramWidget : public VisualizationWidget {
   QVector3D calcScreenPosForLabel(QVector3D world_pos,
                                   const QMatrix4x4& scene_to_screen, int width,
                                   int height);
-  void paintRF(QMatrix4x4& mvp);
+  void paintRF(const QMatrix4x4& mvp);
   void initRF();
   void releaseRF();
   void initLabelPositionMixers();
