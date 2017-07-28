@@ -2,6 +2,7 @@
 *.swp
 *.vdb
 CMakeLists.txt.user
+build/
 
 # Visual Studio files
 .vs
