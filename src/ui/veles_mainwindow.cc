@@ -118,7 +118,7 @@ void VelesMainWindow::init() {
 
   connect(options_dialog_, &QDialog::accepted, [this]() {
     for (auto main_window :
-         MainWindowWithDetachableDockWidgets ::getMainWindows()) {
+         MainWindowWithDetachableDockWidgets::getMainWindows()) {
       QList<View*> views = main_window->findChildren<View*>();
       for (auto view : views) {
         view->reapplySettings();
@@ -386,15 +386,14 @@ void VelesMainWindow::createFileBlob(const QString& fileName) {
   auto promise =
       database_->asyncRunMethod<dbif::RootCreateFileBlobFromDataRequest>(
           this, data, fileName);
-  connect(promise, &dbif::MethodResultPromise::gotResult,
-          [this, fileName](dbif::PMethodReply reply) {
-            createHexEditTab(
-                fileName.isEmpty() ? "untitled" : fileName,
-                reply
-                    .dynamicCast<
-                        dbif::RootCreateFileBlobFromDataRequest::ReplyType>()
-                    ->object);
-          });
+  connect(promise, &dbif::MethodResultPromise::gotResult, [this, fileName](
+                                                              dbif::PMethodReply
+                                                                  reply) {
+    createHexEditTab(
+        fileName.isEmpty() ? "untitled" : fileName,
+        reply.dynamicCast<dbif::RootCreateFileBlobFromDataRequest::ReplyType>()
+            ->object);
+  });
 
   connect(promise, &dbif::MethodResultPromise::gotError,
           [this, fileName](dbif::PError error) {

@@ -215,9 +215,9 @@ QMap<size_t, data::BinData> EditEngine::changesFromRange(size_t byte_pos,
     }
 
     if (pos + data.size() > byte_pos + size) {
-      data::BinData new_data(bindata_width_, byte_pos + size - pos > 0
-                                                 ? byte_pos + size - pos
-                                                 : 0);
+      data::BinData new_data(
+          bindata_width_,
+          byte_pos + size - pos > 0 ? byte_pos + size - pos : 0);
       size_t last_chunk_bytes_count = byte_pos + size - pos;
       for (size_t i = 0; i < last_chunk_bytes_count; ++i) {
         new_data.setElement64(i, data.element64(static_cast<int>(i)));

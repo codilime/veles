@@ -42,7 +42,7 @@ using util::settings::shortcuts::ShortcutsModel;
 /* QProxyStyleForDockWidgetWithIconOnTitleBar */
 /*****************************************************************************/
 
-QProxyStyleForDockWidgetWithIconOnTitleBar ::
+QProxyStyleForDockWidgetWithIconOnTitleBar::
     QProxyStyleForDockWidgetWithIconOnTitleBar(QStyle* default_style)
     : QProxyStyle(default_style) {}
 
@@ -169,7 +169,7 @@ void DockWidget::addCloseAction() {
     connect(dock_close_action_, &QAction::triggered, [this]() {
       deleteLater();
       auto parent =
-          MainWindowWithDetachableDockWidgets ::getOwnerOfDockWidget(this);
+          MainWindowWithDetachableDockWidgets::getOwnerOfDockWidget(this);
 
       if (parent) {
         auto tab_pair = parent->dockWidgetToTab(this);
@@ -211,7 +211,7 @@ void DockWidget::moveToDesktop() {
     bool ok;
     int screen = action->data().toInt(&ok);
     if (ok) {
-      MainWindowWithDetachableDockWidgets ::getOrCreateWindowForScreen(screen)
+      MainWindowWithDetachableDockWidgets::getOrCreateWindowForScreen(screen)
           ->moveDockWidgetToWindow(this);
     }
   }
@@ -263,8 +263,7 @@ void DockWidget::detachToNewTopLevelWindowAndMaximize() {
 }
 
 void DockWidget::topLevelChangedNotify(bool top_level) {
-  auto parent =
-      MainWindowWithDetachableDockWidgets ::getOwnerOfDockWidget(this);
+  auto parent = MainWindowWithDetachableDockWidgets::getOwnerOfDockWidget(this);
 
   if (parent) {
     parent->updateDocksAndTabs();
@@ -324,7 +323,7 @@ void DockWidget::moveEvent(QMoveEvent* event) {
   }
 
   auto candidate =
-      MainWindowWithDetachableDockWidgets ::getParentCandidateForDockWidget(
+      MainWindowWithDetachableDockWidgets::getParentCandidateForDockWidget(
           this);
   MainWindowWithDetachableDockWidgets::hideAllRubberBands();
 
@@ -343,10 +342,10 @@ void DockWidget::timerEvent(QTimerEvent* event) {
   }
 
   if (ticks_ > max_ticks_ && isFloating()) {
-    if (MainWindowWithDetachableDockWidgets ::intersectsWithAnyMainWindow(
+    if (MainWindowWithDetachableDockWidgets::intersectsWithAnyMainWindow(
             this)) {
       auto candidate =
-          MainWindowWithDetachableDockWidgets ::getParentCandidateForDockWidget(
+          MainWindowWithDetachableDockWidgets::getParentCandidateForDockWidget(
               this);
       if (candidate) {
         candidate->moveDockWidgetToWindow(this);
@@ -467,7 +466,7 @@ void TabBarEventFilter::tabMoved(int from, int to) {
 
 void TabBarEventFilter::currentChanged(int index) {
   auto main_window =
-      MainWindowWithDetachableDockWidgets ::getParentMainWindow(sender());
+      MainWindowWithDetachableDockWidgets::getParentMainWindow(sender());
   if (main_window) {
     auto dock_widget = dynamic_cast<DockWidget*>(
         main_window->tabToDockWidget(dynamic_cast<QTabBar*>(sender()), index));
@@ -695,9 +694,9 @@ void View::createHexEditor(MainWindowWithDetachableDockWidgets* main_window,
 std::set<MainWindowWithDetachableDockWidgets*>
     MainWindowWithDetachableDockWidgets::main_windows_;
 MainWindowWithDetachableDockWidgets*
-    MainWindowWithDetachableDockWidgets ::first_main_window_ = nullptr;
+    MainWindowWithDetachableDockWidgets::first_main_window_ = nullptr;
 int MainWindowWithDetachableDockWidgets::last_created_window_id_ = 0;
-QPointer<DockWidget> MainWindowWithDetachableDockWidgets ::active_dock_widget_ =
+QPointer<DockWidget> MainWindowWithDetachableDockWidgets::active_dock_widget_ =
     nullptr;
 
 MainWindowWithDetachableDockWidgets::MainWindowWithDetachableDockWidgets(
@@ -962,7 +961,7 @@ void MainWindowWithDetachableDockWidgets::splitDockWidget2(
 }
 
 MainWindowWithDetachableDockWidgets*
-MainWindowWithDetachableDockWidgets ::getParentMainWindow(QObject* obj) {
+MainWindowWithDetachableDockWidgets::getParentMainWindow(QObject* obj) {
   while (obj != nullptr) {
     auto main_window = dynamic_cast<MainWindowWithDetachableDockWidgets*>(obj);
     if (main_window) {
@@ -991,14 +990,14 @@ bool MainWindowWithDetachableDockWidgets::intersectsWithAnyMainWindow(
 }
 
 MainWindowWithDetachableDockWidgets*
-MainWindowWithDetachableDockWidgets ::getParentCandidateForDockWidget(
+MainWindowWithDetachableDockWidgets::getParentCandidateForDockWidget(
     DockWidget* dock_widget) {
   if (!dock_widget || !dock_widget->isFloating()) {
     return nullptr;
   }
 
   auto current_parent =
-      MainWindowWithDetachableDockWidgets ::getParentMainWindow(dock_widget);
+      MainWindowWithDetachableDockWidgets::getParentMainWindow(dock_widget);
   if (current_parent &&
       current_parent->geometry().intersects(dock_widget->geometry())) {
     return nullptr;
@@ -1051,7 +1050,7 @@ MainWindowWithDetachableDockWidgets::getOrCreateWindowForScreen(int screen) {
 }
 
 MainWindowWithDetachableDockWidgets*
-MainWindowWithDetachableDockWidgets ::getOwnerOfDockWidget(
+MainWindowWithDetachableDockWidgets::getOwnerOfDockWidget(
     DockWidget* dock_widget) {
   for (auto window : main_windows_) {
     if (window->findChildren<DockWidget*>().contains(dock_widget)) {
@@ -1280,7 +1279,7 @@ void MainWindowWithDetachableDockWidgets::focusChanged(QWidget* old,
   }
 }
 
-void MainWindowWithDetachableDockWidgets ::delayedFocusChanged(
+void MainWindowWithDetachableDockWidgets::delayedFocusChanged(
     const QPointer<QWidget>& now) {
   if (!now) {
     return;
@@ -1293,13 +1292,12 @@ void MainWindowWithDetachableDockWidgets ::delayedFocusChanged(
     QTabBar* tab_bar = dynamic_cast<QTabBar*>(now.data());
     if (tab_bar) {
       auto main_window =
-          MainWindowWithDetachableDockWidgets ::getParentMainWindow(tab_bar);
+          MainWindowWithDetachableDockWidgets::getParentMainWindow(tab_bar);
       if (main_window) {
         DockWidget* dock_widget = dynamic_cast<DockWidget*>(
             main_window->tabToDockWidget(tab_bar, tab_bar->currentIndex()));
         if (dock_widget) {
-          MainWindowWithDetachableDockWidgets ::setActiveDockWidget(
-              dock_widget);
+          MainWindowWithDetachableDockWidgets::setActiveDockWidget(dock_widget);
         }
       }
     }

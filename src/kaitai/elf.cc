@@ -472,12 +472,13 @@ std::vector<elf_t::program_header_t*>* elf_t::program_headers() {
         "m__skip_me_program_headers->at(m__skip_me_program_headers->size() - "
         "1)" +
         3);
-    m__io__skip_me_program_headers = new kaitai::kstream(
-        m__io->blob(),
-        m__io->pos() - m__skip_me_program_headers
-                           ->at(m__skip_me_program_headers->size() - 1)
-                           .size(),
-        veles_obj, m__io->pos(), m__io->error());
+    m__io__skip_me_program_headers =
+        new kaitai::kstream(m__io->blob(),
+                            m__io->pos() -
+                                m__skip_me_program_headers
+                                    ->at(m__skip_me_program_headers->size() - 1)
+                                    .size(),
+                            veles_obj, m__io->pos(), m__io->error());
     m__io->popName();
     m__io->pushName("program_headers");
     m_program_headers->push_back(
@@ -518,12 +519,13 @@ std::vector<elf_t::section_header_t*>* elf_t::section_headers() {
         "m__skip_me_section_headers->at(m__skip_me_section_headers->size() - "
         "1)" +
         3);
-    m__io__skip_me_section_headers = new kaitai::kstream(
-        m__io->blob(),
-        m__io->pos() - m__skip_me_section_headers
-                           ->at(m__skip_me_section_headers->size() - 1)
-                           .size(),
-        veles_obj, m__io->pos(), m__io->error());
+    m__io__skip_me_section_headers =
+        new kaitai::kstream(m__io->blob(),
+                            m__io->pos() -
+                                m__skip_me_section_headers
+                                    ->at(m__skip_me_section_headers->size() - 1)
+                                    .size(),
+                            veles_obj, m__io->pos(), m__io->error());
     m__io->popName();
     m__io->pushName("section_headers");
     m_section_headers->push_back(
