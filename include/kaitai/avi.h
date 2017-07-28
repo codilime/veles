@@ -53,14 +53,14 @@ class avi_t : public kaitai::kstruct {
   };
 
   explicit avi_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent = 0,
-        avi_t* p_root = 0);
+                 avi_t* p_root = 0);
   veles::dbif::ObjectHandle veles_obj;
   ~avi_t();
 
   class list_body_t : public kaitai::kstruct {
    public:
     explicit list_body_t(kaitai::kstream* p_io, avi_t::block_t* p_parent = 0,
-                avi_t* p_root = 0);
+                         avi_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~list_body_t();
 
@@ -80,7 +80,7 @@ class avi_t : public kaitai::kstruct {
   class rect_t : public kaitai::kstruct {
    public:
     explicit rect_t(kaitai::kstream* p_io, avi_t::strh_body_t* p_parent = 0,
-           avi_t* p_root = 0);
+                    avi_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~rect_t();
 
@@ -104,7 +104,7 @@ class avi_t : public kaitai::kstruct {
   class blocks_t : public kaitai::kstruct {
    public:
     explicit blocks_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent = 0,
-             avi_t* p_root = 0);
+                      avi_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~blocks_t();
 
@@ -126,7 +126,7 @@ class avi_t : public kaitai::kstruct {
   class avih_body_t : public kaitai::kstruct {
    public:
     explicit avih_body_t(kaitai::kstream* p_io, avi_t::block_t* p_parent = 0,
-                avi_t* p_root = 0);
+                         avi_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~avih_body_t();
 
@@ -164,7 +164,7 @@ class avi_t : public kaitai::kstruct {
   class block_t : public kaitai::kstruct {
    public:
     explicit block_t(kaitai::kstream* p_io, avi_t::blocks_t* p_parent = 0,
-            avi_t* p_root = 0);
+                     avi_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~block_t();
 
@@ -194,7 +194,7 @@ class avi_t : public kaitai::kstruct {
   class strh_body_t : public kaitai::kstruct {
    public:
     explicit strh_body_t(kaitai::kstream* p_io, avi_t::block_t* p_parent = 0,
-                avi_t* p_root = 0);
+                         avi_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~strh_body_t();
 
@@ -250,7 +250,7 @@ class avi_t : public kaitai::kstruct {
   class strf_body_t : public kaitai::kstruct {
    public:
     explicit strf_body_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent = 0,
-                avi_t* p_root = 0);
+                         avi_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~strf_body_t();
 

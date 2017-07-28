@@ -40,14 +40,14 @@ class zip_t : public kaitai::kstruct {
   };
 
   explicit zip_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent = 0,
-        zip_t* p_root = 0);
+                 zip_t* p_root = 0);
   veles::dbif::ObjectHandle veles_obj;
   ~zip_t();
 
   class local_file_t : public kaitai::kstruct {
    public:
-     explicit local_file_t(kaitai::kstream* p_io, zip_t::pk_section_t* p_parent = 0,
-                 zip_t* p_root = 0);
+    explicit local_file_t(kaitai::kstream* p_io,
+                          zip_t::pk_section_t* p_parent = 0, zip_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~local_file_t();
 
@@ -67,7 +67,8 @@ class zip_t : public kaitai::kstruct {
   class central_dir_entry_t : public kaitai::kstruct {
    public:
     explicit central_dir_entry_t(kaitai::kstream* p_io,
-                        zip_t::pk_section_t* p_parent = 0, zip_t* p_root = 0);
+                                 zip_t::pk_section_t* p_parent = 0,
+                                 zip_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~central_dir_entry_t();
 
@@ -122,7 +123,8 @@ class zip_t : public kaitai::kstruct {
 
   class pk_section_t : public kaitai::kstruct {
    public:
-     explicit pk_section_t(kaitai::kstream* p_io, zip_t* p_parent = 0, zip_t* p_root = 0);
+    explicit pk_section_t(kaitai::kstream* p_io, zip_t* p_parent = 0,
+                          zip_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~pk_section_t();
 
@@ -143,8 +145,9 @@ class zip_t : public kaitai::kstruct {
 
   class local_file_header_t : public kaitai::kstruct {
    public:
-     explicit local_file_header_t(kaitai::kstream* p_io,
-                        zip_t::local_file_t* p_parent = 0, zip_t* p_root = 0);
+    explicit local_file_header_t(kaitai::kstream* p_io,
+                                 zip_t::local_file_t* p_parent = 0,
+                                 zip_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~local_file_header_t();
 
@@ -183,8 +186,9 @@ class zip_t : public kaitai::kstruct {
 
   class end_of_central_dir_t : public kaitai::kstruct {
    public:
-     explicit end_of_central_dir_t(kaitai::kstream* p_io,
-                         zip_t::pk_section_t* p_parent = 0, zip_t* p_root = 0);
+    explicit end_of_central_dir_t(kaitai::kstream* p_io,
+                                  zip_t::pk_section_t* p_parent = 0,
+                                  zip_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~end_of_central_dir_t();
 

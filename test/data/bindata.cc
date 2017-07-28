@@ -14,9 +14,11 @@
  * limitations under the License.
  *
  */
-#include "gtest/gtest.h"
 #include "data/bindata.h"
+
 #include <algorithm>
+
+#include "gtest/gtest.h"
 
 namespace veles {
 namespace data {
@@ -233,8 +235,8 @@ TEST(BinData, SwapNonInline) {
   uint8_t e[] = {6, 5, 4, 3};
   BinData a(2, 3, d);
   BinData b(3, 4, e);
-  uint8_t *p1 = a.rawData();
-  uint8_t *p2 = b.rawData();
+  uint8_t* p1 = a.rawData();
+  uint8_t* p2 = b.rawData();
   std::swap(a, b);
   EXPECT_EQ(p1, b.rawData());
   EXPECT_EQ(p2, a.rawData());
@@ -260,7 +262,7 @@ TEST(BinData, SwapMixed) {
   uint8_t e[] = {6, 5, 4, 3};
   BinData a(17, 1, d);
   BinData b(3, 4, e);
-  uint8_t *p1 = b.rawData();
+  uint8_t* p1 = b.rawData();
   std::swap(a, b);
   EXPECT_EQ(p1, a.rawData());
   EXPECT_EQ(a.width(), 3u);
@@ -343,7 +345,8 @@ TEST(BinData, Data7) {
 }
 
 TEST(BinData, Data23) {
-  BinData a = BinData::fromRawData(23, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
+  BinData a = BinData::fromRawData(
+      23, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
   BinData b = a.data(2, 4);
   BinData c = a[1];
   EXPECT_EQ(b.width(), 23u);
@@ -364,7 +367,8 @@ TEST(BinData, Data23) {
 }
 
 TEST(BinData, SetData23) {
-  BinData a = BinData::fromRawData(23, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
+  BinData a = BinData::fromRawData(
+      23, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
   BinData b = BinData::fromRawData(23, {101, 102, 103, 104, 105, 106});
   a.setData(2, 4, b);
   EXPECT_EQ(a.rawData()[5], 6);
@@ -382,7 +386,10 @@ TEST(BinData, Bits64) {
   EXPECT_EQ(a.bits64(1, 0, 23), 0x060504u);
   EXPECT_EQ(a.bits64(1, 0, 16), 0x0504u);
   EXPECT_EQ(a.bits64(1, 8, 15), 0x0605u);
-  BinData b = BinData::fromRawData(120, {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff});
+  BinData b =
+      BinData::fromRawData(120,
+                           {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
+                            0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff});
   EXPECT_EQ(b.bits64(0, 0, 20), 0x32211u);
   EXPECT_EQ(b.bits64(0, 0, 64), 0x8877665544332211ull);
   EXPECT_EQ(b.bits64(0, 56, 64), 0xffeeddccbbaa9988ull);
@@ -396,7 +403,10 @@ TEST(BinData, SetBits64) {
   EXPECT_EQ(a.bits64(0, 0, 23), 0x789abcu);
   a.setBits64(1, 0, 17, 0x11111);
   EXPECT_EQ(a.bits64(1, 0, 23), 0x71111u);
-  BinData b = BinData::fromRawData(120, {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff});
+  BinData b =
+      BinData::fromRawData(120,
+                           {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
+                            0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff});
   b.setBits64(0, 30, 60, 0x123456789abcdefull);
   EXPECT_EQ(b.bits64(0, 0, 20), 0x32211u);
   EXPECT_EQ(b.bits64(0, 0, 64), 0xe26af37bc4332211ull);
@@ -435,7 +445,10 @@ TEST(BinData, Bits) {
   EXPECT_EQ(a1.bits64(0, 0, 23), 0x060504u);
   EXPECT_EQ(a2.bits64(0, 0, 16), 0x0504u);
   EXPECT_EQ(a3.bits64(0, 0, 15), 0x0605u);
-  BinData b = BinData::fromRawData(120, {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff});
+  BinData b =
+      BinData::fromRawData(120,
+                           {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
+                            0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff});
   BinData b1 = b.bits(0, 20, 80);
   EXPECT_EQ(b1.size(), 1u);
   EXPECT_EQ(b1.width(), 80u);
@@ -449,8 +462,13 @@ TEST(BinData, SetBits) {
   EXPECT_EQ(a.bits64(0, 0, 23), 0x789abcu);
   a.setBits(1, 0, 17, BinData(17, {0x11111}));
   EXPECT_EQ(a.bits64(1, 0, 23), 0x71111u);
-  BinData b = BinData::fromRawData(120, {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff});
-  b.setBits(0, 20, 80, BinData::fromRawData(80, {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9}));
+  BinData b =
+      BinData::fromRawData(120,
+                           {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
+                            0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff});
+  b.setBits(0, 20, 80, BinData::fromRawData(80,
+                                            {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5,
+                                             0xa6, 0xa7, 0xa8, 0xa9}));
   EXPECT_EQ(b.bits64(0, 0, 20), 0x32211u);
   EXPECT_EQ(b.bits64(0, 0, 64), 0x5a4a3a2a1a032211ull);
   EXPECT_EQ(b.bits64(0, 56, 64), 0xffeeda9a8a7a6a5aull);
@@ -479,7 +497,8 @@ TEST(BinData, ToString) {
 
 TEST(BinData, Equal) {
   EXPECT_TRUE(BinData::fromRawData(8, {1}) == BinData::fromRawData(8, {1}));
-  EXPECT_TRUE(BinData::fromRawData(9, {1, 2, 3, 4}) == BinData::fromRawData(9, {1, 2, 3, 4}));
+  EXPECT_TRUE(BinData::fromRawData(9, {1, 2, 3, 4}) ==
+              BinData::fromRawData(9, {1, 2, 3, 4}));
   EXPECT_FALSE(BinData::fromRawData(8, {1}) == BinData::fromRawData(8, {1, 2}));
   EXPECT_FALSE(BinData::fromRawData(8, {1}) == BinData::fromRawData(7, {1}));
 }

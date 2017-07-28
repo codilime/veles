@@ -38,22 +38,15 @@ QByteArray prepare_data(size_t size) {
   return result;
 }
 
-int MockCallback::getCallCount() {
-  return calls_;
-}
+int MockCallback::getCallCount() { return calls_; }
 
-void MockCallback::resetCallCount() {
-  calls_ = 0;
-}
+void MockCallback::resetCallCount() { calls_ = 0; }
 
-void MockCallback::operator()() {
-  ++calls_;
-}
+void MockCallback::operator()() { ++calls_; }
 
 /*****************************************************************************/
 /* Small data (no sampling required) */
 /*****************************************************************************/
-
 
 TEST(ISamplerSmallData, basic) {
   auto data = prepare_data(100);
@@ -107,26 +100,21 @@ TEST(ISamplerSmallData, offsetsAfterSetRange) {
 /* Synchronous sampling */
 /*****************************************************************************/
 
-
 TEST(ISamplerWithSampling, basic) {
   auto data = prepare_data(100);
   testing::NiceMock<MockSampler> sampler(data);
   Expectation init1 = EXPECT_CALL(sampler, prepareResample(_));
-  Expectation init2 = EXPECT_CALL(sampler, applyResample(_))
-    .After(init1);
+  Expectation init2 = EXPECT_CALL(sampler, applyResample(_)).After(init1);
   sampler.setSampleSize(10);
   EXPECT_CALL(sampler, getRealSampleSize())
-    .After(init2)
-    .WillRepeatedly(Return(10));
+      .After(init2)
+      .WillRepeatedly(Return(10));
   ASSERT_EQ(10u, sampler.getSampleSize());
-  EXPECT_CALL(sampler, getSampleByte(0))
-    .WillOnce(Return(0));
+  EXPECT_CALL(sampler, getSampleByte(0)).WillOnce(Return(0));
   ASSERT_EQ(data[0], sampler[0]);
-  EXPECT_CALL(sampler, getSampleByte(5))
-    .WillOnce(Return(33));
+  EXPECT_CALL(sampler, getSampleByte(5)).WillOnce(Return(33));
   ASSERT_EQ(data[33], sampler[5]);
-  EXPECT_CALL(sampler, getSampleByte(9))
-    .WillOnce(Return(99));
+  EXPECT_CALL(sampler, getSampleByte(9)).WillOnce(Return(99));
   ASSERT_EQ(data[99], sampler[9]);
 }
 
@@ -134,40 +122,30 @@ TEST(ISamplerWithSampling, offsets) {
   auto data = prepare_data(100);
   testing::NiceMock<MockSampler> sampler(data);
   sampler.setSampleSize(10);
-  ON_CALL(sampler, getRealSampleSize())
-    .WillByDefault(Return(10));
-  EXPECT_CALL(sampler, getFileOffsetImpl(5))
-    .Times(1)
-    .WillOnce(Return(50));
+  ON_CALL(sampler, getRealSampleSize()).WillByDefault(Return(10));
+  EXPECT_CALL(sampler, getFileOffsetImpl(5)).Times(1).WillOnce(Return(50));
   ASSERT_EQ(0u, sampler.getFileOffset(0));
   ASSERT_EQ(99u, sampler.getFileOffset(9));
   ASSERT_EQ(50u, sampler.getFileOffset(5));
 
-  EXPECT_CALL(sampler, getSampleOffsetImpl(50))
-    .Times(1)
-    .WillOnce(Return(5));
+  EXPECT_CALL(sampler, getSampleOffsetImpl(50)).Times(1).WillOnce(Return(5));
   ASSERT_EQ(0u, sampler.getSampleOffset(0));
   ASSERT_EQ(9u, sampler.getSampleOffset(99));
   ASSERT_EQ(5u, sampler.getSampleOffset(50));
-  }
+}
 
 TEST(ISamplerWithSampling, offsetsAfterSetRange) {
   auto data = prepare_data(100);
   testing::NiceMock<MockSampler> sampler(data);
   sampler.setSampleSize(10);
   sampler.setRange(40, 60);
-  ON_CALL(sampler, getRealSampleSize())
-    .WillByDefault(Return(10));
-  EXPECT_CALL(sampler, getFileOffsetImpl(5))
-    .Times(1)
-    .WillOnce(Return(10));
+  ON_CALL(sampler, getRealSampleSize()).WillByDefault(Return(10));
+  EXPECT_CALL(sampler, getFileOffsetImpl(5)).Times(1).WillOnce(Return(10));
   ASSERT_EQ(40u, sampler.getFileOffset(0));
   ASSERT_EQ(59u, sampler.getFileOffset(9));
   ASSERT_EQ(50u, sampler.getFileOffset(5));
 
-  EXPECT_CALL(sampler, getSampleOffsetImpl(10))
-    .Times(1)
-    .WillOnce(Return(5));
+  EXPECT_CALL(sampler, getSampleOffsetImpl(10)).Times(1).WillOnce(Return(5));
   ASSERT_EQ(0u, sampler.getSampleOffset(40));
   ASSERT_EQ(9u, sampler.getSampleOffset(59));
   ASSERT_EQ(5u, sampler.getSampleOffset(50));
@@ -177,8 +155,7 @@ TEST(ISamplerWithSampling, getDataFromIsampler) {
   auto data = prepare_data(100);
   testing::StrictMock<MockSampler> sampler(data);
   Expectation init1 = EXPECT_CALL(sampler, prepareResample(_));
-  Expectation init2 = EXPECT_CALL(sampler, applyResample(_))
-    .After(init1);
+  Expectation init2 = EXPECT_CALL(sampler, applyResample(_)).After(init1);
   sampler.setSampleSize(10);
   ASSERT_EQ(100u, sampler.proxy_getDataSize());
   ASSERT_EQ(0, sampler.proxy_getDataByte(0));
@@ -186,8 +163,7 @@ TEST(ISamplerWithSampling, getDataFromIsampler) {
   ASSERT_EQ(99, sampler.proxy_getDataByte(99));
   Mock::VerifyAndClear(&sampler);
   Expectation update1 = EXPECT_CALL(sampler, prepareResample(_));
-  Expectation update2 = EXPECT_CALL(sampler, applyResample(_))
-    .After(update1);
+  Expectation update2 = EXPECT_CALL(sampler, applyResample(_)).After(update1);
   sampler.setRange(40, 60);
   ASSERT_EQ(20u, sampler.proxy_getDataSize());
   ASSERT_EQ(40, sampler.proxy_getDataByte(0));
@@ -244,14 +220,12 @@ TEST(ISamplerAsynchronous, prepareAndApplySample) {
   MockCallback mc;
   mc.resetCallCount();
   testing::StrictMock<MockSampler> sampler(data);
-  EXPECT_CALL(sampler, prepareResample(_))
-    .WillOnce(Return(nullptr));
+  EXPECT_CALL(sampler, prepareResample(_)).WillOnce(Return(nullptr));
   EXPECT_CALL(sampler, applyResample(nullptr));
   sampler.setSampleSize(10);
   sampler.wait();
   ASSERT_TRUE(sampler.isFinished());
 }
-
 
 }  // namespace util
 }  // namespace veles

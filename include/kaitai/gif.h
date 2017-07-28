@@ -41,14 +41,14 @@ class gif_t : public kaitai::kstruct {
   };
 
   explicit gif_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent = 0,
-        gif_t* p_root = 0);
+                 gif_t* p_root = 0);
   veles::dbif::ObjectHandle veles_obj;
   ~gif_t();
 
   class global_color_table_t : public kaitai::kstruct {
    public:
-     explicit global_color_table_t(kaitai::kstream* p_io, gif_t* p_parent = 0,
-                         gif_t* p_root = 0);
+    explicit global_color_table_t(kaitai::kstream* p_io, gif_t* p_parent = 0,
+                                  gif_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~global_color_table_t();
 
@@ -65,9 +65,9 @@ class gif_t : public kaitai::kstruct {
 
   class image_data_t : public kaitai::kstruct {
    public:
-     explicit image_data_t(kaitai::kstream* p_io,
-                 gif_t::local_image_descriptor_t* p_parent = 0,
-                 gif_t* p_root = 0);
+    explicit image_data_t(kaitai::kstream* p_io,
+                          gif_t::local_image_descriptor_t* p_parent = 0,
+                          gif_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~image_data_t();
 
@@ -86,9 +86,9 @@ class gif_t : public kaitai::kstruct {
 
   class color_table_entry_t : public kaitai::kstruct {
    public:
-     explicit color_table_entry_t(kaitai::kstream* p_io,
-                        gif_t::global_color_table_t* p_parent = 0,
-                        gif_t* p_root = 0);
+    explicit color_table_entry_t(kaitai::kstream* p_io,
+                                 gif_t::global_color_table_t* p_parent = 0,
+                                 gif_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~color_table_entry_t();
 
@@ -109,8 +109,9 @@ class gif_t : public kaitai::kstruct {
 
   class logical_screen_descriptor_t : public kaitai::kstruct {
    public:
-     explicit logical_screen_descriptor_t(kaitai::kstream* p_io, gif_t* p_parent = 0,
-                                gif_t* p_root = 0);
+    explicit logical_screen_descriptor_t(kaitai::kstream* p_io,
+                                         gif_t* p_parent = 0,
+                                         gif_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~logical_screen_descriptor_t();
 
@@ -150,7 +151,8 @@ class gif_t : public kaitai::kstruct {
   class local_image_descriptor_t : public kaitai::kstruct {
    public:
     explicit local_image_descriptor_t(kaitai::kstream* p_io,
-                             gif_t::block_t* p_parent = 0, gif_t* p_root = 0);
+                                      gif_t::block_t* p_parent = 0,
+                                      gif_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~local_image_descriptor_t();
 
@@ -205,7 +207,8 @@ class gif_t : public kaitai::kstruct {
 
   class block_t : public kaitai::kstruct {
    public:
-    explicit block_t(kaitai::kstream* p_io, gif_t* p_parent = 0, gif_t* p_root = 0);
+    explicit block_t(kaitai::kstream* p_io, gif_t* p_parent = 0,
+                     gif_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~block_t();
 
@@ -224,7 +227,8 @@ class gif_t : public kaitai::kstruct {
 
   class header_t : public kaitai::kstruct {
    public:
-    explicit header_t(kaitai::kstream* p_io, gif_t* p_parent = 0, gif_t* p_root = 0);
+    explicit header_t(kaitai::kstream* p_io, gif_t* p_parent = 0,
+                      gif_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~header_t();
 
@@ -244,7 +248,8 @@ class gif_t : public kaitai::kstruct {
   class ext_graphic_control_t : public kaitai::kstruct {
    public:
     explicit ext_graphic_control_t(kaitai::kstream* p_io,
-                          gif_t::extension_t* p_parent = 0, gif_t* p_root = 0);
+                                   gif_t::extension_t* p_parent = 0,
+                                   gif_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~ext_graphic_control_t();
 
@@ -284,7 +289,7 @@ class gif_t : public kaitai::kstruct {
   class subblock_t : public kaitai::kstruct {
    public:
     explicit subblock_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent = 0,
-               gif_t* p_root = 0);
+                        gif_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~subblock_t();
 
@@ -303,8 +308,9 @@ class gif_t : public kaitai::kstruct {
 
   class ext_application_t : public kaitai::kstruct {
    public:
-    explicit ext_application_t(kaitai::kstream* p_io, gif_t::extension_t* p_parent = 0,
-                      gif_t* p_root = 0);
+    explicit ext_application_t(kaitai::kstream* p_io,
+                               gif_t::extension_t* p_parent = 0,
+                               gif_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~ext_application_t();
 
@@ -324,7 +330,7 @@ class gif_t : public kaitai::kstruct {
   class subblocks_t : public kaitai::kstruct {
    public:
     explicit subblocks_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent = 0,
-                gif_t* p_root = 0);
+                         gif_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~subblocks_t();
 
@@ -342,7 +348,7 @@ class gif_t : public kaitai::kstruct {
   class extension_t : public kaitai::kstruct {
    public:
     explicit extension_t(kaitai::kstream* p_io, gif_t::block_t* p_parent = 0,
-                gif_t* p_root = 0);
+                         gif_t* p_root = 0);
     veles::dbif::ObjectHandle veles_obj;
     ~extension_t();
 

@@ -14,11 +14,11 @@
  * limitations under the License.
  *
  */
-#include "gtest/gtest.h"
 #include "util/encoders/text_encoder.h"
+#include "gtest/gtest.h"
 
-#include <QString>
 #include <QByteArray>
+#include <QString>
 
 namespace veles {
 namespace util {
@@ -38,7 +38,7 @@ TEST(TextEncoder, encode) {
 TEST(TextEncoder, decode) {
   auto encoder = TextEncoder();
   EXPECT_EQ(encoder.decode(""), QByteArray::fromHex(""));
-  EXPECT_EQ(encoder.decode(QString::fromLatin1("\0" "a" "\0" "b" "\0", 5)),
+  EXPECT_EQ(encoder.decode(QString::fromLatin1("\0a\0b\0", 5)),
             QByteArray::fromHex("0061006200"));
   EXPECT_EQ(encoder.decode("\a\b\t\n\v\f\r"),
             QByteArray::fromHex("0708090a0b0c0d"));

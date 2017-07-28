@@ -588,7 +588,8 @@ void TrigramWidget::paintGLImpl() {
   }
 }
 
-void TrigramWidget::paintLabels(const QMatrix4x4& scene_mp, const QMatrix4x4& scene_m) {
+void TrigramWidget::paintLabels(const QMatrix4x4& scene_mp,
+                                const QMatrix4x4& scene_m) {
   QMatrix4x4 screen_mp;
   screen_mp.ortho(0, width_, 0, height_, -1.f, 1.f);
 

@@ -14,8 +14,8 @@
  * limitations under the License.
  *
  */
-#include "gtest/gtest.h"
 #include "util/encoders/hex_encoder.h"
+#include "gtest/gtest.h"
 
 #include <QByteArray>
 

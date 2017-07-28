@@ -30,7 +30,7 @@ class ConnectionDialog : public QDialog {
   Q_OBJECT
 
  public:
-   explicit ConnectionDialog(QWidget* parent = 0);
+  explicit ConnectionDialog(QWidget* parent = 0);
   virtual ~ConnectionDialog();
 
   bool runANewServer();

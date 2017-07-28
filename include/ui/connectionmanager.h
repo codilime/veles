@@ -43,7 +43,7 @@ class ConnectionManager : public QObject {
   Q_OBJECT
 
  public:
-   explicit ConnectionManager(QWidget* parent = nullptr);
+  explicit ConnectionManager(QWidget* parent = nullptr);
   virtual ~ConnectionManager();
 
   client::NetworkClient* networkClient();

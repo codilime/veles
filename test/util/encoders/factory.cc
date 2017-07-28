@@ -14,10 +14,10 @@
  * limitations under the License.
  *
  */
-#include "gtest/gtest.h"
 #include "util/encoders/factory.h"
-#include "util/encoders/hex_encoder.h"
+#include "gtest/gtest.h"
 #include "util/encoders/base64_encoder.h"
+#include "util/encoders/hex_encoder.h"
 
 namespace veles {
 namespace util {
@@ -32,14 +32,14 @@ TEST(Factory, keys) {
 TEST(Factory, createHex) {
   auto encoder = EncodersFactory::createEncoder("hex");
   EXPECT_NE(encoder, nullptr);
-  EXPECT_NE(dynamic_cast<HexEncoder *>(encoder), nullptr);
+  EXPECT_NE(dynamic_cast<HexEncoder*>(encoder), nullptr);
   delete encoder;
 }
 
 TEST(Factory, createBase64) {
   auto encoder = EncodersFactory::createEncoder("base64");
   EXPECT_NE(encoder, nullptr);
-  EXPECT_NE(dynamic_cast<Base64Encoder *>(encoder), nullptr);
+  EXPECT_NE(dynamic_cast<Base64Encoder*>(encoder), nullptr);
   delete encoder;
 }
 

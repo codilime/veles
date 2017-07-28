@@ -14,8 +14,9 @@
  * limitations under the License.
  *
  */
-#include "gtest/gtest.h"
 #include "data/repack.h"
+
+#include "gtest/gtest.h"
 
 namespace veles {
 namespace data {

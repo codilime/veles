@@ -15,8 +15,9 @@
  *
  */
 
-#include "mock_sampler.h"
 #include "util/sampling/uniform_sampler.h"
+
+#include "mock_sampler.h"
 
 namespace veles {
 namespace util {

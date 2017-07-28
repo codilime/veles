@@ -17,8 +17,8 @@
 
 #include "data/nodeid.h"
 
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 using testing::AllOf;
 using testing::Ne;
@@ -40,15 +40,15 @@ TEST(NodeID, SimpleCreation) {
 
   NodeID from_str("000000000000000000000000");
   const uint8_t data[] = {
-    0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30,
-    0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30,
+      0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30,
+      0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30,
   };
   NodeID from_char(data);
   EXPECT_EQ(from_str, from_char);
 }
 
 TEST(NodeID, ToFromHexString) {
-  QString str(NodeID::WIDTH*2, QChar('3'));
+  QString str(NodeID::WIDTH * 2, QChar('3'));
   auto id = NodeID::fromHexString(str);
   EXPECT_EQ(str, id->toHexString());
   NodeID from_str("333333333333333333333333");
@@ -59,15 +59,17 @@ TEST(NodeID, ToFromHexString) {
 }
 
 TEST(NodeID, ToVector) {
-  EXPECT_THAT(NodeID::getNilId()->asStdVector(), ContainerEq(std::vector<uint8_t>(NodeID::WIDTH, 0)));
-  EXPECT_THAT(NodeID::getRootNodeId()->asStdVector(), ContainerEq(std::vector<uint8_t>(NodeID::WIDTH, 255)));
+  EXPECT_THAT(NodeID::getNilId()->asStdVector(),
+              ContainerEq(std::vector<uint8_t>(NodeID::WIDTH, 0)));
+  EXPECT_THAT(NodeID::getRootNodeId()->asStdVector(),
+              ContainerEq(std::vector<uint8_t>(NodeID::WIDTH, 255)));
 }
 
 TEST(NodeID, TestBoolConv) {
-    NodeID n;
-    EXPECT_TRUE(n);
-    EXPECT_FALSE(*NodeID::getNilId());
-    EXPECT_TRUE(*NodeID::getRootNodeId());
+  NodeID n;
+  EXPECT_TRUE(n);
+  EXPECT_FALSE(*NodeID::getNilId());
+  EXPECT_TRUE(*NodeID::getRootNodeId());
 }
 
 }  // namespace data

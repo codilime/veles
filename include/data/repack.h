@@ -26,7 +26,8 @@ namespace data {
 class Repacker : public RepackerModel {
  public:
   explicit Repacker(Endian endian = Endian::LITTLE, uint64_t from_width = 8,
-           uint64_t to_width = 8, uint64_t high_pad = 0, uint64_t low_pad = 0)
+                    uint64_t to_width = 8, uint64_t high_pad = 0,
+                    uint64_t low_pad = 0)
       : RepackerModel(endian, from_width, to_width, high_pad, low_pad) {}
   using RepackerModel::RepackerModel;
 

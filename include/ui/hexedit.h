@@ -40,7 +40,8 @@ class HexEdit : public QAbstractScrollArea {
   Q_OBJECT
  public:
   explicit HexEdit(FileBlobModel* dataModel,
-          QItemSelectionModel* selectionModel = nullptr, QWidget* parent = 0);
+                   QItemSelectionModel* selectionModel = nullptr,
+                   QWidget* parent = 0);
   /** Mark bytes as selected and optionally scroll screen to make these bytes
    * visible */
   void setSelection(qint64 start, qint64 size, bool set_visible = false);

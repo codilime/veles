@@ -43,8 +43,8 @@ class NCWrapper;
 class NCObjectHandle : public dbif::ObjectHandleBase {
  public:
   explicit NCObjectHandle(NCWrapper* nc = nullptr,
-                 const data::NodeID& id = *data::NodeID::getNilId(),
-                 dbif::ObjectType type = dbif::ObjectType::CHUNK);
+                          const data::NodeID& id = *data::NodeID::getNilId(),
+                          dbif::ObjectType type = dbif::ObjectType::CHUNK);
   data::NodeID id();
 
   virtual dbif::InfoPromise* getInfo(const dbif::PInfoRequest& req);

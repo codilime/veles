@@ -34,12 +34,10 @@ class Parser {
   explicit Parser(const QString& id) : _id(id) {}
   QString id() const { return _id; }
   QList<data::BinData> magic() const { return _magic; }
-  bool verifyAndParse(
-      const dbif::ObjectHandle& blob, uint64_t start,
-      const dbif::ObjectHandle& parent_chunk);
-  virtual void parse(
-      const dbif::ObjectHandle& blob, uint64_t start,
-      const dbif::ObjectHandle& parent_chunk) = 0;
+  bool verifyAndParse(const dbif::ObjectHandle& blob, uint64_t start,
+                      const dbif::ObjectHandle& parent_chunk);
+  virtual void parse(const dbif::ObjectHandle& blob, uint64_t start,
+                     const dbif::ObjectHandle& parent_chunk) = 0;
 
  private:
   QString _id;

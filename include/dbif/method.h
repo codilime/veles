@@ -130,7 +130,7 @@ struct BlobParseRequest : MethodRequest {
   uint64_t start;
   ObjectHandle parent_chunk;
   explicit BlobParseRequest(QString parser_id = "", uint64_t start = 0,
-                   ObjectHandle parent_chunk = ObjectHandle())
+                            ObjectHandle parent_chunk = ObjectHandle())
       : parser_id(parser_id), start(start), parent_chunk(parent_chunk) {}
   typedef NullReply ReplyType;
 };
