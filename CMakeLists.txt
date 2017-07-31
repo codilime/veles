@@ -1,15 +1,15 @@
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-# HACK: ugly hack to provide default compilation type
-IF(DEFINED CMAKE_BUILD_TYPE)
-   SET(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of
+# HACK: An ugly hack to provide default compilation type.
+if(DEFINED CMAKE_BUILD_TYPE)
+   set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of
 build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug
 Release RelWithDebInfo MinSizeRel.")
-ELSE()
-   SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build,
+else(DEFINED CMAKE_BUILD_TYPE)
+   set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build,
 options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release
 RelWithDebInfo MinSizeRel.")
-ENDIF()
+endif(DEFINED CMAKE_BUILD_TYPE)
 
 if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
@@ -33,6 +33,7 @@ include("cmake/msgpack.cmake")
 include("cmake/cppgen.cmake")
 include("cmake/server.cmake")
 include("cmake/openssl.cmake")
+
 # Compiler flags
 if(MINGW)
   # MinGW is not supported because of C++14 problems (and many others).
@@ -50,9 +51,9 @@ if(MSVC)
   # Uncomment this line to use instrumentation in Visual Studio.
   # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /Profile")
 
-  # set exception handling mode and linking mode
+  # Set exception handling mode and linking mode.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc ")
-  # build with multiple processes
+  # Build with multiple processes.
   # see: https://docs.microsoft.com/en-us/cpp/build/reference/mp-build-with-multiple-processes
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP ")
 endif()
@@ -62,7 +63,7 @@ endif(APPLE)
 
 if(WIN32)
   set(WINDOWS_APPLICATION_OUT_DIRECTORY "Veles UI")
-  # overwrite default Debug/Release application directory
+  # Overwrite default Debug/Release application directory.
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${WINDOWS_APPLICATION_OUT_DIRECTORY})
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${WINDOWS_APPLICATION_OUT_DIRECTORY})
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${WINDOWS_APPLICATION_OUT_DIRECTORY})
@@ -78,8 +79,8 @@ set(TEST_DIR ${CMAKE_SOURCE_DIR}/test)
 
 include_directories(${INCLUDE_DIR})
 
-# VELES build rules
-# LIB: veles_base
+# Veles build rules
+# Lib: veles_base
 add_library(veles_base
     ${INCLUDE_DIR}/util/icons.h
     ${INCLUDE_DIR}/util/concurrency/threadpool.h
@@ -131,17 +132,18 @@ add_library(veles_base
     ${SRC_DIR}/util/string_utils.cc
     ${SRC_DIR}/util/math.cc
     ${SRC_DIR}/util/misc.cc
-    ${SRC_DIR}/util/version.cc)
+    ${SRC_DIR}/util/version.cc
+)
 
 qt5_use_modules(veles_base Core Gui Widgets)
 target_link_libraries(veles_base ${ADDITIONAL_LINK_LIBRARIES})
 
-# LIB: veles_visualization
+# Lib: veles_visualization
 
 qt5_wrap_ui(VISUALIZATION_FORMS
     ${SRC_DIR}/visualization/selectrangedialog.ui
     ${SRC_DIR}/visualization/samplingmethoddialog.ui
-    )
+)
 
 qt5_add_resources(VISUALIZATION_SHADERS ${SRC_DIR}/visualization/shaders/shaders.qrc)
 add_library(veles_visualization
@@ -164,7 +166,8 @@ add_library(veles_visualization
     ${SRC_DIR}/visualization/manipulator.cc
     ${SRC_DIR}/visualization/samplingmethoddialog.cc
     ${VISUALIZATION_FORMS}
-    ${VISUALIZATION_SHADERS})
+    ${VISUALIZATION_SHADERS}
+)
 
 qt5_use_modules(veles_visualization Core Gui Widgets)
 # This a temporary "hack" to fix concurrent build fail - veles_visualization
@@ -179,36 +182,37 @@ set(MSGPACK_CPP_SOURCE "${CMAKE_CURRENT_BINARY_DIR}/models.cc")
 set(PYTHON_DIR ${CMAKE_SOURCE_DIR}/python)
 
 add_custom_command(OUTPUT ${MSGPACK_CPP_HEADER} ${MSGPACK_CPP_SOURCE} ${MSGPACK_CPP_FWD_HEADER}
-  COMMAND ${PYEXE} -m veles.cpp.generate ${CMAKE_CURRENT_BINARY_DIR}
-    veles.data.repack
-    veles.proto.node
-    veles.proto.check
-    veles.proto.chunk
-    veles.proto.connection
-    veles.proto.operation
-    veles.proto.messages
-    veles.proto.msgpackwrap
-    veles.tests.schema.cpp_test_models
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python
-  COMMENT "Generating msgpack C++ code from Python"
-  DEPENDS cpp_python_gen
-    ${PYTHON_DIR}/veles/cpp/generate.py
-    ${PYTHON_DIR}/veles/data/repack.py
-    ${PYTHON_DIR}/veles/proto/check.py
-    ${PYTHON_DIR}/veles/proto/chunk.py
-    ${PYTHON_DIR}/veles/proto/connection.py
-    ${PYTHON_DIR}/veles/proto/exceptions.py
-    ${PYTHON_DIR}/veles/proto/messages.py
-    ${PYTHON_DIR}/veles/proto/msgpackwrap.py
-    ${PYTHON_DIR}/veles/proto/operation.py
-    ${PYTHON_DIR}/veles/proto/node.py
-    ${PYTHON_DIR}/veles/schema/model.py
-    ${PYTHON_DIR}/veles/schema/enumeration.py
-    ${PYTHON_DIR}/veles/schema/fields.py
-    ${PYTHON_DIR}/veles/tests/schema/cpp_test_models.py
-  VERBATIM)
+    COMMAND ${PYEXE} -m veles.cpp.generate ${CMAKE_CURRENT_BINARY_DIR}
+        veles.data.repack
+        veles.proto.node
+        veles.proto.check
+        veles.proto.chunk
+        veles.proto.connection
+        veles.proto.operation
+        veles.proto.messages
+        veles.proto.msgpackwrap
+        veles.tests.schema.cpp_test_models
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python
+    COMMENT "Generating msgpack C++ code from Python"
+    DEPENDS cpp_python_gen
+        ${PYTHON_DIR}/veles/cpp/generate.py
+        ${PYTHON_DIR}/veles/data/repack.py
+        ${PYTHON_DIR}/veles/proto/check.py
+        ${PYTHON_DIR}/veles/proto/chunk.py
+        ${PYTHON_DIR}/veles/proto/connection.py
+        ${PYTHON_DIR}/veles/proto/exceptions.py
+        ${PYTHON_DIR}/veles/proto/messages.py
+        ${PYTHON_DIR}/veles/proto/msgpackwrap.py
+        ${PYTHON_DIR}/veles/proto/operation.py
+        ${PYTHON_DIR}/veles/proto/node.py
+        ${PYTHON_DIR}/veles/schema/model.py
+        ${PYTHON_DIR}/veles/schema/enumeration.py
+        ${PYTHON_DIR}/veles/schema/fields.py
+        ${PYTHON_DIR}/veles/tests/schema/cpp_test_models.py
+    VERBATIM
+)
 
-# LIB: veles_data
+# Lib: veles_data
 add_library(veles_data
     ${MSGPACK_CPP_FWD_HEADER}
     ${MSGPACK_CPP_HEADER}
@@ -230,7 +234,7 @@ qt5_use_modules(veles_data Core)
 add_dependencies(veles_data msgpack-c)
 target_link_libraries(veles_data veles_base)
 
-# LIB: veles_dbif
+# Lib: veles_dbif
 add_library(veles_dbif
     ${INCLUDE_DIR}/dbif/error.h
     ${INCLUDE_DIR}/dbif/info.h
@@ -244,15 +248,10 @@ add_library(veles_dbif
 qt5_use_modules(veles_dbif Core)
 target_link_libraries(veles_dbif veles_data)
 
-file(GLOB kaitai_headers
-    "${INCLUDE_DIR}/kaitai/*.h"
-)
+file(GLOB kaitai_headers "${INCLUDE_DIR}/kaitai/*.h")
+file(GLOB kaitai_sources "${SRC_DIR}/kaitai/*.cc")
 
-file(GLOB kaitai_sources
-    "${SRC_DIR}/kaitai/*.cc"
-)
-
-# LIB: parser
+# Lib: parser
 add_library(parser
     ${INCLUDE_DIR}/parser/parser.h
     ${INCLUDE_DIR}/parser/stream.h
@@ -279,14 +278,14 @@ target_link_libraries(veles_network veles_data)
 qt5_use_modules(veles_network Core Network Widgets)
 
 
-# LIB: veles_db
+# Lib: veles_db
 add_library(veles_db
     ${INCLUDE_DIR}/db/getter.h
     ${INCLUDE_DIR}/db/universe.h
     ${SRC_DIR}/db/universe.cc
 )
 
-# LIB: veles_client
+# Lib: veles_client
 add_library(veles_client
     ${INCLUDE_DIR}/client/node.h
     ${INCLUDE_DIR}/client/nodetree.h
@@ -294,7 +293,8 @@ add_library(veles_client
     ${INCLUDE_DIR}/client/dbif.h
     ${SRC_DIR}/client/nodetree.cc
     ${SRC_DIR}/client/networkclient.cc
-    ${SRC_DIR}/client/dbif.cc)
+    ${SRC_DIR}/client/dbif.cc
+)
 
 add_dependencies(veles_client openssl)
 qt5_use_modules(veles_client Core Network)
@@ -307,16 +307,16 @@ target_link_libraries(veles_db veles_dbif parser)
 # Resources
 qt5_add_resources(RESOURCES resources/veles.qrc)
 qt5_wrap_ui(FORMS
-  ${SRC_DIR}/ui/connectiondialog.ui
-  ${SRC_DIR}/ui/connectionnotificationwidget.ui
-  ${SRC_DIR}/ui/createchunkdialog.ui
-  ${SRC_DIR}/ui/databaseinfo.ui
-  ${SRC_DIR}/ui/gotoaddressdialog.ui
-  ${SRC_DIR}/ui/logwidget.ui
-  ${SRC_DIR}/ui/optionsdialog.ui
-  ${SRC_DIR}/ui/searchdialog.ui
-  ${SRC_DIR}/ui/shortcutselection.ui
-  ${SRC_DIR}/ui/shortcutssettings.ui
+    ${SRC_DIR}/ui/connectiondialog.ui
+    ${SRC_DIR}/ui/connectionnotificationwidget.ui
+    ${SRC_DIR}/ui/createchunkdialog.ui
+    ${SRC_DIR}/ui/databaseinfo.ui
+    ${SRC_DIR}/ui/gotoaddressdialog.ui
+    ${SRC_DIR}/ui/logwidget.ui
+    ${SRC_DIR}/ui/optionsdialog.ui
+    ${SRC_DIR}/ui/searchdialog.ui
+    ${SRC_DIR}/ui/shortcutselection.ui
+    ${SRC_DIR}/ui/shortcutssettings.ui
 )
 
 if(WIN32)
@@ -327,7 +327,7 @@ if(APPLE)
   set(ICONS ${CMAKE_SOURCE_DIR}/resources/icons/veles.icns)
   set(MACOSX_BUNDLE_ICON_FILE veles.icns)
   set_source_files_properties(${ICONS} PROPERTIES
-    MACOSX_PACKAGE_LOCATION Resources)
+      MACOSX_PACKAGE_LOCATION Resources)
 endif(APPLE)
 
 if(WIN32)
@@ -335,7 +335,7 @@ if(WIN32)
   set(GUI_TYPE WIN32)
 endif(WIN32)
 
-# EXE: Main executable
+# Exe: Main executable
 add_executable(main_ui
     ${GUI_TYPE}
     ${INCLUDE_DIR}/ui/logwidget.h
@@ -390,9 +390,10 @@ add_executable(main_ui
     ${RESOURCES}
     ${VISUALIZATION_SHADERS}
     ${FORMS}
-    ${ICONS})
+    ${ICONS}
+)
 
-  set (GENERATED_MOC_FILES
+set(GENERATED_MOC_FILES
     ${CMAKE_SOURCE_DIR}/moc_base.cpp
     ${CMAKE_SOURCE_DIR}/moc_commands.cpp
     ${CMAKE_SOURCE_DIR}/moc_digram.cpp
@@ -410,72 +411,70 @@ add_executable(main_ui
     ${CMAKE_SOURCE_DIR}/moc_manipulator.cpp
     ${CMAKE_SOURCE_DIR}/moc_connectiondialog.cpp
     ${CMAKE_SOURCE_DIR}/moc_networkclient.cpp
-    ${CMAKE_SOURCE_DIR}/moc_dbif.cpp)
+    ${CMAKE_SOURCE_DIR}/moc_dbif.cpp
+)
 
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${GENERATED_MOC_FILES})
 
 qt5_use_modules(main_ui Core Gui Widgets)
 
 if(GTEST_FOUND AND GMOCK_FOUND)
-    include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
-    add_executable(run_test
-        ${TEST_DIR}/run_test.cc
-        ${TEST_DIR}/data/bindata.cc
-        ${TEST_DIR}/data/copybits.cc
-        ${TEST_DIR}/data/nodeid.cc
-        ${TEST_DIR}/data/repack.cc
-        ${TEST_DIR}/network/msgpackobject.cc
-        ${TEST_DIR}/network/model.cc
-        ${TEST_DIR}/util/encoders/base64_encoder.cc
-        ${TEST_DIR}/util/encoders/c_data_encoder.cc
-        ${TEST_DIR}/util/encoders/c_string_encoder.cc
-        ${TEST_DIR}/util/encoders/hex_encoder.cc
-        ${TEST_DIR}/util/encoders/text_encoder.cc
-        ${TEST_DIR}/util/encoders/url_encoder.cc
-        ${TEST_DIR}/util/encoders/factory.cc
-        ${TEST_DIR}/util/sampling/mock_sampler.h
-        ${TEST_DIR}/util/sampling/isampler.cc
-        ${TEST_DIR}/util/sampling/uniform_sampler.cc
-        ${TEST_DIR}/util/int_bytes.cc
-        ${TEST_DIR}/util/edit.cc
-    )
+  include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
+  add_executable(run_test
+      ${TEST_DIR}/run_test.cc
+      ${TEST_DIR}/data/bindata.cc
+      ${TEST_DIR}/data/copybits.cc
+      ${TEST_DIR}/data/nodeid.cc
+      ${TEST_DIR}/data/repack.cc
+      ${TEST_DIR}/network/msgpackobject.cc
+      ${TEST_DIR}/network/model.cc
+      ${TEST_DIR}/util/encoders/base64_encoder.cc
+      ${TEST_DIR}/util/encoders/c_data_encoder.cc
+      ${TEST_DIR}/util/encoders/c_string_encoder.cc
+      ${TEST_DIR}/util/encoders/hex_encoder.cc
+      ${TEST_DIR}/util/encoders/text_encoder.cc
+      ${TEST_DIR}/util/encoders/url_encoder.cc
+      ${TEST_DIR}/util/encoders/factory.cc
+      ${TEST_DIR}/util/sampling/mock_sampler.h
+      ${TEST_DIR}/util/sampling/isampler.cc
+      ${TEST_DIR}/util/sampling/uniform_sampler.cc
+      ${TEST_DIR}/util/int_bytes.cc
+      ${TEST_DIR}/util/edit.cc
+  )
 
-    qt5_use_modules(run_test Core)
+  qt5_use_modules(run_test Core)
 
-    target_link_libraries(run_test veles_db veles_base veles_network ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES})
+  target_link_libraries(run_test veles_db veles_base veles_network ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES})
 
-    add_custom_command(TARGET run_test
+  add_custom_command(TARGET run_test
       COMMENT "Running tests"
       COMMAND $<TARGET_FILE:run_test> "--gtest_output=xml:results.xml"
-      DEPENDS $<TARGET_FILE:run_test>)
+      DEPENDS $<TARGET_FILE:run_test>
+  )
 else(GTEST_FOUND AND GMOCK_FOUND)
-
-    message("gtest and/or gmock not found - tests won't be built")
-
+  message("gtest and/or gmock not found - tests won't be built")
 endif(GTEST_FOUND AND GMOCK_FOUND)
 
 
 target_link_libraries(main_ui veles_base veles_db veles_network veles_client veles_visualization Qt5::Widgets parser)
 set_target_properties(main_ui PROPERTIES OUTPUT_NAME "veles")
 
-###
-#   Post-build - linting ###
-###
+# Post-build: linting
 
 message(STATUS "Looking for clang-tidy")
 find_program(CLANG_TIDY NAMES clang-tidy clang-tidy-4.0 clang-tidy-3.9 clang-tidy-3.8 clang-tidy-3.7 clang-tidy-3.6 clang-tidy-3.5 HINTS ${CLANG_TOOLS_PATH})
 
 if(CLANG_TIDY)
   message(STATUS "Looking for clang-tidy - found")
-  file(GLOB_RECURSE LINT_ALL_SOURCE_FILES src/*.cc test/*.cc)
+  file(GLOB_RECURSE LINT_ALL_SOURCE_FILES "${SRC_DIR}/*.cc" "${TEST_DIR}/*.cc")
 
-  # Get includes from main file
+  # Get includes from the main file.
   get_property(LINT_INC_DIRS TARGET main_ui PROPERTY INCLUDE_DIRECTORIES)
 
-  # Get includes from network library (QNetwork and friends)
+  # Get includes from the network library (QNetwork and friends).
   get_property(LINT_VELES_NETWORK_DIRS TARGET veles_network PROPERTY INCLUDE_DIRECTORIES)
 
-  # join the lists of the includes
+  # Join the lists of the includes.
   list(APPEND LINT_INC_DIRS ${LINT_VELES_NETWORK_DIRS})
 
   # macOS hack - remove surplus include directories
@@ -487,39 +486,38 @@ if(CLANG_TIDY)
     endforeach()
   endif(APPLE)
 
-  # remove duplicates
+  # Remove duplicates.
   list(REMOVE_DUPLICATES LINT_INC_DIRS)
 
-  # use this hack, so cmake will not escape space characters when passing the list
-  # to COMMAND, for example by using "-I$<JOIN:${LINT_INC_DIRS}, -I>"
+  # Use this hack, so that cmake will not escape space characters when passing
+  # the list to COMMAND, for example by using "-I$<JOIN:${LINT_INC_DIRS}, -I>"
   string(REPLACE ";" ";-I" LINT_INCLUDES "${LINT_INC_DIRS}")
 
   message(STATUS "clang-tidy includes: -I${LINT_INCLUDES} -I${CMAKE_BINARY_DIR} -I${PROJECT_SOURCE_DIR}")
-  # parse CMAKE_CXX_FLAGS to list, so spaces will not be escaped in COMMANDs
+  # Parse CMAKE_CXX_FLAGS to list, so spaces will not be escaped in COMMANDs.
   separate_arguments(LINT_CXX_FLAGS UNIX_COMMAND ${CMAKE_CXX_FLAGS})
 
-  # as an alternative - we could use:
-  ### list(APPEND LINT_CHECKS "google-*")
-  ### list(APPEND LINT_CHECKS "performance-*")
-  ### string(REPLACE ";" "," LINT_CHECKS_STR "${LINT_CHECKS}")
-  ### set(CMAKE_CXX_CLANG_TIDY clang-tidy;-style=google;-checks=${LINT_CHECKS_STR}")
-  #
-  # and then all the magic should happen at compile time
-  # cmake 3.6+ required (Ubuntu 18.04 LTS)
+  # As an alternative - we could use:
+  #   list(APPEND LINT_CHECKS "google-*")
+  #   list(APPEND LINT_CHECKS "performance-*")
+  #   string(REPLACE ";" "," LINT_CHECKS_STR "${LINT_CHECKS}")
+  #   set(CMAKE_CXX_CLANG_TIDY clang-tidy;-style=google;-checks=${LINT_CHECKS_STR}")
+  # and then all the magic should happen at compile time.
+  # CMake 3.6+ is required for this (Ubuntu 18.04 LTS).
+
   add_custom_target(lint)
 
-
-  # this target is needed so dependencies are not build for each clang-tidy call
+  # This target is needed so dependencies are not built for each clang-tidy call.
   add_custom_target(lint_depends
-          DEPENDS
-            ${MSGPACK_CPP_HEADER}
-            ${MSGPACK_EXTRACT_PATH}
-            ${FORMS}
-            ${VISUALIZATION_FORMS}
+      DEPENDS
+          ${MSGPACK_CPP_HEADER}
+          ${MSGPACK_EXTRACT_PATH}
+          ${FORMS}
+          ${VISUALIZATION_FORMS}
   )
 
-  # foreach is needed so maximum command line length is not reached
-  # create intermediary targets to allow parallel checks with -jN
+  # foreach is needed so maximum command line length is not reached.
+  # Create intermediary targets to allow parallel checks with -jN.
   set(LINT_INDEX 0)
   foreach(LINT_SOURCE_FILE ${LINT_ALL_SOURCE_FILES})
     set(LINT_TARGET_NAME "lint-${LINT_INDEX}")
@@ -532,22 +530,21 @@ if(CLANG_TIDY)
             ${LINT_SOURCE_FILE}
             --
             ${LINT_CXX_FLAGS}
-            # Don't know how to get from CMake that he will invoke compiler with
-            # -fPIC
+            # Don't know how to force CMake to invoke compiler with -fPIC.
             "$<$<NOT:$<OR:$<BOOL:${WIN32}>,$<BOOL:${WIN64}>>>:-fPIC>"
             # Nasty hack to set -iframework flag for Qt on macOS
             "$<$<BOOL:${APPLE}>:-iframework${CMAKE_PREFIX_PATH}/lib>"
             -I${LINT_INCLUDES}
             -I${CMAKE_BINARY_DIR}
             -I${PROJECT_SOURCE_DIR}
-          DEPENDS
+        DEPENDS
             lint_depends
     )
     add_dependencies(lint ${LINT_TARGET_NAME})
   endforeach()
 else()
-    message(STATUS "Looking for clang-tidy - not found")
-    message(STATUS "  Build target 'lint' will not be available.")
+  message(STATUS "Looking for clang-tidy - not found")
+  message(STATUS "  Build target 'lint' will not be available.")
 endif()
 
 
@@ -556,7 +553,7 @@ find_program(CLANG_FORMAT NAMES clang-format clang-format-4.0 clang-format-3.9 c
 
 if(CLANG_FORMAT)
   message(STATUS "Looking for clang-format - found")
-  file(GLOB_RECURSE FORMAT_ALL_SOURCE_FILES src/*.cc include/*.h test/*.cc test/*.h)
+  file(GLOB_RECURSE FORMAT_ALL_SOURCE_FILES ${SRC_DIR}/*.cc ${INCLUDE_DIR}/*.h ${TEST_DIR}/*.cc ${TEST_DIR}/*.h)
   # On Windows, cmd.exe limits commands to 8192 characters.
   # Please be *very* cautious when editing this code: when command length
   # exceeds 8192 characters, the 8192th character is silently dropped and the
@@ -571,27 +568,25 @@ if(CLANG_FORMAT)
   endforeach()
   add_custom_target(format COMMAND ${CLANG_FORMAT} "\"@${FORMAT_CMDLINE_FILE}\"")
 else()
-    message(STATUS "Looking for clang-format - not found")
-    message(STATUS "  Build target 'format' will not be available.")
+  message(STATUS "Looking for clang-format - not found")
+  message(STATUS "  Build target 'format' will not be available.")
 endif()
-
-####
 
 # Post-build packaging
 
-#Unix paths
+# Unix paths
 if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
   set(CPACK_PACKAGE_CONTACT "contact@veles.io")
   set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5core5a (>= 5.5.1), libqt5gui5 (>= 5.5.1),
-    libqt5widgets5 (>= 5.5.1), libqt5network5 (>= 5.5.1), zlib1g (>= 1:1.2.8), g++,
-    python3 (>= 3.5.0), python3-venv (>= 3.5.0), python3-dev (>= 3.5.0),
-    openssl (>= 1.0.0), libffi-dev, libssl-dev (>= 1.0.0)")
+      libqt5widgets5 (>= 5.5.1), libqt5network5 (>= 5.5.1), zlib1g (>= 1:1.2.8), g++,
+      python3 (>= 3.5.0), python3-venv (>= 3.5.0), python3-dev (>= 3.5.0),
+      openssl (>= 1.0.0), libffi-dev, libssl-dev (>= 1.0.0)"
+  )
   install(TARGETS main_ui RUNTIME DESTINATION bin COMPONENT "application")
 
   install(FILES "${PROJECT_SOURCE_DIR}/resources/install/veles.desktop" DESTINATION share/applications/ COMPONENT "application")
   install(FILES "${PROJECT_SOURCE_DIR}/resources/icons/veles.ico" DESTINATION share/veles/ COMPONENT "application")
-
 endif(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
 
 # Windows
@@ -599,21 +594,24 @@ if(WIN32)
   set_target_properties(main_ui PROPERTIES WIN32 TRUE)
   # Run winddeployqt if it can be found
   find_program(WINDEPLOYQT_EXECUTABLE NAMES windeployqt HINTS ${QTDIR} ENV QT PATH_SUFFIXES bin)
-  add_custom_command(TARGET main_ui POST_BUILD
-    COMMENT "Ensuring QT Dependencies"
-    COMMAND ${WINDEPLOYQT_EXECUTABLE} ${WINDEPLOYQT_ARGS} $<TARGET_FILE:main_ui>
-    DEPENDS $<TARGET_FILE:main_ui>)
+  add_custom_command(
+      TARGET main_ui POST_BUILD
+      COMMENT "Ensuring Qt Dependencies"
+      COMMAND ${WINDEPLOYQT_EXECUTABLE} ${WINDEPLOYQT_ARGS} $<TARGET_FILE:main_ui>
+      DEPENDS $<TARGET_FILE:main_ui>
+  )
   install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/windeploydir/" DESTINATION ${WINDOWS_APPLICATION_OUT_DIRECTORY} COMPONENT "application")
   install(TARGETS main_ui RUNTIME DESTINATION ${WINDOWS_APPLICATION_OUT_DIRECTORY} COMPONENT "application")
   set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "ExecWait '\\\"$INSTDIR\\\\${WINDOWS_APPLICATION_OUT_DIRECTORY}\\\\${VCREDIST_BINARY}\\\" /install /passive'")
   install(FILES "${OPENSSL_DLL_DIR}/libeay32.dll" "${OPENSSL_DLL_DIR}/ssleay32.dll" DESTINATION ${WINDOWS_APPLICATION_OUT_DIRECTORY} COMPONENT "application")
   add_custom_command(TARGET main_ui POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${WINDOWS_APPLICATION_OUT_DIRECTORY}
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-      "${OPENSSL_DLL_DIR}/libeay32.dll"
-      "${OPENSSL_DLL_DIR}/ssleay32.dll"
-      ${WINDOWS_APPLICATION_OUT_DIRECTORY}
-    COMMENT "Copying OpenSSL dlls")
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${WINDOWS_APPLICATION_OUT_DIRECTORY}
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          "${OPENSSL_DLL_DIR}/libeay32.dll"
+          "${OPENSSL_DLL_DIR}/ssleay32.dll"
+          ${WINDOWS_APPLICATION_OUT_DIRECTORY}
+      COMMENT "Copying OpenSSL DLLs"
+  )
   set(CPACK_NSIS_EXECUTABLES_DIRECTORY ${WINDOWS_APPLICATION_OUT_DIRECTORY})
   set(CPACK_NSIS_MUI_FINISHPAGE_RUN "veles")
   set(CPACK_NSIS_INSTALLED_ICON_NAME "${WINDOWS_APPLICATION_OUT_DIRECTORY}/veles.exe")
@@ -635,13 +633,15 @@ if(APPLE)
   set(CMAKE_MACOSX_RPATH on)
   # Finding MacDeployQt
   find_program(MACDEPLOYQT_EXECUTABLE
-    macdeployqt
-    ENV QT
-    PATH_SUFFIXES "5.7/clang_64/bin")
+      macdeployqt
+      ENV QT
+      PATH_SUFFIXES "5.7/clang_64/bin"
+  )
   add_custom_command(TARGET main_ui POST_BUILD
-    COMMENT "Ensuring QT dependencies"
-    COMMAND ${MACDEPLOYQT_EXECUTABLE} ARGS ${CMAKE_CURRENT_BINARY_DIR}/\${CONFIGURATION}/$<TARGET_PROPERTY:main_ui,OUTPUT_NAME>.app ${MACDEPLOYQT_ARGS}
-    DEPENDS $<TARGET_FILE:main_ui>)
+      COMMENT "Ensuring Qt dependencies"
+      COMMAND ${MACDEPLOYQT_EXECUTABLE} ARGS ${CMAKE_CURRENT_BINARY_DIR}/\${CONFIGURATION}/$<TARGET_PROPERTY:main_ui,OUTPUT_NAME>.app ${MACDEPLOYQT_ARGS}
+      DEPENDS $<TARGET_FILE:main_ui>
+  )
   set_target_properties(main_ui PROPERTIES MACOSX_BUNDLE TRUE)
   install(TARGETS main_ui BUNDLE DESTINATION "./" COMPONENT "application")
   set(CPACK_PACKAGE_EXECUTABLES "veles.app" "VELES")
@@ -656,7 +656,7 @@ set(CPACK_PACKAGE_VENDOR "Codilime")
 set(CPACK_PACKAGE_NAME "veles")
 string(TIMESTAMP VERSION "%Y.%m")
 set(CPACK_PACKAGE_VERSION "${VERSION}")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VELES tool for binary data analysis")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Veles tool for binary data analysis")
 set(CPACK_MONOLITHIC_INSTALL)
 set(CPACK_STRIP_FILES false)
-INCLUDE(CPack)
+include(CPack)
