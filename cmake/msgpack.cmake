@@ -8,7 +8,8 @@ if(NOT MSGPACK_INCLUDE_PATH)
 
   add_custom_command(
       OUTPUT ${MSGPACK_EXTRACT_PATH}
-      COMMAND ${CMAKE_COMMAND} -E tar xzf ${MSGPACK_PATH})
+      COMMAND ${CMAKE_COMMAND} -E tar xzf ${MSGPACK_PATH}
+  )
   set(MSGPACK_INCLUDE_PATH "${MSGPACK_EXTRACT_PATH}/include")
   add_custom_target(msgpack-c DEPENDS ${MSGPACK_EXTRACT_PATH} ${SIX_LOC})
 else(NOT MSGPACK_INCLUDE_PATH)
