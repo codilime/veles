@@ -38,7 +38,7 @@ if(MINGW)
   # MinGW is not supported because of C++14 problems (and many others).
   message(FATAL_ERROR "MinGW is not supported, use MSVC on Windows")
 endif()
-set(CMAKE_CXX_STANDARD_REQUIRED 14) # Use c++14
+set(CMAKE_CXX_STANDARD_REQUIRED 14) # Use C++14
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 set(CMAKE_INSTALL_RPATH ".")
@@ -557,38 +557,19 @@ find_program(CLANG_FORMAT NAMES clang-format clang-format-4.0 clang-format-3.9 c
 if(CLANG_FORMAT)
   message(STATUS "Looking for clang-format - found")
   file(GLOB_RECURSE FORMAT_ALL_SOURCE_FILES src/*.cc include/*.h test/*.cc test/*.h)
-  string(LENGTH "${FORMAT_ALL_SOURCE_FILES}" FORMAT_ALL_SOURCE_FILES_LEN)
-  if(WIN32 AND FORMAT_ALL_SOURCE_FILES_LEN GREATER 8191)
-    # use multiple targets to overcome cmd 8191 length limit
-    add_custom_target(format)
-
-    set(FORMAT_INDEX 0)
-    foreach(FORMAT_SOURCE_FILE ${FORMAT_ALL_SOURCE_FILES})
-      set(FORMAT_TARGET_NAME "format-${FORMAT_INDEX}")
-      math(EXPR FORMAT_INDEX "${FORMAT_INDEX}+1")
-      add_custom_target(
-          ${FORMAT_TARGET_NAME}
-          COMMAND
-              ${CLANG_FORMAT}
-              -style=file
-              -sort-includes
-              -i
-              ${FORMAT_SOURCE_FILE}
-      )
-      add_dependencies(format ${FORMAT_TARGET_NAME})
-    endforeach()
-
-  else()
-    add_custom_target(
-      format
-      COMMAND
-        ${CLANG_FORMAT}
-        -style=file
-        -sort-includes
-        -i
-        ${FORMAT_ALL_SOURCE_FILES}
-    )
-  endif()
+  # On Windows, cmd.exe limits commands to 8192 characters.
+  # Please be *very* cautious when editing this code: when command length
+  # exceeds 8192 characters, the 8192th character is silently dropped and the
+  # rest is glued together (sic!).
+  # We pass arguments via a file to overcome the limit.
+  set(FORMAT_CMDLINE_FILE "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/clang-format-cmdline.txt")
+  file(WRITE ${FORMAT_CMDLINE_FILE} "-style=file\n")
+  file(APPEND ${FORMAT_CMDLINE_FILE} "-sort-includes\n")
+  file(APPEND ${FORMAT_CMDLINE_FILE} "-i\n")
+  foreach(FORMAT_SOURCE_FILE ${FORMAT_ALL_SOURCE_FILES})
+    file(APPEND ${FORMAT_CMDLINE_FILE} "${FORMAT_SOURCE_FILE}\n")
+  endforeach()
+  add_custom_target(format COMMAND ${CLANG_FORMAT} "\"@${FORMAT_CMDLINE_FILE}\"")
 else()
     message(STATUS "Looking for clang-format - not found")
     message(STATUS "  Build target 'format' will not be available.")
