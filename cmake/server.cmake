@@ -1,5 +1,5 @@
-set(SERVER_DIR ${CMAKE_CURRENT_BINARY_DIR}/veles-server)
-set(SERVER_OUTPUT_STARTUP_SCRIPT_FILE ${SERVER_DIR}/srv.py)
+set(SERVER_DIR "${CMAKE_CURRENT_BINARY_DIR}/veles-server")
+set(SERVER_OUTPUT_STARTUP_SCRIPT_FILE "${SERVER_DIR}/srv.py")
 
 add_custom_target(
     copy-server-files ALL
@@ -20,7 +20,7 @@ if(WIN32)
   else("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
     set(BASEPYEXE py.exe -3.6-32)
   endif("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
-  set(SERVER_PYTHON_DIR ${SERVER_DIR}/python)
+  set(SERVER_PYTHON_DIR "${SERVER_DIR}/python")
   set(SERVER_DIR_DESTINATION "/")
   file(TO_NATIVE_PATH ${SERVER_PYTHON_DIR} SERVER_PYTHON_DIR_NATIVE)
 
@@ -32,13 +32,13 @@ if(WIN32)
   endif(NOT EMBED_PYTHON_ARCHIVE_PATH)
 
   # assume that at least six is present in python/requirements.txt
-  set(SERVER_OUTPUT_REQUIRMENTS_FILE ${SERVER_PYTHON_DIR}/six.py)
-  set(SERVER_OUTPUT_EMBED_PYTHON_FILE ${SERVER_PYTHON_DIR}/python.exe)
-  set(SERVER_OUTPUT_VELES_LIB_FILE ${SERVER_PYTHON_DIR}/veles/__init__.py)
+  set(SERVER_OUTPUT_REQUIRMENTS_FILE "${SERVER_PYTHON_DIR}/six.py")
+  set(SERVER_OUTPUT_EMBED_PYTHON_FILE "${SERVER_PYTHON_DIR}/python.exe")
+  set(SERVER_OUTPUT_VELES_LIB_FILE "${SERVER_PYTHON_DIR}/veles/__init__.py")
 
   add_custom_command(
       OUTPUT ${SERVER_OUTPUT_REQUIRMENTS_FILE}
-      COMMAND ${BASEPYEXE} -m pip install -r ${CMAKE_CURRENT_BINARY_DIR}/python/requirements.txt -t ${SERVER_DIR}/python
+      COMMAND ${BASEPYEXE} -m pip install -r "${CMAKE_CURRENT_BINARY_DIR}/python/requirements.txt" -t ${SERVER_DIR}/python
       COMMENT "Installing veles python lib requirements"
   )
 
