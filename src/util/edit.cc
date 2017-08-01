@@ -188,8 +188,9 @@ data::BinData EditEngine::bytesValues(size_t offset, size_t size) const {
   return result;
 }
 
-data::BinData EditEngine::originalBytesValues(size_t offset, size_t size) const {
-  return original_data_->binData().data(offset, offset + size);
+data::BinData EditEngine::originalBytesValues(size_t offset,
+                                              size_t size) const {
+  return original_data_->binData().data(offset, size);
 }
 
 bool EditEngine::hasChanges() const { return !changes_.isEmpty(); }

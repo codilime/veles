@@ -767,9 +767,11 @@ void HexEdit::paintEvent(QPaintEvent* event) {
 
   auto end_row = std::min(startRow_ + rowsOnScreen_, rowsCount_);
   auto start_byte = startRow_ * bytesPerRow_;
-  auto size_to_paint = std::min(rowsOnScreen_ * bytesPerRow_, dataBytesCount_ - start_byte);
+  auto size_to_paint =
+      std::min(rowsOnScreen_ * bytesPerRow_, dataBytesCount_ - start_byte);
 
-  veles::data::BinData bytes_values = edit_engine_.bytesValues(start_byte, size_to_paint);
+  veles::data::BinData bytes_values =
+      edit_engine_.bytesValues(start_byte, size_to_paint);
 
   // Draw background.
   // This code will be optimized in another commit to reduce number of calls to
@@ -1101,10 +1103,9 @@ void HexEdit::copyToClipboard(util::encoders::IEncoder* enc) {
     }
   }
   auto selectedData =
-      dataModel_->binData().data(selectionStart(), selectionEnd());
+      dataModel_->binData().data(selectionStart(), selectionSize());
 
-  transferChanges(&selectedData, selectionStart(),
-                  selectionEnd() - selectionStart());
+  transferChanges(&selectedData, selectionStart(), selectionSize());
 
   QClipboard* clipboard = QApplication::clipboard();
   // TODO(mwk): convert encoders to use BinData.
@@ -1301,8 +1302,7 @@ void HexEdit::saveDataToFile(int byte_offset, int size, const QString& path) {
     size = dataBytesCount_ - byte_offset;
   }
 
-  auto data_to_save =
-      dataModel_->binData().data(byte_offset, byte_offset + size);
+  auto data_to_save = dataModel_->binData().data(byte_offset, size);
   transferChanges(&data_to_save, byte_offset, size);
 
   QFile file(path);

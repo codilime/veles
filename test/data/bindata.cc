@@ -330,7 +330,7 @@ TEST(BinData, AssignNonInline) {
 
 TEST(BinData, Data7) {
   BinData a(7, {1, 2, 3, 4, 5, 6});
-  BinData b = a.data(2, 5);
+  BinData b = a.data(2, 3);
   BinData c = a[5];
   EXPECT_EQ(b.width(), 7u);
   EXPECT_EQ(b.size(), 3u);
@@ -347,7 +347,7 @@ TEST(BinData, Data7) {
 TEST(BinData, Data23) {
   BinData a = BinData::fromRawData(
       23, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
-  BinData b = a.data(2, 4);
+  BinData b = a.data(2, 2);
   BinData c = a[1];
   EXPECT_EQ(b.width(), 23u);
   EXPECT_EQ(b.size(), 2u);

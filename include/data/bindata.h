@@ -166,18 +166,17 @@ class BinData {
     return d + el * octetsPerElement();
   }
 
-  /** Returns a subrange of data.  Both start and end are counted in elements
-      from start of the array.  start is included in the returned range, end
-      is not included.  The result has the same width as this instance.  */
-  BinData data(size_t start, size_t end) const {
-    assert(start <= end);
-    assert(end <= size_);
-    return BinData(width_, end - start, rawData(start));
+  /** Returns a subrange of data, starting from `offset`.  `offset` is counted
+   * in elements from start of the array.  `size` is counted in elements of the
+   * array.  The result has the same width as this instance.  */
+  BinData data(size_t offset, size_t size) const {
+    assert(offset + size <= size_);
+    return BinData(width_, size, rawData(offset));
   }
 
   /** Returns a single element of data, as a single-element BinData
       instance of the same width.  */
-  BinData operator[](size_t pos) const { return data(pos, pos + 1); }
+  BinData operator[](size_t pos) const { return data(pos, 1); }
 
   /** Returns a subrange of bits of a single element of data.  Bits are
       counted from LSB, 0-based.  Result is a single-element BinData
@@ -190,8 +189,8 @@ class BinData {
     return res;
   }
 
-  /** Create new bindata by contacting two other BinDatas, width of both
-     BinDatas must be the same. */
+  /** Create new bindata by contacting two other BinDatas. Both BinData objects
+   * must have the same width. */
   BinData operator+(const BinData& other) const {
     assert(width_ == other.width_);
     BinData res = BinData(width_, size_ + other.size_);
@@ -219,7 +218,7 @@ class BinData {
   uint64_t element64(size_t el = 0) const { return bits64(el, 0, width_); }
 
   /** Replaces a range of elements with the contents of another
-      BinData instance.  The widths of both BinDatas must match,
+      BinData instance.  Both BinData objects must have the same width,
       and size of the replaced range must be equal to the size
       of the other BinData.  Addressing is the same as in data()
       method.  */
@@ -264,8 +263,8 @@ class BinData {
   QString toString(size_t maxElements = 0);
 
   /** A helper function copying a range of bits from one arbitrarily-sized
-      little-endian element to another.  dst and src are pointers to the
-      start of the corresponding element's raw data, dst_bit and src_bit
+      little-endian element to another.  `dst` and `src` are pointers to the
+      start of the corresponding element's raw data, `dst_bit` and `src_bit`
       are starting bit indices.  */
   static void copyBits(uint8_t* dst, unsigned dst_bit, const uint8_t* src,
                        unsigned src_bit, unsigned num_bits);
