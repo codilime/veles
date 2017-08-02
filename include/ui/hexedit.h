@@ -211,9 +211,6 @@ class HexEdit : public QAbstractScrollArea {
   void parse(QAction* action);
   void resetCursor();
 
-  void transferChanges(data::BinData* bin_data, qint64 offset_shift = 0,
-                       qint64 max_bytes = -1);
-
  private slots:
   void copyToClipboard(util::encoders::IEncoder* enc = nullptr);
   void pasteFromClipboard(util::encoders::IDecoder* enc = nullptr);

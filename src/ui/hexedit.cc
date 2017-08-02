@@ -989,11 +989,6 @@ void HexEdit::setByteValue(qint64 pos, uint64_t byte_value) {
   setBytesValues(pos, data::BinData(bindata_width_, {byte_value}));
 }
 
-void HexEdit::transferChanges(data::BinData* bin_data, qint64 offset_shift,
-                              qint64 max_bytes) {
-  edit_engine_.applyChanges(bin_data, offset_shift, max_bytes);
-}
-
 void HexEdit::applyChanges() {
   while (edit_engine_.hasChanges()) {
     auto change = edit_engine_.popFirstChange();
@@ -1103,9 +1098,7 @@ void HexEdit::copyToClipboard(util::encoders::IEncoder* enc) {
     }
   }
   auto selectedData =
-      dataModel_->binData().data(selectionStart(), selectionSize());
-
-  transferChanges(&selectedData, selectionStart(), selectionSize());
+      edit_engine_.bytesValues(selectionStart(), selectionSize());
 
   QClipboard* clipboard = QApplication::clipboard();
   // TODO(mwk): convert encoders to use BinData.
@@ -1302,8 +1295,7 @@ void HexEdit::saveDataToFile(int byte_offset, int size, const QString& path) {
     size = dataBytesCount_ - byte_offset;
   }
 
-  auto data_to_save = dataModel_->binData().data(byte_offset, size);
-  transferChanges(&data_to_save, byte_offset, size);
+  auto data_to_save = edit_engine_.bytesValues(byte_offset, size);
 
   QFile file(path);
   if (!file.open(QIODevice::WriteOnly)) {
