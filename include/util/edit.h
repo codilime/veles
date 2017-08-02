@@ -42,17 +42,14 @@ class EditEngine {
   /** Undo last changeBytes and returns first byte changed by this operation */
   size_t undo();
 
-  void applyChanges(data::BinData* data, size_t offset = 0,
-                    int64_t max_bytes = -1) const;
+  bool hasChanges() const { return !changes_.isEmpty(); }
   QPair<size_t, data::BinData> popFirstChange();
+  void clear();
 
   uint64_t byteValue(size_t byte_pos) const;
   uint64_t originalByteValue(size_t byte_pos) const;
   data::BinData bytesValues(size_t offset, size_t size) const;
   data::BinData originalBytesValues(size_t offset, size_t size) const;
-  bool hasChanges() const;
-
-  void clear();
 
  private:
   const ui::FileBlobModel* original_data_;
@@ -64,7 +61,8 @@ class EditEngine {
 
   QMap<size_t, data::BinData>::const_iterator itFromPos(size_t pos) const;
   QMap<size_t, data::BinData> changesFromRange(size_t pos, size_t size) const;
-  void removeChanges(size_t pos, size_t size);
+  void applyChanges(data::BinData* data, size_t offset = 0,
+                    int64_t max_bytes = -1) const;
 };
 
 }  // namespace util

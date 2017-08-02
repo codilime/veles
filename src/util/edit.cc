@@ -109,23 +109,6 @@ size_t EditEngine::undo() {
   return range.first;
 }
 
-void EditEngine::applyChanges(data::BinData* bindata, size_t offset,
-                              int64_t max_bytes) const {
-  assert(bindata->width() == bindata_width_);
-  if (max_bytes == -1) {
-    max_bytes = bindata->size();
-  }
-
-  auto changes = changesFromRange(offset, max_bytes);
-  for (auto it = changes.begin(); it != changes.constEnd(); ++it) {
-    size_t pos = it.key();
-    auto data = it.value();
-    for (size_t i = 0; i < data.size(); ++i) {
-      bindata->setElement64(pos - offset + i, data.element64(i));
-    }
-  }
-}
-
 QPair<size_t, data::BinData> EditEngine::popFirstChange() {
   data::BinData bindata(bindata_width_, 0);
   size_t pos = 0;
@@ -143,26 +126,10 @@ QPair<size_t, data::BinData> EditEngine::popFirstChange() {
   return QPair<size_t, data::BinData>(pos, bindata);
 }
 
-QMap<size_t, data::BinData>::const_iterator EditEngine::itFromPos(
-    size_t byte_pos) const {
-  if (changes_.isEmpty()) {
-    return changes_.constEnd();
-  }
-  auto it = changes_.upperBound(byte_pos);
-
-  if (it == changes_.begin()) {
-    return changes_.constEnd();
-  }
-  --it;
-
-  size_t pos = it.key();
-  auto data = it.value();
-
-  if (pos + data.size() <= byte_pos) {
-    return changes_.constEnd();
-  }
-
-  return it;
+void EditEngine::clear() {
+  changes_.clear();
+  edit_stack_data_.clear();
+  edit_stack_.clear();
 }
 
 uint64_t EditEngine::byteValue(size_t byte_pos) const {
@@ -193,7 +160,27 @@ data::BinData EditEngine::originalBytesValues(size_t offset,
   return original_data_->binData().data(offset, size);
 }
 
-bool EditEngine::hasChanges() const { return !changes_.isEmpty(); }
+QMap<size_t, data::BinData>::const_iterator EditEngine::itFromPos(
+    size_t byte_pos) const {
+  if (changes_.isEmpty()) {
+    return changes_.constEnd();
+  }
+  auto it = changes_.upperBound(byte_pos);
+
+  if (it == changes_.begin()) {
+    return changes_.constEnd();
+  }
+  --it;
+
+  size_t pos = it.key();
+  auto data = it.value();
+
+  if (pos + data.size() <= byte_pos) {
+    return changes_.constEnd();
+  }
+
+  return it;
+}
 
 QMap<size_t, data::BinData> EditEngine::changesFromRange(size_t byte_pos,
                                                          size_t size) const {
@@ -241,10 +228,21 @@ QMap<size_t, data::BinData> EditEngine::changesFromRange(size_t byte_pos,
   return res;
 }
 
-void EditEngine::clear() {
-  changes_.clear();
-  edit_stack_data_.clear();
-  edit_stack_.clear();
+void EditEngine::applyChanges(data::BinData* bindata, size_t offset,
+                              int64_t max_bytes) const {
+  assert(bindata->width() == bindata_width_);
+  if (max_bytes == -1) {
+    max_bytes = bindata->size();
+  }
+
+  auto changes = changesFromRange(offset, max_bytes);
+  for (auto it = changes.begin(); it != changes.constEnd(); ++it) {
+    size_t pos = it.key();
+    auto data = it.value();
+    for (size_t i = 0; i < data.size(); ++i) {
+      bindata->setElement64(pos - offset + i, data.element64(i));
+    }
+  }
 }
 
 }  // namespace util
