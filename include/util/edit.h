@@ -29,7 +29,7 @@ namespace util {
 
 class EditEngine {
  public:
-  explicit EditEngine(const ui::FileBlobModel* original_data,
+  explicit EditEngine(ui::FileBlobModel* original_data,
                       int edit_stack_limit = 100)
       : original_data_(original_data),
         bindata_width_(original_data->binData().width()),
@@ -43,7 +43,7 @@ class EditEngine {
   size_t undo();
 
   bool hasChanges() const { return !changes_.isEmpty(); }
-  QPair<size_t, data::BinData> popFirstChange();
+  void applyChanges();
   void clear();
 
   uint64_t byteValue(size_t byte_pos) const;
@@ -52,7 +52,7 @@ class EditEngine {
   data::BinData originalBytesValues(size_t offset, size_t size) const;
 
  private:
-  const ui::FileBlobModel* original_data_;
+  ui::FileBlobModel* original_data_;
   uint32_t bindata_width_;
   int edit_stack_limit_;
   QList<data::BinData> edit_stack_data_;
@@ -61,8 +61,8 @@ class EditEngine {
 
   QMap<size_t, data::BinData>::const_iterator itFromPos(size_t pos) const;
   QMap<size_t, data::BinData> changesFromRange(size_t pos, size_t size) const;
-  void applyChanges(data::BinData* data, size_t offset = 0,
-                    int64_t max_bytes = -1) const;
+  void applyChangesOnBinData(data::BinData* data, size_t offset = 0,
+                             int64_t max_bytes = -1) const;
 };
 
 }  // namespace util

@@ -990,10 +990,7 @@ void HexEdit::setByteValue(qint64 pos, uint64_t byte_value) {
 }
 
 void HexEdit::applyChanges() {
-  while (edit_engine_.hasChanges()) {
-    auto change = edit_engine_.popFirstChange();
-    dataModel_->uploadNewData(change.second, change.first);
-  }
+  edit_engine_.applyChanges();
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
 }
 
