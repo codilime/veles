@@ -579,9 +579,7 @@ uint64_t HexEdit::originalByteValue(qint64 pos) const {
 }
 
 void HexEdit::setBytesValues(qint64 pos, const data::BinData& new_data) {
-  qint64 size = std::min<qint64>(new_data.size(), dataBytesCount_ - pos);
-
-  edit_engine_.changeBytes(pos, new_data, edit_engine_.bytesValues(pos, size));
+  edit_engine_.changeBytes(pos, new_data);
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
 }
 

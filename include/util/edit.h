@@ -36,7 +36,7 @@ class EditEngine {
         edit_stack_limit_(edit_stack_limit) {}
 
   void changeBytes(size_t pos, const data::BinData& bytes,
-                   const data::BinData& old_bytes, bool add_to_history = true);
+                   bool add_to_history = true);
 
   bool hasUndo() const { return !edit_stack_.isEmpty(); }
   /** Undo last changeBytes and returns first byte changed by this operation */
