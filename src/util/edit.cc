@@ -109,21 +109,11 @@ size_t EditEngine::undo() {
   return range.first;
 }
 
-QPair<size_t, data::BinData> EditEngine::popFirstChange() {
-  data::BinData bindata(bindata_width_, 0);
-  size_t pos = 0;
-
-  if (!changes_.isEmpty()) {
-    pos = changes_.firstKey();
-    auto first_chunk = changes_[pos];
-    bindata = data::BinData(bindata_width_, first_chunk.size());
-    for (size_t i = 0; i < first_chunk.size(); i++) {
-      bindata.setElement64(i, first_chunk.element64(i));
-    }
-    changes_.remove(pos);
+void EditEngine::applyChanges() {
+  for (auto it = changes_.cbegin(); it != changes_.cend(); ++it) {
+    original_data_->uploadNewData(it.value(), it.key());
   }
-
-  return QPair<size_t, data::BinData>(pos, bindata);
+  changes_.clear();
 }
 
 void EditEngine::clear() {
@@ -151,7 +141,7 @@ uint64_t EditEngine::originalByteValue(size_t byte_pos) const {
 
 data::BinData EditEngine::bytesValues(size_t offset, size_t size) const {
   data::BinData result = originalBytesValues(offset, size);
-  applyChanges(&result, offset, size);
+  applyChangesOnBinData(&result, offset, size);
   return result;
 }
 
@@ -228,8 +218,8 @@ QMap<size_t, data::BinData> EditEngine::changesFromRange(size_t byte_pos,
   return res;
 }
 
-void EditEngine::applyChanges(data::BinData* bindata, size_t offset,
-                              int64_t max_bytes) const {
+void EditEngine::applyChangesOnBinData(data::BinData* bindata, size_t offset,
+                                       int64_t max_bytes) const {
   assert(bindata->width() == bindata_width_);
   if (max_bytes == -1) {
     max_bytes = bindata->size();
