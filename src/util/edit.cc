@@ -21,12 +21,11 @@ namespace veles {
 namespace util {
 
 void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
-                             const data::BinData& old_bytes,
                              bool add_to_history) {
-  assert(bytes.width() == bindata_width_ &&
-         old_bytes.width() == bindata_width_);
+  assert(pos + bytes.size() <= original_data_->binData().size());
+
   if (add_to_history) {
-    edit_stack_data_.push_back(old_bytes);
+    edit_stack_data_.push_back(bytesValues(pos, bytes.size()));
     edit_stack_.push_back(QPair<size_t, size_t>(pos, bytes.size()));
     while (edit_stack_.size() > edit_stack_limit_) {
       edit_stack_data_.pop_front();
@@ -101,7 +100,7 @@ size_t EditEngine::undo() {
   auto range = edit_stack_.back();
   auto last_change = edit_stack_data_.back();
 
-  changeBytes(range.first, last_change, {}, false);
+  changeBytes(range.first, last_change, false);
 
   edit_stack_data_.pop_back();
   edit_stack_.pop_back();
