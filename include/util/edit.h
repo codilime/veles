@@ -16,6 +16,7 @@
  */
 #pragma once
 
+#include <memory>
 #include <stdlib.h>
 
 #include <QMap>
@@ -33,7 +34,9 @@ class EditEngine {
                       int edit_stack_limit = 100)
       : original_data_(original_data),
         bindata_width_(original_data->binData().width()),
-        edit_stack_limit_(edit_stack_limit) {}
+        edit_stack_limit_(edit_stack_limit) {
+    initAddressMapping();
+  }
 
   void changeBytes(size_t pos, const data::BinData& bytes,
                    bool add_to_history = true);
@@ -52,12 +55,27 @@ class EditEngine {
   data::BinData originalBytesValues(size_t offset, size_t size) const;
 
  private:
+  struct EditNode {
+    std::shared_ptr<data::BinData> fragment_;
+    size_t offset_;
+
+    explicit EditNode(const data::BinData& fragment, size_t offset)
+        : fragment_(std::make_shared<data::BinData>(fragment)),
+          offset_(offset) {}
+    explicit EditNode(size_t offset) : fragment_(nullptr), offset_(offset) {}
+  };
+
   ui::FileBlobModel* original_data_;
   uint32_t bindata_width_;
+
+  QMap<size_t, EditNode> address_mapping_;
+  QMap<size_t, data::BinData> changes_;
+
   int edit_stack_limit_;
   QList<data::BinData> edit_stack_data_;
   QList<QPair<size_t, size_t>> edit_stack_;
-  QMap<size_t, data::BinData> changes_;
+
+  void initAddressMapping();
 
   QMap<size_t, data::BinData>::const_iterator itFromPos(size_t pos) const;
   QMap<size_t, data::BinData> changesFromRange(size_t pos, size_t size) const;

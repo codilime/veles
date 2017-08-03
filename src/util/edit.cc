@@ -116,13 +116,14 @@ void EditEngine::applyChanges() {
 }
 
 void EditEngine::clear() {
+  initAddressMapping();
   changes_.clear();
   edit_stack_data_.clear();
   edit_stack_.clear();
 }
 
 uint64_t EditEngine::byteValue(size_t byte_pos) const {
-  const auto& it = itFromPos(byte_pos);
+  const auto it = itFromPos(byte_pos);
 
   if (it == changes_.constEnd()) {
     return originalByteValue(byte_pos);
@@ -147,6 +148,13 @@ data::BinData EditEngine::bytesValues(size_t offset, size_t size) const {
 data::BinData EditEngine::originalBytesValues(size_t offset,
                                               size_t size) const {
   return original_data_->binData().data(offset, size);
+}
+
+void EditEngine::initAddressMapping() {
+  address_mapping_.clear();
+  address_mapping_.insert(0, EditNode(0));
+  //  address_mapping_.insert(original_data_->binData().size(),
+  //                          EditNode(original_data_->binData().size()));
 }
 
 QMap<size_t, data::BinData>::const_iterator EditEngine::itFromPos(
