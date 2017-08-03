@@ -58,10 +58,12 @@ TrigramWidget::TrigramWidget(QWidget* parent)
       c_sph_(0),
       c_cyl_(0),
       c_pos_(0),
+      c_ort_(0),
       shape_(EVisualizationShape::CUBE),
       mode_(EVisualizationMode::TRIGRAM),
       brightness_slider_(nullptr),
-      is_playing_(true) {
+      is_playing_(true),
+      perspective_(true) {
   show_labels_ = util::settings::visualization::showCaptions();
   setBrightness(util::settings::visualization::brightness());
   use_brightness_heuristic_ = util::settings::visualization::autoBrightness();
@@ -191,6 +193,21 @@ void TrigramWidget::prepareOptions(QMainWindow* visualization_window) {
   captions_toolbar->addSeparator();
   captions_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
   visualization_window->addToolBar(captions_toolbar);
+
+  /////////////////////////////////////
+  // Perspective
+  QWidgetAction* perspective_widget_action = new QWidgetAction(this);
+  perspective_checkbox_ = new QCheckBox(tr("Perspective"));
+  perspective_checkbox_->setChecked(perspective_);
+  perspective_widget_action->setDefaultWidget(perspective_checkbox_);
+  connect(perspective_checkbox_, &QCheckBox::toggled,
+          [this](bool toggled) { perspective_ = toggled; });
+  QToolBar* perspective_toolbar = new QToolBar("Perspective", this);
+  perspective_toolbar->setMovable(false);
+  perspective_toolbar->addAction(perspective_widget_action);
+  perspective_toolbar->addSeparator();
+  perspective_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
+  visualization_window->addToolBar(perspective_toolbar);
 
   /////////////////////////////////////
   // Brightness
@@ -358,42 +375,21 @@ bool TrigramWidget::event(QEvent* event) {
   return QWidget::event(event);
 }
 
-void TrigramWidget::timerEvent(QTimerEvent*) {
-  if (shape_ == EVisualizationShape::CYLINDER) {
-    c_cyl_ += 0.01f;
-  } else {
-    c_cyl_ -= 0.01f;
+static void animateTo(float* thing, float target, float step) {
+  if (*thing < target) {
+    *thing += step;
+    if (*thing > target) *thing = target;
+  } else if (*thing > target) {
+    *thing -= step;
+    if (*thing < target) *thing = target;
   }
-  if (shape_ == EVisualizationShape::SPHERE) {
-    c_sph_ += 0.01f;
-  } else {
-    c_sph_ -= 0.01f;
-  }
-  if (c_cyl_ > 1) {
-    c_cyl_ = 1;
-  }
-  if (c_cyl_ < 0) {
-    c_cyl_ = 0;
-  }
-  if (c_sph_ > 1) {
-    c_sph_ = 1;
-  }
-  if (c_sph_ < 0) {
-    c_sph_ = 0;
-  }
+}
 
-  if (mode_ == EVisualizationMode::LAYERED_DIGRAM && c_pos_ < 1) {
-    c_pos_ += 0.01f;
-    if (c_pos_ > 1) {
-      c_pos_ = 1;
-    }
-  }
-  if (mode_ != EVisualizationMode::LAYERED_DIGRAM && c_pos_) {
-    c_pos_ -= 0.01f;
-    if (c_pos_ < 0) {
-      c_pos_ = 0;
-    }
-  }
+void TrigramWidget::timerEvent(QTimerEvent*) {
+  animateTo(&c_cyl_, shape_ == EVisualizationShape::CYLINDER, 0.01f);
+  animateTo(&c_sph_, shape_ == EVisualizationShape::SPHERE, 0.01f);
+  animateTo(&c_pos_, mode_ == EVisualizationMode::LAYERED_DIGRAM, 0.01f);
+  animateTo(&c_ort_, !perspective_, 0.02f);
   update();
 }
 
@@ -549,11 +545,7 @@ void TrigramWidget::paintGLImpl() {
   texture_->bind();
   vao_.bind();
 
-  QMatrix4x4 mp, m;
-  mp.setToIdentity();
-  float aspect_ratio = static_cast<float>(width_) / height_;
-  mp.perspective(vfovDeg(45.f, aspect_ratio), aspect_ratio, 0.01f, 100.0f);
-
+  QMatrix4x4 mp, mo, m;
   m.setToIdentity();
   float dt = static_cast<float>(time_.restart()) / 1000.f;
   if (current_manipulator_) {
@@ -563,12 +555,38 @@ void TrigramWidget::paintGLImpl() {
     m = current_manipulator_->transform();
   }
 
+  mp.setToIdentity();
+  mo.setToIdentity();
+  float aspect_ratio = static_cast<float>(width_) / height_;
+  mp.perspective(vfovDeg(45.f, aspect_ratio), aspect_ratio, 0.01f, 100.0f);
+  if (aspect_ratio < 1) {
+    mo.ortho(-1, 1, -1 / aspect_ratio, 1 / aspect_ratio, -100.0f, 10000.0f);
+  } else {
+    mo.ortho(-aspect_ratio, aspect_ratio, -1, 1, -100.0f, 10000.0f);
+  }
+  // Extract the translation-by-z component of the modelview matrix and use it
+  // to get a scale factor for the orthogonal projection (since it would
+  // otherwise always be the same size on screen).
+  float tz = m(2, 3);
+  // If tz happens to be positive or 0 (ie. camera is at or past cube center),
+  // we'd get a negative scale factor.  Cap it instead.
+  tz = std::min(tz, -0.001f);
+  // This factor results in the cube being approximately the same size in both
+  // orthogonal and perspective projections -- the plane containing the cube
+  // center is the same size on screen.
+  mo.scale(-2.5f / tz);
+  // The * 4 fudge factor for ortho projection doesn't affect the final result
+  // (since it uniformly scales w as well as x, y, z), but improves
+  // the animation between ortho and perspective.
+  mp = mp * (1 - c_ort_) + mo * c_ort_ * 4;
+  QMatrix4x4 mvp = mp * m;
+
   int loc_sz = program_.uniformLocation("sz");
   program_.setUniformValue("tx", 0);
   program_.setUniformValue("c_cyl", c_cyl_);
   program_.setUniformValue("c_sph", c_sph_);
   program_.setUniformValue("c_pos", c_pos_);
-  program_.setUniformValue("xfrm", mp * m);
+  program_.setUniformValue("xfrm", mvp);
   GLfloat c_brightness = brightness_ * brightness_ * brightness_;
   c_brightness /= getDataSize();
   program_.setUniformValue("c_brightness", c_brightness);
@@ -580,7 +598,6 @@ void TrigramWidget::paintGLImpl() {
   program_.release();
 
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  QMatrix4x4 mvp = mp * m;
   paintRF(mvp);
   glDepthFunc(GL_LESS);
   if (show_labels_) {
@@ -798,7 +815,7 @@ void TrigramWidget::initRF() {
   rf_vb_.create();
   rf_vb_.setUsagePattern(QOpenGLBuffer::StaticDraw);
   rf_vb_.bind();
-  rf_vb_.allocate(rf_vert, 36 * sizeof(float));
+  rf_vb_.allocate(rf_vert, sizeof rf_vert);
 
   rf_program_.setAttributeBuffer(rf_program_.attributeLocation("vert"),
                                  GL_FLOAT, 0, 3, 6 * sizeof(float));

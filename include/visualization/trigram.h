@@ -175,7 +175,7 @@ class TrigramWidget : public VisualizationWidget {
   QOpenGLBuffer* databuf_;
 
   QOpenGLVertexArrayObject vao_;
-  float c_sph_, c_cyl_, c_pos_;
+  float c_sph_, c_cyl_, c_pos_, c_ort_;
   int width_, height_;
   EVisualizationShape shape_;
   EVisualizationMode mode_;
@@ -188,6 +188,8 @@ class TrigramWidget : public VisualizationWidget {
   bool is_playing_, use_brightness_heuristic_;
   QCheckBox* show_labels_and_rf_checkbox_;
   bool show_labels_;
+  QCheckBox* perspective_checkbox_;
+  bool perspective_;
 
   QList<Manipulator*> manipulators_;
   Manipulator* current_manipulator_;
