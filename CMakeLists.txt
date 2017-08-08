@@ -5,15 +5,15 @@ if(DEFINED CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of
 build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug
 Release RelWithDebInfo MinSizeRel.")
-else(DEFINED CMAKE_BUILD_TYPE)
+else()
    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build,
 options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release
 RelWithDebInfo MinSizeRel.")
-endif(DEFINED CMAKE_BUILD_TYPE)
+endif()
 
 if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
-endif(APPLE)
+endif()
 
 project(VELES C CXX)
 if(WIN32)
@@ -21,9 +21,9 @@ if(WIN32)
     message(FATAL_ERROR "Windows 32-bit is not supported due to performance problems in msgpack")
   endif()
   cmake_minimum_required(VERSION 3.7.0)
-else(WIN32)
+else()
   cmake_minimum_required(VERSION 3.1.0)
-endif(WIN32)
+endif()
 
 include("cmake/googletest.cmake")
 include("cmake/qt.cmake")
@@ -58,7 +58,7 @@ if(MSVC)
 endif()
 if(APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-endif(APPLE)
+endif()
 
 if(WIN32)
   set(WINDOWS_APPLICATION_OUT_DIRECTORY "Veles UI")
@@ -78,7 +78,7 @@ if(WIN32)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${WINDOWS_APPLICATION_OUT_DIRECTORY})
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO ${WINDOWS_APPLICATION_OUT_DIRECTORY})
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL ${WINDOWS_APPLICATION_OUT_DIRECTORY})
-endif(WIN32)
+endif()
 
 # Sources
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
@@ -329,19 +329,19 @@ qt5_wrap_ui(FORMS
 
 if(WIN32)
   set(ICONS ${CMAKE_SOURCE_DIR}/resources/icons/veles.rc)
-endif(WIN32)
+endif()
 
 if(APPLE)
   set(ICONS ${CMAKE_SOURCE_DIR}/resources/icons/veles.icns)
   set(MACOSX_BUNDLE_ICON_FILE veles.icns)
   set_source_files_properties(${ICONS} PROPERTIES
       MACOSX_PACKAGE_LOCATION Resources)
-endif(APPLE)
+endif()
 
 if(WIN32)
   # Don't create console window.
   set(GUI_TYPE WIN32)
-endif(WIN32)
+endif()
 
 # Exe: Main executable
 add_executable(main_ui
@@ -459,9 +459,9 @@ if(GTEST_FOUND AND GMOCK_FOUND)
       COMMAND $<TARGET_FILE:run_test> "--gtest_output=xml:results.xml"
       DEPENDS $<TARGET_FILE:run_test>
   )
-else(GTEST_FOUND AND GMOCK_FOUND)
+else()
   message("gtest and/or gmock not found - tests won't be built")
-endif(GTEST_FOUND AND GMOCK_FOUND)
+endif()
 
 
 target_link_libraries(main_ui veles_base veles_db veles_network veles_client veles_visualization Qt5::Widgets parser)
@@ -502,7 +502,7 @@ if(CLANG_TIDY)
         list(REMOVE_ITEM LINT_INC_DIRS ${LINT_INCLUDE_FILE})
       endif()
     endforeach()
-  endif(APPLE)
+  endif()
 
   # Remove duplicates.
   list(REMOVE_DUPLICATES LINT_INC_DIRS)
@@ -605,7 +605,7 @@ if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
 
   install(FILES "${PROJECT_SOURCE_DIR}/resources/install/veles.desktop" DESTINATION share/applications/ COMPONENT "application")
   install(FILES "${PROJECT_SOURCE_DIR}/resources/icons/veles.ico" DESTINATION share/veles/ COMPONENT "application")
-endif(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
+endif()
 
 # Windows
 if(WIN32)
@@ -650,7 +650,7 @@ if(WIN32)
   set(CPACK_PACKAGE_EXECUTABLES "veles" "VELES")
   set(CPACK_CREATE_DESKTOP_LINKS "veles")
   set(CPACK_NSIS_MODIFY_PATH ON)
-endif(WIN32)
+endif()
 
 # Apple
 if(APPLE)
@@ -670,7 +670,7 @@ if(APPLE)
   set_target_properties(main_ui PROPERTIES MACOSX_BUNDLE TRUE)
   install(TARGETS main_ui BUNDLE DESTINATION "./" COMPONENT "application")
   set(CPACK_PACKAGE_EXECUTABLES "veles.app" "VELES")
-endif(APPLE)
+endif()
 
 set(CPACK_COMPONENT_APPLICATION_DISPLAY_NAME "Veles UI application")
 set(CPACK_COMPONENT_SERVER_DISPLAY_NAME "Veles server")

@@ -38,7 +38,7 @@ if(WIN32)
           COMMENT "Building OpenSSL"
           VERBATIM
       )
-    else("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+    else()
       add_custom_command(
           OUTPUT "${OPENSSL_DIR}/crypto/buildinf.h"
           COMMAND ${PERL_EXECUTABLE} Configure VC-WIN32
@@ -64,15 +64,15 @@ if(WIN32)
           COMMENT "Building OpenSSL"
           VERBATIM
       )
-    endif("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+    endif()
     set(OPENSSL_DLL_DIR "${OPENSSL_DIR}/out32dll")
     add_custom_target(openssl
         DEPENDS "${OPENSSL_DIR}/out32dll/libeay32.dll"
                 "${OPENSSL_DIR}/out32dll/ssleay32.dll"
     )
-  else(NOT OPENSSL_DLL_DIR)
+  else()
     add_custom_target(openssl)
-  endif(NOT OPENSSL_DLL_DIR)
-else(WIN32)
+  endif()
+else()
   add_custom_target(openssl)
-endif(WIN32)
+endif()

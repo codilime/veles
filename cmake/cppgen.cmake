@@ -5,11 +5,11 @@ if(WIN32)
   set(BASEPYEXE py.exe -3)
   set(PYEXE "${VENV_DIR}/Scripts/python.exe")
   set(SIX_LOC "${VENV_DIR}/Lib/site-packages/six.py")
-else(WIN32)
+else()
   set(BASEPYEXE python3)
   set(PYEXE "${VENV_DIR}/bin/python3")
   set(SIX_LOC "${VENV_DIR}/lib/site-packages/six.py")
-endif(WIN32)
+endif()
 
 add_custom_command(
     OUTPUT ${PYEXE}

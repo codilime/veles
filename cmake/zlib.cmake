@@ -4,7 +4,7 @@ find_package(ZLIB)
 if(ZLIB_FOUND)
   # Only to satisfy dependencies
   add_custom_target(zlib)
-else(ZLIB_FOUND)
+else()
   include(ExternalProject)
   # An external project for zlib
   set(zlib_source  "${CMAKE_CURRENT_BINARY_DIR}/zlib-src")
@@ -42,10 +42,10 @@ else(ZLIB_FOUND)
 
   if(MSVC)
     set(ZLIB_LIBRARIES "${zlib_install}/lib/zlibstatic$<$<CONFIG:Debug>:d>.lib")
-  endif(MSVC)
+  endif()
   if(UNIX)
     set(ZLIB_LIBRARIES "${zlib_install}/lib/libz.a")
-  endif(UNIX)
-endif(ZLIB_FOUND)
+  endif()
+endif()
 
 include_directories(${ZLIB_INCLUDE_DIRS})

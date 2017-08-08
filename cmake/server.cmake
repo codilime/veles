@@ -17,9 +17,9 @@ add_custom_command(
 if(WIN32)
   if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
     set(BASEPYEXE py.exe -3)
-  else("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+  else()
     set(BASEPYEXE py.exe -3.6-32)
-  endif("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+  endif()
   set(SERVER_PYTHON_DIR "${SERVER_DIR}/python")
   set(SERVER_DIR_DESTINATION "/")
   file(TO_NATIVE_PATH ${SERVER_PYTHON_DIR} SERVER_PYTHON_DIR_NATIVE)
@@ -29,7 +29,7 @@ if(WIN32)
     set(EMBED_PYTHON_ARCHIVE_PATH "${CMAKE_CURRENT_BINARY_DIR}/python-3.6.1-embed-win32.zip")
     set(EMBED_PYTHON_SHA256 "1b1adada30ccaf8b001d83f3008408df6bfc98beb2c5e42cd341cbe484386a50")
     file(DOWNLOAD ${EMBED_PYTHON_URL} ${EMBED_PYTHON_ARCHIVE_PATH} EXPECTED_HASH SHA256=${EMBED_PYTHON_SHA256})
-  endif(NOT EMBED_PYTHON_ARCHIVE_PATH)
+  endif()
 
   # assume that at least six is present in python/requirements.txt
   set(SERVER_OUTPUT_REQUIRMENTS_FILE "${SERVER_PYTHON_DIR}/six.py")
@@ -63,7 +63,7 @@ if(WIN32)
       DEPENDS ${SERVER_OUTPUT_VELES_LIB_FILE}
       DEPENDS ${SERVER_OUTPUT_STARTUP_SCRIPT_FILE}
   )
-endif(WIN32)
+endif()
 
 if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
   set(BASEPYEXE python3)
@@ -98,9 +98,9 @@ if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
       DEPENDS ${SERVER_OUTPUT_STARTUP_SCRIPT_FILE}
       DEPENDS ${SERVER_OUTPUT_VELES_LIB_FILE}
   )
-endif(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
+endif()
 
-if (CMAKE_HOST_APPLE)
+if(CMAKE_HOST_APPLE)
   set(BASEPYEXE python3)
   set(SERVER_DIR_DESTINATION "veles.app/Contents/Resources/")
   set(SERVER_PYTHON_VENV_DIR ${SERVER_DIR}/venv)
@@ -136,7 +136,7 @@ if (CMAKE_HOST_APPLE)
       DEPENDS ${SERVER_OUTPUT_VELES_LIB_FILE}
       DEPENDS ${SERVER_OUTPUT_VELES_LIB_REQUIRMENTS}
   )
-endif(CMAKE_HOST_APPLE)
+endif()
 
 # Prepare server environment only in `install` target.
 install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_CURRENT_BINARY_DIR}\" --target server)")
