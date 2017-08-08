@@ -473,6 +473,16 @@ message(STATUS "Looking for clang-tidy")
 find_program(CLANG_TIDY NAMES clang-tidy clang-tidy-4.0 clang-tidy-3.9 clang-tidy-3.8 clang-tidy-3.7 clang-tidy-3.6 clang-tidy-3.5 HINTS ${CLANG_TOOLS_PATH})
 
 if(CLANG_TIDY)
+  # Generate 'lint' target.
+  # Currently we have to run clang-tidy by hand. Please fix this code if you
+  # know a better solution.
+  # Other unsuitable alternatives:
+  #   - Use LLVM/share/clang/run-clang-tidy.py: We can't do it because it needs
+  #     compile_commands.json file, which CMake can generate only for Make and
+  #     ninja.
+  #   - Use CMAKE_CXX_CLANG_TIDY: Requires CMake 3.6+ which isn't available on
+  #     current Ubuntu LTS. This flag also seemed to have no effect on Windows.
+
   message(STATUS "Looking for clang-tidy - found")
   file(GLOB_RECURSE LINT_ALL_SOURCE_FILES "${SRC_DIR}/*.cc" "${TEST_DIR}/*.cc")
 
