@@ -486,6 +486,16 @@ if(CLANG_TIDY)
   message(STATUS "Looking for clang-tidy - found")
   file(GLOB_RECURSE LINT_ALL_SOURCE_FILES "${SRC_DIR}/*.cc" "${TEST_DIR}/*.cc")
 
+  # Don't lint kaitai-generated code, it contains too many issues.
+  # TODO(mkow): Use FILTER after moving to CMake >= 3.6 (not supported in
+  # Ubuntu 16.04 LTS).
+  # list(FILTER LINT_ALL_SOURCE_FILES EXCLUDE REGEX ".*/kaitai/.*")
+  foreach(LINT_SRC_FILE ${LINT_ALL_SOURCE_FILES})
+    if(LINT_SRC_FILE MATCHES ".*/kaitai/.*")
+      list(REMOVE_ITEM LINT_ALL_SOURCE_FILES ${LINT_SRC_FILE})
+    endif()
+  endforeach()
+
   # Get includes from the main file.
   get_property(LINT_INC_DIRS TARGET main_ui PROPERTY INCLUDE_DIRECTORIES)
 
@@ -495,8 +505,10 @@ if(CLANG_TIDY)
   # Join the lists of the includes.
   list(APPEND LINT_INC_DIRS ${LINT_VELES_NETWORK_DIRS})
 
-  # macOS hack - remove surplus include directories
   if(APPLE)
+    # macOS hack - remove surplus include directories
+    # TODO(mkow): Use FILTER (requires CMake >= 3.6):
+    # list(FILTER LINT_INC_DIRS EXCLUDE REGEX "Qt[^/]+\\.framework$")
     foreach(LINT_INCLUDE_FILE ${LINT_INC_DIRS})
       if(LINT_INCLUDE_FILE MATCHES "Qt[^/]+\\.framework$")
         list(REMOVE_ITEM LINT_INC_DIRS ${LINT_INCLUDE_FILE})
@@ -538,13 +550,13 @@ if(CLANG_TIDY)
   # Create intermediary targets to allow parallel checks with -jN.
   set(LINT_INDEX 0)
   foreach(LINT_SOURCE_FILE ${LINT_ALL_SOURCE_FILES})
-    set(LINT_TARGET_NAME "lint-${LINT_INDEX}")
+    set(LINT_TARGET_NAME "__lint-${LINT_INDEX}")
     math(EXPR LINT_INDEX "${LINT_INDEX}+1")
     add_custom_target(
         ${LINT_TARGET_NAME}
         COMMAND
             ${CLANG_TIDY}
-            -header-filter=${INCLUDE_DIR}
+            -header-filter=${INCLUDE_DIR}  # regex
             ${LINT_SOURCE_FILE}
             --
             ${LINT_CXX_FLAGS}
