@@ -109,6 +109,23 @@ size_t EditEngine::undo() {
 }
 
 void EditEngine::applyChanges() {
+  for (auto it = address_mapping_.cbegin(); it != address_mapping_.cend();
+       ++it) {
+    if (it->fragment_ != nullptr) {
+      auto next_it = it;
+      ++next_it;
+      assert(next_it != address_mapping_.cend());
+
+      size_t size = next_it.key() - it.key();
+      assert(it->offset_ + size <= it->fragment_->size());
+      // size_t original_offset = next_it->offset_;
+
+      original_data_->uploadNewData(it->fragment_->data(it->offset_, size),
+                                    it.key());
+    }
+  }
+  initAddressMapping();
+
   for (auto it = changes_.cbegin(); it != changes_.cend(); ++it) {
     original_data_->uploadNewData(it.value(), it.key());
   }
