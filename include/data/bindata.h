@@ -195,7 +195,7 @@ class BinData {
     assert(width_ == other.width_);
     BinData res = BinData(width_, size_ + other.size_);
     res.setData(0, size_, *this);
-    res.setData(size_, size_ + other.size_, other);
+    res.setData(size_, other.size_, other);
     return res;
   }
 
@@ -222,12 +222,11 @@ class BinData {
       and size of the replaced range must be equal to the size
       of the other BinData.  Addressing is the same as in data()
       method.  */
-  void setData(size_t start, size_t end, const BinData& other) {
-    assert(start <= end);
-    assert(end <= size_);
-    assert(other.size_ == end - start);
+  void setData(size_t offset, size_t size, const BinData& other) {
+    assert(offset + size <= size_);
+    assert(size == other.size_);
     assert(width_ == other.width_);
-    memcpy(rawData(start), other.rawData(0), other.octets());
+    memcpy(rawData(offset), other.rawData(0), other.octets());
   }
 
   /** Replaces a range of bits of a single element with the contents

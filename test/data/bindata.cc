@@ -370,7 +370,7 @@ TEST(BinData, SetData23) {
   BinData a = BinData::fromRawData(
       23, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
   BinData b = BinData::fromRawData(23, {101, 102, 103, 104, 105, 106});
-  a.setData(2, 4, b);
+  a.setData(2, 2, b);
   EXPECT_EQ(a.rawData()[5], 6);
   EXPECT_EQ(a.rawData()[6], 101);
   EXPECT_EQ(a.rawData()[7], 102);
