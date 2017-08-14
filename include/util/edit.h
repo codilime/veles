@@ -45,12 +45,12 @@ class EditEngine {
   /** Undo last changeBytes and returns first byte changed by this operation */
   size_t undo();
 
-  bool hasChanges() const { return !changes_.isEmpty(); }
+  bool hasChanges() const { return has_changes_; }
   void applyChanges();
   void clear();
 
-  uint64_t byteValue(size_t byte_pos) const;
-  uint64_t originalByteValue(size_t byte_pos) const;
+  uint64_t byteValue(size_t pos) const;
+  uint64_t originalByteValue(size_t pos) const;
   data::BinData bytesValues(size_t offset, size_t size) const;
   data::BinData originalBytesValues(size_t offset, size_t size) const;
 
@@ -59,21 +59,25 @@ class EditEngine {
     std::shared_ptr<data::BinData> fragment_;
     size_t offset_;
 
-    explicit EditNode(const data::BinData& fragment, size_t offset)
-        : fragment_(std::make_shared<data::BinData>(fragment)),
-          offset_(offset) {}
-    explicit EditNode(size_t offset) : fragment_(nullptr), offset_(offset) {}
+    explicit EditNode(std::shared_ptr<data::BinData> fragment, size_t offset)
+        : fragment_(fragment), offset_(offset) {}
+    explicit EditNode(const data::BinData& bindata)
+        : fragment_(std::make_shared<data::BinData>(bindata)), offset_(0) {}
   };
 
   ui::FileBlobModel* original_data_;
   uint32_t bindata_width_;
 
   QMap<size_t, EditNode> address_mapping_;
+  bool has_changes_;
   QMap<size_t, data::BinData> changes_;
 
   int edit_stack_limit_;
   QList<data::BinData> edit_stack_data_;
   QList<QPair<size_t, size_t>> edit_stack_;
+
+  data::BinData getDataFromEditNode(const EditNode& edit_node, size_t offset,
+                                    size_t size) const;
 
   void initAddressMapping();
 

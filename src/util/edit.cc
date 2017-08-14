@@ -22,6 +22,9 @@ namespace util {
 
 void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
                              bool add_to_history) {
+  if (bytes.size() == 0) {
+    return;
+  }
   assert(pos + bytes.size() <= original_data_->binData().size());
 
   if (add_to_history) {
@@ -33,6 +36,46 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
     }
   }
 
+  has_changes_ = true;
+
+  size_t end_pos = pos + bytes.size();
+  auto next_it = address_mapping_.upperBound(pos);
+  assert(next_it != address_mapping_.cbegin());
+  auto it = next_it;
+  --it;
+
+  if (next_it == address_mapping_.cend() || end_pos <= next_it.key()) {
+    if (it->fragment_ == nullptr) {
+      if (address_mapping_.find(end_pos) == address_mapping_.cend()) {
+        address_mapping_.insert(
+            end_pos, EditNode(nullptr, it->offset_ + (end_pos - it.key())));
+      }
+      address_mapping_.insert(pos, EditNode(bytes));
+      // this node can overwrite `*it` and that's OK
+    } else {
+      it->fragment_->setData(it->offset_ + (pos - it.key()), bytes.size(),
+                             bytes);
+    }
+  } else {
+    it = next_it;
+    ++next_it;
+    while (next_it != address_mapping_.cend() && next_it.key() < end_pos) {
+      address_mapping_.erase(it);
+      it = next_it;
+      ++next_it;
+    }
+
+    EditNode last_modified_node = it.value();
+    last_modified_node.offset_ += end_pos - it.key();
+    address_mapping_.erase(it);
+
+    if (address_mapping_.find(end_pos) == address_mapping_.cend()) {
+      address_mapping_.insert(end_pos, last_modified_node);
+    }
+    address_mapping_.insert(pos, EditNode(bytes));
+    // it can overwrite the first overlapping node and that's OK
+  }
+/*
   QVector<size_t> overlapping;
   auto it = changes_.lowerBound(pos);
   if (!changes_.empty() && it != changes_.begin()) {
@@ -90,6 +133,7 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
   } else {
     changes_[new_pos] = bytes;
   }
+*/
 }
 
 size_t EditEngine::undo() {
@@ -139,9 +183,19 @@ void EditEngine::clear() {
   edit_stack_.clear();
 }
 
-uint64_t EditEngine::byteValue(size_t byte_pos) const {
-  const auto it = itFromPos(byte_pos);
+uint64_t EditEngine::byteValue(size_t pos) const {
+  auto next_it = address_mapping_.upperBound(pos);
+  assert(next_it != address_mapping_.cbegin());
+  auto it = next_it;
+  --it;
 
+  if (it->fragment_ == nullptr) {
+    return original_data_->binData().element64(it->offset_ + (pos - it.key()));
+  } else {
+    return it->fragment_->element64(it->offset_ + (pos - it.key()));
+  }
+
+/*
   if (it == changes_.constEnd()) {
     return originalByteValue(byte_pos);
   }
@@ -150,28 +204,71 @@ uint64_t EditEngine::byteValue(size_t byte_pos) const {
   const auto& data = it.value();
 
   return data.element64(static_cast<int>(byte_pos - pos));
+*/
 }
 
-uint64_t EditEngine::originalByteValue(size_t byte_pos) const {
-  return original_data_->binData()[byte_pos].element64();
+uint64_t EditEngine::originalByteValue(size_t pos) const {
+  return original_data_->binData().element64(pos);
 }
 
-data::BinData EditEngine::bytesValues(size_t offset, size_t size) const {
-  data::BinData result = originalBytesValues(offset, size);
-  applyChangesOnBinData(&result, offset, size);
+data::BinData EditEngine::bytesValues(size_t pos, size_t size) const {
+  data::BinData result = data::BinData(original_data_->binData().width(), size);
+
+  size_t end_pos = pos + size;
+  auto next_it = address_mapping_.upperBound(pos);
+  assert(next_it != address_mapping_.cbegin());
+  auto it = next_it;
+  --it;
+
+  if (next_it == address_mapping_.cend() || end_pos <= next_it.key()) {
+    result.setData(0, size,
+                   getDataFromEditNode(it.value(), pos - it.key(), size));
+  } else {
+    size_t size_to_write = next_it.key() - pos;
+    result.setData(
+        0, size_to_write,
+        getDataFromEditNode(it.value(), pos - it.key(), size_to_write));
+    size_t bytes_written = size_to_write;
+
+    it = next_it;
+    ++next_it;
+    while (next_it != address_mapping_.cend() && next_it.key() < end_pos) {
+      size_to_write = next_it.key() - it.key();
+      result.setData(bytes_written, size_to_write,
+                     getDataFromEditNode(it.value(), 0, size_to_write));
+      bytes_written += size_to_write;
+      it = next_it;
+      ++next_it;
+    }
+
+    size_to_write = size - bytes_written;
+    result.setData(bytes_written, size_to_write,
+                   getDataFromEditNode(it.value(), 0, size_to_write));
+  }
+
   return result;
 }
 
-data::BinData EditEngine::originalBytesValues(size_t offset,
+data::BinData EditEngine::originalBytesValues(size_t pos, size_t size) const {
+  return original_data_->binData().data(pos, size);
+}
+
+data::BinData EditEngine::getDataFromEditNode(const EditNode& edit_node,
+                                              size_t offset,
                                               size_t size) const {
-  return original_data_->binData().data(offset, size);
+  if (edit_node.fragment_ == nullptr) {
+    return original_data_->binData().data(edit_node.offset_ + offset, size);
+  } else {
+    return edit_node.fragment_->data(edit_node.offset_ + offset, size);
+  }
 }
 
 void EditEngine::initAddressMapping() {
   address_mapping_.clear();
-  address_mapping_.insert(0, EditNode(0));
+  address_mapping_.insert(0, EditNode(nullptr, 0));
   //  address_mapping_.insert(original_data_->binData().size(),
   //                          EditNode(original_data_->binData().size()));
+  has_changes_ = false;
 }
 
 QMap<size_t, data::BinData>::const_iterator EditEngine::itFromPos(
