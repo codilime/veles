@@ -33,7 +33,6 @@ class EditEngine {
   explicit EditEngine(ui::FileBlobModel* original_data,
                       int edit_stack_limit = 100)
       : original_data_(original_data),
-        bindata_width_(original_data->binData().width()),
         edit_stack_limit_(edit_stack_limit) {
     initAddressMapping();
   }
@@ -66,11 +65,8 @@ class EditEngine {
   };
 
   ui::FileBlobModel* original_data_;
-  uint32_t bindata_width_;
-
   QMap<size_t, EditNode> address_mapping_;
   bool has_changes_;
-  QMap<size_t, data::BinData> changes_;
 
   int edit_stack_limit_;
   QList<data::BinData> edit_stack_data_;
@@ -80,11 +76,6 @@ class EditEngine {
                                     size_t size) const;
 
   void initAddressMapping();
-
-  QMap<size_t, data::BinData>::const_iterator itFromPos(size_t pos) const;
-  QMap<size_t, data::BinData> changesFromRange(size_t pos, size_t size) const;
-  void applyChangesOnBinData(data::BinData* data, size_t offset = 0,
-                             int64_t max_bytes = -1) const;
 };
 
 }  // namespace util

@@ -75,65 +75,6 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
     address_mapping_.insert(pos, EditNode(bytes));
     // it can overwrite the first overlapping node and that's OK
   }
-/*
-  QVector<size_t> overlapping;
-  auto it = changes_.lowerBound(pos);
-  if (!changes_.empty() && it != changes_.begin()) {
-    --it;
-  }
-  while (it != changes_.constEnd() && it.key() <= pos + bytes.size()) {
-    if (it.key() + it.value().size() < pos) {
-      ++it;
-      continue;
-    }
-
-    overlapping.append(it.key());
-    ++it;
-  }
-
-  size_t new_pos = pos;
-  if (!overlapping.isEmpty()) {
-    size_t first_pos = overlapping.first();
-    size_t last_pos = overlapping.last();
-    auto first_chunk = changes_[first_pos];
-    auto last_chunk = changes_[last_pos];
-    size_t last_size = last_chunk.size();
-    size_t size = bytes.size();
-    size += pos > first_pos ? pos - first_pos : 0;
-    size += last_pos + last_size > pos + bytes.size()
-                ? last_pos + last_size - (pos + bytes.size())
-                : 0;
-    data::BinData new_bytes(bindata_width_, size);
-    size_t count = 0;
-
-    if (new_pos > first_pos) {
-      new_pos = first_pos;
-    }
-
-    for (size_t i = first_pos; i < pos; ++i, ++count) {
-      new_bytes.setElement64(
-          count, first_chunk.element64(static_cast<int>(i - first_pos)));
-    }
-
-    for (size_t i = 0; i < bytes.size(); ++i, ++count) {
-      new_bytes.setElement64(count, bytes.element64(i));
-    }
-
-    for (size_t i = pos + bytes.size(); i < last_pos + last_size;
-         ++i, ++count) {
-      new_bytes.setElement64(
-          count, last_chunk.element64(static_cast<int>(i - last_pos)));
-    }
-
-    for (auto pos : overlapping) {
-      changes_.remove(pos);
-    }
-
-    changes_[new_pos] = new_bytes;
-  } else {
-    changes_[new_pos] = bytes;
-  }
-*/
 }
 
 size_t EditEngine::undo() {
@@ -162,23 +103,16 @@ void EditEngine::applyChanges() {
 
       size_t size = next_it.key() - it.key();
       assert(it->offset_ + size <= it->fragment_->size());
-      // size_t original_offset = next_it->offset_;
 
       original_data_->uploadNewData(it->fragment_->data(it->offset_, size),
                                     it.key());
     }
   }
   initAddressMapping();
-
-  for (auto it = changes_.cbegin(); it != changes_.cend(); ++it) {
-    original_data_->uploadNewData(it.value(), it.key());
-  }
-  changes_.clear();
 }
 
 void EditEngine::clear() {
   initAddressMapping();
-  changes_.clear();
   edit_stack_data_.clear();
   edit_stack_.clear();
 }
@@ -194,17 +128,6 @@ uint64_t EditEngine::byteValue(size_t pos) const {
   } else {
     return it->fragment_->element64(it->offset_ + (pos - it.key()));
   }
-
-/*
-  if (it == changes_.constEnd()) {
-    return originalByteValue(byte_pos);
-  }
-
-  size_t pos = it.key();
-  const auto& data = it.value();
-
-  return data.element64(static_cast<int>(byte_pos - pos));
-*/
 }
 
 uint64_t EditEngine::originalByteValue(size_t pos) const {
@@ -266,94 +189,7 @@ data::BinData EditEngine::getDataFromEditNode(const EditNode& edit_node,
 void EditEngine::initAddressMapping() {
   address_mapping_.clear();
   address_mapping_.insert(0, EditNode(nullptr, 0));
-  //  address_mapping_.insert(original_data_->binData().size(),
-  //                          EditNode(original_data_->binData().size()));
   has_changes_ = false;
-}
-
-QMap<size_t, data::BinData>::const_iterator EditEngine::itFromPos(
-    size_t byte_pos) const {
-  if (changes_.isEmpty()) {
-    return changes_.constEnd();
-  }
-  auto it = changes_.upperBound(byte_pos);
-
-  if (it == changes_.begin()) {
-    return changes_.constEnd();
-  }
-  --it;
-
-  size_t pos = it.key();
-  auto data = it.value();
-
-  if (pos + data.size() <= byte_pos) {
-    return changes_.constEnd();
-  }
-
-  return it;
-}
-
-QMap<size_t, data::BinData> EditEngine::changesFromRange(size_t byte_pos,
-                                                         size_t size) const {
-  QMap<size_t, data::BinData> res;
-
-  auto it = itFromPos(byte_pos);
-  if (it == changes_.constEnd()) {
-    it = changes_.upperBound(byte_pos);
-  }
-
-  while (it != changes_.constEnd() && it.key() < byte_pos + size) {
-    size_t pos = it.key();
-    auto data = it.value();
-
-    if (pos < byte_pos) {
-      auto len = data.size() - static_cast<int>(byte_pos - pos);
-      len = len > 0 ? len : 0;
-      data::BinData new_data(bindata_width_, len);
-
-      int counter = 0;
-      for (size_t i = byte_pos - pos; i < data.size(); ++i, ++counter) {
-        new_data.setElement64(counter, data.element64(i));
-      }
-
-      data = new_data;
-      pos = byte_pos;
-    }
-
-    if (pos + data.size() > byte_pos + size) {
-      data::BinData new_data(
-          bindata_width_,
-          byte_pos + size - pos > 0 ? byte_pos + size - pos : 0);
-      size_t last_chunk_bytes_count = byte_pos + size - pos;
-      for (size_t i = 0; i < last_chunk_bytes_count; ++i) {
-        new_data.setElement64(i, data.element64(static_cast<int>(i)));
-      }
-
-      data = new_data;
-    }
-
-    res[pos] = data;
-    ++it;
-  }
-
-  return res;
-}
-
-void EditEngine::applyChangesOnBinData(data::BinData* bindata, size_t offset,
-                                       int64_t max_bytes) const {
-  assert(bindata->width() == bindata_width_);
-  if (max_bytes == -1) {
-    max_bytes = bindata->size();
-  }
-
-  auto changes = changesFromRange(offset, max_bytes);
-  for (auto it = changes.begin(); it != changes.constEnd(); ++it) {
-    size_t pos = it.key();
-    auto data = it.value();
-    for (size_t i = 0; i < data.size(); ++i) {
-      bindata->setElement64(pos - offset + i, data.element64(i));
-    }
-  }
 }
 
 }  // namespace util
