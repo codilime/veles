@@ -50,8 +50,10 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
         address_mapping_.insert(
             end_pos, EditNode(nullptr, it->offset_ + (end_pos - it.key())));
       }
-      address_mapping_.insert(pos, EditNode(bytes));
-      // this node can overwrite `*it` and that's OK
+      it = address_mapping_.insert(pos, EditNode(bytes));
+      // this node can overwrite previous `*it` and that's OK
+
+      trySquash(it);
     } else {
       it->fragment_->setData(it->offset_ + (pos - it.key()), bytes.size(),
                              bytes);
@@ -72,8 +74,10 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
     if (address_mapping_.find(end_pos) == address_mapping_.cend()) {
       address_mapping_.insert(end_pos, last_modified_node);
     }
-    address_mapping_.insert(pos, EditNode(bytes));
+    it = address_mapping_.insert(pos, EditNode(bytes));
     // it can overwrite the first overlapping node and that's OK
+
+    trySquash(it);
   }
 }
 
@@ -183,6 +187,41 @@ data::BinData EditEngine::getDataFromEditNode(const EditNode& edit_node,
     return original_data_->binData().data(edit_node.offset_ + offset, size);
   } else {
     return edit_node.fragment_->data(edit_node.offset_ + offset, size);
+  }
+}
+
+/*
+ * Warning: it can invalidate iterator `it`
+ */
+void EditEngine::trySquashWithPrev(const QMap<size_t, EditNode>::iterator& it) {
+  if (it == address_mapping_.cbegin()) {
+    return;
+  }
+  auto prev = it;
+  --prev;
+  if (it->fragment_ == nullptr) {
+    // TODO(catsuryuu): implement squashing original fragments later (with
+    // deleting feature)
+  } else {
+    if (prev->fragment_ != nullptr) {
+      auto next = it;
+      ++next;  // it exists because last EditNode should be from original
+      auto prev_size = it.key() - prev.key();
+      auto it_size = next.key() - it.key();
+      address_mapping_.insert(
+          prev.key(), EditNode(prev->fragment_->data(prev->offset_, prev_size) +
+                               it->fragment_->data(it->offset_, it_size)));
+      address_mapping_.erase(it);
+    }
+  }
+}
+
+void EditEngine::trySquash(const QMap<size_t, EditNode>::iterator& it) {
+  auto next = it;
+  ++next;
+  trySquashWithPrev(it);
+  if (next != address_mapping_.cend()) {
+    trySquashWithPrev(next);
   }
 }
 
