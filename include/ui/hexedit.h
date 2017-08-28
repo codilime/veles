@@ -58,6 +58,8 @@ class HexEdit : public QAbstractScrollArea {
   void processEditEvent(QKeyEvent* event);
   uint64_t byteValue(qint64 pos) const;
   void setBytesValues(qint64 pos, const data::BinData& new_data);
+  bool isInsertMode() { return insert_mode_; }
+  void setInsertMode(bool insert_mode) { insert_mode_ = insert_mode; }
 
  public slots:
   void newBinData();
@@ -151,6 +153,7 @@ class HexEdit : public QAbstractScrollArea {
   WindowArea current_area_;
   qint64 cursor_pos_in_byte_;
   bool cursor_visible_;
+  bool insert_mode_;
 
   CreateChunkDialog* createChunkDialog_;
   GoToAddressDialog* goToAddressDialog_;
@@ -183,7 +186,6 @@ class HexEdit : public QAbstractScrollArea {
   QString hexRepresentationFromByte(uint64_t byte_val);
   static QString asciiRepresentationFromByte(uint64_t byte_val);
 
-  void setByteValue(qint64 pos, uint64_t byte_value);
   static QColor byteTextColorFromByteValue(uint64_t byte_val);
   QColor byteBackroundColorFromPos(qint64 pos, bool modified);
 
@@ -192,6 +194,12 @@ class HexEdit : public QAbstractScrollArea {
   qint64 selectionSize();
 
   QModelIndex selectedChunk();
+
+  void setByteValue(qint64 pos, uint64_t byte_value);
+  void insertBytes(qint64 pos, const data::BinData& new_data);
+  void insertBytes(qint64 pos, uint64_t size, uint64_t byte_value);
+  void insertByte(qint64 pos, uint64_t byte_value);
+
   void createAction(util::settings::shortcuts::ShortcutType type,
                     const std::function<void()>& f);
 

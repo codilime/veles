@@ -120,6 +120,7 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
       current_area_(WindowArea::HEX),
       cursor_pos_in_byte_(0),
       cursor_visible_(false),
+      insert_mode_(false),
       edit_engine_(dataModel_) {
   auto font = util::settings::theme::font();
   setFont(font);
@@ -987,6 +988,23 @@ void HexEdit::setByteValue(qint64 pos, uint64_t byte_value) {
   setBytesValues(pos, data::BinData(bindata_width_, {byte_value}));
 }
 
+void HexEdit::insertBytes(qint64 pos, const data::BinData& new_data) {
+  edit_engine_.insertBytes(pos, new_data);
+  emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
+}
+
+void HexEdit::insertBytes(qint64 pos, uint64_t size, uint64_t byte_value) {
+  data::BinData new_data(bindata_width_, size);
+  for (size_t i = 0; i < size; ++i) {
+    new_data.setElement64(i, byte_value);
+  }
+  insertBytes(pos, new_data);
+}
+
+void HexEdit::insertByte(qint64 pos, uint64_t byte_value) {
+  insertBytes(pos, data::BinData(bindata_width_, {byte_value}));
+}
+
 void HexEdit::applyChanges() {
   edit_engine_.applyChanges();
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
@@ -1007,7 +1025,11 @@ void HexEdit::processEditEvent(QKeyEvent* event) {
     if (key < 0x20 || key > 0x7e) {
       return;
     }
-    setByteValue(current_position_, key);
+    if (insert_mode_) {
+      insertByte(current_position_, key);
+    } else {
+      setByteValue(current_position_, key);
+    }
     setSelection(current_position_ + 1, 0);
   } else {
     uint64_t nibble_val = 0;
@@ -1028,7 +1050,11 @@ void HexEdit::processEditEvent(QKeyEvent* event) {
     if (new_val > byte_max_value_) {
       new_val = byte_max_value_;
     }
-    setByteValue(current_position_, new_val);
+    if (insert_mode_ && cursor_pos_in_byte_ == 0) {
+      insertByte(current_position_, new_val);
+    } else {
+      setByteValue(current_position_, new_val);
+    }
 
     cursor_pos_in_byte_ += 1;
     if (cursor_pos_in_byte_ == byteCharsCount_) {
@@ -1120,7 +1146,7 @@ void HexEdit::pasteFromClipboard(util::encoders::IDecoder* enc) {
   }
 
   auto paste_size = data.size();
-  if (dataBytesCount_ - paste_start_position < paste_size) {
+  if (!insert_mode_ && dataBytesCount_ < paste_start_position + paste_size) {
     paste_size = dataBytesCount_ - paste_start_position;
   }
 
@@ -1128,7 +1154,11 @@ void HexEdit::pasteFromClipboard(util::encoders::IDecoder* enc) {
   for (int i = 0; i < paste_size; ++i) {
     new_data.setElement64(i, static_cast<unsigned char>(data[i]));
   }
-  setBytesValues(paste_start_position, new_data);
+  if (insert_mode_) {
+    insertBytes(paste_start_position, new_data);
+  } else {
+    setBytesValues(paste_start_position, new_data);
+  }
   setSelection(paste_start_position, paste_size);
 }
 
