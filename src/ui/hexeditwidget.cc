@@ -217,6 +217,23 @@ void HexEditWidget::createActions() {
   auto_resize_act_->setDefaultWidget(auto_resize_checkbox_);
   connect(auto_resize_checkbox_, &QCheckBox::toggled,
           [this](bool toggled) { hex_edit_->setAutoBytesPerRow(toggled); });
+
+  change_edit_mode_button_ = new QPushButton("override");
+  connect(change_edit_mode_button_, &QPushButton::clicked,
+          [this]() { change_edit_mode_act_->trigger(); });
+
+  change_edit_mode_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+      util::settings::shortcuts::CHANGE_EDIT_MODE, this,
+      Qt::WidgetWithChildrenShortcut);
+  connect(change_edit_mode_act_, &QAction::triggered, [this]() {
+    if (hex_edit_->isInsertMode()) {
+      hex_edit_->setInsertMode(false);
+      change_edit_mode_button_->setText("override");
+    } else {
+      hex_edit_->setInsertMode(true);
+      change_edit_mode_button_->setText("insert");
+    }
+  });
 }
 
 void HexEditWidget::createToolBars() {
@@ -273,6 +290,7 @@ void HexEditWidget::createToolBars() {
   addToolBar(view_tool_bar_);
 
   createSelectionInfo();
+  addAction(change_edit_mode_act_);
 }
 
 void HexEditWidget::initParsersMenu() {
@@ -290,12 +308,15 @@ void HexEditWidget::createSelectionInfo() {
   auto* layout = new QHBoxLayout;
   selection_panel->setLayout(layout);
   layout->addStretch(1);
+
+  layout->addWidget(change_edit_mode_button_);
   selection_label_ = new QLabel;
   selection_label_->setFont(util::settings::theme::font());
   selection_label_->setText("");
   selection_label_->setTextInteractionFlags(Qt::TextSelectableByMouse |
                                             Qt::TextSelectableByKeyboard);
   layout->addWidget(selection_label_);
+
   widget_action->setDefaultWidget(selection_panel);
   auto* selection_toolbar = new QToolBar;
   selection_toolbar->addAction(widget_action);

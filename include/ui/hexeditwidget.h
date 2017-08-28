@@ -124,6 +124,8 @@ class HexEditWidget : public View {
   QAction* remove_column_act_;
   QWidgetAction* auto_resize_act_;
   QCheckBox* auto_resize_checkbox_;
+  QAction* change_edit_mode_act_;
+  QPushButton* change_edit_mode_button_;
 
   SearchDialog* search_dialog_;
   HexEdit* hex_edit_;

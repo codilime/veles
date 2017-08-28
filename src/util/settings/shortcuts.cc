@@ -82,6 +82,7 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
         QKeySequence(Qt::CTRL + Qt::Key_2)};
     defaults[VISUALIZATION_MANIPULATOR_FREE] = {
         QKeySequence(Qt::CTRL + Qt::Key_3)};
+    defaults[CHANGE_EDIT_MODE] = {QKeySequence(Qt::Key_Insert)};
     defaults[COPY] = QKeySequence::keyBindings(QKeySequence::Copy);
     defaults[PASTE] = QKeySequence::keyBindings(QKeySequence::Paste);
     defaults[UPLOAD] = QKeySequence::keyBindings(QKeySequence::Save);
@@ -443,6 +444,7 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
                   tr("Show the Qt library's About box"));
 
   auto hex = addCategory(tr("HexEdit"), root_);
+  addShortcutType(CHANGE_EDIT_MODE, hex, tr("Change edit mode"));
   addShortcutType(CREATE_CHUNK, hex, tr("&Create chunk"), tr("Create chunk"));
   addShortcutType(CREATE_CHILD_CHUNK, hex, tr("&Create child chunk"),
                   tr("Create child chunk"));
