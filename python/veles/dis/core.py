@@ -39,7 +39,7 @@ class IsaParseResult:
       determine where the bundle ends - if this happens, len represents
       the point where the parser gave up, and is mostly meaningless.
     - base: an expression representing the beginning of the code section this
-      bundle resides in - passed straight from the dissassembler caller.
+      bundle resides in - passed straight from the disassembler caller.
       If None, the instruction position is considered to be absolute.
     - anchors: a dictionary with ``base``-relative addresses of "points of
       interest" in the bundle - 'start' is mapped to the beginning of the

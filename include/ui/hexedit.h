@@ -122,7 +122,7 @@ class HexEdit : public QAbstractScrollArea {
   qint64 addressBytes_;
   /** Width in pixels of address area */
   qint64 addressWidth_;
-  /** Width in pixles of hex area */
+  /** Width in pixels of hex area */
   qint64 hexAreaWidth_;
   /** Width in pixels of ascii area */
   qint64 asciiWidth_;
