@@ -17,7 +17,7 @@ from .field import IsaSwitch, MatchError
 
 class ParseOOBError(Exception):
     """
-    Insterted to dstate.errors to represent an OOB access to the code segment
+    Inserted to dstate.errors to represent an OOB access to the code segment
     while decoding the instruction.
     """
 

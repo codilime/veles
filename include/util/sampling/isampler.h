@@ -267,7 +267,7 @@ class ISampler {
   size_t getRequestedSampleSize(SamplerConfig* sc = nullptr) const;
 
   /**
-   * Return real size of the sample. This method must be overriden by any
+   * Return real size of the sample. This method must be overridden by any
    * implementation, that may return sample of different size than
    * getRequestedSampleSize().
    */

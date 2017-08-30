@@ -13,7 +13,7 @@ reported. Gather following information:
 
 And create an issue on GitHub.
 
-### Submiting changes
+### Submitting changes
 Please send GitHub pull request with a clear list of what you've done. Please
 follow [Google C++ Style
 Guide](https://google.github.io/styleguide/cppguide.html) and make sure all of
@@ -28,7 +28,7 @@ More information about pull request you can find
 
 You **NEED** to have a signed CLA sent to CodiLime before your code can be
 merged. You can download one from [Contributor License
-Aggrement](https://www.codisec.com/cla), sign and send back to us. You can
+Agreement](https://www.codisec.com/cla), sign and send back to us. You can
 open a pull request and have it reviewed, while we process your CLA.
 
 Thanks for taking your time to contribute to Veles,

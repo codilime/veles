@@ -183,7 +183,7 @@ class MsgGetList(MsgpackMsg):
     of the reply, while the IDs of nodes no longer on the list are sent
     in the gone field of the reply.
 
-    The list may fail with ObjectGoneErro if the parent node is gone.
+    The list may fail with ObjectGoneError if the parent node is gone.
     If it reappears in the future, a MsgGetListReply will be sent
     with a complete list of children.
     """
