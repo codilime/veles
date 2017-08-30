@@ -59,11 +59,10 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
                              bytes);
     }
   } else {
-    it = next_it;
+    ++it;
     ++next_it;
     while (next_it != address_mapping_.cend() && next_it.key() < end_pos) {
-      address_mapping_.erase(it);
-      it = next_it;
+      it = address_mapping_.erase(it);
       ++next_it;
     }
 
@@ -127,10 +126,11 @@ uint64_t EditEngine::byteValue(size_t pos) const {
   auto it = next_it;
   --it;
 
+  size_t offset_in_fragment = it->offset_ + (pos - it.key());
   if (it->fragment_ == nullptr) {
-    return original_data_->binData().element64(it->offset_ + (pos - it.key()));
+    return original_data_->binData().element64(offset_in_fragment);
   } else {
-    return it->fragment_->element64(it->offset_ + (pos - it.key()));
+    return it->fragment_->element64(offset_in_fragment);
   }
 }
 
@@ -157,14 +157,14 @@ data::BinData EditEngine::bytesValues(size_t pos, size_t size) const {
         getDataFromEditNode(it.value(), pos - it.key(), size_to_write));
     size_t bytes_written = size_to_write;
 
-    it = next_it;
+    ++it;
     ++next_it;
     while (next_it != address_mapping_.cend() && next_it.key() < end_pos) {
       size_to_write = next_it.key() - it.key();
       result.setData(bytes_written, size_to_write,
                      getDataFromEditNode(it.value(), 0, size_to_write));
       bytes_written += size_to_write;
-      it = next_it;
+      ++it;
       ++next_it;
     }
 

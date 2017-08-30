@@ -16,8 +16,8 @@
  */
 #pragma once
 
+#include <cstdlib>
 #include <memory>
-#include <stdlib.h>
 
 #include <QMap>
 #include <QVector>
@@ -32,8 +32,7 @@ class EditEngine {
  public:
   explicit EditEngine(ui::FileBlobModel* original_data,
                       int edit_stack_limit = 100)
-      : original_data_(original_data),
-        edit_stack_limit_(edit_stack_limit) {
+      : original_data_(original_data), edit_stack_limit_(edit_stack_limit) {
     initAddressMapping();
   }
 
@@ -58,7 +57,7 @@ class EditEngine {
     std::shared_ptr<data::BinData> fragment_;
     size_t offset_;
 
-    explicit EditNode(std::shared_ptr<data::BinData> fragment, size_t offset)
+    EditNode(const std::shared_ptr<data::BinData>& fragment, size_t offset)
         : fragment_(fragment), offset_(offset) {}
     explicit EditNode(const data::BinData& bindata)
         : fragment_(std::make_shared<data::BinData>(bindata)), offset_(0) {}
