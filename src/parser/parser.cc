@@ -23,7 +23,7 @@ namespace parser {
 
 bool Parser::verifyAndParse(const dbif::ObjectHandle& blob, uint64_t start,
                             const dbif::ObjectHandle& parent_chunk) {
-  if (_magic.size() > 0) {
+  if (!_magic.empty()) {
     for (const auto& magic : _magic) {
       auto data =
           blob->syncGetInfo<dbif::BlobDataRequest>(start, start + magic.size())
@@ -34,9 +34,8 @@ bool Parser::verifyAndParse(const dbif::ObjectHandle& blob, uint64_t start,
       }
     }
     return false;
-  } else {
-    parse(blob, start, parent_chunk);
   }
+  parse(blob, start, parent_chunk);
   return true;
 }
 

@@ -43,11 +43,12 @@ class VisualizationPanel : public ui::View {
  public:
   explicit VisualizationPanel(
       ui::MainWindowWithDetachableDockWidgets* main_window,
-      const QSharedPointer<ui::FileBlobModel>& data_model, QWidget* parent = 0);
-  ~VisualizationPanel();
+      const QSharedPointer<ui::FileBlobModel>& data_model,
+      QWidget* parent = nullptr);
+  ~VisualizationPanel() override;
 
   void setData(const QByteArray& data);
-  void setRange(const size_t start, const size_t end);
+  void setRange(size_t start, size_t end);
   bool eventFilter(QObject* watched, QEvent* event) override;
 
  public slots:
@@ -55,7 +56,7 @@ class VisualizationPanel : public ui::View {
 
  private slots:
   void setSamplingMethod(const QString& name);
-  void setSampleSize(int kilobytes);
+  void setSampleSize(qint64 kilobytes);
   void showDigramVisualization();
   void showTrigramVisualization();
   void showLayeredDigramVisualization();
@@ -73,9 +74,9 @@ class VisualizationPanel : public ui::View {
   static const int k_minimap_sample_size = 4096;
 
   static util::ISampler* getSampler(ESampler type, const QByteArray& data,
-                                    int sample_size);
+                                    qint64 sample_size);
   VisualizationWidget* getVisualization(EVisualization type,
-                                        QWidget* parent = 0);
+                                        QWidget* parent = nullptr);
   static QString prepareAddressString(size_t start, size_t end);
 
   void setVisualization(EVisualization type);

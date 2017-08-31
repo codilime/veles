@@ -54,8 +54,8 @@ class Manipulator : public QObject {
  public:
   explicit Manipulator(QObject* parent = nullptr);
   virtual QMatrix4x4 transform() = 0;
-  virtual void initFromMatrix(QMatrix4x4 m) {}
-  virtual void update(float dt) {}
+  virtual void initFromMatrix(const QMatrix4x4& /*m*/) {}
+  virtual void update(float /*dt*/) {}
   virtual QString manipulatorName() = 0;
   virtual bool processEvent(QObject* watched, QEvent* event);
   virtual bool handlesPause();
@@ -71,7 +71,7 @@ class TrackballManipulator : public Manipulator {
  public:
   explicit TrackballManipulator(QObject* parent = nullptr);
   QMatrix4x4 transform() override;
-  void initFromMatrix(QMatrix4x4 m) override;
+  void initFromMatrix(const QMatrix4x4& m) override;
   void update(float dt) override;
   QString manipulatorName() override;
 
@@ -80,9 +80,9 @@ class TrackballManipulator : public Manipulator {
   virtual bool mouseEvent(QWidget* widget, QMouseEvent* event);
   virtual bool wheelEvent(QWidget* widget, QWheelEvent* event);
 
-  float distance_;
-  float min_distance_;
-  float max_distance_;
+  float distance_ = 5.f;
+  float min_distance_ = 1.5f;
+  float max_distance_ = 6.5f;
   QVector3D init_position_;
   QQuaternion rotation_;
 
@@ -103,7 +103,7 @@ class FreeManipulator : public Manipulator {
  public:
   explicit FreeManipulator(QObject* parent = nullptr);
   QMatrix4x4 transform() override;
-  void initFromMatrix(QMatrix4x4 m) override;
+  void initFromMatrix(const QMatrix4x4& m) override;
   void update(float dt) override;
   QString manipulatorName() override;
 
@@ -142,7 +142,7 @@ class SpinManipulator : public Manipulator {
  public:
   explicit SpinManipulator(QObject* parent = nullptr);
   QMatrix4x4 transform() override;
-  void initFromMatrix(QMatrix4x4 m) override;
+  void initFromMatrix(const QMatrix4x4& m) override;
   void update(float dt) override;
   QString manipulatorName() override;
   bool handlesPause() override;

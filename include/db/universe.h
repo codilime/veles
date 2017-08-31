@@ -38,7 +38,7 @@ class ParserWorker : public QObject {
  public:
   void registerParser(parser::Parser* parser);
   QStringList parserIdsList();
-  ~ParserWorker();
+  ~ParserWorker() override;
 
  private:
   QList<parser::Parser*> _parsers;

@@ -34,13 +34,13 @@ class FileBlobModel : public QAbstractItemModel {
   Q_OBJECT
 
  public:
-  explicit FileBlobModel(const dbif::ObjectHandle& fileBlob_,
+  explicit FileBlobModel(const dbif::ObjectHandle& fileBlob,
                          const QStringList& path = {},
                          QObject* parent = nullptr);
 
   QModelIndex index(int row, int column,
                     const QModelIndex& parent) const override;
-  QModelIndex parent(const QModelIndex& child) const override;
+  QModelIndex parent(const QModelIndex& child_index) const override;
   int rowCount(const QModelIndex& parent) const override;
   int columnCount(const QModelIndex& parent) const override;
   QVariant data(const QModelIndex& index, int role) const override;

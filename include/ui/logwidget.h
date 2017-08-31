@@ -70,7 +70,7 @@ class LogWidget : public QMainWindow {
 
  public:
   explicit LogWidget(QWidget* parent = nullptr);
-  virtual ~LogWidget();
+  ~LogWidget() override;
   static QIODevice* output();
 
  public slots:

@@ -26,7 +26,7 @@ namespace ui {
 OptionsDialog::OptionsDialog(QWidget* parent)
     : QDialog(parent), ui(new Ui::OptionsDialog) {
   ui->setupUi(this);
-  ui->colorsBox->addItems(util::settings::theme::availableIds());
+  ui->colorsBox->addItems(util::settings::theme::availableThemes());
 
   connect(ui->hexColumnsAutoCheckBox, &QCheckBox::stateChanged,
           [this](int state) {
@@ -37,7 +37,7 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 OptionsDialog::~OptionsDialog() { delete ui; }
 
 void OptionsDialog::show() {
-  ui->colorsBox->setCurrentText(util::settings::theme::currentId());
+  ui->colorsBox->setCurrentText(util::settings::theme::currentTheme());
   Qt::CheckState checkState = Qt::Unchecked;
   if (util::settings::hexedit::resizeColumnsToWindowWidth()) {
     checkState = Qt::Checked;
@@ -52,8 +52,8 @@ void OptionsDialog::show() {
 void OptionsDialog::accept() {
   bool restart_needed = false;
   QString newTheme = ui->colorsBox->currentText();
-  if (newTheme != util::settings::theme::currentId()) {
-    veles::util::settings::theme::setCurrentId(newTheme);
+  if (newTheme != util::settings::theme::currentTheme()) {
+    veles::util::settings::theme::setCurrentTheme(newTheme);
     restart_needed = true;
   }
 

@@ -55,7 +55,6 @@ QString NetworkClient::connStatusStr(ConnectionStatus status) {
 
 NetworkClient::NetworkClient(QObject* parent)
     : QObject(parent),
-      client_socket_(nullptr),
       node_tree_(nullptr),
       status_(ConnectionStatus::NotConnected),
       server_name_("127.0.0.1"),
@@ -70,7 +69,6 @@ NetworkClient::NetworkClient(QObject* parent)
       fingerprint_(""),
       quit_on_close_(false),
       ssl_enabled_(true),
-      output_stream_(nullptr),
       qid_(0) {
   NetworkClient::NetworkClient::registerMessageHandlers();
 }
@@ -92,7 +90,7 @@ void NetworkClient::connect(const QString& server_url,
     if (QSslSocket::supportsSsl()) {
       ssl_enabled_ = true;
     } else {
-      if (output()) {
+      if (output() != nullptr) {
         *output() << "NetworkClient:: SSL error - check if "
                      "OpenSSL is available"
                   << endl;
@@ -102,14 +100,14 @@ void NetworkClient::connect(const QString& server_url,
   } else if (scheme == SCHEME_TCP) {
     ssl_enabled_ = false;
   } else if (scheme == SCHEME_UNIX) {
-    if (output()) {
+    if (output() != nullptr) {
       *output() << "NetworkClient:: Unix sockets are "
                    "currently unsupported"
                 << endl;
     }
     return;
   } else {
-    if (output()) {
+    if (output() != nullptr) {
       *output() << "NetworkClient:: ERROR: unknown scheme provided!" << endl;
     }
     return;
@@ -161,41 +159,40 @@ void NetworkClient::connect(const QString& server_url,
             &QAbstractSocket::error),
         this, &NetworkClient::socketError);
 
-    if (output()) {
+    if (output() != nullptr) {
       *output() << "NetworkClient::connect" << endl
                 << "    client interface: " << client_interface_name_ << endl
                 << "    server host: " << server_name_ << endl
                 << "    server port: " << server_port_ << endl;
     }
 
-    if (1) {
-      // TODO(altran01): Why is bind causing a problem here?
-      // if (client_socket_->bind(QHostAddress(client_interface_name))) {
-      if (output()) {
-        *output() << "NetworkClient: bind successful." << endl;
-      }
-      if (ssl_enabled_) {
-        client_socket_->connectToHostEncrypted(server_name_, server_port_);
-      } else {
-        client_socket_->connectToHost(server_name_, server_port_);
-      }
-      setConnectionStatus(ConnectionStatus::Connecting);
+    // TODO(altran01): Why is bind causing a problem here?
+    // if (client_socket_->bind(QHostAddress(client_interface_name))) {
+    if (output() != nullptr) {
+      *output() << "NetworkClient: bind successful." << endl;
+    }
+    if (ssl_enabled_) {
+      client_socket_->connectToHostEncrypted(server_name_, server_port_);
     } else {
-      if (output()) {
+      client_socket_->connectToHost(server_name_, server_port_);
+    }
+    setConnectionStatus(ConnectionStatus::Connecting);
+    /*} else {
+      if (output() != nullptr) {
         *output() << "NetworkClient: bind failed." << endl;
       }
-    }
+    }*/
   }
 }
 
 void NetworkClient::disconnect() {
-  if (output()) {
+  if (output() != nullptr) {
     *output() << "NetworkClient: Disconnect." << endl;
   }
 
   setConnectionStatus(ConnectionStatus::NotConnected);
 
-  if (client_socket_) {
+  if (client_socket_ != nullptr) {
     client_socket_->disconnectFromHost();
   }
 }
@@ -285,15 +282,15 @@ void NetworkClient::handleNodeTreeRelatedMessage(const msg_ptr& msg) {
   nodeTree()->addRemoteNodeTreeRelatedMessage(msg);
 }
 
-void NetworkClient::handleConnectedMessage(const msg_ptr& msg) {
+void NetworkClient::handleConnectedMessage(const msg_ptr& /*msg*/) {
   if (connectionStatus() != ConnectionStatus::Connecting) {
-    if (output()) {
+    if (output() != nullptr) {
       *output() << "NetworkClient: Very confusing... "
                    "Received \"connected\" message while already connected."
                 << endl;
     }
   } else {
-    if (output()) {
+    if (output() != nullptr) {
       *output() << "NetworkClient: Received \"connected\" message." << endl;
     }
 
@@ -302,9 +299,9 @@ void NetworkClient::handleConnectedMessage(const msg_ptr& msg) {
 }
 
 void NetworkClient::handleProtoErrorMessage(const msg_ptr& msg) {
-  proto::MsgProtoError* mpe = dynamic_cast<proto::MsgProtoError*>(msg.get());
-  if (mpe) {
-    if (output()) {
+  auto* mpe = dynamic_cast<proto::MsgProtoError*>(msg.get());
+  if (mpe != nullptr) {
+    if (output() != nullptr) {
       *output() << "Received protocol error message. Aborting connection..."
                 << endl
                 << "    code: " << mpe->err->code.c_str()
@@ -316,7 +313,7 @@ void NetworkClient::handleProtoErrorMessage(const msg_ptr& msg) {
 }
 
 void NetworkClient::handleConnectionsMessage(const msg_ptr& msg) {
-  if (output()) {
+  if (output() != nullptr) {
     *output() << "NetworkClient: Received \""
               << QString::fromStdString(msg->object_type) << "\" message."
               << endl;
@@ -327,7 +324,7 @@ void NetworkClient::handleConnectionsMessage(const msg_ptr& msg) {
 }
 
 void NetworkClient::handleRegistryReplyMessage(const msg_ptr& msg) {
-  if (output()) {
+  if (output() != nullptr) {
     *output() << "NetworkClient: Received \""
               << QString::fromStdString(msg->object_type) << "\" message."
               << endl;
@@ -338,7 +335,7 @@ void NetworkClient::handleRegistryReplyMessage(const msg_ptr& msg) {
 }
 
 void NetworkClient::handleMthdResMessage(const msg_ptr& msg) {
-  if (output()) {
+  if (output() != nullptr) {
     *output() << "NetworkClient: Received \""
               << QString::fromStdString(msg->object_type) << "\" message."
               << endl;
@@ -348,7 +345,7 @@ void NetworkClient::handleMthdResMessage(const msg_ptr& msg) {
 }
 
 void NetworkClient::handlePluginTriggerRunMessage(const msg_ptr& msg) {
-  if (output()) {
+  if (output() != nullptr) {
     *output() << "NetworkClient: Received \""
               << QString::fromStdString(msg->object_type) << "\" message."
               << endl;
@@ -359,10 +356,9 @@ void NetworkClient::handlePluginTriggerRunMessage(const msg_ptr& msg) {
 }
 
 void NetworkClient::handleConnErrorMessage(const msg_ptr& msg) {
-  proto::MsgConnectionError* cem =
-      dynamic_cast<proto::MsgConnectionError*>(msg.get());
-  if (cem) {
-    if (output()) {
+  auto* cem = dynamic_cast<proto::MsgConnectionError*>(msg.get());
+  if (cem != nullptr) {
+    if (output() != nullptr) {
       *output() << "Received connection error message. Aborting connection..."
                 << endl
                 << "    code: " << cem->err->code.c_str()
@@ -374,7 +370,7 @@ void NetworkClient::handleConnErrorMessage(const msg_ptr& msg) {
 }
 
 void NetworkClient::handlePluginMethodRunMessage(const msg_ptr& msg) {
-  if (output()) {
+  if (output() != nullptr) {
     *output() << "NetworkClient: Received \""
               << QString::fromStdString(msg->object_type) << "\" message."
               << endl;
@@ -385,7 +381,7 @@ void NetworkClient::handlePluginMethodRunMessage(const msg_ptr& msg) {
 }
 
 void NetworkClient::handlePluginQueryGetMessage(const msg_ptr& msg) {
-  if (output()) {
+  if (output() != nullptr) {
     *output() << "NetworkClient: Received \""
               << QString::fromStdString(msg->object_type) << "\" message."
               << endl;
@@ -396,7 +392,7 @@ void NetworkClient::handlePluginQueryGetMessage(const msg_ptr& msg) {
 }
 
 void NetworkClient::handleBroadcastRunMessage(const msg_ptr& msg) {
-  if (output()) {
+  if (output() != nullptr) {
     *output() << "NetworkClient: Received \""
               << QString::fromStdString(msg->object_type) << "\" message."
               << endl;
@@ -407,7 +403,7 @@ void NetworkClient::handleBroadcastRunMessage(const msg_ptr& msg) {
 }
 
 void NetworkClient::handlePluginHandlerUnregisteredMessage(const msg_ptr& msg) {
-  if (output()) {
+  if (output() != nullptr) {
     *output() << "NetworkClient: Received \""
               << QString::fromStdString(msg->object_type) << "\" message."
               << endl;
@@ -418,7 +414,7 @@ void NetworkClient::handlePluginHandlerUnregisteredMessage(const msg_ptr& msg) {
 }
 
 void NetworkClient::sendMessage(const msg_ptr& msg) {
-  if (client_socket_ && client_socket_->isValid()) {
+  if (client_socket_ != nullptr && client_socket_->isValid()) {
     msgpack::sbuffer buf;
     msgpack::packer<msgpack::sbuffer> packer(buf);
     messages::MsgpackWrapper::dumpObject(packer, msg);
@@ -429,7 +425,7 @@ void NetworkClient::sendMessage(const msg_ptr& msg) {
 void NetworkClient::setConnectionStatus(ConnectionStatus connection_status) {
   if (status_ != connection_status) {
     status_ = connection_status;
-    if (output()) {
+    if (output() != nullptr) {
       *output() << "NetworkClient: New connection status: "
                 << connStatusStr(connection_status) << "." << endl;
     }
@@ -438,20 +434,20 @@ void NetworkClient::setConnectionStatus(ConnectionStatus connection_status) {
 }
 
 void NetworkClient::socketConnected() {
-  if (output()) {
+  if (output() != nullptr) {
     *output() << "NetworkClient: TCP socket connected - sending an "
                  "authentication key and \"connect\" message."
               << endl;
   }
 
-  node_tree_ = std::unique_ptr<NodeTree>(new NodeTree(this));
+  node_tree_ = std::make_unique<NodeTree>(this);
   client_socket_->write(authentication_key_);
   sendMsgConnect();
 }
 
 void NetworkClient::socketDisconnected() {
   setConnectionStatus(ConnectionStatus::NotConnected);
-  if (output()) {
+  if (output() != nullptr) {
     *output() << "NetworkClient: TCP socket disconnected." << endl;
   }
 
@@ -459,19 +455,19 @@ void NetworkClient::socketDisconnected() {
     node_tree_.reset();
   }
 
-  if (client_socket_) {
+  if (client_socket_ != nullptr) {
     client_socket_->deleteLater();
     client_socket_ = nullptr;
   }
 }
 
 void NetworkClient::newDataAvailable() {
-  while (client_socket_) {
+  while (client_socket_ != nullptr) {
     msg_ptr msg = nullptr;
     try {
       msg = msgpack_wrapper_.loadMessage(client_socket_);
     } catch (proto::SchemaError& schema_error) {
-      if (output()) {
+      if (output() != nullptr) {
         *output() << "NetworkClient: SchemaError - "
                   << QString::fromStdString(schema_error.msg) << endl;
       }
@@ -483,7 +479,7 @@ void NetworkClient::newDataAvailable() {
         MessageHandler handler = handler_iter->second;
         (this->*handler)(msg);
       } else {
-        if (output()) {
+        if (output() != nullptr) {
           *output() << "NetworkClient: Received message of not handled "
                        "type: \""
                     << msg->object_type.c_str() << "\"." << endl;
@@ -498,7 +494,7 @@ void NetworkClient::newDataAvailable() {
 
 void NetworkClient::socketError(QAbstractSocket::SocketError socketError) {
   setConnectionStatus(ConnectionStatus::NotConnected);
-  if (output() && client_socket_) {
+  if (output() != nullptr && client_socket_ != nullptr) {
     *output() << "NetworkClient: Socket error - "
               << client_socket_->errorString() << endl;
   }
@@ -514,7 +510,7 @@ void NetworkClient::checkFingerprint(const QList<QSslError>& errors) {
         if (cert.isNull()) {
           // This shouldn't happen for those 2 errors, but better safe than
           // sorry
-          if (output()) {
+          if (output() != nullptr) {
             *output() << "NetworkClient: received null certificate!" << endl;
           }
           return;
@@ -524,7 +520,7 @@ void NetworkClient::checkFingerprint(const QList<QSslError>& errors) {
         if (fingerprint_ == remote_fingerprint) {
           fingerprint_valid = true;
         } else {
-          if (output()) {
+          if (output() != nullptr) {
             *output()
                 << "NetworkClient: Certificate fingerprint mismatch! Expected: "
                 << fingerprint_ << ", got: " << remote_fingerprint << endl;
@@ -533,7 +529,7 @@ void NetworkClient::checkFingerprint(const QList<QSslError>& errors) {
         }
       }
     } else {
-      if (output()) {
+      if (output() != nullptr) {
         *output() << "NetworkClient: unexpected error: " << err.errorString()
                   << endl;
       }

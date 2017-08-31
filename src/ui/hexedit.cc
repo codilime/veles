@@ -84,7 +84,7 @@ void HexEdit::recalculateValues() {
   startPosX_ = horizontalScrollBar()->value();
 }
 
-void HexEdit::resizeEvent(QResizeEvent* event) {
+void HexEdit::resizeEvent(QResizeEvent* /*event*/) {
   if (autoBytesPerRow_) {
     adjustBytesPerRowToWindowSize();
   }
@@ -126,7 +126,7 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
   connect(dataModel_, &FileBlobModel::newBinData, this, &HexEdit::newBinData);
   connect(dataModel_, &FileBlobModel::dataChanged, this, &HexEdit::dataChanged);
 
-  if (chunkSelectionModel_) {
+  if (chunkSelectionModel_ != nullptr) {
     connect(chunkSelectionModel_, &QItemSelectionModel::currentChanged, this,
             &HexEdit::modelSelectionChanged);
   }
@@ -458,7 +458,7 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
 
 QModelIndex HexEdit::selectedChunk() {
   if (chunkSelectionModel_ == nullptr) {
-    return QModelIndex();
+    return {};
   }
   return chunkSelectionModel_->currentIndex();
 }
@@ -479,7 +479,7 @@ QRect HexEdit::bytePosToRect(qint64 pos, bool ascii, qint64 char_pos) {
   qint64 rowNum = pos / bytesPerRow_ - startRow_;
 
   if (rowNum < 0 || rowNum >= rowsOnScreen_) {
-    return QRect();
+    return {};
   }
 
   qint64 xPos;
@@ -657,7 +657,7 @@ QColor HexEdit::byteBackroundColorFromPos(qint64 pos) {
     }
   }
 
-  return QColor();
+  return {};
 }
 
 void HexEdit::drawBorder(qint64 start, qint64 size, bool asciiArea,
@@ -726,7 +726,7 @@ void HexEdit::drawBorder(qint64 start, qint64 size, bool asciiArea,
   painter.setPen(oldPen);
 }
 
-void HexEdit::getRangeFromIndex(QModelIndex index, qint64* start,
+void HexEdit::getRangeFromIndex(const QModelIndex& index, qint64* start,
                                 qint64* size) {
   if (index.isValid()) {
     auto posIndex = dataModel_->index(
@@ -910,9 +910,9 @@ void HexEdit::adjustBytesPerRowToWindowSize() {
   recalculateValues();
 }
 
-void HexEdit::setBytesPerRow(int bytesCount, bool automatic) {
+void HexEdit::setBytesPerRow(int bytes_count, bool automatic) {
   autoBytesPerRow_ = automatic;
-  bytesPerRow_ = bytesCount;
+  bytesPerRow_ = bytes_count;
   if (autoBytesPerRow_) {
     adjustBytesPerRowToWindowSize();
   }
@@ -1044,7 +1044,7 @@ void HexEdit::processEditEvent(QKeyEvent* event) {
 
 void HexEdit::keyPressEvent(QKeyEvent* event) { processEditEvent(event); }
 
-bool HexEdit::focusNextPrevChild(bool next) {
+bool HexEdit::focusNextPrevChild(bool /*next*/) {
   if (current_area_ == WindowArea::ASCII) {
     current_area_ = WindowArea::HEX;
   } else if (current_area_ == WindowArea::HEX) {
@@ -1248,7 +1248,7 @@ void HexEdit::modelSelectionChanged() {
 void HexEdit::scrollToCurrentChunk() {
   qint64 start, size;
   getRangeFromIndex(selectedChunk(), &start, &size);
-  if (size && !isRangeVisible(start, size)) {
+  if (size != 0 && !isRangeVisible(start, size)) {
     scrollToByte(start, /*minimal_change=*/true);
   }
 }
@@ -1285,7 +1285,8 @@ void HexEdit::saveChunkToFile(const QString& path) {
   saveDataToFile(byte_offset, size, path);
 }
 
-void HexEdit::saveDataToFile(int byte_offset, int size, const QString& path) {
+void HexEdit::saveDataToFile(qint64 byte_offset, qint64 size,
+                             const QString& path) {
   if (byte_offset + size > dataBytesCount_) {
     size = dataBytesCount_ - byte_offset;
   }

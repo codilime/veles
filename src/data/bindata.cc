@@ -30,7 +30,7 @@ void BinData::copyBits(uint8_t* dst, unsigned dst_bit, const uint8_t* src,
   src += src_bit >> 3;
   dst_bit &= 7;
   src_bit &= 7;
-  while (num_bits) {
+  while (num_bits > 0) {
     if (src_bit == 0 && dst_bit == 0 && num_bits >= 8) {
       unsigned cur_bytes = num_bits >> 3;
       memcpy(dst, src, cur_bytes);

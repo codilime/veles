@@ -19,18 +19,19 @@
 namespace veles {
 namespace visualization {
 
-DigramWidget::DigramWidget(QWidget* parent)
-    : VisualizationWidget(parent), texture_(nullptr) {}
+DigramWidget::DigramWidget(QWidget* parent) : VisualizationWidget(parent) {}
 
 DigramWidget::~DigramWidget() {
-  if (texture_ == nullptr) return;
+  if (texture_ == nullptr) {
+    return;
+  }
   makeCurrent();
   delete texture_;
   square_vertex_.destroy();
   doneCurrent();
 }
 
-void DigramWidget::refresh(AdditionalResampleDataPtr ad) {
+void DigramWidget::refresh(const AdditionalResampleDataPtr& /*ad*/) {
   makeCurrent();
   delete texture_;
   initTextures();
@@ -39,7 +40,9 @@ void DigramWidget::refresh(AdditionalResampleDataPtr ad) {
 }
 
 bool DigramWidget::initializeVisualizationGL() {
-  if (!initializeOpenGLFunctions()) return false;
+  if (!initializeOpenGLFunctions()) {
+    return false;
+  }
 
   glClearColor(0, 0, 0, 1);
 
@@ -82,7 +85,7 @@ void DigramWidget::initTextures() {
   auto bigtab = new uint64_t[256 * 256 * 2];
   memset(bigtab, 0, 256 * 256 * 2 * sizeof(*bigtab));
   auto ftab = new float[256 * 256 * 2];
-  const uint8_t* rowdata = reinterpret_cast<const uint8_t*>(getData());
+  const auto* rowdata = reinterpret_cast<const uint8_t*>(getData());
   for (size_t i = 0; i < getDataSize() - 1; i++) {
     size_t index = rowdata[i] * 512 + rowdata[i + 1] * 2;
     bigtab[index]++;
@@ -90,7 +93,7 @@ void DigramWidget::initTextures() {
   }
   for (int i = 0; i < 256; i++) {
     for (int j = 0; j < 256; j++) {
-      size_t index = i * 512 + j * 2;
+      int index = i * 512 + j * 2;
       ftab[index] = static_cast<float>(bigtab[index]) / getDataSize();
       ftab[index + 1] =
           static_cast<float>(bigtab[index + 1]) / getDataSize() / getDataSize();
@@ -120,7 +123,7 @@ void DigramWidget::initGeometry() {
   vao_.create();
 }
 
-void DigramWidget::resizeGLImpl(int w, int h) {}
+void DigramWidget::resizeGLImpl(int /*w*/, int /*h*/) {}
 
 void DigramWidget::paintGLImpl() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

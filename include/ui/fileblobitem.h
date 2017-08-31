@@ -29,7 +29,7 @@ class FileBlobItem : public QObject {
   Q_OBJECT
 
  public:
-  virtual ~FileBlobItem() {}
+  ~FileBlobItem() override {}
   explicit FileBlobItem(const QString& name, const QString& value,
                         const QString& comment, uint64_t start, uint64_t end,
                         QObject* parent);

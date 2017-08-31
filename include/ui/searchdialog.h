@@ -33,8 +33,8 @@ namespace ui {
 class SearchDialog : public QDialog {
   Q_OBJECT
  public:
-  explicit SearchDialog(HexEdit* hexEdit, QWidget* parent = 0);
-  ~SearchDialog();
+  explicit SearchDialog(HexEdit* hexEdit, QWidget* parent = nullptr);
+  ~SearchDialog() override;
   qint64 findNext(bool include_overlapping = true, bool interactive = true);
   Ui::SearchDialog* ui;
 

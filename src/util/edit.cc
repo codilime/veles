@@ -129,9 +129,8 @@ uint64_t EditEngine::byteValue(size_t pos) const {
   size_t offset_in_fragment = it->offset_ + (pos - it.key());
   if (it->fragment_ == nullptr) {
     return original_data_->binData().element64(offset_in_fragment);
-  } else {
-    return it->fragment_->element64(offset_in_fragment);
   }
+  return it->fragment_->element64(offset_in_fragment);
 }
 
 uint64_t EditEngine::originalByteValue(size_t pos) const {
@@ -185,9 +184,8 @@ data::BinData EditEngine::getDataFromEditNode(const EditNode& edit_node,
                                               size_t size) const {
   if (edit_node.fragment_ == nullptr) {
     return original_data_->binData().data(edit_node.offset_ + offset, size);
-  } else {
-    return edit_node.fragment_->data(edit_node.offset_ + offset, size);
   }
+  return edit_node.fragment_->data(edit_node.offset_ + offset, size);
 }
 
 /*

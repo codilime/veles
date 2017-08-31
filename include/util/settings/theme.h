@@ -26,13 +26,13 @@ namespace util {
 namespace settings {
 namespace theme {
 
-QString currentId();
-void setCurrentId(const QString& currentId);
-QStringList availableIds();
+QString currentTheme();
+void setCurrentTheme(const QString& theme);
+QStringList availableThemes();
 QPalette pallete();
 QStyle* createStyle();
 QColor highlightingColor();
-QColor chunkBackground(int index);
+QColor chunkBackground(int color_index);
 QColor editedBackground();
 QColor byteColor(uint8_t byte);
 QFont font();

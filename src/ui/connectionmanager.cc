@@ -34,10 +34,7 @@ using util::settings::shortcuts::ShortcutsModel;
 /* ConnectionManager */
 /*****************************************************************************/
 
-ConnectionManager::ConnectionManager(QWidget* parent)
-    : QObject(parent),
-      server_process_(nullptr),
-      network_client_output_(nullptr) {
+ConnectionManager::ConnectionManager(QWidget* parent) : QObject(parent) {
   connection_dialog_ = new ConnectionDialog(parent);
   show_connection_dialog_action_ =
       ShortcutsModel::getShortcutsModel()->createQAction(
@@ -74,7 +71,7 @@ ConnectionManager::ConnectionManager(QWidget* parent)
 }
 
 ConnectionManager::~ConnectionManager() {
-  if (server_process_) {
+  if (server_process_ != nullptr) {
     killLocalServer();
   }
 
@@ -103,7 +100,7 @@ void ConnectionManager::locallyCreatedServerStarted() {
 }
 
 void ConnectionManager::locallyCreatedServerFinished(
-    int exit_code, QProcess::ExitStatus exit_status) {
+    int exit_code, QProcess::ExitStatus /*exit_status*/) {
   serverProcessReadyRead();
 
   QTextStream out(LogWidget::output());
@@ -133,7 +130,7 @@ void ConnectionManager::startClient() {
 }
 
 void ConnectionManager::startLocalServer() {
-  if (server_process_) {
+  if (server_process_ != nullptr) {
     server_process_->deleteLater();
   }
   server_process_ = new QProcess(this);
@@ -229,7 +226,7 @@ void ConnectionManager::startLocalServer() {
 }
 
 void ConnectionManager::killLocalServer() {
-  if (server_process_) {
+  if (server_process_ != nullptr) {
 #ifdef Q_OS_WIN
     server_process_->kill();
 #else
@@ -239,13 +236,13 @@ void ConnectionManager::killLocalServer() {
 }
 
 void ConnectionManager::disconnect() {
-  if (network_client_) {
+  if (network_client_ != nullptr) {
     network_client_->disconnect();
   }
 }
 
 void ConnectionManager::serverProcessReadyRead() {
-  if (server_process_ && server_process_->bytesAvailable() > 0) {
+  if (server_process_ != nullptr && server_process_->bytesAvailable() > 0) {
     QByteArray out = server_process_->read(server_process_->bytesAvailable());
     if (out.size() > 0) {
       if (network_client_->connectionStatus() ==
@@ -304,7 +301,7 @@ void ConnectionManager::raiseConnectionDialog() {
 }
 
 void ConnectionManager::sendListConnectionsMessage() {
-  if (network_client_) {
+  if (network_client_ != nullptr) {
     std::shared_ptr<proto::MsgListConnections> list_connections_message =
         std::make_shared<proto::MsgListConnections>(network_client_->nextQid(),
                                                     true);
@@ -342,10 +339,7 @@ void ConnectionManager::messageReceived(const client::msg_ptr& message) {
 /*****************************************************************************/
 
 ConnectionNotificationWidget::ConnectionNotificationWidget(QWidget* parent)
-    : QWidget(parent),
-      connection_status_(client::NetworkClient::ConnectionStatus::NotConnected),
-      frame_(0),
-      last_status_change_(-10) {
+    : QWidget(parent) {
   ui_ = new Ui::ConnectionNotificationWidget;
   ui_->setupUi(this);
 
@@ -385,18 +379,18 @@ void ConnectionNotificationWidget::updateConnectionStatus(
   connection_status_ = connection_status;
 }
 
-void ConnectionNotificationWidget::timerEvent(QTimerEvent* event) {
+void ConnectionNotificationWidget::timerEvent(QTimerEvent* /*event*/) {
   ++frame_;
 
   if (connection_status_ ==
       client::NetworkClient::ConnectionStatus::Connecting) {
     ui_->connection_status_icon_label->setPixmap(
-        frame_ % 2 ? icon_connected_ : icon_not_connected_);
+        frame_ % 2 == 1 ? icon_connected_ : icon_not_connected_);
   } else if (connection_status_ ==
              client::NetworkClient::ConnectionStatus::NotConnected) {
     if (frame_ - last_status_change_ < 10) {
       ui_->connection_status_icon_label->setPixmap(
-          frame_ % 2 ? icon_alarm_ : icon_not_connected_);
+          frame_ % 2 == 1 ? icon_alarm_ : icon_not_connected_);
     } else {
       ui_->connection_status_icon_label->setPixmap(icon_not_connected_);
     }
@@ -414,7 +408,7 @@ ConnectionsWidget::ConnectionsWidget(QWidget* parent) : QWidget(parent) {
   layout_ = new QHBoxLayout(this);
   setLayout(layout_);
 
-  QScrollArea* scroll_area = new QScrollArea(this);
+  auto* scroll_area = new QScrollArea(this);
   scroll_area->setFrameShape(QFrame::NoFrame);
   scroll_area->setWidgetResizable(true);
   QWidget* scroll_area_contents = new QWidget(scroll_area);
@@ -463,7 +457,7 @@ void ConnectionsWidget::updateConnections(
     const std::shared_ptr<std::vector<std::shared_ptr<proto::Connection>>>&
         connections) {
   clear();
-  if (connections && connections->size()) {
+  if (connections != nullptr && !connections->empty()) {
     users_icon_label_->show();
 
     for (const auto& connection : *connections) {

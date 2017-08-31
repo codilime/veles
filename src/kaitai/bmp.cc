@@ -7,7 +7,8 @@ namespace veles {
 namespace kaitai {
 namespace bmp {
 
-bmp_t::bmp_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent, bmp_t* p_root)
+bmp_t::bmp_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent,
+             bmp_t* /*p_root*/)
     : kaitai::kstruct(p_io) {
   m__io->pushName("_parent");
   m__parent = p_parent;
@@ -230,7 +231,7 @@ std::vector<uint8_t> bmp_t::image() {
   auto saved_io = m__io;
   auto saved_veles_obj = veles_obj;
   m__io = new kaitai::kstream(saved_io->blob(), file_header()->bitmap_ofs(),
-                              veles_obj, saved_io->error());
+                              veles_obj, 0, saved_io->error());
   veles_obj = m__io->startChunk(saved_io->currentName());
   m__io->pushName("image");
   m_image = m__io->read_bytes_full();

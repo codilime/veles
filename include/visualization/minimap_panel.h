@@ -33,8 +33,8 @@ class MinimapPanel : public QWidget {
   Q_OBJECT
 
  public:
-  explicit MinimapPanel(QWidget* parent = 0);
-  ~MinimapPanel();
+  explicit MinimapPanel(QWidget* parent = nullptr);
+  ~MinimapPanel() override;
 
   void setSampler(util::ISampler* sampler);
   QPair<size_t, size_t> getSelection();
@@ -61,7 +61,8 @@ class MinimapPanel : public QWidget {
 
   QPair<size_t, size_t> selection_;
 
-  VisualizationMinimap::MinimapMode mode_;
+  VisualizationMinimap::MinimapMode mode_ =
+      VisualizationMinimap::MinimapMode::VALUE;
 
   QBoxLayout *layout_, *minimaps_layout_;
   QPushButton *add_minimap_button_, *remove_minimap_button_;

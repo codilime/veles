@@ -39,13 +39,17 @@ class ObjectHandleBase {
     QObject::connect(static_cast<InfoPromise*>(promise), &InfoPromise::gotError,
                      [&err](PError error) { err = error; });
     while (true) {
-      if (res) {
-        if (!promise.isNull()) delete static_cast<InfoPromise*>(promise);
+      if (res != nullptr) {
+        if (!promise.isNull()) {
+          delete static_cast<InfoPromise*>(promise);
+        }
         return res;
       }
-      if (err) {
-        if (!promise.isNull()) delete static_cast<InfoPromise*>(promise);
-        throw err;
+      if (err != nullptr) {
+        if (!promise.isNull()) {
+          delete static_cast<InfoPromise*>(promise);
+        }
+        throw PError(err);
       }
       QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
     }
@@ -62,24 +66,24 @@ class ObjectHandleBase {
                      &MethodResultPromise::gotError,
                      [&err](PError error) { err = error; });
     while (true) {
-      if (res) {
+      if (res != nullptr) {
         if (!promise.isNull()) {
           delete static_cast<MethodResultPromise*>(promise);
         }
         return res;
       }
-      if (err) {
+      if (err != nullptr) {
         if (!promise.isNull()) {
           delete static_cast<MethodResultPromise*>(promise);
         }
-        throw err;
+        throw PError(err);
       }
       QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
     }
   }
 
  public:
-  virtual ~ObjectHandleBase() {}
+  virtual ~ObjectHandleBase() = default;
 
   virtual InfoPromise* getInfo(const PInfoRequest& req) = 0;
   virtual InfoPromise* subInfo(const PInfoRequest& req) = 0;
@@ -102,14 +106,18 @@ class ObjectHandleBase {
   template <typename Request, typename... Args>
   InfoPromise* asyncGetInfo(QObject* parent, Args... args) {
     InfoPromise* res = getInfo(QSharedPointer<Request>::create(args...));
-    if (parent) res->setParent(parent);
+    if (parent) {
+      res->setParent(parent);
+    }
     return res;
   }
 
   template <typename Request, typename... Args>
   InfoPromise* asyncSubInfo(QObject* parent, Args... args) {
     InfoPromise* res = subInfo(QSharedPointer<Request>::create(args...));
-    if (parent) res->setParent(parent);
+    if (parent) {
+      res->setParent(parent);
+    }
     return res;
   }
 
@@ -117,7 +125,9 @@ class ObjectHandleBase {
   MethodResultPromise* asyncRunMethod(QObject* parent, Args... args) {
     MethodResultPromise* res =
         runMethod(QSharedPointer<Request>::create(args...));
-    if (parent) res->setParent(parent);
+    if (parent) {
+      res->setParent(parent);
+    }
     return res;
   }
 };

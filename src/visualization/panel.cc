@@ -101,17 +101,14 @@ void VisualizationPanel::setData(const QByteArray& data) {
       0, sampler_->getFileOffset(sampler_->getSampleSize())));
 }
 
-void VisualizationPanel::setRange(const size_t start, const size_t end) {
+void VisualizationPanel::setRange(size_t start, size_t end) {
   sampler_->setRange(start, end);
 }
 
-bool VisualizationPanel::eventFilter(QObject* watched, QEvent* event) {
+bool VisualizationPanel::eventFilter(QObject* /*watched*/, QEvent* event) {
   // filter out timer events for not visible visualisation so that we don't
   // waste resources on rotating something that isn't visible.
-  if (!visible_ && event->type() == QEvent::Timer) {
-    return true;
-  }
-  return false;
+  return !visible_ && event->type() == QEvent::Timer;
 }
 
 void VisualizationPanel::visibilityChanged(bool visibility) {
@@ -124,12 +121,12 @@ void VisualizationPanel::visibilityChanged(bool visibility) {
 
 util::ISampler* VisualizationPanel::getSampler(ESampler type,
                                                const QByteArray& data,
-                                               int sample_size) {
+                                               qint64 sample_size) {
   switch (type) {
     case ESampler::NO_SAMPLER:
       return new util::FakeSampler(data);
     case ESampler::UNIFORM_SAMPLER:
-      util::UniformSampler* sampler = new util::UniformSampler(data);
+      auto* sampler = new util::UniformSampler(data);
       sampler->setSampleSize(1024 * sample_size);
       return sampler;
   }
@@ -152,7 +149,7 @@ VisualizationWidget* VisualizationPanel::getVisualization(EVisualization type,
                        false);
       break;
   }
-  if (trigram) {
+  if (trigram != nullptr) {
     trigram->installEventFilter(this);
     return trigram;
   }
@@ -172,7 +169,9 @@ QString VisualizationPanel::prepareAddressString(size_t start, size_t end) {
 
 void VisualizationPanel::setSamplingMethod(const QString& name) {
   auto new_sampler_type = k_sampler_map.at(name);
-  if (new_sampler_type == sampler_type_) return;
+  if (new_sampler_type == sampler_type_) {
+    return;
+  }
 
   auto old_sampler = sampler_;
   sampler_ = getSampler(new_sampler_type, data_, sample_size_);
@@ -184,7 +183,7 @@ void VisualizationPanel::setSamplingMethod(const QString& name) {
   sampler_type_ = new_sampler_type;
 }
 
-void VisualizationPanel::setSampleSize(int kilobytes) {
+void VisualizationPanel::setSampleSize(qint64 kilobytes) {
   sample_size_ = kilobytes;
   if (sampler_type_ == ESampler::UNIFORM_SAMPLER) {
     sampler_->setSampleSize(1024 * kilobytes);
@@ -361,13 +360,13 @@ void VisualizationPanel::initOptionsPanel() {
 
   /////////////////////////////////////
   // Selection
-  QWidgetAction* selection_widget_action = new QWidgetAction(this);
+  auto* selection_widget_action = new QWidgetAction(this);
   selection_label_ = new QLabel(prepareAddressString(0, 0));
   selection_widget_action->setDefaultWidget(selection_label_);
   selection_label_->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
   selection_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
   selection_label_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-  QToolBar* selection_toolbar = new QToolBar;
+  auto* selection_toolbar = new QToolBar;
   selection_toolbar->setMovable(false);
   selection_toolbar->addAction(selection_widget_action);
   selection_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);

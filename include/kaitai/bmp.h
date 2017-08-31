@@ -7,8 +7,9 @@
 #include <kaitai/kaitaistream.h>
 #include <kaitai/kaitaistruct.h>
 
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
+
 namespace veles {
 namespace kaitai {
 namespace bmp {
@@ -20,15 +21,15 @@ class bmp_t : public kaitai::kstruct {
   class bitmap_core_header_t;
   class bitmap_info_header_t;
 
-  explicit bmp_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent = 0,
-                 bmp_t* p_root = 0);
+  explicit bmp_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent = nullptr,
+                 bmp_t* p_root = nullptr);
   veles::dbif::ObjectHandle veles_obj;
   ~bmp_t();
 
   class file_header_t : public kaitai::kstruct {
    public:
-    explicit file_header_t(kaitai::kstream* p_io, bmp_t* p_parent = 0,
-                           bmp_t* p_root = 0);
+    explicit file_header_t(kaitai::kstream* p_io, bmp_t* p_parent = nullptr,
+                           bmp_t* p_root = nullptr);
     veles::dbif::ObjectHandle veles_obj;
     ~file_header_t();
 
@@ -53,8 +54,8 @@ class bmp_t : public kaitai::kstruct {
 
   class dib_header_t : public kaitai::kstruct {
    public:
-    explicit dib_header_t(kaitai::kstream* p_io, bmp_t* p_parent = 0,
-                          bmp_t* p_root = 0);
+    explicit dib_header_t(kaitai::kstream* p_io, bmp_t* p_parent = nullptr,
+                          bmp_t* p_root = nullptr);
     veles::dbif::ObjectHandle veles_obj;
     ~dib_header_t();
 
@@ -146,8 +147,8 @@ class bmp_t : public kaitai::kstruct {
   class bitmap_core_header_t : public kaitai::kstruct {
    public:
     explicit bitmap_core_header_t(kaitai::kstream* p_io,
-                                  bmp_t::dib_header_t* p_parent = 0,
-                                  bmp_t* p_root = 0);
+                                  bmp_t::dib_header_t* p_parent = nullptr,
+                                  bmp_t* p_root = nullptr);
     veles::dbif::ObjectHandle veles_obj;
     ~bitmap_core_header_t();
 
@@ -171,8 +172,8 @@ class bmp_t : public kaitai::kstruct {
   class bitmap_info_header_t : public kaitai::kstruct {
    public:
     explicit bitmap_info_header_t(kaitai::kstream* p_io,
-                                  bmp_t::dib_header_t* p_parent = 0,
-                                  bmp_t* p_root = 0);
+                                  bmp_t::dib_header_t* p_parent = nullptr,
+                                  bmp_t* p_root = nullptr);
     veles::dbif::ObjectHandle veles_obj;
     ~bitmap_info_header_t();
 

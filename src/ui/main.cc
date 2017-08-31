@@ -40,18 +40,18 @@ int main(int argc, char* argv[]) {
   QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
 
   QApplication app(argc, argv);
-  app.setApplicationName("Veles");
-  app.setOrganizationName("Codisec");
-  app.setApplicationVersion(veles::util::version::string);
+  QApplication::setApplicationName("Veles");
+  QApplication::setOrganizationName("Codisec");
+  QApplication::setApplicationVersion(veles::util::version::string);
 
-  app.setStyle(veles::util::settings::theme::createStyle());
-  app.setPalette(veles::util::settings::theme::pallete());
+  QApplication::setStyle(veles::util::settings::theme::createStyle());
+  QApplication::setPalette(veles::util::settings::theme::pallete());
 
   // Identify locale and load translation if available
   QString locale = QLocale::system().name();
   QTranslator translator;
   translator.load(QString("hexedit_") + locale);
-  app.installTranslator(&translator);
+  QApplication::installTranslator(&translator);
 
   veles::util::threadpool::createTopic("visualization", 3);
 
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
   parser.addVersionOption();
   parser.process(app);
 
-  veles::ui::VelesMainWindow* mainWin = new veles::ui::VelesMainWindow;
+  auto* mainWin = new veles::ui::VelesMainWindow;
   mainWin->showMaximized();
 
   auto files = parser.positionalArguments();
@@ -74,5 +74,5 @@ int main(int argc, char* argv[]) {
     mainWin->addFile(file);
   }
 
-  return app.exec();
+  return QApplication::exec();
 }

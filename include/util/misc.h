@@ -22,7 +22,7 @@ namespace util {
 namespace misc {
 
 template <size_t SIZE, class T>
-inline size_t array_size(T (&arr)[SIZE]) {
+inline size_t array_size(T (&/*arr*/)[SIZE]) {
   return SIZE;
 }
 

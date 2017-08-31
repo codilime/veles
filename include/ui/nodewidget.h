@@ -46,7 +46,7 @@ class NodeWidget : public View {
       MainWindowWithDetachableDockWidgets* main_window,
       const QSharedPointer<FileBlobModel>& data_model,
       const QSharedPointer<QItemSelectionModel>& selection_model);
-  virtual ~NodeWidget();
+  ~NodeWidget() override;
 
  public slots:
   void loadBinDataToMinimap();

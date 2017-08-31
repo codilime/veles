@@ -10,7 +10,7 @@ class Microsoft_peParser : public parser::Parser {
     try {
       auto stream = kaitai::kstream(blob, start, parent_chunk);
       auto parser = kaitai::microsoft_pe::microsoft_pe_t(&stream);
-    } catch (std::exception) {
+    } catch (const std::exception&) {
     }
   }
 };

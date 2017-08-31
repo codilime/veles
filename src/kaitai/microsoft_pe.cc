@@ -386,7 +386,7 @@ std::vector<uint8_t> microsoft_pe_t::section_t::body() {
   auto saved_io = m__io;
   auto saved_veles_obj = veles_obj;
   m__io = new kaitai::kstream(saved_io->blob(), pointer_to_raw_data(),
-                              veles_obj, saved_io->error());
+                              veles_obj, 0, saved_io->error());
   veles_obj = m__io->startChunk(saved_io->currentName());
   m__io->pushName("body");
   m_body = m__io->read_bytes(size_of_raw_data());

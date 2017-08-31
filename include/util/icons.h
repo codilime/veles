@@ -25,7 +25,7 @@ namespace util {
 const int k_white_threshold = 175;
 
 QIcon getColoredIcon(const QString& path, const QColor& color,
-                     bool black_only = true);
+                     bool black_on_transparent = true);
 
 }  // namespace util
 }  // namespace veles

@@ -117,7 +117,7 @@ void setShortcuts(ShortcutType type, const QList<QKeySequence>& shortcuts);
 class ShortcutsItem {
  public:
   explicit ShortcutsItem(const QString& display_name = QString(""),
-                         ShortcutsItem* parent = 0);
+                         ShortcutsItem* parent = nullptr);
   ShortcutsItem(const QString& display_name, ShortcutsItem* parent,
                 util::settings::shortcuts::ShortcutType type);
   ShortcutsItem(const QString& name, const QString& display_name,
@@ -151,7 +151,7 @@ class ShortcutsItem {
   QString name_;
   QString display_name_;
   ShortcutsItem* parent_;
-  bool conflict_;
+  bool conflict_ = false;
   util::settings::shortcuts::ShortcutType type_;
   bool is_category_;
 };
@@ -164,14 +164,14 @@ class ShortcutsModel : public QAbstractItemModel {
   static const int TYPE_ROLE = Qt::UserRole + 1;
   static const int SHORTCUTS_ROLE = Qt::UserRole + 2;
 
-  ~ShortcutsModel();
+  ~ShortcutsModel() override;
 
-  virtual QModelIndex index(int row, int column,
-                            const QModelIndex& parent) const override;
-  virtual QModelIndex parent(const QModelIndex& index) const override;
-  virtual int rowCount(const QModelIndex& parent) const override;
-  virtual int columnCount(const QModelIndex& parent) const override;
-  virtual QVariant data(const QModelIndex& index, int role) const override;
+  QModelIndex index(int row, int column,
+                    const QModelIndex& parent) const override;
+  QModelIndex parent(const QModelIndex& index) const override;
+  int rowCount(const QModelIndex& parent) const override;
+  int columnCount(const QModelIndex& parent) const override;
+  QVariant data(const QModelIndex& index, int role) const override;
   QVariant headerData(int section, Qt::Orientation orientation,
                       int role) const override;
   static ShortcutsModel* getShortcutsModel();

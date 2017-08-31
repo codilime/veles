@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-#include "assert.h"
+#include <cassert>
 
 #include "util/concurrency/threadpool.h"
 #include "util/sampling/isampler.h"
@@ -66,7 +66,9 @@ void ISampler::resample() {
 }
 
 size_t ISampler::getSampleSize() {
-  if (empty()) return 0;
+  if (empty()) {
+    return 0;
+  }
   auto lc = lock();
   if (!samplingRequired()) {
     return getDataSize();
@@ -79,9 +81,15 @@ size_t ISampler::getFileOffset(size_t index) {
   auto lc = lock();
   size_t sample_s = getRequestedSampleSize();
   assert(index <= sample_s);
-  if (index == 0) return start_;
-  if (index == sample_s - 1) return end_ - 1;
-  if (index == sample_s) return end_;
+  if (index == 0) {
+    return start_;
+  }
+  if (index == sample_s - 1) {
+    return end_ - 1;
+  }
+  if (index == sample_s) {
+    return end_;
+  }
   if (!samplingRequired()) {
     return index + start_;
   }
@@ -93,8 +101,12 @@ size_t ISampler::getSampleOffset(size_t index) {
   auto lc = lock();
   assert(index >= start_);
   assert(index < end_);
-  if (index == start_) return 0;
-  if (index == end_ - 1) return getSampleSize() - 1;
+  if (index == start_) {
+    return 0;
+  }
+  if (index == end_ - 1) {
+    return getSampleSize() - 1;
+  }
   if (!samplingRequired()) {
     return index - start_;
   }
@@ -127,13 +139,17 @@ std::unique_lock<SamplerMutex> ISampler::lock() {
 }
 
 void ISampler::wait() {
-  if (!allow_async_) return;
+  if (!allow_async_) {
+    return;
+  }
   waitAndLock();
 }
 
 std::unique_lock<SamplerMutex> ISampler::waitAndLock() {
   auto lc = lock();
-  if (!allow_async_) return lc;
+  if (!allow_async_) {
+    return lc;
+  }
   while (!isFinished()) {
     sampler_condition_.wait(lc);
   }
@@ -215,8 +231,8 @@ const char* ISampler::getRawData(SamplerConfig* sc) const {
 /* Private methods */
 /*****************************************************************************/
 
-size_t ISampler::samplingRequired(SamplerConfig* sc) {
-  return ((!empty()) && getRequestedSampleSize(sc) < getDataSize(sc));
+bool ISampler::samplingRequired(SamplerConfig* sc) {
+  return !empty() && getRequestedSampleSize(sc) < getDataSize(sc);
 }
 
 void ISampler::applySamplerConfig(SamplerConfig* sc) {
@@ -254,7 +270,9 @@ void ISampler::runResample(SamplerConfig* sc) {
 }
 
 void ISampler::resampleAsync(int target_version, SamplerConfig* sc) {
-  if (target_version < requested_version_.load()) return;
+  if (target_version < requested_version_.load()) {
+    return;
+  }
   ResampleData* prepared = prepareResample(sc);
   auto lc = lock();
   if (target_version > current_version_) {

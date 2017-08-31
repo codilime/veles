@@ -79,7 +79,7 @@ void FileBlobItem::dataUpdatedHandle(FileBlobItem* item) {
 }
 
 void FileBlobItem::addChildren(const QList<FileBlobItem*>& children) {
-  if (children.size() == 0) {
+  if (children.empty()) {
     return;
   }
 
@@ -98,11 +98,11 @@ void FileBlobItem::addChildren(const QList<FileBlobItem*>& children) {
   emit insertingChildren(this, false, children.size());
 }
 
-FileBlobItem* FileBlobItem::child(int num) {
-  if (num >= children_.size()) {
+FileBlobItem* FileBlobItem::child(int index) {
+  if (index >= children_.size()) {
     return nullptr;
   }
-  return children_[num];
+  return children_[index];
 }
 
 int FileBlobItem::childIndex(FileBlobItem* child) {
@@ -133,10 +133,10 @@ void FileBlobItem::setFields(const QString& name, const QString& comment,
 
 dbif::ObjectHandle FileBlobItem::objectHandle() { return dataObj_; }
 
-bool FileBlobItem::isRemovable() { return objectHandle(); }
+bool FileBlobItem::isRemovable() { return !objectHandle().isNull(); }
 
 void FileBlobItem::removeOldChildren() {
-  bool hasChilds = children_.size() > 0;
+  bool hasChilds = !children_.empty();
   if (hasChilds) {
     emit removingChildren(this, true);
   }

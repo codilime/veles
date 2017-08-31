@@ -78,7 +78,7 @@ void SubchunkFileBlobItem::gotChunkDescriptionResponse(
 }
 
 void SubchunkFileBlobItem::gotError(const veles::dbif::PError& error) {
-  if (error.dynamicCast<veles::dbif::ObjectGoneError>()) {
+  if (error.dynamicCast<veles::dbif::ObjectGoneError>() != nullptr) {
     FileBlobItem::setFields("removed", "", 0, 0);
   } else {
     FileBlobItem::setFields("error", "", 0, 0);

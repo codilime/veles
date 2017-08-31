@@ -25,7 +25,7 @@ namespace util {
 class UniformSampler : public ISampler {
  public:
   explicit UniformSampler(const QByteArray& data);
-  ~UniformSampler();
+  ~UniformSampler() override;
 
   void setWindowSize(size_t size);
 

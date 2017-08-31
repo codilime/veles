@@ -52,20 +52,24 @@ void threadFunction(TopicInfo* ti) {
 
 void createTopic(const std::string& topic, size_t workers) {
   std::unique_lock<std::mutex> lc(map_mutex_);
-  if (topics_.find(topic) != topics_.end()) return;
-  TopicInfo* ti = new TopicInfo();
+  if (topics_.find(topic) != topics_.end()) {
+    return;
+  }
+  auto* ti = new TopicInfo();
   ti->mock = false;
   topics_[topic] = ti;
   std::unique_lock<std::mutex> topic_lc(ti->mutex);
   for (size_t i = 0; i < workers; ++i) {
-    ti->workers.push_back(std::thread(threadFunction, ti));
+    ti->workers.emplace_back(threadFunction, ti);
   }
 }
 
 void mockTopic(const std::string& topic) {
   std::unique_lock<std::mutex> lc(map_mutex_);
-  if (topics_.find(topic) != topics_.end()) return;
-  TopicInfo* ti = new TopicInfo();
+  if (topics_.find(topic) != topics_.end()) {
+    return;
+  }
+  auto* ti = new TopicInfo();
   ti->mock = true;
   topics_[topic] = ti;
 }
@@ -82,7 +86,7 @@ SchedulingResult runTask(const std::string& topic, const Task& t) {
     t();
     return SchedulingResult::SCHEDULED;
   }
-  if (ti->workers.size() == 0) {
+  if (ti->workers.empty()) {
     return SchedulingResult::ERR_NO_WORKERS;
   }
   ti->tasks.push_back(t);

@@ -285,9 +285,9 @@ void HexEditWidget::initParsersMenu() {
 }
 
 void HexEditWidget::createSelectionInfo() {
-  QWidgetAction* widget_action = new QWidgetAction(this);
-  QWidget* selection_panel = new QWidget;
-  QHBoxLayout* layout = new QHBoxLayout;
+  auto* widget_action = new QWidgetAction(this);
+  auto* selection_panel = new QWidget;
+  auto* layout = new QHBoxLayout;
   selection_panel->setLayout(layout);
   layout->addStretch(1);
   selection_label_ = new QLabel;
@@ -297,7 +297,7 @@ void HexEditWidget::createSelectionInfo() {
                                             Qt::TextSelectableByKeyboard);
   layout->addWidget(selection_label_);
   widget_action->setDefaultWidget(selection_panel);
-  QToolBar* selection_toolbar = new QToolBar;
+  auto* selection_toolbar = new QToolBar;
   selection_toolbar->addAction(widget_action);
   selection_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
   addToolBar(selection_toolbar);
@@ -326,10 +326,14 @@ bool HexEditWidget::saveFile(const QString& file_name) {
   bool ok = file.write(QByteArray(
                 reinterpret_cast<const char*>(data_model_->binData().rawData()),
                 static_cast<int>(data_model_->binData().size()))) != -1;
-  if (QFile::exists(file_name)) ok = QFile::remove(file_name);
+  if (QFile::exists(file_name)) {
+    ok = QFile::remove(file_name);
+  }
   if (ok) {
     ok = file.copy(file_name);
-    if (ok) ok = QFile::remove(tmp_file_name);
+    if (ok) {
+      ok = QFile::remove(tmp_file_name);
+    }
   }
   file.close();
 
@@ -359,7 +363,9 @@ void HexEditWidget::showSearchDialog() { search_dialog_->show(); }
 
 bool HexEditWidget::saveAs() {
   QString file_name = QFileDialog::getSaveFileName(this, tr("Save As"));
-  if (file_name.isEmpty()) return false;
+  if (file_name.isEmpty()) {
+    return false;
+  }
 
   return saveFile(file_name);
 }

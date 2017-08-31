@@ -49,7 +49,7 @@ void CreateChunkDialog::init() {
 
 QModelIndex CreateChunkDialog::parentChunk() {
   if (chunkSelectionModel_ == nullptr) {
-    return QModelIndex();
+    return {};
   }
 
   auto currentIndex = chunkSelectionModel_->currentIndex();
@@ -96,7 +96,7 @@ void CreateChunkDialog::setRange(uint64_t begin, uint64_t end) {
   ui->endSpinBox->setValue(end);
 }
 
-void CreateChunkDialog::showEvent(QShowEvent* event) {
+void CreateChunkDialog::showEvent(QShowEvent* /*event*/) {
   ui->nameEdit->setFocus(Qt::OtherFocusReason);
   ui->commentEdit->clear();
 }

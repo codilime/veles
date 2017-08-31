@@ -16,9 +16,10 @@
  */
 #pragma once
 
-#include <stdint.h>
-#include <QString>
+#include <cstdint>
 #include <vector>
+
+#include <QString>
 
 #include "data/bindata.h"
 #include "data/field.h"
@@ -30,10 +31,10 @@ namespace dbif {
 // Requests
 
 struct InfoRequest {
-  virtual ~InfoRequest() {}
+  virtual ~InfoRequest() = default;
 
  protected:
-  InfoRequest() {}
+  InfoRequest() = default;
 };
 
 struct DescriptionReply;
@@ -69,10 +70,10 @@ struct ChunkDataRequest : InfoRequest {
 // Replies
 
 struct InfoReply {
-  virtual ~InfoReply() {}
+  virtual ~InfoReply() = default;
 
  protected:
-  InfoReply() {}
+  InfoReply() = default;
 };
 
 struct DescriptionReply : InfoReply {

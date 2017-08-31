@@ -55,7 +55,7 @@ class NetworkClient : public QObject {
   static QString connStatusStr(ConnectionStatus status);
 
   explicit NetworkClient(QObject* parent = nullptr);
-  virtual ~NetworkClient();
+  ~NetworkClient() override;
   ConnectionStatus connectionStatus();
   void connect(const QString& server_url, const QString& client_interface_name,
                const QString& client_name, const QString& client_version,
@@ -109,7 +109,7 @@ class NetworkClient : public QObject {
   void checkFingerprint(const QList<QSslError>& errors);
 
  private:
-  QSslSocket* client_socket_;
+  QSslSocket* client_socket_ = nullptr;
   std::unique_ptr<NodeTree> node_tree_;
   ConnectionStatus status_;
 
@@ -130,7 +130,7 @@ class NetworkClient : public QObject {
   messages::MsgpackWrapper msgpack_wrapper_;
   std::unordered_map<std::string, MessageHandler> message_handlers_;
 
-  QTextStream* output_stream_;
+  QTextStream* output_stream_ = nullptr;
   uint64_t qid_;
 };
 

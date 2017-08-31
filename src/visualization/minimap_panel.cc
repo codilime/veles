@@ -31,9 +31,7 @@ const float k_minimum_auto_selection_size = 0.1f;
 typedef VisualizationMinimap::MinimapMode MinimapMode;
 
 MinimapPanel::MinimapPanel(QWidget* parent)
-    : QWidget(parent),
-      mode_(MinimapMode::VALUE),
-      select_range_dialog_(new SelectRangeDialog(this)) {
+    : QWidget(parent), select_range_dialog_(new SelectRangeDialog(this)) {
   minimaps_.push_back(new VisualizationMinimap(this));
   connect(minimaps_[0], &VisualizationMinimap::selectionChanged,
           std::bind(&MinimapPanel::updateSelection, this, 0,
@@ -72,8 +70,8 @@ void MinimapPanel::initLayout() {
 
   minimaps_layout_ = new QHBoxLayout();
   minimaps_layout_->setContentsMargins(0, 0, 0, 0);
-  for (auto it = minimaps_.begin(); it != minimaps_.end(); ++it) {
-    minimaps_layout_->addWidget(*it, 1);
+  for (const auto& minimap : minimaps_) {
+    minimaps_layout_->addWidget(minimap, 1);
   }
   layout_->addLayout(minimaps_layout_);
 
@@ -155,8 +153,8 @@ void MinimapPanel::removeMinimap() {
   delete to_remove;
   delete to_remove_sampler;
 
-  for (auto it = minimaps_.begin(); it != minimaps_.end(); ++it) {
-    (*it)->refresh();
+  for (const auto& minimap : minimaps_) {
+    minimap->refresh();
   }
   remove_minimap_button_->setEnabled(minimaps_.length() > 1);
 
@@ -185,8 +183,12 @@ void MinimapPanel::updateSelection(int minimap_index, size_t start,
 }
 
 void MinimapPanel::showSelectRangeDialog() {
-  if (select_range_dialog_->isVisible()) return;
-  if (sampler_->empty()) return;
+  if (select_range_dialog_->isVisible()) {
+    return;
+  }
+  if (sampler_->empty()) {
+    return;
+  }
   auto min_address = sampler_->getFileOffset(0);
   auto max_address = sampler_->getFileOffset(sampler_->getSampleSize());
   select_range_dialog_->resetNumberFormat();

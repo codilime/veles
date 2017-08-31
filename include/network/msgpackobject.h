@@ -40,7 +40,7 @@ enum class ObjectType {
 };
 
 class MsgpackObject {
-  ObjectType obj_type;
+  ObjectType obj_type = ObjectType::NIL;
 
   union ObjectValue {
     bool boolean;
@@ -93,7 +93,7 @@ class MsgpackObject {
   void destroyValue();
 
  public:
-  MsgpackObject() : obj_type(ObjectType::NIL) {}
+  MsgpackObject() : obj_type() {}
   explicit MsgpackObject(bool val)
       : obj_type(ObjectType::BOOLEAN), value(val) {}
   explicit MsgpackObject(int64_t val)
@@ -230,23 +230,23 @@ class MsgpackObject {
   void fromAnother(const MsgpackObject& other);
 };
 
-std::shared_ptr<MsgpackObject> toMsgpackObject(const bool val);
+std::shared_ptr<MsgpackObject> toMsgpackObject(bool val);
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const std::string& val);
 std::shared_ptr<MsgpackObject> toMsgpackObject(
     const std::shared_ptr<std::string>& val);
 
-std::shared_ptr<MsgpackObject> toMsgpackObject(const uint64_t val);
-std::shared_ptr<MsgpackObject> toMsgpackObject(const int64_t val);
-std::shared_ptr<MsgpackObject> toMsgpackObject(const double val);
+std::shared_ptr<MsgpackObject> toMsgpackObject(uint64_t val);
+std::shared_ptr<MsgpackObject> toMsgpackObject(int64_t val);
+std::shared_ptr<MsgpackObject> toMsgpackObject(double val);
 
 std::shared_ptr<MsgpackObject> toMsgpackObject(const data::NodeID& val);
 std::shared_ptr<MsgpackObject> toMsgpackObject(
-    const std::shared_ptr<data::NodeID>& val);
+    const std::shared_ptr<data::NodeID>& val_ptr);
 std::shared_ptr<MsgpackObject> toMsgpackObject(
-    const std::shared_ptr<data::BinData>& val);
+    const std::shared_ptr<data::BinData>& val_ptr);
 std::shared_ptr<MsgpackObject> toMsgpackObject(
-    const std::shared_ptr<proto::VelesException>& val);
+    const std::shared_ptr<proto::VelesException>& val_ptr);
 
 namespace details_ {
 
@@ -316,7 +316,7 @@ std::shared_ptr<MsgpackObject> toMsgpackObject(const std::vector<uint8_t>& val);
 
 template <>
 std::shared_ptr<MsgpackObject> toMsgpackObject(
-    const std::shared_ptr<std::vector<uint8_t>>& val);
+    const std::shared_ptr<std::vector<uint8_t>>& val_ptr);
 
 template <class T>
 std::shared_ptr<MsgpackObject> toMsgpackObject(

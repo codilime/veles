@@ -16,9 +16,10 @@
  */
 #pragma once
 
-#include <stdint.h>
-#include <QString>
+#include <cstdint>
 #include <vector>
+
+#include <QString>
 
 #include "dbif/types.h"
 

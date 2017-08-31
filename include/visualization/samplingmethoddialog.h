@@ -30,8 +30,8 @@ class SamplingMethodDialog : public QDialog {
   Q_OBJECT
 
  public:
-  explicit SamplingMethodDialog(QWidget* parent = 0);
-  ~SamplingMethodDialog();
+  explicit SamplingMethodDialog(QWidget* parent = nullptr);
+  ~SamplingMethodDialog() override;
 
  signals:
   void samplingMethodChanged(QString sampling_method);

@@ -16,7 +16,7 @@
  */
 #include "util/settings/shortcuts.h"
 
-#include <assert.h>
+#include <cassert>
 
 #include <QSettings>
 
@@ -60,7 +60,7 @@ void setShortcuts(ShortcutType type, const QList<QKeySequence>& shortcuts) {
 
 QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
   static QMap<ShortcutType, QList<QKeySequence>> defaults;
-  if (defaults.size() == 0) {
+  if (defaults.empty()) {
     defaults[EXIT_APPLICATION] = QKeySequence::keyBindings(QKeySequence::Quit);
     defaults[OPEN_FILE] = QKeySequence::keyBindings(QKeySequence::Open);
     defaults[NEW_FILE] = QKeySequence::keyBindings(QKeySequence::New);
@@ -149,17 +149,13 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
 }
 
 ShortcutsItem::ShortcutsItem(const QString& display_name, ShortcutsItem* parent)
-    : display_name_(display_name),
-      parent_(parent),
-      conflict_(false),
-      is_category_(true) {}
+    : display_name_(display_name), parent_(parent), is_category_(true) {}
 
 ShortcutsItem::ShortcutsItem(const QString& display_name, ShortcutsItem* parent,
                              ShortcutType type)
     : name_(display_name),
       display_name_(display_name),
       parent_(parent),
-      conflict_(false),
       type_(type),
       is_category_(false) {}
 
@@ -168,7 +164,6 @@ ShortcutsItem::ShortcutsItem(const QString& name, const QString& display_name,
     : name_(name),
       display_name_(display_name),
       parent_(parent),
-      conflict_(false),
       type_(type),
       is_category_(false) {}
 
@@ -227,7 +222,7 @@ void ShortcutsItem::updateShortcutsForActions() {
   QMutableListIterator<QPointer<QAction>> it(actions_);
   while (it.hasNext()) {
     auto action = it.next();
-    if (action) {
+    if (action != nullptr) {
       action->setShortcuts(shortcuts_);
     } else {
       it.remove();
@@ -240,26 +235,26 @@ bool ShortcutsItem::isCategory() const { return is_category_; }
 QModelIndex ShortcutsModel::index(int row, int column,
                                   const QModelIndex& parent) const {
   if (!hasIndex(row, column, parent)) {
-    return QModelIndex();
+    return {};
   }
   ShortcutsItem* parentItem = itemFromIndex(parent);
   ShortcutsItem* child = parentItem->children.value(row);
-  if (child) {
+  if (child != nullptr) {
     return createIndex(row, column, child);
   }
-  return QModelIndex();
+  return {};
 }
 
 QModelIndex ShortcutsModel::parent(const QModelIndex& index) const {
   if (!index.isValid()) {
-    return QModelIndex();
+    return {};
   }
 
-  ShortcutsItem* child = static_cast<ShortcutsItem*>(index.internalPointer());
+  auto* child = static_cast<ShortcutsItem*>(index.internalPointer());
   ShortcutsItem* parentItem = child->parent();
 
   if (parentItem == root_) {
-    return QModelIndex();
+    return {};
   }
   return createIndex(parentItem->children.indexOf(child), 0, parentItem);
 }
@@ -272,7 +267,7 @@ int ShortcutsModel::rowCount(const QModelIndex& parent) const {
   return parentItem->children.size();
 }
 
-int ShortcutsModel::columnCount(const QModelIndex& parent) const {
+int ShortcutsModel::columnCount(const QModelIndex& /*parent*/) const {
   // Action name and shortcuts
   return 2;
 }
@@ -285,7 +280,7 @@ QVariant ShortcutsModel::data(const QModelIndex& index, int role) const {
     return QVariant();
   }
 
-  ShortcutsItem* item = static_cast<ShortcutsItem*>(index.internalPointer());
+  auto* item = static_cast<ShortcutsItem*>(index.internalPointer());
 
   switch (role) {
     case Qt::DisplayRole:
@@ -336,7 +331,7 @@ QVariant ShortcutsModel::headerData(int section, Qt::Orientation orientation,
 }
 
 ShortcutsModel* ShortcutsModel::getShortcutsModel() {
-  static ShortcutsModel* ptr = new ShortcutsModel();
+  static auto* ptr = new ShortcutsModel();
   return ptr;
 }
 
@@ -357,13 +352,13 @@ void ShortcutsModel::addShortcut(ShortcutType type,
     return;
   }
   auto item = type_to_shortcut_.value(type);
-  if (!item) {
+  if (item == nullptr) {
     return;
   }
   if (item->addShortcut(shortcut)) {
     if (sequence_to_shortcut_.contains(shortcut) &&
         !sequence_to_shortcut_[shortcut].contains(item)) {
-      if (sequence_to_shortcut_[shortcut].size() > 0) {
+      if (!sequence_to_shortcut_[shortcut].empty()) {
         if (sequence_to_shortcut_[shortcut].size() == 1) {
           sequence_to_shortcut_[shortcut][0]->setConflict(true);
         }
@@ -382,7 +377,7 @@ void ShortcutsModel::removeShortcut(ShortcutType type,
     return;
   }
   auto item = type_to_shortcut_.value(type);
-  if (!item) {
+  if (item == nullptr) {
     return;
   }
   if (item->deleteShortcut(shortcut)) {

@@ -341,7 +341,7 @@ class ISampler {
    */
   virtual ISampler* cloneImpl() const = 0;
 
-  size_t samplingRequired(SamplerConfig* sc = nullptr);
+  bool samplingRequired(SamplerConfig* sc = nullptr);
   void applySamplerConfig(SamplerConfig* sc);
   void runResample(SamplerConfig* sc);
   void resampleAsync(int target_version, SamplerConfig* sc);

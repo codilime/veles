@@ -34,15 +34,20 @@ QStringList EncodersFactory::keys() {
 IEncoder* EncodersFactory::createEncoder(const QString& id) {
   if (id == "text") {
     return new TextEncoder();
-  } else if (id == "hex") {
+  }
+  if (id == "hex") {
     return new HexEncoder();
-  } else if (id == "cstring") {
+  }
+  if (id == "cstring") {
     return new CStringEncoder();
-  } else if (id == "base64") {
+  }
+  if (id == "base64") {
     return new Base64Encoder();
-  } else if (id == "cdata") {
+  }
+  if (id == "cdata") {
     return new CDataEncoder();
-  } else if (id == "url") {
+  }
+  if (id == "url") {
     return new UrlEncoder();
   }
 
@@ -52,11 +57,14 @@ IEncoder* EncodersFactory::createEncoder(const QString& id) {
 IDecoder* EncodersFactory::createDecoder(const QString& id) {
   if (id == "text") {
     return new TextEncoder();
-  } else if (id == "hex") {
+  }
+  if (id == "hex") {
     return new HexEncoder();
-  } else if (id == "base64") {
+  }
+  if (id == "base64") {
     return new Base64Encoder();
-  } else if (id == "url") {
+  }
+  if (id == "url") {
     return new UrlEncoder();
   }
 

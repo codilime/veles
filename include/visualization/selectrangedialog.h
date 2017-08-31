@@ -32,8 +32,8 @@ class SelectRangeDialog : public QDialog {
   Q_OBJECT
 
  public:
-  explicit SelectRangeDialog(QWidget* parent = 0);
-  ~SelectRangeDialog();
+  explicit SelectRangeDialog(QWidget* parent = nullptr);
+  ~SelectRangeDialog() override;
 
   void setRange(size_t min_address, size_t max_address);
   void resetNumberFormat();
@@ -41,8 +41,8 @@ class SelectRangeDialog : public QDialog {
   size_t getEndAddress();
 
  private slots:
-  void addressChanged(int);
-  void numberBaseChanged(veles::ui::SpinBox*, const QString&);
+  void addressChanged(int new_address);
+  void numberBaseChanged(veles::ui::SpinBox* box, const QString& base);
 
  private:
   void setAddressRanges();

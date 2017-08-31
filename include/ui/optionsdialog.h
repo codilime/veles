@@ -30,13 +30,13 @@ class OptionsDialog : public QDialog {
   Q_OBJECT
 
  public:
-  explicit OptionsDialog(QWidget* parent = 0);
-  ~OptionsDialog();
+  explicit OptionsDialog(QWidget* parent = nullptr);
+  ~OptionsDialog() override;
   Ui::OptionsDialog* ui;
   void show();
 
  public slots:
-  virtual void accept();
+  void accept() override;
 };
 
 }  // namespace ui

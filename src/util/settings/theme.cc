@@ -35,17 +35,17 @@ static QVector<QColor> chunkBackgroundColors_ = {
     QColor("#FFEB3B"), QColor("#FFAB91"), QColor("#FFC107"),
     QColor("#81C784"), QColor("#B2FF59"), QColor("#A7FFEB")};
 
-QString currentId() {
+QString currentTheme() {
   QSettings settings;
   return settings.value("theme", "normal").toString();
 }
 
-void setCurrentId(const QString& theme) {
+void setCurrentTheme(const QString& theme) {
   QSettings settings;
   settings.setValue("theme", theme);
 }
 
-QStringList availableIds() { return {"normal", "dark"}; }
+QStringList availableThemes() { return {"normal", "dark"}; }
 
 QPalette pallete() {
   QPalette pallete;
@@ -72,7 +72,7 @@ QPalette pallete() {
 }
 
 QStyle* createStyle() {
-  if (currentId() == "dark") {
+  if (currentTheme() == "dark") {
     return QStyleFactory::create("Fusion");
   }
   return nullptr;
@@ -82,12 +82,12 @@ QColor highlightingColor() {
   return colorInvertedIfDark(QColor(0xff, 0xff, 0x99, 0xff));
 }
 
-QColor chunkBackground(int colorIndex) {
-  if (colorIndex < 0) {
-    return QColor("#FFFFFF");
+QColor chunkBackground(int color_index) {
+  if (color_index < 0) {
+    return {"#FFFFFF"};
   }
   QColor ret =
-      chunkBackgroundColors_[colorIndex % chunkBackgroundColors_.size()];
+      chunkBackgroundColors_[color_index % chunkBackgroundColors_.size()];
   if (isDark()) {
     ret = QColor(ret.red() ^ 0xff, ret.green() ^ 0xff, ret.blue() ^ 0xff);
   }
@@ -122,7 +122,7 @@ QFont font() {
 
 static bool isDark() {
   if (!isDarkCached_) {
-    isDark_ = currentId() == "dark";
+    isDark_ = currentTheme() == "dark";
     isDarkCached_ = true;
   }
   return isDark_;
@@ -130,8 +130,7 @@ static bool isDark() {
 
 static QColor colorInvertedIfDark(const QColor& color) {
   if (isDark()) {
-    return QColor(color.red() ^ 0xFF, color.green() ^ 0xFF,
-                  color.blue() ^ 0xFF);
+    return {color.red() ^ 0xFF, color.green() ^ 0xFF, color.blue() ^ 0xFF};
   }
   return color;
 }

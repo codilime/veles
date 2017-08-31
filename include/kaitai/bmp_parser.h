@@ -11,7 +11,7 @@ class BmpParser : public parser::Parser {
       auto stream = kaitai::kstream(blob, start, parent_chunk);
       auto parser = kaitai::bmp::bmp_t(&stream);
       parser.image();
-    } catch (std::exception) {
+    } catch (const std::exception&) {
     }
   }
 };

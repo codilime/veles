@@ -16,7 +16,7 @@
  */
 #include "data/repack.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "util/math.h"
 

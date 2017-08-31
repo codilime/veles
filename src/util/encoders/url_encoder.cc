@@ -39,8 +39,8 @@ QByteArray UrlEncoder::decode(const QString& str) {
   QByteArray res;
   for (int i = 0; i < str.length(); i++) {
     if (str.at(i) == '%' && i + 2 < str.length() &&
-        isxdigit(str.at(i + 1).toLatin1()) &&
-        isxdigit(str.at(i + 2).toLatin1())) {
+        isxdigit(str.at(i + 1).toLatin1()) != 0 &&
+        isxdigit(str.at(i + 2).toLatin1()) != 0) {
       res += static_cast<unsigned char>(str.mid(i + 1, 2).toInt(nullptr, 16));
       i += 2;
     } else {

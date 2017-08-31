@@ -23,7 +23,6 @@
 
 using testing::ContainerEq;
 
-namespace proto = veles::proto;
 using veles::tests::schema::Any;
 using veles::tests::schema::AnyOptional;
 using veles::tests::schema::SmallInteger;
