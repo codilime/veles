@@ -151,17 +151,6 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout_4">
-            <item>
-             <widget class="QCheckBox" name="cbBackwards">
-              <property name="text">
-               <string>&amp;Backwards</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
            <layout class="QVBoxLayout" name="verticalLayout_6">
             <item>
              <widget class="QCheckBox" name="cbOverlapping">
@@ -198,12 +187,35 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="pbFindPrevious">
+       <property name="text">
+        <string>&amp;Find Previous</string>
+       </property>
+       <property name="shortcut">
+        <string>F3</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="pbReplace">
        <property name="enabled">
         <bool>false</bool>
        </property>
        <property name="text">
         <string>&amp;Replace</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbReplacePrevious">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>&amp;Replace Previous</string>
        </property>
       </widget>
      </item>
@@ -246,10 +258,11 @@
   <tabstop>cbFind</tabstop>
   <tabstop>cbReplaceFormat</tabstop>
   <tabstop>cbReplace</tabstop>
-  <tabstop>cbBackwards</tabstop>
   <tabstop>cbOverlapping</tabstop>
   <tabstop>pbFind</tabstop>
+  <tabstop>pbFindPrevious</tabstop>
   <tabstop>pbReplace</tabstop>
+  <tabstop>pbReplacePrevious</tabstop>
   <tabstop>pbReplaceAll</tabstop>
   <tabstop>pbCancel</tabstop>
  </tabstops>

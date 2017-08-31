@@ -136,6 +136,7 @@ void SearchDialog::enableReplace(const QString& find, const QString& replace) {
   ui->warning_label->setVisible(!replace.isEmpty() && replace_len != find_len);
   bool enable_replace = !replace.isEmpty() && replace_len == find_len;
   ui->pbReplace->setEnabled(enable_replace);
+  ui->pbReplacePrevious->setEnabled(enable_replace);
   ui->pbReplaceAll->setEnabled(enable_replace);
 }
 
@@ -149,7 +150,6 @@ qint64 SearchDialog::findNext(bool include_overlapping, bool interactive) {
     return -1;
   }
 
-  bool backwards = ui->cbBackwards->isChecked();
   bool overlapping = ui->cbOverlapping->isChecked() && include_overlapping;
 
   qint64 start_search_pos_modifier = 0;
@@ -161,18 +161,10 @@ qint64 SearchDialog::findNext(bool include_overlapping, bool interactive) {
     }
   }
 
-  if (backwards) {
-    start_search_pos_modifier = -(start_search_pos_modifier - 1);
-  }
-
   qint64 start_search_pos = _lastFoundPos + start_search_pos_modifier;
 
   qint64 idx = -1;
-  if (backwards) {
-    idx = lastIndexOf(_findBa, start_search_pos);
-  } else {
-    idx = indexOf(_findBa, start_search_pos);
-  }
+  idx = indexOf(_findBa, start_search_pos);
 
   if (idx >= 0) {
     _hexEdit->setSelection(idx, _findBa.size(), true);
@@ -180,12 +172,8 @@ qint64 SearchDialog::findNext(bool include_overlapping, bool interactive) {
     emit enableFindNext(true);
   } else {
     _lastFoundSize = 0;
-    if (backwards) {
-      _hexEdit->setSelection(_hexEdit->dataModel()->binData().size() - 1, 0,
-                             false);
-    } else {
-      _hexEdit->setSelection(0, 0, false);
-    }
+    _hexEdit->setSelection(0, 0, false);
+
     if (interactive) {
       message_box_not_found_->show();
     }
@@ -194,13 +182,73 @@ qint64 SearchDialog::findNext(bool include_overlapping, bool interactive) {
   return idx;
 }
 
+qint64 SearchDialog::findPrevious(bool include_overlapping, bool interactive) {
+  emit enableFindPrevious(false);
+
+  _findBa =
+      getContent(ui->cbFindFormat->currentIndex(), ui->cbFind->currentText());
+
+  if (_findBa.size() == 0) {
+    return -1;
+  }
+
+  bool overlapping = ui->cbOverlapping->isChecked() && include_overlapping;
+
+  qint64 start_search_pos_modifier = 0;
+  if (_lastFoundSize > 0) {
+    if (overlapping) {
+      start_search_pos_modifier = 1;
+    } else {
+      start_search_pos_modifier = _lastFoundSize;
+    }
+  }
+
+  start_search_pos_modifier = -(start_search_pos_modifier - 1);
+
+  qint64 start_search_pos = _lastFoundPos + start_search_pos_modifier;
+
+  qint64 idx = -1;
+  idx = lastIndexOf(_findBa, start_search_pos);
+
+  if (idx >= 0) {
+    _hexEdit->setSelection(idx, _findBa.size(), true);
+    _lastFoundSize = _findBa.size();
+    emit enableFindPrevious(false);
+    //emit enableFindNext(true);
+  } else {
+    _lastFoundSize = 0;
+    _hexEdit->setSelection(_hexEdit->dataModel()->binData().size() - 1, 0,
+                             false);
+    if (interactive) {
+      message_box_not_found_->show();
+    }
+  }
+
+  return idx;
+
+}
+
 void SearchDialog::showEvent(QShowEvent* event) {
   ui->cbFind->setFocus(Qt::OtherFocusReason);
 }
 
 void SearchDialog::on_pbFind_clicked() { findNext(); }
 
+void SearchDialog::on_pbFindPrevious_clicked() { findPrevious(); }
+
 void SearchDialog::on_pbReplace_clicked() {
+  replaceClick();
+
+  findNext(/*include_overlapping=*/false);
+}
+
+void SearchDialog::on_pbReplacePrevious_clicked() {
+  replaceClick();
+
+  findPrevious(/*include_overlapping=*/false);
+}
+
+void SearchDialog::replaceClick() {
   _findBa =
       getContent(ui->cbFindFormat->currentIndex(), ui->cbFind->currentText());
 
@@ -209,8 +257,6 @@ void SearchDialog::on_pbReplace_clicked() {
                                   ui->cbReplace->currentText());
     replaceOccurrence(_lastFoundPos, replaceData);
   }
-
-  findNext(/*include_overlapping=*/false);
 }
 
 void SearchDialog::on_pbReplaceAll_clicked() {
