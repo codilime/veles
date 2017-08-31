@@ -16,12 +16,13 @@
  */
 #pragma once
 
-#include <assert.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
-#include <QString>
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <initializer_list>
+
+#include <QString>
 
 namespace veles {
 namespace data {
@@ -45,8 +46,10 @@ class BinData {
   BinData(uint32_t width, size_t size, const uint8_t* init_data = nullptr)
       : width_(width), size_(size) {
     assert(width != 0);
-    if (!isInline()) data_ = new uint8_t[octets()];
-    if (init_data) {
+    if (!isInline()) {
+      data_ = new uint8_t[octets()];
+    }
+    if (init_data != nullptr) {
       memcpy(rawData(), init_data, octets());
     } else {
       memset(rawData(), 0, octets());
@@ -59,7 +62,9 @@ class BinData {
       : BinData(width, init.size()) {
     assert(width <= 64);
     size_t pos = 0;
-    for (auto x : init) setElement64(pos++, x);
+    for (auto x : init) {
+      setElement64(pos++, x);
+    }
   }
 
   /** Constructs a BinData instance from another one.  */
@@ -68,10 +73,14 @@ class BinData {
 
   /** Deletes this instance's data and replaces it with that of another one.  */
   BinData& operator=(const BinData& other) {
-    if (!isInline()) delete[] data_;
+    if (!isInline()) {
+      delete[] data_;
+    }
     width_ = other.width_;
     size_ = other.size_;
-    if (!isInline()) data_ = new uint8_t[octets()];
+    if (!isInline()) {
+      data_ = new uint8_t[octets()];
+    }
     memcpy(rawData(), other.rawData(), octets());
     return *this;
   }
@@ -79,7 +88,7 @@ class BinData {
   /** Constructs a BinData instance from another one, with move semantics.
       The internal data storage is moved from the other instance if necessary,
       avoiding a new allocation and a copy.  */
-  BinData(BinData&& other) : width_(other.width_), size_(other.size_) {
+  BinData(BinData&& other) noexcept : width_(other.width_), size_(other.size_) {
     if (isInline()) {
       memcpy(idata_, other.idata_, sizeof idata_);
     } else {
@@ -92,8 +101,10 @@ class BinData {
   /** Assigns a BinData instance from another one, with move semantics.
       The internal data storage is moved from the other instance if necessary,
       avoiding a new allocation and a copy.  The old data is destroyed.  */
-  BinData& operator=(BinData&& other) {
-    if (!isInline()) delete[] data_;
+  BinData& operator=(BinData&& other) noexcept {
+    if (!isInline()) {
+      delete[] data_;
+    }
     width_ = other.width_;
     size_ = other.size_;
     if (isInline()) {
@@ -128,13 +139,17 @@ class BinData {
     BinData res(width, size);
     assert(res.octets() == init.size());
     uint8_t* dst = res.rawData();
-    for (auto x : init) *dst++ = x;
+    for (auto x : init) {
+      *dst++ = x;
+    }
     return res;
   }
 
   /** Destroys instance's storage, if necessary.  */
   ~BinData() {
-    if (!isInline()) delete[] data_;
+    if (!isInline()) {
+      delete[] data_;
+    }
   }
 
   /** Returns element width, in bits.  */
@@ -248,7 +263,9 @@ class BinData {
     assert(start_bit + num_bits <= width_);
     assert(el < size_);
     uint8_t octets[8];
-    for (int i = 0; i < 8; i++) octets[i] = bits >> (8 * i);
+    for (int i = 0; i < 8; i++) {
+      octets[i] = bits >> (8 * i);
+    }
     copyBits(rawData(el), start_bit, octets, 0, num_bits);
   }
 

@@ -27,8 +27,8 @@ gif_t::gif_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent, gif_t* p_root)
   if (logical_screen_descriptor()->has_color_table()) {
     n_global_color_table = false;
     m__io->pushName("_skip_me_global_color_table");
-    m__skip_me_global_color_table = m__io->read_bytes(
-        (logical_screen_descriptor()->color_table_size() * 3));
+    m__skip_me_global_color_table =
+        m__io->read_bytes(logical_screen_descriptor()->color_table_size() * 3);
     m__io->popName();
     m__io->pushName("m__skip_me_global_color_table" + 3);
     m__io__skip_me_global_color_table = new kaitai::kstream(

@@ -30,8 +30,8 @@ class ConnectionDialog : public QDialog {
   Q_OBJECT
 
  public:
-  explicit ConnectionDialog(QWidget* parent = 0);
-  virtual ~ConnectionDialog();
+  explicit ConnectionDialog(QWidget* parent = nullptr);
+  ~ConnectionDialog() override;
 
   bool runANewServer();
   QString serverHost();

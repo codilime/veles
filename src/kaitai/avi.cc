@@ -7,7 +7,8 @@ namespace veles {
 namespace kaitai {
 namespace avi {
 
-avi_t::avi_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent, avi_t* p_root)
+avi_t::avi_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent,
+             avi_t* /*p_root*/)
     : kaitai::kstruct(p_io) {
   m__io->pushName("_parent");
   m__parent = p_parent;

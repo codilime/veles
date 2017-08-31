@@ -47,22 +47,21 @@ FileBlobItem* FileBlobModel::itemFromIndex(const QModelIndex& index) const {
   return nullptr;
 }
 
-QModelIndex FileBlobModel::indexFromItem(FileBlobItem* loader) const {
-  if (loader->parent() == this) {
-    return QModelIndex();
+QModelIndex FileBlobModel::indexFromItem(FileBlobItem* item) const {
+  if (item->parent() == this) {
+    return {};
   }
-  FileBlobItem* parentLoader =
-      reinterpret_cast<FileBlobItem*>(loader->parent());
+  auto* parentLoader = reinterpret_cast<FileBlobItem*>(item->parent());
 
-  int row = parentLoader->childIndex(loader);
+  int row = parentLoader->childIndex(item);
   if (row < 0) {
-    return QModelIndex();
+    return {};
   }
   return createIndex(row, COLUMN_INDEX_MAIN, parentLoader);
 }
 
-void FileBlobModel::emitDataChanged(FileBlobItem* loader) {
-  auto firstIndex = indexFromItem(loader);
+void FileBlobModel::emitDataChanged(FileBlobItem* item) {
+  auto firstIndex = indexFromItem(item);
 
   if (!firstIndex.isValid()) {
     return;
@@ -187,13 +186,12 @@ QModelIndex FileBlobModel::index(int row, int column,
   return createIndex(row, column, itemFromIndex(parent));
 }
 
-QModelIndex FileBlobModel::parent(const QModelIndex& index) const {
-  if (!index.isValid()) {
-    return QModelIndex();
+QModelIndex FileBlobModel::parent(const QModelIndex& child_index) const {
+  if (!child_index.isValid()) {
+    return {};
   }
 
-  FileBlobItem* loader =
-      reinterpret_cast<FileBlobItem*>(index.internalPointer());
+  auto* loader = reinterpret_cast<FileBlobItem*>(child_index.internalPointer());
   return indexFromItem(loader);
 }
 
@@ -207,7 +205,9 @@ int FileBlobModel::rowCount(const QModelIndex& parent) const {
   return loader->childrenCount();
 }
 
-int FileBlobModel::columnCount(const QModelIndex& parent) const { return 4; }
+int FileBlobModel::columnCount(const QModelIndex& /*parent*/) const {
+  return 4;
+}
 
 QString zeroPaddedHexNumber(uint64_t number) {
   auto num = QString::number(number, 16);
@@ -226,15 +226,18 @@ QVariant FileBlobModel::positionColumnData(FileBlobItem* item, int role) const {
 
   if (role == Qt::DisplayRole) {
     return zeroPaddedHexNumber(begin) + ":" + zeroPaddedHexNumber(end);
-  } else if (role == Qt::FontRole) {
+  }
+  if (role == Qt::FontRole) {
 #ifdef Q_OS_WIN32
     return QFont("Courier", 10);
 #else
     return QFont("Monospace", 10);
 #endif
-  } else if (role == ROLE_BEGIN) {
+  }
+  if (role == ROLE_BEGIN) {
     return QString::number(begin);
-  } else if (role == ROLE_END) {
+  }
+  if (role == ROLE_END) {
     return QString::number(end);
   }
   return QVariant();
@@ -259,14 +262,15 @@ QVariant FileBlobModel::data(const QModelIndex& index, int role) const {
     if (index.isValid() && index.column() == COLUMN_INDEX_MAIN) {
       if (item != nullptr && !item->icon().isNull()) {
         return item->icon();
-      } else {
-        return color(index.row());
       }
+      return color(index.row());
     }
     return QVariant();
   }
 
-  if (item == nullptr) return QVariant();
+  if (item == nullptr) {
+    return QVariant();
+  }
   auto name = item->name();
   auto comment = item->comment();
 
@@ -298,7 +302,7 @@ QModelIndex FileBlobModel::indexFromPos(uint64_t pos,
   auto loader = itemFromIndex(parent);
 
   if (loader == nullptr) {
-    return QModelIndex();
+    return {};
   }
 
   for (const auto loader_child : loader->children()) {
@@ -309,7 +313,7 @@ QModelIndex FileBlobModel::indexFromPos(uint64_t pos,
     }
   }
 
-  return QModelIndex();
+  return {};
 }
 
 bool FileBlobModel::setData(const QModelIndex& index, const QVariant& value,
@@ -327,7 +331,7 @@ bool FileBlobModel::removeRows(int row, int count, const QModelIndex& parent) {
   auto item = itemFromIndex(parent);
   for (auto index = row; index < row + count; ++index) {
     auto child = item->child(index);
-    if (child && child->objectHandle()) {
+    if (child != nullptr && !child->objectHandle().isNull()) {
       toRemove.append(child->objectHandle());
     }
   }
@@ -335,7 +339,7 @@ bool FileBlobModel::removeRows(int row, int count, const QModelIndex& parent) {
   for (const auto& obj : toRemove) {
     obj->asyncRunMethod<dbif::DeleteRequest>(this);
   }
-  return toRemove.size() > 0;
+  return !toRemove.empty();
 }
 
 Qt::ItemFlags FileBlobModel::flags(const QModelIndex& index) const {

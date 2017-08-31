@@ -76,7 +76,7 @@ ShortcutsDialog::ShortcutsDialog(QWidget* parent)
   connect(ui_->shortcutsTree, &QTreeView::doubleClicked, this,
           static_cast<void (ShortcutsDialog::*)(const QModelIndex&)>(
               &ShortcutsDialog::showShortcutSelectionDialog));
-  QAction* activate = new QAction(ui_->shortcutsTree);
+  auto* activate = new QAction(ui_->shortcutsTree);
   activate->setShortcuts({QKeySequence(Qt::Key_Enter),
                           QKeySequence(Qt::Key_Return),
                           QKeySequence(Qt::Key_Space)});
@@ -221,7 +221,7 @@ QKeySequence ShortcutEditDialog::getSequence() const {
   return QKeySequence(key);
 }
 
-void ShortcutEditDialog::showEvent(QShowEvent* event) {
+void ShortcutEditDialog::showEvent(QShowEvent* /*event*/) {
   ui->lineEdit->setFocus();
 }
 
@@ -229,7 +229,7 @@ void ShortcutEditDialog::checkConflicts() {
   QKeySequence result = getSequence();
   auto conflicts =
       ShortcutsModel::getShortcutsModel()->getItemsForSequence(result);
-  if (conflicts.size() != 0) {
+  if (!conflicts.empty()) {
     QStringList conflicts_list;
     for (auto conflict : conflicts) {
       conflicts_list.append(conflict->displayName());

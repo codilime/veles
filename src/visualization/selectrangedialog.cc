@@ -14,9 +14,10 @@
  * limitations under the License.
  *
  */
-#include <assert.h>
-#include <QComboBox>
+#include <cassert>
 #include <functional>
+
+#include <QComboBox>
 
 #include "include/visualization/selectrangedialog.h"
 #include "ui_selectrangedialog.h"
@@ -78,7 +79,9 @@ void SelectRangeDialog::setAddressRanges() {
   ui->start_address_spinbox_->setMaximum(ui->end_address_spinbox_->value() - 1);
 }
 
-void SelectRangeDialog::addressChanged(int) { setAddressRanges(); }
+void SelectRangeDialog::addressChanged(int /*new_address*/) {
+  setAddressRanges();
+}
 
 void SelectRangeDialog::numberBaseChanged(veles::ui::SpinBox* box,
                                           const QString& base) {

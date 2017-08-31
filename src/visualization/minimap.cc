@@ -15,32 +15,20 @@
  *
  */
 #include "visualization/minimap.h"
-#include <assert.h>
-#include <QImage>
+#include <cassert>
 #include <cmath>
 #include <cstdlib>
+
+#include <QImage>
 
 namespace veles {
 namespace visualization {
 
 VisualizationMinimap::VisualizationMinimap(QWidget* parent)
-    : QOpenGLWidget(parent),
-      initialised_(false),
-      gl_initialised_(false),
-      sampler_(nullptr),
-      rows_(0),
-      cols_(0),
-      selection_start_(0),
-      selection_end_(0),
-      top_line_pos_(1.0),
-      bottom_line_pos_(-1.0),
-      color_(k_default_color),
-      mode_(k_default_mode),
-      texture_(nullptr),
-      lines_texture_(nullptr) {}
+    : QOpenGLWidget(parent) {}
 
 VisualizationMinimap::~VisualizationMinimap() {
-  if (gl_initialised_) {
+  if (gl_initialized_) {
     makeCurrent();
     delete texture_;
     delete lines_texture_;
@@ -53,12 +41,14 @@ void VisualizationMinimap::setSampler(util::ISampler* sampler) {
   sampler_ = sampler;
   selection_start_ = 0;
   selection_end_ = (empty()) ? 0 : sampler_->getSampleSize();
-  initialised_ = true;
+  initialized_ = true;
   refresh();
 }
 
 QPair<size_t, size_t> VisualizationMinimap::getSelectedRange() {
-  if (empty()) return qMakePair(0, 0);
+  if (empty()) {
+    return qMakePair(0, 0);
+  }
   size_t start = sampler_->getFileOffset(selection_start_);
   size_t end = sampler_->getFileOffset(selection_end_);
   return qMakePair(start, end);
@@ -70,7 +60,7 @@ void VisualizationMinimap::setSelectedRange(size_t start_address,
   selection_end_ = (end_address == sampler_->getRange().second)
                        ? sampler_->getSampleSize()
                        : sampler_->getSampleOffset(end_address - 1);
-  if (gl_initialised_) {
+  if (gl_initialized_) {
     top_line_pos_ = normaliseLinePosition(offsetToLine(selection_start_));
     bottom_line_pos_ = normaliseLinePosition(offsetToLine(selection_end_));
     update();
@@ -79,12 +69,18 @@ void VisualizationMinimap::setSelectedRange(size_t start_address,
 }
 
 void VisualizationMinimap::refresh(bool has_context) {
-  if (!initialised_ || !gl_initialised_) return;
-  if (!has_context) makeCurrent();
+  if (!initialized_ || !gl_initialized_) {
+    return;
+  }
+  if (!has_context) {
+    makeCurrent();
+  }
   delete lines_texture_;
   delete texture_;
   initTextures();
-  if (!has_context) doneCurrent();
+  if (!has_context) {
+    doneCurrent();
+  }
   update();
 }
 
@@ -260,7 +256,7 @@ float* VisualizationMinimap::calculateEntropyTextureSingleWindow(
   return bigtab;
 }
 
-float VisualizationMinimap::calculateEntropyValue(uint64_t bytes_counts[],
+float VisualizationMinimap::calculateEntropyValue(const uint64_t* bytes_counts,
                                                   uint64_t total_count) {
   if (total_count == 0) {
     return 0.0f;
@@ -281,12 +277,14 @@ float VisualizationMinimap::calculateEntropyValue(uint64_t bytes_counts[],
 /*****************************************************************************/
 
 void VisualizationMinimap::initializeGL() {
-  if (!gl_initialised_) {
-    if (!initializeOpenGLFunctions()) return;
+  if (!gl_initialized_) {
+    if (!initializeOpenGLFunctions()) {
+      return;
+    }
     glClearColor(0, 0, 0, 1);
     initShaders();
     initGeometry();
-    gl_initialised_ = true;
+    gl_initialized_ = true;
   }
 }
 
@@ -321,12 +319,16 @@ void VisualizationMinimap::initGeometry() {
 }
 
 void VisualizationMinimap::initTextures() {
-  if (!initialised_) return;
+  if (!initialized_) {
+    return;
+  }
 
   lines_texture_ = new QOpenGLTexture(QImage(":/images/bar.png"));
   lines_texture_->setWrapMode(QOpenGLTexture::ClampToEdge);
 
-  if (empty()) return;
+  if (empty()) {
+    return;
+  }
 
   // calculate texture size
   texture_rows_ = std::max(static_cast<size_t>(1), rows_);
@@ -355,14 +357,14 @@ void VisualizationMinimap::initTextures() {
   texture_->allocateStorage();
 
   point_size_ = std::max(1.0, static_cast<double>(sample_size_) / texture_size);
-  const uint8_t* rowdata = reinterpret_cast<const uint8_t*>(sampler_->data());
+  auto* row_data = reinterpret_cast<const uint8_t*>(sampler_->data());
 
   float* bigtab;
   if (mode_ == MinimapMode::VALUE) {
-    bigtab = calculateAverageValueTexture(rowdata, sample_size_, texture_size,
+    bigtab = calculateAverageValueTexture(row_data, sample_size_, texture_size,
                                           point_size_);
   } else {
-    bigtab = calculateEntropyTexture(rowdata, sample_size_, texture_size,
+    bigtab = calculateEntropyTexture(row_data, sample_size_, texture_size,
                                      point_size_);
   }
 
@@ -377,7 +379,9 @@ void VisualizationMinimap::initTextures() {
 }
 
 void VisualizationMinimap::resizeGL(int w, int h) {
-  if (!initialised_ || !gl_initialised_ || empty()) return;
+  if (!initialized_ || !gl_initialized_ || empty()) {
+    return;
+  }
   size_t rows = (h / k_round_size_to) * k_round_size_to / k_px_per_point;
   size_t cols = (w / k_round_size_to) * k_round_size_to / k_px_per_point;
   if (rows != rows_ || cols != cols_) {
@@ -391,7 +395,9 @@ void VisualizationMinimap::resizeGL(int w, int h) {
 }
 
 void VisualizationMinimap::paintGL() {
-  if (!initialised_ || !gl_initialised_ || empty()) return;
+  if (!initialized_ || !gl_initialized_ || empty()) {
+    return;
+  }
 
   auto pos_info = calculateScaledPositions();
 
@@ -488,8 +494,12 @@ void VisualizationMinimap::centerSelectionOnCoord(float coord) {
 }
 
 void VisualizationMinimap::mouseMoveEvent(QMouseEvent* event) {
-  if (empty()) return;
-  if (!event->buttons().testFlag(Qt::LeftButton)) return;
+  if (empty()) {
+    return;
+  }
+  if (!event->buttons().testFlag(Qt::LeftButton)) {
+    return;
+  }
   float position = clickToTextureCoord(event->y());
   switch (drag_state_) {
     case DragState::NO_DRAG:
@@ -509,8 +519,12 @@ void VisualizationMinimap::mouseMoveEvent(QMouseEvent* event) {
 }
 
 void VisualizationMinimap::mousePressEvent(QMouseEvent* event) {
-  if (empty()) return;
-  if (event->button() != Qt::LeftButton) return;
+  if (empty()) {
+    return;
+  }
+  if (event->button() != Qt::LeftButton) {
+    return;
+  }
   float position = clickToTextureCoord(event->y());
   auto pos_info = calculateScaledPositions();
   // make bar hitbox slightly larger than bar itself
@@ -542,12 +556,16 @@ void VisualizationMinimap::mousePressEvent(QMouseEvent* event) {
 }
 
 void VisualizationMinimap::mouseReleaseEvent(QMouseEvent* event) {
-  if (event->button() != Qt::LeftButton) return;
+  if (event->button() != Qt::LeftButton) {
+    return;
+  }
   drag_state_ = DragState::NO_DRAG;
 }
 
 void VisualizationMinimap::wheelEvent(QWheelEvent* event) {
-  if (empty()) return;
+  if (empty()) {
+    return;
+  }
   if (drag_state_ != DragState::NO_DRAG) {
     // we're already dragging the box, let's ignore the wheel
     event->accept();
@@ -562,7 +580,7 @@ void VisualizationMinimap::wheelEvent(QWheelEvent* event) {
     pixels = angle_delta.y() / k_wheel_units_per_pixel;
   }
 
-  size_t abs_pixels = static_cast<size_t>(std::abs(pixels));
+  auto abs_pixels = static_cast<size_t>(std::abs(pixels));
   if (abs_pixels > 0 && abs_pixels < rows_ / texture_rows_) {
     pixels = std::copysign(rows_ / texture_rows_, pixels);
   }
@@ -679,7 +697,7 @@ size_t VisualizationMinimap::lineToOffset(float line_position) {
 float VisualizationMinimap::offsetToLine(size_t offset) {
   double row_size = 2.0 / texture_rows_;
   double row_bytes = point_size_ * texture_cols_;
-  float position =
+  auto position =
       static_cast<float>(-1.0 * (((offset / row_bytes) * row_size) - 1));
   return std::min(1.0f, std::max(-1.0f, position));
 }

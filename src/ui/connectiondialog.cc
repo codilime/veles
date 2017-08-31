@@ -329,7 +329,7 @@ void ConnectionDialog::saveSettings() {
 
 void ConnectionDialog::dialogAccepted() { saveSettings(); }
 
-void ConnectionDialog::profileChanged(int index) {
+void ConnectionDialog::profileChanged(int /*index*/) {
   ui_->profile->setEditable(false);
   util::settings::connection::setCurrentProfile(ui_->profile->currentText());
   loadSettings();
@@ -356,7 +356,7 @@ void ConnectionDialog::profileNameEdited(const QString& name) {
       util::settings::connection::uniqueProfileName(name));
 }
 
-void ConnectionDialog::showEvent(QShowEvent* event) {
+void ConnectionDialog::showEvent(QShowEvent* /*event*/) {
   loadSettings();
   ui_->server_host_line_edit->setFocus(Qt::OtherFocusReason);
 }

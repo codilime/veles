@@ -47,7 +47,7 @@ void ParserWorker::parse(const dbif::ObjectHandle& blob, MethodRunner* runner,
                          const QString& parser_id, quint64 start,
                          const veles::dbif::ObjectHandle& parent_chunk) {
   for (auto parser : _parsers) {
-    if (parser_id == "" && parser->magic().size() > 0) {
+    if (parser_id == "" && !parser->magic().empty()) {
       if (parser->verifyAndParse(blob, start, parent_chunk)) {
         break;
       }

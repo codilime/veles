@@ -204,7 +204,7 @@ std::string kaitai::kstream::read_str_byte_limit(size_t len, const char* enc) {
 }
 
 std::string kaitai::kstream::read_strz(const char* enc, char term, bool include,
-                                       bool consume, bool eos_error) {
+                                       bool consume, bool /*eos_error*/) {
   if (error_) {
     return "";
   }
@@ -223,7 +223,7 @@ std::vector<uint8_t> kaitai::kstream::read_bytes(size_t len) {
   }
 
   // Hack to avoid double chunks when allocating new io from fixed length data
-  if (current_name_ && strncmp(current_name_, "_skip_me_", 9) == 0) {
+  if (current_name_ != nullptr && strncmp(current_name_, "_skip_me_", 9) == 0) {
     parser_->skip(len);
     return std::vector<uint8_t>(len);
   }
@@ -253,8 +253,8 @@ std::vector<uint8_t> kaitai::kstream::ensure_fixed_contents(
   return result;
 }
 
-std::string kaitai::kstream::bytes_to_string(std::vector<uint8_t> bytes,
-                                             const char* src_enc) {
+std::string kaitai::kstream::bytes_to_string(const std::vector<uint8_t>& bytes,
+                                             const char* /*src_enc*/) {
   std::string res;
   for (auto byte : bytes) {
     res += byte;
@@ -263,15 +263,15 @@ std::string kaitai::kstream::bytes_to_string(std::vector<uint8_t> bytes,
 }
 
 void kaitai::kstream::pushName(const char* name) {
-  names_stack_.push_back(name);
+  names_stack_.emplace_back(name);
   current_name_ = names_stack_.back().c_str();
 }
 
 void kaitai::kstream::popName() {
-  if (names_stack_.size() > 0) {
+  if (!names_stack_.empty()) {
     names_stack_.pop_back();
   }
-  if (names_stack_.size() > 0) {
+  if (!names_stack_.empty()) {
     current_name_ = names_stack_.back().c_str();
   } else {
     current_name_ = nullptr;

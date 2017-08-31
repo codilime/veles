@@ -40,8 +40,8 @@ class VisualizationMinimap : public QOpenGLWidget,
 
   enum class MinimapMode { VALUE, ENTROPY };
 
-  explicit VisualizationMinimap(QWidget* parent = 0);
-  ~VisualizationMinimap();
+  explicit VisualizationMinimap(QWidget* parent = nullptr);
+  ~VisualizationMinimap() override;
 
   void setSampler(util::ISampler* sampler);
   void setRange(size_t start, size_t end, bool reset_selection = true);
@@ -110,7 +110,7 @@ class VisualizationMinimap : public QOpenGLWidget,
                                                     size_t sample_size,
                                                     size_t texture_size,
                                                     double point_size);
-  static float calculateEntropyValue(uint64_t bytes_counts[],
+  static float calculateEntropyValue(const uint64_t* bytes_counts,
                                      uint64_t total_count);
 
   bool empty();
@@ -122,29 +122,35 @@ class VisualizationMinimap : public QOpenGLWidget,
   const MinimapMode k_default_mode = MinimapMode::VALUE;
   const float k_line_selection_epsilon = 0.003f;
   const float k_minimum_line_distance = 0.02f;
-  static const int k_minimum_entropy_window = 256;
+  static const size_t k_minimum_entropy_window = 256;
   const int k_bar_height = 7;
   const int k_bar_texture_width = 100;
   const float k_line_comparison_epsilon = 0.1f;
 
   enum class DragState { NO_DRAG, TOP_LINE, BOTTOM_LINE, BOX };
 
-  bool initialised_;
-  bool gl_initialised_;
-  util::ISampler* sampler_;
+  bool initialized_ = false;
+  bool gl_initialized_ = false;
+  util::ISampler* sampler_ = nullptr;
 
-  size_t rows_, cols_, texture_rows_, texture_cols_;
-  size_t selection_start_, selection_end_;
+  size_t rows_ = 0;
+  size_t cols_ = 0;
+  size_t texture_rows_ = 0;
+  size_t texture_cols_ = 0;
+  size_t selection_start_ = 0;
+  size_t selection_end_ = 0;
   size_t sample_size_;
   double point_size_;
 
   DragState drag_state_;
-  float top_line_pos_, bottom_line_pos_;
-  MinimapColor color_;
-  MinimapMode mode_;
+  float top_line_pos_ = 1.0;
+  float bottom_line_pos_ = -1.0;
+  MinimapColor color_ = k_default_color;
+  MinimapMode mode_ = k_default_mode;
 
   QOpenGLShaderProgram program_, lines_program_, background_program_;
-  QOpenGLTexture *texture_, *lines_texture_;
+  QOpenGLTexture* texture_ = nullptr;
+  QOpenGLTexture* lines_texture_ = nullptr;
 
   QOpenGLBuffer square_vertex_;
   QOpenGLVertexArrayObject vao_;

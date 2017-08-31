@@ -26,7 +26,7 @@ const unsigned release = 0;
 const unsigned patch = 1;
 const QString codename = "SWOND";
 const QString string =
-    patch
+    patch > 0
         ? QString("%1.%2.%3.%4.%5")
               .arg(QString("%1").arg(year),
                    QString("%1").arg(month, 2, 10, QChar('0')),

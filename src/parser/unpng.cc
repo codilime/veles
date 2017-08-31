@@ -19,7 +19,7 @@
 #include "parser/stream.h"
 #include "parser/utils.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
 
 #include <zlib.h>
@@ -40,7 +40,7 @@ std::vector<uint8_t> do_inflate(const std::vector<uint8_t>& d) {
   }
   const unsigned BUFSZ = 0x4000;
   uint8_t buf[BUFSZ];
-  while (1) {
+  while (true) {
     strm.avail_out = BUFSZ;
     strm.next_out = buf;
     auto ret = inflate(&strm, Z_NO_FLUSH);
@@ -58,7 +58,7 @@ std::vector<uint8_t> do_inflate(const std::vector<uint8_t>& d) {
       inflateEnd(&strm);
       return res;
     }
-    if (strm.avail_out) {
+    if (strm.avail_out > 0) {
       // buffer not completely filled, but we have no more input stream - oops.
       inflateEnd(&strm);
       return std::vector<uint8_t>();
@@ -92,7 +92,7 @@ void unpngFileBlob(const dbif::ObjectHandle& blob, uint64_t start,
   makeSubBlob(png, "deflated_data",
               data::BinData(8, jointIdats.size(), jointIdats.data()));
   auto decompressed = do_inflate(jointIdats);
-  if (decompressed.size()) {
+  if (!decompressed.empty()) {
     makeSubBlob(png, "inflated_data",
                 data::BinData(8, decompressed.size(), decompressed.data()));
   }

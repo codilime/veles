@@ -10,7 +10,7 @@ class Quicktime_movParser : public parser::Parser {
     try {
       auto stream = kaitai::kstream(blob, start, parent_chunk);
       auto parser = kaitai::quicktime_mov::quicktime_mov_t(&stream);
-    } catch (std::exception) {
+    } catch (const std::exception&) {
     }
   }
 };

@@ -28,8 +28,8 @@ namespace ui {
 class GoToAddressDialog : public QDialog {
   Q_OBJECT
  public:
-  explicit GoToAddressDialog(QWidget* parent = 0);
-  ~GoToAddressDialog();
+  explicit GoToAddressDialog(QWidget* parent = nullptr);
+  ~GoToAddressDialog() override;
   void setRange(qint64 start, qint64 end);
   qint64 address();
 

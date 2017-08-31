@@ -60,7 +60,7 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   void newFile();
   void open();
   void about();
-  void updateParsers(const dbif::PInfoReply& replay);
+  void updateParsers(const dbif::PInfoReply& reply);
   void showDatabase();
   void showLog();
   void updateConnectionStatus(
@@ -74,7 +74,7 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   void createActions();
   void createMenus();
   void createDb();
-  void createFileBlob(const QString& filename);
+  void createFileBlob(const QString& file_name);
   void createHexEditTab(const QString& fileName,
                         const dbif::ObjectHandle& fileBlob);
   void createLogWindow();

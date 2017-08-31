@@ -13,7 +13,7 @@ class ElfParser : public parser::Parser {
       parser.program_headers();
       parser.section_headers();
       parser.strings();
-    } catch (std::exception) {
+    } catch (const std::exception&) {
     }
   }
 };

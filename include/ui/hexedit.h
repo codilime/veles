@@ -41,7 +41,7 @@ class HexEdit : public QAbstractScrollArea {
  public:
   explicit HexEdit(FileBlobModel* dataModel,
                    QItemSelectionModel* selectionModel = nullptr,
-                   QWidget* parent = 0);
+                   QWidget* parent = nullptr);
   /** Mark bytes as selected and optionally scroll screen to make these bytes
    * visible */
   void setSelection(qint64 start, qint64 size, bool set_visible = false);
@@ -196,7 +196,7 @@ class HexEdit : public QAbstractScrollArea {
   void createAction(util::settings::shortcuts::ShortcutType type,
                     const std::function<void()>& f);
 
-  void getRangeFromIndex(QModelIndex index, qint64* begin, qint64* size);
+  void getRangeFromIndex(const QModelIndex& index, qint64* start, qint64* size);
   void drawBorder(qint64 start, qint64 size, bool asciiArea = false,
                   bool dotted = false);
 
@@ -206,7 +206,7 @@ class HexEdit : public QAbstractScrollArea {
   void setSelectionEnd(qint64 bytePos);
   void saveSelectionToFile(const QString& path);
   void saveChunkToFile(const QString& path);
-  void saveDataToFile(int byte_offset, int size, const QString& path);
+  void saveDataToFile(qint64 byte_offset, qint64 size, const QString& path);
   void scrollToCurrentChunk();
   void parse(QAction* action);
   void resetCursor();

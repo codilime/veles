@@ -47,9 +47,7 @@ using util::settings::shortcuts::ShortcutsModel;
 /*****************************************************************************/
 
 VelesMainWindow::VelesMainWindow()
-    : MainWindowWithDetachableDockWidgets(),
-      database_dock_widget_(0),
-      log_dock_widget_(0) {
+    : database_dock_widget_(nullptr), log_dock_widget_(nullptr) {
   setAcceptDrops(true);
   resize(1024, 768);
   init();
@@ -75,7 +73,7 @@ void VelesMainWindow::dropEvent(QDropEvent* ev) {
 
 void VelesMainWindow::dragEnterEvent(QDragEnterEvent* ev) { ev->accept(); }
 
-void VelesMainWindow::showEvent(QShowEvent* event) { emit shown(); }
+void VelesMainWindow::showEvent(QShowEvent* /*event*/) { emit shown(); }
 
 /*****************************************************************************/
 /* VelesMainWindow - Private Slots */
@@ -129,7 +127,7 @@ void VelesMainWindow::init() {
   tool_bar_ = addToolBar("Connection");
   tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
 
-  ConnectionsWidget* connections_widget = new ConnectionsWidget(this);
+  auto* connections_widget = new ConnectionsWidget(this);
   tool_bar_->addWidget(connections_widget);
   connect(connection_manager_, &ConnectionManager::connectionStatusChanged,
           connections_widget, &ConnectionsWidget::updateConnectionStatus);
@@ -294,13 +292,13 @@ void VelesMainWindow::updateConnectionStatus(
       }
     }
 
-    if (database_dock_widget_) {
+    if (database_dock_widget_ != nullptr) {
       database_dock_widget_->widget()->setEnabled(false);
     }
     open_act_->setEnabled(false);
   } else if (connection_status ==
              client::NetworkClient::ConnectionStatus::Connected) {
-    if (database_dock_widget_) {
+    if (database_dock_widget_ != nullptr) {
       database_dock_widget_->widget()->setEnabled(true);
     }
 
@@ -328,7 +326,7 @@ void VelesMainWindow::createDb() {
         nc, *data::NodeID::getRootNodeId(), dbif::ObjectType::ROOT);
   }
   auto database_info = new DatabaseInfo(database_);
-  DockWidget* dock_widget = new DockWidget;
+  auto* dock_widget = new DockWidget;
   dock_widget->setAllowedAreas(Qt::AllDockWidgetAreas);
   dock_widget->setWindowTitle("Database");
   dock_widget->setFeatures(QDockWidget::DockWidgetMovable |
@@ -361,15 +359,16 @@ void VelesMainWindow::createDb() {
   updateDocksAndTabs();
 }
 
-void VelesMainWindow::createFileBlob(const QString& fileName) {
+void VelesMainWindow::createFileBlob(const QString& file_name) {
   data::BinData data(8, 0);
 
-  if (!fileName.isEmpty()) {
-    QFile file(fileName);
-    file.setFileName(fileName);
+  if (!file_name.isEmpty()) {
+    QFile file(file_name);
+    file.setFileName(file_name);
     if (!file.open(QIODevice::ReadOnly)) {
-      QMessageBox::warning(this, tr("Failed to open"),
-                           QString(tr("Failed to open \"%1\".")).arg(fileName));
+      QMessageBox::warning(
+          this, tr("Failed to open"),
+          QString(tr("Failed to open \"%1\".")).arg(file_name));
       return;
     }
     QByteArray bytes = file.readAll();
@@ -377,7 +376,7 @@ void VelesMainWindow::createFileBlob(const QString& fileName) {
       QMessageBox::warning(
           this, tr("File too large"),
           QString(tr("Failed to open \"%1\" due to current size limitation."))
-              .arg(fileName));
+              .arg(file_name));
       return;
     }
     data = data::BinData(8, bytes.size(),
@@ -385,20 +384,20 @@ void VelesMainWindow::createFileBlob(const QString& fileName) {
   }
   auto promise =
       database_->asyncRunMethod<dbif::RootCreateFileBlobFromDataRequest>(
-          this, data, fileName);
-  connect(promise, &dbif::MethodResultPromise::gotResult, [this, fileName](
+          this, data, file_name);
+  connect(promise, &dbif::MethodResultPromise::gotResult, [this, file_name](
                                                               dbif::PMethodReply
                                                                   reply) {
     createHexEditTab(
-        fileName.isEmpty() ? "untitled" : fileName,
+        file_name.isEmpty() ? "untitled" : file_name,
         reply.dynamicCast<dbif::RootCreateFileBlobFromDataRequest::ReplyType>()
             ->object);
   });
 
   connect(promise, &dbif::MethodResultPromise::gotError,
-          [this, fileName](dbif::PError error) {
+          [this, file_name](dbif::PError error) {
             QMessageBox::warning(this, tr("Veles"),
-                                 tr("Cannot load file %1.").arg(fileName));
+                                 tr("Cannot load file %1.").arg(file_name));
           });
 }
 
@@ -409,12 +408,12 @@ void VelesMainWindow::createHexEditTab(const QString& fileName,
   QSharedPointer<QItemSelectionModel> selection_model(
       new QItemSelectionModel(data_model.data()));
 
-  NodeWidget* node_widget = new NodeWidget(this, data_model, selection_model);
+  auto* node_widget = new NodeWidget(this, data_model, selection_model);
   addTab(node_widget, data_model->path().join(" : "), nullptr);
 }
 
 void VelesMainWindow::createLogWindow() {
-  DockWidget* dock_widget = new DockWidget;
+  auto* dock_widget = new DockWidget;
   dock_widget->setAllowedAreas(Qt::AllDockWidgetAreas);
   dock_widget->setWindowTitle("Log");
   dock_widget->setFeatures(QDockWidget::DockWidgetMovable |

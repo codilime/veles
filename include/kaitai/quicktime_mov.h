@@ -7,8 +7,9 @@
 #include <kaitai/kaitaistream.h>
 #include <kaitai/kaitaistruct.h>
 
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
+
 namespace veles {
 namespace kaitai {
 namespace quicktime_mov {
@@ -166,16 +167,17 @@ class quicktime_mov_t : public kaitai::kstruct {
     BRAND_UVVU = 1970697845
   };
 
-  explicit quicktime_mov_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent = 0,
-                           quicktime_mov_t* p_root = 0);
+  explicit quicktime_mov_t(kaitai::kstream* p_io,
+                           kaitai::kstruct* p_parent = nullptr,
+                           quicktime_mov_t* p_root = nullptr);
   veles::dbif::ObjectHandle veles_obj;
   ~quicktime_mov_t();
 
   class mvhd_body_t : public kaitai::kstruct {
    public:
     explicit mvhd_body_t(kaitai::kstream* p_io,
-                         quicktime_mov_t::atom_t* p_parent = 0,
-                         quicktime_mov_t* p_root = 0);
+                         quicktime_mov_t::atom_t* p_parent = nullptr,
+                         quicktime_mov_t* p_root = nullptr);
     veles::dbif::ObjectHandle veles_obj;
     ~mvhd_body_t();
 
@@ -287,8 +289,8 @@ class quicktime_mov_t : public kaitai::kstruct {
   class ftyp_body_t : public kaitai::kstruct {
    public:
     explicit ftyp_body_t(kaitai::kstream* p_io,
-                         quicktime_mov_t::atom_t* p_parent = 0,
-                         quicktime_mov_t* p_root = 0);
+                         quicktime_mov_t::atom_t* p_parent = nullptr,
+                         quicktime_mov_t* p_root = nullptr);
     veles::dbif::ObjectHandle veles_obj;
     ~ftyp_body_t();
 
@@ -311,8 +313,9 @@ class quicktime_mov_t : public kaitai::kstruct {
 
   class fixed32_t : public kaitai::kstruct {
    public:
-    explicit fixed32_t(kaitai::kstream* p_io, kaitai::kstruct* p_parent = 0,
-                       quicktime_mov_t* p_root = 0);
+    explicit fixed32_t(kaitai::kstream* p_io,
+                       kaitai::kstruct* p_parent = nullptr,
+                       quicktime_mov_t* p_root = nullptr);
     veles::dbif::ObjectHandle veles_obj;
     ~fixed32_t();
 
@@ -332,8 +335,8 @@ class quicktime_mov_t : public kaitai::kstruct {
   class fixed16_t : public kaitai::kstruct {
    public:
     explicit fixed16_t(kaitai::kstream* p_io,
-                       quicktime_mov_t::mvhd_body_t* p_parent = 0,
-                       quicktime_mov_t* p_root = 0);
+                       quicktime_mov_t::mvhd_body_t* p_parent = nullptr,
+                       quicktime_mov_t* p_root = nullptr);
     veles::dbif::ObjectHandle veles_obj;
     ~fixed16_t();
 
@@ -352,8 +355,8 @@ class quicktime_mov_t : public kaitai::kstruct {
 
   class atom_t : public kaitai::kstruct {
    public:
-    explicit atom_t(kaitai::kstream* p_io, quicktime_mov_t* p_parent = 0,
-                    quicktime_mov_t* p_root = 0);
+    explicit atom_t(kaitai::kstream* p_io, quicktime_mov_t* p_parent = nullptr,
+                    quicktime_mov_t* p_root = nullptr);
     veles::dbif::ObjectHandle veles_obj;
     ~atom_t();
 
@@ -397,8 +400,8 @@ class quicktime_mov_t : public kaitai::kstruct {
   class tkhd_body_t : public kaitai::kstruct {
    public:
     explicit tkhd_body_t(kaitai::kstream* p_io,
-                         quicktime_mov_t::atom_t* p_parent = 0,
-                         quicktime_mov_t* p_root = 0);
+                         quicktime_mov_t::atom_t* p_parent = nullptr,
+                         quicktime_mov_t* p_root = nullptr);
     veles::dbif::ObjectHandle veles_obj;
     ~tkhd_body_t();
 

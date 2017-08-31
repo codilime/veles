@@ -146,7 +146,7 @@ void NodeTreeWidget::setupTreeViewHandlers() {
             auto mainIndex = data_model_->index(
                 index.row(), FileBlobModel::COLUMN_INDEX_MAIN, index.parent());
             dbif::ObjectHandle new_root = data_model_->blob(mainIndex);
-            if (new_root) {
+            if (!new_root.isNull()) {
               auto new_path = data_model_->path();
               new_path.append(mainIndex.data().toString());
               QSharedPointer<FileBlobModel> new_model(
@@ -154,7 +154,7 @@ void NodeTreeWidget::setupTreeViewHandlers() {
               QSharedPointer<QItemSelectionModel> new_selection_model(
                   new QItemSelectionModel(new_model.data()));
 
-              NodeWidget* node_widget =
+              auto* node_widget =
                   new NodeWidget(main_window_, new_model, new_selection_model);
               main_window_->addTab(node_widget, new_model->path().join(" : "),
                                    nullptr);
@@ -217,7 +217,7 @@ void NodeTreeWidget::registerLineEdit(QLineEdit* line_edit) {
 }
 
 void NodeTreeWidget::updateLineEditWithAddress(qint64 address) {
-  if (registered_line_edit_) {
+  if (registered_line_edit_ != nullptr) {
     registered_line_edit_->setText(QString::number(address));
   }
   registered_line_edit_ = nullptr;

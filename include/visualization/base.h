@@ -37,8 +37,8 @@ class VisualizationWidget : public QOpenGLWidget,
   Q_OBJECT
 
  public:
-  explicit VisualizationWidget(QWidget* parent = 0);
-  ~VisualizationWidget();
+  explicit VisualizationWidget(QWidget* parent = nullptr);
+  ~VisualizationWidget() override;
 
   void setSampler(util::ISampler* sampler);
 
@@ -67,7 +67,7 @@ class VisualizationWidget : public QOpenGLWidget,
   void paintGL() override;
 
   virtual bool initializeVisualizationGL() = 0;
-  virtual void refresh(AdditionalResampleDataPtr ad) = 0;
+  virtual void refresh(const AdditionalResampleDataPtr& ad) = 0;
   virtual void paintGLImpl() = 0;
   virtual void resizeGLImpl(int w, int h) = 0;
   void resampleCallback();
@@ -87,9 +87,11 @@ class VisualizationWidget : public QOpenGLWidget,
   char getByte(size_t index);
 
  private:
-  bool initialised_;
-  bool gl_initialised_, gl_broken_, error_message_set_;
-  util::ISampler* sampler_;
+  bool initialized_ = false;
+  bool gl_initialized_ = false;
+  bool gl_broken_ = false;
+  bool error_message_set_ = false;
+  util::ISampler* sampler_ = nullptr;
   util::ResampleCallbackId resample_cb_id_;
 };
 

@@ -29,21 +29,21 @@ class ShortcutsFilter : public QSortFilterProxyModel {
   using QSortFilterProxyModel::QSortFilterProxyModel;
 
  protected:
-  virtual bool filterAcceptsRow(
-      int source_row, const QModelIndex& source_parent) const override;
+  bool filterAcceptsRow(int source_row,
+                        const QModelIndex& source_parent) const override;
 };
 
 class ShortcutEditDialog : public QDialog {
   Q_OBJECT
 
  public:
-  explicit ShortcutEditDialog(QWidget* parent = 0);
-  ~ShortcutEditDialog();
+  explicit ShortcutEditDialog(QWidget* parent = nullptr);
+  ~ShortcutEditDialog() override;
   void reset();
   QKeySequence getSequence() const;
 
  protected:
-  virtual void showEvent(QShowEvent* event) override;
+  void showEvent(QShowEvent* event) override;
 
  private:
   Ui::ShortcutEditDialog* ui;
@@ -56,14 +56,14 @@ class ShortcutsDialog : public QDialog {
   Q_OBJECT
 
  public:
-  explicit ShortcutsDialog(QWidget* parent = 0);
-  ~ShortcutsDialog();
+  explicit ShortcutsDialog(QWidget* parent = nullptr);
+  ~ShortcutsDialog() override;
 
  public slots:
   void onContextMenu(const QPoint& point);
 
  protected:
-  virtual void showEvent(QShowEvent* event) override;
+  void showEvent(QShowEvent* event) override;
 
  private:
   Ui::ShortcutsDialog* ui_;

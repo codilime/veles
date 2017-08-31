@@ -58,7 +58,9 @@ TEST(UniformSampler, testOffsets) {
     // any value. However this should be true for UniformSampler
     // implementation, except for first and last byte in sample (which have
     // values defined by getFileOffset() interface)
-    if (curr < 19) ASSERT_EQ(data[static_cast<int>(curr)], sampler[i]);
+    if (curr < 19) {
+      ASSERT_EQ(data[static_cast<int>(curr)], sampler[i]);
+    }
   }
   prev = 0;
   for (size_t i = 0; i < 99; ++i) {

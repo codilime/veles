@@ -35,13 +35,13 @@ size_t FakeSampler::getSampleOffsetImpl(size_t address) const {
   return address;
 }
 
-ISampler::ResampleData* FakeSampler::prepareResample(SamplerConfig* sc) {
+ISampler::ResampleData* FakeSampler::prepareResample(SamplerConfig* /*sc*/) {
   return nullptr;
 }
 
-void FakeSampler::applyResample(ISampler::ResampleData* rd) {}
+void FakeSampler::applyResample(ISampler::ResampleData* /*rd*/) {}
 
-void FakeSampler::cleanupResample(ResampleData* rd) {}
+void FakeSampler::cleanupResample(ResampleData* /*rd*/) {}
 
 }  // namespace util
 }  // namespace veles

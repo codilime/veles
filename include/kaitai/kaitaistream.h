@@ -76,21 +76,23 @@ class kstream {
   float read_f4le();
   double read_f8le();
 
-  std::string read_str_eos(const char*);
-  std::string read_str_byte_limit(size_t, const char*);
-  std::string read_strz(const char*, char, bool, bool, bool);
+  std::string read_str_eos(const char* enc);
+  std::string read_str_byte_limit(size_t len, const char* enc);
+  std::string read_strz(const char* enc, char term, bool include, bool consume,
+                        bool eos_error);
 
-  std::vector<uint8_t> read_bytes(size_t);
+  std::vector<uint8_t> read_bytes(size_t len);
   std::vector<uint8_t> read_bytes_full();
-  std::vector<uint8_t> ensure_fixed_contents(const std::string&);
+  std::vector<uint8_t> ensure_fixed_contents(const std::string& expected);
 
-  static std::string bytes_to_string(std::vector<uint8_t>, const char*);
+  static std::string bytes_to_string(const std::vector<uint8_t>& bytes,
+                                     const char* src_enc);
 
   /** additional methods required by Veles */
-  void pushName(const char*);
+  void pushName(const char* name);
   void popName();
   const char* currentName() { return current_name_; }
-  veles::dbif::ObjectHandle startChunk(const char*);
+  veles::dbif::ObjectHandle startChunk(const char* name);
   veles::dbif::ObjectHandle endChunk();
   veles::parser::StreamParser* parser() { return parser_; }
   veles::dbif::ObjectHandle blob() { return obj_; }

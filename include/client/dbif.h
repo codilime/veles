@@ -47,10 +47,11 @@ class NCObjectHandle : public dbif::ObjectHandleBase {
                           dbif::ObjectType type = dbif::ObjectType::CHUNK);
   data::NodeID id();
 
-  virtual dbif::InfoPromise* getInfo(const dbif::PInfoRequest& req);
-  virtual dbif::InfoPromise* subInfo(const dbif::PInfoRequest& req);
-  virtual dbif::MethodResultPromise* runMethod(const dbif::PMethodRequest& req);
-  virtual dbif::ObjectType type() const;
+  dbif::InfoPromise* getInfo(const dbif::PInfoRequest& req) override;
+  dbif::InfoPromise* subInfo(const dbif::PInfoRequest& req) override;
+  dbif::MethodResultPromise* runMethod(
+      const dbif::PMethodRequest& req) override;
+  dbif::ObjectType type() const override;
   bool operator==(const NCObjectHandle& other);
 
  private:

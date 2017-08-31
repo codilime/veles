@@ -75,7 +75,7 @@ class DockWidget : public QDockWidget {
 
  public:
   DockWidget();
-  virtual ~DockWidget();
+  ~DockWidget() override;
   const QAction* maximizeHereAction();
   static DockWidget* getParentDockWidget(QObject* obj);
   void addCloseAction();
@@ -106,15 +106,15 @@ class DockWidget : public QDockWidget {
   static constexpr int max_ticks_ = 4;
   static constexpr int step_msec_ = 100;
 
-  int timer_id_;
-  int ticks_;
-  QMenu* context_menu_;
+  int timer_id_ = 0;
+  int ticks_ = 0;
+  QMenu* context_menu_ = nullptr;
   QAction* detach_action_;
   QAction* maximize_here_action_;
   QAction* split_horizontally_action_;
   QAction* split_vertically_action_;
   QWidget* empty_title_bar_;
-  QAction* dock_close_action_;
+  QAction* dock_close_action_ = nullptr;
   QAction* next_tab_action_;
   QAction* prev_tab_action_;
 };
@@ -140,8 +140,8 @@ class TabBarEventFilter : public QObject {
   virtual bool mouseButtonRelease(QTabBar* tab_bar, QMouseEvent* event);
   virtual bool mouseButtonDblClick(QTabBar* tab_bar, QMouseEvent* event);
 
-  QTabBar* dragged_tab_bar_;
-  int dragged_tab_index_;
+  QTabBar* dragged_tab_bar_ = nullptr;
+  int dragged_tab_index_ = -1;
   QPoint drag_init_pos_;
   static const int k_drag_treshold_ = 5;
 };
@@ -155,7 +155,7 @@ class View : public QMainWindow {
 
  public:
   View(const QString& category, const QString& path);
-  ~View();
+  ~View() override;
   virtual void reapplySettings(){};
 
  signals:
@@ -181,7 +181,7 @@ class MainWindowWithDetachableDockWidgets : public QMainWindow {
 
  public:
   explicit MainWindowWithDetachableDockWidgets(QWidget* parent = nullptr);
-  virtual ~MainWindowWithDetachableDockWidgets();
+  ~MainWindowWithDetachableDockWidgets() override;
   DockWidget* addTab(QWidget* widget, const QString& title,
                      DockWidget* sibling = nullptr);
   void bringDockWidgetToFront(QDockWidget* dock_widget);
@@ -247,7 +247,7 @@ class MainWindowWithDetachableDockWidgets : public QMainWindow {
   TabBarEventFilter* tab_bar_event_filter_;
   QRubberBand* rubber_band_;
 
-  bool dock_widgets_with_no_title_bars_;
+  bool dock_widgets_with_no_title_bars_ = false;
   bool icons_on_tabs_;
   bool mark_active_dock_widget_;
 };

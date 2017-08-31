@@ -390,7 +390,7 @@ std::vector<uint8_t> elf_t::section_header_t::body() {
   kaitai::kstream* io = _root()->_io();
   auto saved_io = io;
   auto saved_veles_obj = veles_obj;
-  io = new kaitai::kstream(saved_io->blob(), offset(), veles_obj,
+  io = new kaitai::kstream(saved_io->blob(), offset(), veles_obj, 0,
                            saved_io->error());
   veles_obj = io->startChunk(saved_io->currentName());
   m__io->pushName("body");
@@ -412,7 +412,7 @@ std::string elf_t::section_header_t::name() {
   kaitai::kstream* io = _root()->strings()->_io();
   auto saved_io = io;
   auto saved_veles_obj = veles_obj;
-  io = new kaitai::kstream(saved_io->blob(), name_offset(), veles_obj,
+  io = new kaitai::kstream(saved_io->blob(), name_offset(), veles_obj, 0,
                            saved_io->error());
   veles_obj = io->startChunk(saved_io->currentName());
   m__io->pushName("name");
@@ -456,7 +456,7 @@ std::vector<elf_t::program_header_t*>* elf_t::program_headers() {
   auto saved_veles_obj = veles_obj;
   m__io = new kaitai::kstream(saved_io->blob(),
                               file_header()->program_header_offset(), veles_obj,
-                              saved_io->error());
+                              0, saved_io->error());
   veles_obj = m__io->startChunk(saved_io->currentName());
   int l_program_headers = file_header()->qty_program_header();
   m__skip_me_program_headers = new std::vector<std::vector<uint8_t>>();
@@ -503,7 +503,7 @@ std::vector<elf_t::section_header_t*>* elf_t::section_headers() {
   auto saved_veles_obj = veles_obj;
   m__io = new kaitai::kstream(saved_io->blob(),
                               file_header()->section_header_offset(), veles_obj,
-                              saved_io->error());
+                              0, saved_io->error());
   veles_obj = m__io->startChunk(saved_io->currentName());
   int l_section_headers = file_header()->qty_section_header();
   m__skip_me_section_headers = new std::vector<std::vector<uint8_t>>();
@@ -551,7 +551,7 @@ elf_t::strings_t* elf_t::strings() {
   m__io = new kaitai::kstream(
       saved_io->blob(),
       section_headers()->at(file_header()->section_names_idx())->offset(),
-      veles_obj, saved_io->error());
+      veles_obj, 0, saved_io->error());
   veles_obj = m__io->startChunk(saved_io->currentName());
   m__io->pushName("_skip_me_strings");
   m__skip_me_strings = m__io->read_bytes(

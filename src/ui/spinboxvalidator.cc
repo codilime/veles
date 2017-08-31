@@ -16,7 +16,7 @@
  */
 #include "include/ui/spinboxvalidator.h"
 
-#include <assert.h>
+#include <cassert>
 
 namespace veles {
 namespace ui {
@@ -28,7 +28,8 @@ SpinBoxValidator::SpinBoxValidator(uint64_t minimum, uint64_t maximum, int base,
                                    QObject* parent)
     : QValidator(parent), base_(base), bottom_(minimum), top_(maximum) {}
 
-QValidator::State SpinBoxValidator::validate(QString& input, int& pos) const {
+QValidator::State SpinBoxValidator::validate(QString& input,
+                                             int& /*pos*/) const {
   uint64_t value;
 
   if (input.isEmpty()) {
@@ -37,11 +38,7 @@ QValidator::State SpinBoxValidator::validate(QString& input, int& pos) const {
     bool ok;
     value = input.toULongLong(&ok, base_);
     if (!ok) {
-      if (isValidNum(input)) {
-        return Intermediate;
-      } else {
-        return Invalid;
-      }
+      return isValidNum(input) ? Intermediate : Invalid;
     }
   }
 

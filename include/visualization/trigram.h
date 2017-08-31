@@ -18,8 +18,7 @@
 
 #include "visualization/trigram.h"
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <vector>
 
 #include <QAction>
@@ -103,10 +102,10 @@ class TrigramWidget : public VisualizationWidget {
   enum class EVisualizationShape { CUBE, CYLINDER, SPHERE };
   enum class EVisualizationMode { TRIGRAM, LAYERED_DIGRAM };
 
-  explicit TrigramWidget(QWidget* parent = 0);
-  ~TrigramWidget();
+  explicit TrigramWidget(QWidget* parent = nullptr);
+  ~TrigramWidget() override;
 
-  virtual void prepareOptions(QMainWindow* visualization_window) override;
+  void prepareOptions(QMainWindow* visualization_window) override;
   void setMode(EVisualizationMode mode, bool animate = true);
 
   static float vfovDeg(float min_fov_deg, float aspect_ratio);
@@ -119,11 +118,11 @@ class TrigramWidget : public VisualizationWidget {
   void brightnessSliderMoved(int value);
 
  protected:
-  void refresh(AdditionalResampleDataPtr ad) override;
+  void refresh(const AdditionalResampleDataPtr& ad) override;
   bool initializeVisualizationGL() override;
 
   bool event(QEvent* event) override;
-  void timerEvent(QTimerEvent*) override;
+  void timerEvent(QTimerEvent* event) override;
 
   void resizeGLImpl(int w, int h) override;
   void paintGLImpl() override;
@@ -159,7 +158,7 @@ class TrigramWidget : public VisualizationWidget {
  private slots:
   void playPause();
   void setShape(EVisualizationShape shape);
-  void setUseBrightnessHeuristic(int state);
+  void setUseBrightnessHeuristic(Qt::CheckState state);
   void setManipulator(Manipulator* manipulator);
 
  private:
@@ -171,25 +170,29 @@ class TrigramWidget : public VisualizationWidget {
 
   QBasicTimer timer_;
   QOpenGLShaderProgram program_;
-  QOpenGLTexture* texture_;
-  QOpenGLBuffer* databuf_;
+  QOpenGLTexture* texture_ = nullptr;
+  QOpenGLBuffer* databuf_ = nullptr;
 
   QOpenGLVertexArrayObject vao_;
-  float c_sph_, c_cyl_, c_pos_, c_ort_;
+  float c_sph_ = 0;
+  float c_cyl_ = 0;
+  float c_pos_ = 0;
+  float c_ort_ = 0;
   int width_, height_;
-  EVisualizationShape shape_;
-  EVisualizationMode mode_;
+  EVisualizationShape shape_ = EVisualizationShape::CUBE;
+  EVisualizationMode mode_ = EVisualizationMode::TRIGRAM;
 
   QAction* cube_action_;
   QAction* cylinder_action_;
   QAction* sphere_action_;
-  QSlider* brightness_slider_;
+  QSlider* brightness_slider_ = nullptr;
   QCheckBox* use_heuristic_checkbox_;
-  bool is_playing_, use_brightness_heuristic_;
+  bool is_playing_ = true;
+  bool use_brightness_heuristic_;
   QCheckBox* show_labels_and_rf_checkbox_;
   bool show_labels_;
   QCheckBox* perspective_checkbox_;
-  bool perspective_;
+  bool perspective_ = true;
 
   QList<Manipulator*> manipulators_;
   Manipulator* current_manipulator_;

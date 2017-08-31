@@ -16,9 +16,10 @@
  */
 #pragma once
 
-#include <stdint.h>
-#include <QString>
+#include <cstdint>
 #include <vector>
+
+#include <QString>
 
 #include "data/bindata.h"
 #include "data/field.h"
@@ -31,10 +32,10 @@ namespace dbif {
 
 struct MethodRequest {
   virtual void key();
-  virtual ~MethodRequest() {}
+  virtual ~MethodRequest() = default;
 
  protected:
-  MethodRequest() {}
+  MethodRequest() = default;
 };
 
 struct CreatedReply;
@@ -138,10 +139,10 @@ struct BlobParseRequest : MethodRequest {
 // Replies
 
 struct MethodReply {
-  virtual ~MethodReply() {}
+  virtual ~MethodReply() = default;
 
  protected:
-  MethodReply() {}
+  MethodReply() = default;
 };
 
 struct NullReply : MethodReply {};

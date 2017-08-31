@@ -44,7 +44,7 @@ class ConnectionManager : public QObject {
 
  public:
   explicit ConnectionManager(QWidget* parent = nullptr);
-  virtual ~ConnectionManager();
+  ~ConnectionManager() override;
 
   client::NetworkClient* networkClient();
   QAction* showConnectionDialogAction();
@@ -79,11 +79,11 @@ class ConnectionManager : public QObject {
   QAction* show_connection_dialog_action_;
   QAction* disconnect_action_;
   QAction* kill_locally_created_server_action_;
-  QProcess* server_process_;
+  QProcess* server_process_ = nullptr;
   ConnectionDialog* connection_dialog_;
   bool is_local_server_;
   client::NetworkClient* network_client_;
-  QTextStream* network_client_output_;
+  QTextStream* network_client_output_ = nullptr;
 };
 
 /*****************************************************************************/
@@ -95,20 +95,21 @@ class ConnectionNotificationWidget : public QWidget {
 
  public:
   explicit ConnectionNotificationWidget(QWidget* parent = nullptr);
-  virtual ~ConnectionNotificationWidget();
+  ~ConnectionNotificationWidget() override;
 
  public slots:
   void updateConnectionStatus(
       client::NetworkClient::ConnectionStatus connection_status);
 
  protected:
-  void timerEvent(QTimerEvent* event);
+  void timerEvent(QTimerEvent* event) override;
 
  private:
-  client::NetworkClient::ConnectionStatus connection_status_;
+  client::NetworkClient::ConnectionStatus connection_status_ =
+      client::NetworkClient::ConnectionStatus::NotConnected;
 
-  int frame_;
-  int last_status_change_;
+  int frame_ = 0;
+  int last_status_change_ = -10;
 
   QPixmap icon_connected_;
   QPixmap icon_not_connected_;
@@ -126,7 +127,7 @@ class ConnectionsWidget : public QWidget {
 
  public:
   explicit ConnectionsWidget(QWidget* parent = nullptr);
-  virtual ~ConnectionsWidget();
+  ~ConnectionsWidget() override;
 
  public slots:
   void updateConnectionStatus(

@@ -52,10 +52,7 @@ bool Manipulator::handlesPause() { return false; }
 /*****************************************************************************/
 
 TrackballManipulator::TrackballManipulator(QObject* parent)
-    : Manipulator(parent),
-      distance_(5.f),
-      min_distance_(1.5f),
-      max_distance_(6.5f) {
+    : Manipulator(parent) {
   rotation_ = QQuaternion();
   lmb_drag_ = false;
   prev_pos_ = QPoint();
@@ -75,7 +72,7 @@ QMatrix4x4 TrackballManipulator::transform() {
   return m;
 }
 
-void TrackballManipulator::initFromMatrix(QMatrix4x4 m) {
+void TrackballManipulator::initFromMatrix(const QMatrix4x4& m) {
   decompose(m, &init_position_, &rotation_);
   rotation_ = rotation_.conjugated();
   distance_ = 5.f;
@@ -94,14 +91,15 @@ QString TrackballManipulator::manipulatorName() {
 }
 
 bool TrackballManipulator::eventFilter(QObject* watched, QEvent* event) {
-  QWidget* widget = dynamic_cast<QWidget*>(watched);
-  if (!widget) {
+  auto* widget = dynamic_cast<QWidget*>(watched);
+  if (widget == nullptr) {
     return false;
   }
 
   if (isMouseEvent(event)) {
     return mouseEvent(widget, static_cast<QMouseEvent*>(event));
-  } else if (isWheelEvent(event)) {
+  }
+  if (isWheelEvent(event)) {
     return wheelEvent(widget, static_cast<QWheelEvent*>(event));
   }
 
@@ -117,7 +115,7 @@ bool TrackballManipulator::mouseEvent(QWidget* widget, QMouseEvent* event) {
              event->button() == Qt::LeftButton) {
     lmb_drag_ = false;
   } else if (event->type() == QEvent::MouseMove) {
-    if (event->buttons() & Qt::LeftButton) {
+    if ((event->buttons() & Qt::LeftButton) != 0) {
       if (!lmb_drag_) {
         lmb_drag_ = true;
         prev_pos_ = event->pos();
@@ -139,7 +137,7 @@ bool TrackballManipulator::mouseEvent(QWidget* widget, QMouseEvent* event) {
   return true;
 }
 
-bool TrackballManipulator::wheelEvent(QWidget* widget, QWheelEvent* event) {
+bool TrackballManipulator::wheelEvent(QWidget* /*widget*/, QWheelEvent* event) {
   distance_ -= static_cast<float>(event->angleDelta().y()) * (1.f / 8.f / 90.f);
   if (distance_ < min_distance_) {
     distance_ = min_distance_;
@@ -170,7 +168,7 @@ QMatrix4x4 FreeManipulator::transform() {
   return m;
 }
 
-void FreeManipulator::initFromMatrix(QMatrix4x4 m) {
+void FreeManipulator::initFromMatrix(const QMatrix4x4& m) {
   decompose(m, &position_, &eye_rotation_);
   position_ = QMatrix4x4(eye_rotation_.toRotationMatrix()).mapVector(position_);
   eye_rotation_ = eye_rotation_.conjugated();
@@ -201,9 +199,11 @@ bool FreeManipulator::isCtrlButton(int key) {
 bool FreeManipulator::eventFilter(QObject* watched, QEvent* event) {
   if (isKeyEvent(event)) {
     return keyboardEvent(static_cast<QKeyEvent*>(event));
-  } else if (isMouseEvent(event)) {
+  }
+  if (isMouseEvent(event)) {
     return mouseEvent(watched, static_cast<QMouseEvent*>(event));
-  } else if (isWheelEvent(event)) {
+  }
+  if (isWheelEvent(event)) {
     return wheelEvent(watched, static_cast<QWheelEvent*>(event));
   }
   return false;
@@ -220,7 +220,8 @@ bool FreeManipulator::keyboardEvent(QKeyEvent* event) {
     if (key == key_forward) forward_ = true;
     if (key == key_back) back_ = true;
     return true;
-  } else if (event->type() == QEvent::KeyRelease) {
+  }
+  if (event->type() == QEvent::KeyRelease) {
     if (key == key_left) left_ = false;
     if (key == key_right) right_ = false;
     if (key == key_up) up_ = false;
@@ -234,8 +235,8 @@ bool FreeManipulator::keyboardEvent(QKeyEvent* event) {
 }
 
 bool FreeManipulator::mouseEvent(QObject* watched, QMouseEvent* event) {
-  QWidget* widget = dynamic_cast<QWidget*>(watched);
-  if (!widget) {
+  auto* widget = dynamic_cast<QWidget*>(watched);
+  if (widget == nullptr) {
     return false;
   }
 
@@ -247,13 +248,13 @@ bool FreeManipulator::mouseEvent(QObject* watched, QMouseEvent* event) {
              event->button() == Qt::LeftButton) {
     lmb_drag_ = false;
   } else if (event->type() == QEvent::MouseMove) {
-    if (event->buttons() & Qt::LeftButton) {
+    if ((event->buttons() & Qt::LeftButton) != 0) {
       if (!lmb_drag_) {
         lmb_drag_ = true;
         prev_pos_ = event->pos();
       } else {
         QPoint delta = event->pos() - prev_pos_;
-        if (event->modifiers() & Qt::ControlModifier) {
+        if ((event->modifiers() & Qt::ControlModifier) != 0) {
           cube_rotation_ =
               eye_rotation_.conjugated() *
               QQuaternion::fromAxisAndAngle(
@@ -279,7 +280,7 @@ bool FreeManipulator::mouseEvent(QObject* watched, QMouseEvent* event) {
   return true;
 }
 
-bool FreeManipulator::wheelEvent(QObject* watched, QWheelEvent* event) {
+bool FreeManipulator::wheelEvent(QObject* /*watched*/, QWheelEvent* event) {
   position_ += QMatrix4x4(eye_rotation_.conjugated().toRotationMatrix())
                    .mapVector(QVector3D(0.f, 0.f, 1.f) * (1.f / 8.f / 90.f) *
                               event->angleDelta().y());
@@ -311,7 +312,7 @@ QMatrix4x4 SpinManipulator::transform() {
   return m;
 }
 
-void SpinManipulator::initFromMatrix(QMatrix4x4 m) {
+void SpinManipulator::initFromMatrix(const QMatrix4x4& m) {
   decompose(m, &init_position_, &init_rotation_);
   init_rotation_ = init_rotation_.conjugated();
   factor_ = 0.f;

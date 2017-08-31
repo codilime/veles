@@ -10,7 +10,7 @@ class GifParser : public parser::Parser {
     try {
       auto stream = kaitai::kstream(blob, start, parent_chunk);
       auto parser = kaitai::gif::gif_t(&stream);
-    } catch (std::exception) {
+    } catch (const std::exception&) {
     }
   }
 };

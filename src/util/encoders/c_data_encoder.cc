@@ -30,7 +30,7 @@ QString CDataEncoder::encode(const QByteArray& data) {
         QString::asprintf("0x%02x,", static_cast<unsigned char>(byte));
     lineLen += byteStr.length() + 1;
     if (lineLen > 80) {
-      byteStr = "\n" + QString(this->indentation, ' ') + byteStr;
+      byteStr = "\n" + QString(indentation, ' ') + byteStr;
       lineLen = byteStr.length() - 1;  // - 1 for newline
       res += byteStr;
     } else {

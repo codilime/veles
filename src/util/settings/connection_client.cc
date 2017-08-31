@@ -54,7 +54,7 @@ void removeProfile(const QString& profile) {
   QSettings settings;
   QMap<QString, QVariant> profiles = settings.value("profiles").toMap();
   profiles.remove(profile);
-  if (profiles.size() == 0) {
+  if (profiles.empty()) {
     settings.remove("profiles");
   } else {
     settings.setValue("profiles", profiles);

@@ -29,8 +29,8 @@ namespace encoders {
 class EncodersFactory {
  public:
   static QStringList keys();
-  static IEncoder* createEncoder(const QString&);
-  static IDecoder* createDecoder(const QString&);
+  static IEncoder* createEncoder(const QString& id);
+  static IDecoder* createDecoder(const QString& id);
 };
 
 }  // namespace encoders

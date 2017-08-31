@@ -108,7 +108,7 @@ struct ChunkDataItem {
     BITFIELD,
     COMPUTED,
     PAD,
-  } type;
+  } type = NONE;
   // Not for COMPUTED; for BITFIELD these are bit indices.
   uint64_t start;
   uint64_t end;
@@ -125,7 +125,7 @@ struct ChunkDataItem {
 
   explicit operator bool() const { return type != NONE; }
 
-  ChunkDataItem() : type(NONE) {}
+  ChunkDataItem() : type() {}
 
   static ChunkDataItem subchunk(uint64_t start, uint64_t end,
                                 const QString& name, ObjectHandle chunk) {

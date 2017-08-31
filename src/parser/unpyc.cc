@@ -362,7 +362,7 @@ std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> parseLnotab(
     uint8_t addr_inc = parser.getByte(QString("item[%1].addr_inc").arg(idx));
     uint8_t line_inc = parser.getByte(QString("item[%1].line_inc").arg(idx));
     addr += addr_inc;
-    if (line_inc && addr != prev_addr) {
+    if (line_inc != 0 && addr != prev_addr) {
       res.push_back(std::make_tuple(prev_addr, addr, line));
       prev_addr = addr;
     }
@@ -398,7 +398,7 @@ void parseCode(const dbif::ObjectHandle& code, const PycVersion& version) {
     bool found = false;
     for (auto& op : pyc_ops) {
       if (op.opcode == opcode && (op.flags & version.flags) == op.flags) {
-        if (version.flags & PYVER_FLAG_WORDCODE) {
+        if ((version.flags & PYVER_FLAG_WORDCODE) != 0) {
           arg <<= 8;
           uint8_t cur_arg = parser.getByte("arg");
           arg |= cur_arg;
@@ -407,7 +407,7 @@ void parseCode(const dbif::ObjectHandle& code, const PycVersion& version) {
           if (op.type != PYC_OP_SIMPLE) {
             arg <<= 16;
             auto cur_arg = parser.getLe16("arg", 1);
-            if (cur_arg.size()) {
+            if (!cur_arg.empty()) {
               arg |= cur_arg[0];
               arg_width += 16;
             }

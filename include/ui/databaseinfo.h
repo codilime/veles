@@ -36,8 +36,8 @@ class DatabaseInfo : public QWidget {
 
  public:
   explicit DatabaseInfo(const dbif::ObjectHandle& database,
-                        QWidget* parent = 0);
-  ~DatabaseInfo();
+                        QWidget* parent = nullptr);
+  ~DatabaseInfo() override;
 
  private:
   void subscribeChildren();

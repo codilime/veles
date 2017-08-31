@@ -34,10 +34,10 @@ class CreateChunkDialog : public QDialog {
   Q_OBJECT
 
  public:
-  explicit CreateChunkDialog(FileBlobModel* chunksModel_,
+  explicit CreateChunkDialog(FileBlobModel* chunksModel,
                              QItemSelectionModel* selectionModel = nullptr,
-                             QWidget* parent_ = 0);
-  ~CreateChunkDialog();
+                             QWidget* parent = nullptr);
+  ~CreateChunkDialog() override;
   Ui::CreateChunkDialog* ui;
   void updateParent(bool childOfSelected = false);
   void setRange(uint64_t begin, uint64_t end);
@@ -46,7 +46,7 @@ class CreateChunkDialog : public QDialog {
   void showEvent(QShowEvent* event) override;
 
  public slots:
-  virtual void accept() override;
+  void accept() override;
   virtual void updateBinDataSize();
 
  private:

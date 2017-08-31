@@ -31,7 +31,8 @@ class RootFileBlobItem : public FileBlobItem {
   Q_OBJECT
 
  public:
-  explicit RootFileBlobItem(const dbif::ObjectHandle& obj, QObject* parent = 0);
+  explicit RootFileBlobItem(const dbif::ObjectHandle& obj,
+                            QObject* parent = nullptr);
 
  private slots:
   void gotChildrenResponse(const veles::dbif::PInfoReply& reply);

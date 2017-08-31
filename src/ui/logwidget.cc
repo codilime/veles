@@ -30,7 +30,7 @@ QMutex* IODeviceProxy::mutexHistory() { return &mutex_; }
 
 QList<QString>& IODeviceProxy::history() { return history_; }
 
-qint64 IODeviceProxy::readData(char* data, qint64 maxSize) { return 0; }
+qint64 IODeviceProxy::readData(char* /*data*/, qint64 /*maxSize*/) { return 0; }
 
 qint64 IODeviceProxy::writeData(const char* data, qint64 maxSize) {
   QString message = QString::fromUtf8(data, maxSize);
@@ -106,7 +106,7 @@ void LogWidget::saveFileSelected(const QString& file) {
 }
 
 void LogWidget::appendHistory() {
-  QMutexLocker(io_proxy_->mutexHistory());
+  QMutexLocker lock(io_proxy_->mutexHistory());
   for (const auto& str : io_proxy_->history()) {
     append(str);
   }

@@ -133,8 +133,8 @@ void SearchDialog::enableReplace(const QString& find, const QString& replace) {
   if (ui->cbFindFormat->currentIndex() == 1) {
     find_len *= (_hexEdit->dataModel()->binData().width() + 3) / 4;
   }
-  ui->warning_label->setVisible(replace.length() && (replace_len != find_len));
-  bool enable_replace = replace.length() && (replace_len == find_len);
+  ui->warning_label->setVisible(!replace.isEmpty() && replace_len != find_len);
+  bool enable_replace = !replace.isEmpty() && replace_len == find_len;
   ui->pbReplace->setEnabled(enable_replace);
   ui->pbReplaceAll->setEnabled(enable_replace);
 }

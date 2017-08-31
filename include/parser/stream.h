@@ -16,7 +16,7 @@
  */
 #pragma once
 
-#include <assert.h>
+#include <cassert>
 
 #include "data/repack.h"
 #include "dbif/info.h"
@@ -54,7 +54,9 @@ class StreamParser {
 
   dbif::ObjectHandle startChunk(const QString& type, const QString& name) {
     dbif::ObjectHandle parent = parent_chunk_;
-    if (stack_.size()) parent = stack_.back().chunk;
+    if (!stack_.empty()) {
+      parent = stack_.back().chunk;
+    }
     dbif::ObjectHandle chunk = blob_
                                    ->syncRunMethod<dbif::ChunkCreateRequest>(
                                        name, type, parent, pos_, pos_)
@@ -80,7 +82,9 @@ class StreamParser {
                         size_t num_elements,
                         const data::FieldHighType& high_type) {
     size_t src_sz = repack.repackSize(num_elements);
-    if (pos_ >= blob_size_) return data::BinData();
+    if (pos_ >= blob_size_) {
+      return data::BinData();
+    }
     auto data =
         blob_->syncGetInfo<veles::dbif::BlobDataRequest>(pos_, pos_ + src_sz);
     pos_ += src_sz;
@@ -138,9 +142,11 @@ class StreamParser {
     auto data = getData(
         name, data::Repacker{endian, 8, 32}, 1,
         data::FieldHighType::floating(data::FieldHighType::IEEE754_SINGLE));
-    if (!data.size()) return 0.0;
+    if (data.size() == 0) {
+      return 0.0;
+    }
 
-    assert(sizeof(uint32_t) == sizeof(float));
+    static_assert(sizeof(uint32_t) == sizeof(float), "Unsupported float size");
     uint32_t res = data.element64();
     float ret;
     memcpy(&ret, &res, sizeof(float));
@@ -160,8 +166,11 @@ class StreamParser {
         name, data::Repacker{endian, 8, 64}, 1,
         data::FieldHighType::floating(data::FieldHighType::IEEE754_DOUBLE));
 
-    if (!data.size()) return 0.0;
-    assert(sizeof(uint64_t) == sizeof(double));
+    if (data.size() == 0) {
+      return 0.0;
+    }
+    static_assert(sizeof(uint64_t) == sizeof(double),
+                  "Unsupported double size");
     uint64_t res = data.element64();
     double ret;
     memcpy(&ret, &res, sizeof(double));
@@ -181,7 +190,9 @@ class StreamParser {
                  data::Endian endian) {
     auto data = getData(name, data::Repacker{endian, 8, 32}, 1,
                         data::FieldHighType::fixed(sign_mode));
-    if (!data.size()) return 0;
+    if (data.size() == 0) {
+      return 0;
+    }
     return data.element64();
   }
 
@@ -202,7 +213,9 @@ class StreamParser {
                  data::Endian endian) {
     auto data = getData(name, data::Repacker{endian, 8, 64}, 1,
                         data::FieldHighType::fixed(sign_mode));
-    if (!data.size()) return 0;
+    if (data.size() == 0) {
+      return 0;
+    }
     return data.element64();
   }
 
@@ -241,7 +254,9 @@ class StreamParser {
 
   uint8_t getByte(const QString& name) {
     auto data = getData(name, data::Repacker(), 1, data::FieldHighType());
-    if (!data.size()) return 0;
+    if (data.size() == 0) {
+      return 0;
+    }
     return data.element64();
   }
 

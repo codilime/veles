@@ -18,7 +18,7 @@
 
 #include "visualization/digram.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 #include <vector>
 
@@ -39,11 +39,11 @@ class DigramWidget : public VisualizationWidget {
   Q_OBJECT
 
  public:
-  explicit DigramWidget(QWidget* parent = 0);
-  ~DigramWidget();
+  explicit DigramWidget(QWidget* parent = nullptr);
+  ~DigramWidget() override;
 
  protected:
-  void refresh(AdditionalResampleDataPtr ad) override;
+  void refresh(const AdditionalResampleDataPtr& ad) override;
   bool initializeVisualizationGL() override;
 
   void resizeGLImpl(int w, int h) override;
@@ -55,7 +55,7 @@ class DigramWidget : public VisualizationWidget {
 
  private:
   QOpenGLShaderProgram program_;
-  QOpenGLTexture* texture_;
+  QOpenGLTexture* texture_ = nullptr;
 
   QOpenGLBuffer square_vertex_;
   QOpenGLVertexArrayObject vao_;

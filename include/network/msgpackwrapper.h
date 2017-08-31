@@ -52,7 +52,7 @@ class MsgpackWrapper {
       return parseMessage(&handle);
     }
 
-    while (1) {
+    while (true) {
       unp_.reserve_buffer(READ_SIZE_);
       qint64 read = connection->read(unp_.buffer(), READ_SIZE_);
       if (read <= 0) {

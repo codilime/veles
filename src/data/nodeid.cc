@@ -68,7 +68,8 @@ bool NodeID::operator<(const NodeID& other) const {
   for (unsigned int i = 0; i < WIDTH; ++i) {
     if (value[i] < other.value[i]) {
       return true;
-    } else if (value[i] > other.value[i]) {
+    }
+    if (value[i] > other.value[i]) {
       return false;
     }
   }
