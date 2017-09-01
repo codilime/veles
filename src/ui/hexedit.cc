@@ -634,12 +634,12 @@ QColor HexEdit::byteTextColorFromByteValue(uint64_t byte_val) {
   return util::settings::theme::byteColor(byte_val & 0xff);
 }
 
-QColor HexEdit::byteBackroundColorFromPos(qint64 pos) {
+QColor HexEdit::byteBackroundColorFromPos(qint64 pos, bool modified) {
   if (pos >= selectionStart() && pos < selectionEnd() && selectionSize() > 1) {
     return selectionColor_;
   }
 
-  if (byteValue(pos) != originalByteValue(pos)) {
+  if (modified) {
     return util::settings::theme::editedBackground();
   }
 
@@ -770,6 +770,8 @@ void HexEdit::paintEvent(QPaintEvent* event) {
 
   veles::data::BinData bytes_values =
       edit_engine_.bytesValues(start_byte, size_to_paint);
+  QVector<bool> modified_positions =
+      edit_engine_.modifiedPositions(start_byte, size_to_paint);
 
   // Draw background.
   // This code will be optimized in another commit to reduce number of calls to
@@ -789,7 +791,8 @@ void HexEdit::paintEvent(QPaintEvent* event) {
          byte_idx++) {
       auto hex_rect = bytePosToRect(byte_idx);
       auto ascii_rect = bytePosToRect(byte_idx, true);
-      auto bgc = byteBackroundColorFromPos(byte_idx);
+      auto bgc = byteBackroundColorFromPos(
+          byte_idx, modified_positions[byte_idx - start_byte]);
       bool redraw_hex = invalidated_rect.intersects(hex_rect);
       bool redraw_ascii = invalidated_rect.intersects(ascii_rect);
       if (redraw_hex && bgc.isValid()) {

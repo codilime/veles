@@ -186,7 +186,7 @@ class HexEdit : public QAbstractScrollArea {
 
   void setByteValue(qint64 pos, uint64_t byte_value);
   static QColor byteTextColorFromByteValue(uint64_t byte_val);
-  QColor byteBackroundColorFromPos(qint64 pos);
+  QColor byteBackroundColorFromPos(qint64 pos, bool modified);
 
   qint64 selectionStart();
   qint64 selectionEnd();

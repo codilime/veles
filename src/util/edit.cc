@@ -179,6 +179,40 @@ data::BinData EditEngine::originalBytesValues(size_t pos, size_t size) const {
   return original_data_->binData().data(pos, size);
 }
 
+QVector<bool> EditEngine::modifiedPositions(size_t pos, size_t size) const {
+  QVector<bool> result(size);
+
+  size_t end_pos = pos + size;
+  auto next_it = address_mapping_.upperBound(pos);
+  assert(next_it != address_mapping_.cbegin());
+  auto it = next_it;
+  --it;
+
+  auto set_result_true = [&it, &result](size_t start, size_t end) {
+    if (it->fragment_ != nullptr) {
+      for (size_t i = start; i < end; ++i) {
+        result[i] = true;
+      }
+    }
+  };
+
+  if (next_it == address_mapping_.cend() || end_pos <= next_it.key()) {
+    set_result_true(0, size);
+  } else {
+    set_result_true(0, next_it.key() - pos);
+    ++it;
+    ++next_it;
+    while (next_it != address_mapping_.cend() && next_it.key() < end_pos) {
+      set_result_true(it.key() - pos, next_it.key() - pos);
+      ++it;
+      ++next_it;
+    }
+    set_result_true(it.key() - pos, size);
+  }
+
+  return result;
+}
+
 data::BinData EditEngine::getDataFromEditNode(const EditNode& edit_node,
                                               size_t offset,
                                               size_t size) const {
