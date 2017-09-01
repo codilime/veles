@@ -48,9 +48,7 @@ class EditEngine {
   void clear();
 
   uint64_t byteValue(size_t pos) const;
-  uint64_t originalByteValue(size_t pos) const;
   data::BinData bytesValues(size_t pos, size_t size) const;
-  data::BinData originalBytesValues(size_t pos, size_t size) const;
   QVector<bool> modifiedPositions(size_t pos, size_t size) const;
 
  private:

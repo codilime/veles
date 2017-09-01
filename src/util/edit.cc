@@ -133,10 +133,6 @@ uint64_t EditEngine::byteValue(size_t pos) const {
   return it->fragment_->element64(offset_in_fragment);
 }
 
-uint64_t EditEngine::originalByteValue(size_t pos) const {
-  return original_data_->binData().element64(pos);
-}
-
 data::BinData EditEngine::bytesValues(size_t pos, size_t size) const {
   data::BinData result = data::BinData(original_data_->binData().width(), size);
 
@@ -173,10 +169,6 @@ data::BinData EditEngine::bytesValues(size_t pos, size_t size) const {
   }
 
   return result;
-}
-
-data::BinData EditEngine::originalBytesValues(size_t pos, size_t size) const {
-  return original_data_->binData().data(pos, size);
 }
 
 QVector<bool> EditEngine::modifiedPositions(size_t pos, size_t size) const {

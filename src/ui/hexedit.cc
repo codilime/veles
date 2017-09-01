@@ -574,10 +574,6 @@ uint64_t HexEdit::byteValue(qint64 pos) const {
   return edit_engine_.byteValue(pos);
 }
 
-uint64_t HexEdit::originalByteValue(qint64 pos) const {
-  return edit_engine_.originalByteValue(pos);
-}
-
 void HexEdit::setBytesValues(qint64 pos, const data::BinData& new_data) {
   edit_engine_.changeBytes(pos, new_data);
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
