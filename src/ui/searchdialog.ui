@@ -189,13 +189,7 @@
      <item>
       <widget class="QPushButton" name="pbFindPrevious">
        <property name="text">
-        <string>&amp;Find Previous</string>
-       </property>
-       <property name="shortcut">
-        <string>F3</string>
-       </property>
-       <property name="default">
-        <bool>true</bool>
+        <string>Find &amp;Previous</string>
        </property>
       </widget>
      </item>
@@ -215,7 +209,7 @@
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>&amp;Replace Previous</string>
+        <string>Replace Previous</string>
        </property>
       </widget>
      </item>

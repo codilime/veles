@@ -172,7 +172,7 @@ qint64 SearchDialog::findNext(bool include_overlapping, bool interactive) {
     emit enableFindNext(true);
   } else {
     _lastFoundSize = 0;
-    _hexEdit->setSelection(0, 0, false);
+    _hexEdit->setSelection(0, 0, /*set_visible=*/false);
 
     if (interactive) {
       message_box_not_found_->show();
@@ -211,21 +211,19 @@ qint64 SearchDialog::findPrevious(bool include_overlapping, bool interactive) {
   idx = lastIndexOf(_findBa, start_search_pos);
 
   if (idx >= 0) {
-    _hexEdit->setSelection(idx, _findBa.size(), true);
+    _hexEdit->setSelection(idx, _findBa.size(), /*set_visible=*/true);
     _lastFoundSize = _findBa.size();
-    emit enableFindPrevious(false);
-    //emit enableFindNext(true);
+    emit enableFindPrevious(true);
   } else {
     _lastFoundSize = 0;
-    _hexEdit->setSelection(_hexEdit->dataModel()->binData().size() - 1, 0,
-                             false);
+    auto size = _hexEdit->dataModel()->binData().size() - 1;
+    _hexEdit->setSelection(size, 0, /*set_visible=*/false);
     if (interactive) {
       message_box_not_found_->show();
     }
   }
 
   return idx;
-
 }
 
 void SearchDialog::showEvent(QShowEvent* event) {
@@ -238,13 +236,11 @@ void SearchDialog::on_pbFindPrevious_clicked() { findPrevious(); }
 
 void SearchDialog::on_pbReplace_clicked() {
   replaceClick();
-
   findNext(/*include_overlapping=*/false);
 }
 
 void SearchDialog::on_pbReplacePrevious_clicked() {
   replaceClick();
-
   findPrevious(/*include_overlapping=*/false);
 }
 
