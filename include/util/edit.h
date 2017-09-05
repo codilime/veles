@@ -18,9 +18,9 @@
 
 #include <cstdlib>
 #include <memory>
+#include <vector>
 
 #include <QMap>
-#include <QVector>
 
 #include "data/bindata.h"
 #include "ui/fileblobmodel.h"
@@ -49,7 +49,7 @@ class EditEngine {
 
   uint64_t byteValue(size_t pos) const;
   data::BinData bytesValues(size_t pos, size_t size) const;
-  QVector<bool> modifiedPositions(size_t pos, size_t size) const;
+  std::vector<bool> modifiedPositions(size_t pos, size_t size) const;
 
  private:
   struct EditNode {
@@ -63,6 +63,9 @@ class EditEngine {
   };
 
   ui::FileBlobModel* original_data_;
+  // TODO(catsuryuu): change to std::map after switching to C++17 (and use
+  // `insert_or_assign`)
+  // Reason: QMap uses int for container size
   QMap<size_t, EditNode> address_mapping_;
   bool has_changes_;
 

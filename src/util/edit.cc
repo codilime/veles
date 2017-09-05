@@ -171,8 +171,8 @@ data::BinData EditEngine::bytesValues(size_t pos, size_t size) const {
   return result;
 }
 
-QVector<bool> EditEngine::modifiedPositions(size_t pos, size_t size) const {
-  QVector<bool> result(size);
+std::vector<bool> EditEngine::modifiedPositions(size_t pos, size_t size) const {
+  std::vector<bool> result(size);
 
   size_t end_pos = pos + size;
   auto next_it = address_mapping_.upperBound(pos);

@@ -15,6 +15,7 @@
  *
  */
 #include <algorithm>
+#include <vector>
 
 #include <QApplication>
 #include <QClipboard>
@@ -766,7 +767,7 @@ void HexEdit::paintEvent(QPaintEvent* event) {
 
   veles::data::BinData bytes_values =
       edit_engine_.bytesValues(start_byte, size_to_paint);
-  QVector<bool> modified_positions =
+  std::vector<bool> modified_positions =
       edit_engine_.modifiedPositions(start_byte, size_to_paint);
 
   // Draw background.
