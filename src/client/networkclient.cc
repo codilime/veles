@@ -168,9 +168,9 @@ void NetworkClient::connect(const QString& server_url,
 
     // TODO(altran01): Why is bind causing a problem here?
     // if (client_socket_->bind(QHostAddress(client_interface_name))) {
-    if (output() != nullptr) {
+    /*if (output() != nullptr) {
       *output() << "NetworkClient: bind successful." << endl;
-    }
+    }*/
     if (ssl_enabled_) {
       client_socket_->connectToHostEncrypted(server_name_, server_port_);
     } else {
@@ -434,6 +434,28 @@ void NetworkClient::setConnectionStatus(ConnectionStatus connection_status) {
 }
 
 void NetworkClient::socketConnected() {
+  if (ssl_enabled_) {
+    QSslCertificate cert = client_socket_->peerCertificate();
+    if (cert.isNull()) {
+      if (output() != nullptr) {
+        *output() << "NetworkClient: received null certificate!" << endl;
+      }
+      disconnect();
+      return;
+    }
+    QByteArray remote_fingerprint =
+        cert.digest(QCryptographicHash::Algorithm::Sha256).toHex();
+    if (fingerprint_ != remote_fingerprint) {
+      if (output() != nullptr) {
+        *output()
+            << "NetworkClient: Certificate fingerprint mismatch! Expected: "
+            << fingerprint_ << ", got: " << remote_fingerprint << endl;
+      }
+      disconnect();
+      return;
+    }
+  }
+
   if (output() != nullptr) {
     *output() << "NetworkClient: TCP socket connected - sending an "
                  "authentication key and \"connect\" message."
@@ -501,34 +523,10 @@ void NetworkClient::socketError(QAbstractSocket::SocketError socketError) {
 }
 
 void NetworkClient::checkFingerprint(const QList<QSslError>& errors) {
-  bool fingerprint_valid = false;
   for (const auto& err : errors) {
-    if (err.error() == QSslError::SelfSignedCertificate ||
-        err.error() == QSslError::HostNameMismatch) {
-      if (!fingerprint_valid) {
-        QSslCertificate cert = err.certificate();
-        if (cert.isNull()) {
-          // This shouldn't happen for those 2 errors, but better safe than
-          // sorry
-          if (output() != nullptr) {
-            *output() << "NetworkClient: received null certificate!" << endl;
-          }
-          return;
-        }
-        QByteArray remote_fingerprint =
-            cert.digest(QCryptographicHash::Algorithm::Sha256).toHex();
-        if (fingerprint_ == remote_fingerprint) {
-          fingerprint_valid = true;
-        } else {
-          if (output() != nullptr) {
-            *output()
-                << "NetworkClient: Certificate fingerprint mismatch! Expected: "
-                << fingerprint_ << ", got: " << remote_fingerprint << endl;
-          }
-          return;
-        }
-      }
-    } else {
+    if (err.error() != QSslError::SelfSignedCertificate &&
+        err.error() != QSslError::HostNameMismatch &&
+        err.error() != QSslError::CertificateUntrusted) {
       if (output() != nullptr) {
         *output() << "NetworkClient: unexpected error: " << err.errorString()
                   << endl;
