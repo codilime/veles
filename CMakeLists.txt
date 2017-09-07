@@ -278,7 +278,7 @@ add_library(parser
 
 qt5_use_modules(parser Core)
 add_dependencies(parser zlib)
-target_link_libraries(parser veles_db veles_dbif ${ZLIB_LIBRARIES})
+target_link_libraries(parser veles_dbif ${ZLIB_LIBRARIES})
 
 add_library(veles_network
     ${INCLUDE_DIR}/network/msgpackwrapper.h
@@ -308,7 +308,7 @@ add_library(veles_client
 
 add_dependencies(veles_client openssl)
 qt5_use_modules(veles_client Core Network)
-target_link_libraries(veles_client veles_base veles_data veles_network)
+target_link_libraries(veles_client veles_base veles_data veles_network veles_db)
 
 qt5_use_modules(veles_db Core)
 add_dependencies(veles_db veles_network)
