@@ -38,6 +38,8 @@ class EditEngine {
 
   void changeBytes(size_t pos, const data::BinData& bytes,
                    bool add_to_history = true);
+  void insertBytes(size_t pos, const data::BinData& bytes,
+                   bool add_to_history = true);
 
   bool hasUndo() const { return !edit_stack_.isEmpty(); }
   /** Undo last changeBytes and returns first byte changed by this operation */
@@ -75,6 +77,7 @@ class EditEngine {
 
   data::BinData getDataFromEditNode(const EditNode& edit_node, size_t offset,
                                     size_t size) const;
+  void remap(size_t pos, size_t offset);
   void trySquashWithPrev(const QMap<size_t, EditNode>::iterator& it);
   void trySquash(const QMap<size_t, EditNode>::iterator& it);
 
