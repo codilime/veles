@@ -92,12 +92,28 @@ void EditEngine::insertBytes(size_t pos, const data::BinData& bytes,
 
   has_changes_ = true;
 
-  remap(pos, bytes.size());
+  remap(pos, 0, bytes.size());
 
   auto it = address_mapping_.insert(pos, EditNode(bytes));
   // it can overwrite the node with `pos` key and that's OK
 
   trySquash(it);
+}
+
+void EditEngine::removeBytes(size_t pos, size_t size, bool add_to_history) {
+  if (size == 0) {
+    return;
+  }
+
+  if (add_to_history) {
+    // TODO(catsuryuu)
+  }
+
+  has_changes_ = true;
+
+  remap(pos, size, 0);
+
+  trySquash(address_mapping_.lowerBound(pos));
 }
 
 size_t EditEngine::undo() {
@@ -234,23 +250,34 @@ data::BinData EditEngine::getDataFromEditNode(const EditNode& edit_node,
   return edit_node.fragment_->data(edit_node.offset_ + offset, size);
 }
 
-void EditEngine::remap(size_t pos, size_t offset) {
+void EditEngine::remap(size_t pos, size_t old_size, size_t new_size) {
+  // This variable can be overflowed for `old_size` > `new_size`,
+  // but it will be OK when we add this difference to some address.
+  size_t offset = new_size - old_size;
+
   auto pos_next_it = address_mapping_.upperBound(pos);
   assert(pos_next_it != address_mapping_.cbegin());
-  auto pos_it = pos_next_it;
-  --pos_it;
 
   QMap<size_t, EditNode> new_address_mapping;
   for (auto it = address_mapping_.cbegin(); it != pos_next_it; ++it) {
     new_address_mapping.insert(it.key(), it.value());
   }
 
-  new_address_mapping.insert(
-      pos + offset,
-      EditNode(pos_it->fragment_, pos_it->offset_ + (pos - pos_it.key())));
+  size_t insert_pos = pos + old_size;
+  auto insert_pos_next_it =
+      old_size > 0 ? address_mapping_.upperBound(insert_pos) : pos_next_it;
+  assert(insert_pos_next_it != address_mapping_.cbegin());
+  auto insert_pos_it = insert_pos_next_it;
+  --insert_pos_it;
 
-  for (auto it = pos_next_it; it != address_mapping_.cend(); ++it) {
+  new_address_mapping.insert(
+      insert_pos + offset,
+      EditNode(insert_pos_it->fragment_,
+               insert_pos_it->offset_ + (insert_pos - insert_pos_it.key())));
+
+  for (auto it = insert_pos_next_it; it != address_mapping_.cend(); ++it) {
     new_address_mapping.insert(it.key() + offset, it.value());
+    // it can overwrite the `*pos_it` node and that's OK
   }
 
   address_mapping_ = new_address_mapping;
