@@ -50,6 +50,9 @@ class EditEngine {
   void applyChanges();
   void clear();
 
+  size_t dataSize() const {
+    return original_data_->binData().size() + data_size_difference_;
+  }
   uint64_t byteValue(size_t pos) const;
   data::BinData bytesValues(size_t pos, size_t size) const;
   std::vector<bool> modifiedPositions(size_t pos, size_t size) const;
@@ -70,6 +73,7 @@ class EditEngine {
   // `insert_or_assign`)
   // Reason: QMap uses int for container size
   QMap<size_t, EditNode> address_mapping_;
+  size_t data_size_difference_;
   bool has_changes_;
 
   int edit_stack_limit_;

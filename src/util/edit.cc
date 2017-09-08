@@ -25,7 +25,7 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
   if (bytes.size() == 0) {
     return;
   }
-  assert(pos + bytes.size() <= original_data_->binData().size());
+  assert(pos + bytes.size() <= dataSize());
 
   if (add_to_history) {
     edit_stack_data_.push_back(bytesValues(pos, bytes.size()));
@@ -281,6 +281,7 @@ void EditEngine::remap(size_t pos, size_t old_size, size_t new_size) {
   }
 
   address_mapping_ = new_address_mapping;
+  data_size_difference_ += offset;
 }
 
 /*
@@ -321,6 +322,7 @@ void EditEngine::trySquash(const QMap<size_t, EditNode>::iterator& it) {
 void EditEngine::initAddressMapping() {
   address_mapping_.clear();
   address_mapping_.insert(0, EditNode(nullptr, 0));
+  data_size_difference_ = 0;
   has_changes_ = false;
 }
 

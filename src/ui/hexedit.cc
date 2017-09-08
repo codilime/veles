@@ -47,7 +47,7 @@ void HexEdit::recalculateValues() {
   charHeight_ = fontMetrics().height();
 
   verticalByteBorderMargin_ = charHeight_ / 5;
-  dataBytesCount_ = dataModel_->binData().size();
+  dataBytesCount_ = edit_engine_.dataSize();
   // TODO(mkow): This should be updated in a separate function (only on actual
   // change of this value) and then cause recalculation of cached text.
   byteCharsCount_ = (dataModel_->binData().width() + 3) / 4;
@@ -83,6 +83,10 @@ void HexEdit::recalculateValues() {
 
   horizontalScrollBar()->setRange(0, lineWidth_ - viewport()->width());
   startPosX_ = horizontalScrollBar()->value();
+
+  if (selectionEnd() > dataBytesCount_) {
+    setSelection(dataBytesCount_ - 1, 0);
+  }
 }
 
 void HexEdit::resizeEvent(QResizeEvent* /*event*/) {
@@ -594,6 +598,7 @@ void HexEdit::setBytesValues(qint64 pos, const data::BinData& new_data) {
 
 void HexEdit::discardChanges() {
   edit_engine_.clear();
+  recalculateValues();
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
   viewport()->update();
 }
@@ -1002,6 +1007,7 @@ void HexEdit::setByteValue(qint64 pos, uint64_t byte_value) {
 
 void HexEdit::insertBytes(qint64 pos, const data::BinData& new_data) {
   edit_engine_.insertBytes(pos, new_data);
+  recalculateValues();
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
 }
 
@@ -1019,11 +1025,13 @@ void HexEdit::insertByte(qint64 pos, uint64_t byte_value) {
 
 void HexEdit::removeBytes(qint64 pos, uint64_t size) {
   edit_engine_.removeBytes(pos, size);
+  recalculateValues();
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
 }
 
 void HexEdit::applyChanges() {
   edit_engine_.applyChanges();
+  recalculateValues();
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
 }
 
