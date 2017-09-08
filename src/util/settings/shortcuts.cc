@@ -67,7 +67,7 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[SHOW_OPTIONS] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_K)};
     defaults[DOCK_MOVE_TO_TOP_MAX] = {QKeySequence(Qt::Key_F12)};
     defaults[GO_TO_ADDRESS] = {QKeySequence(Qt::CTRL | Qt::Key_G)};
-    defaults[REMOVE_CHUNK] = {QKeySequence(Qt::Key_Delete)};
+    defaults[REMOVE_CHUNK] = {QKeySequence(Qt::CTRL | Qt::Key_Delete)};
     defaults[HEX_FIND] = QKeySequence::keyBindings(QKeySequence::Find);
     defaults[HEX_FIND_NEXT] = {QKeySequence(Qt::Key_F3)};
     defaults[OPEN_VISUALIZATION] = {
@@ -112,6 +112,7 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[HEX_MOVE_TO_PREV_DIGIT] =
         QKeySequence::keyBindings(QKeySequence::MoveToPreviousWord);
     defaults[HEX_REMOVE_SELECTION] = {QKeySequence(Qt::Key_Escape)};
+    defaults[HEX_DELETE_SELECTION] = {QKeySequence(Qt::Key_Delete)};
     defaults[HEX_SELECT_ALL] =
         QKeySequence::keyBindings(QKeySequence::SelectAll);
     defaults[HEX_SELECT_NEXT_CHAR] =
@@ -454,6 +455,7 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
   addShortcutType(SELECT_CHUNK, hex, tr("Select chunk"), tr("Select chunk"));
   addShortcutType(SAVE_CHUNK_TO_FILE, hex, tr("Save chunk to file"),
                   tr("Save chunk to file"));
+  addShortcutType(HEX_DELETE_SELECTION, hex, tr("Delete selection"));
   addShortcutType(SAVE_SELECTION_TO_FILE, hex, tr("&Save selection to file"),
                   tr("Save selection to file"));
   addShortcutType(HEX_FIND, hex, tr("&Find/Replace"),

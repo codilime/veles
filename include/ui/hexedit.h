@@ -164,6 +164,7 @@ class HexEdit : public QAbstractScrollArea {
   QAction* removeChunkAction_;
   QAction* selectChunkAction_;
   QAction* saveChunkAction_;
+  QAction* deleteSelectionAction_;
   QAction* saveSelectionAction_;
   QStringList parsers_ids_;
   QMenu menu_;
@@ -199,6 +200,7 @@ class HexEdit : public QAbstractScrollArea {
   void insertBytes(qint64 pos, const data::BinData& new_data);
   void insertBytes(qint64 pos, uint64_t size, uint64_t byte_value);
   void insertByte(qint64 pos, uint64_t byte_value);
+  void removeBytes(qint64 pos, uint64_t size);
 
   void createAction(util::settings::shortcuts::ShortcutType type,
                     const std::function<void()>& f);
