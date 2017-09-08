@@ -232,6 +232,14 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
     saveChunkToFile(QFileDialog::getSaveFileName(this, tr("Save File")));
   });
 
+  deleteSelectionAction_ = ShortcutsModel::getShortcutsModel()->createQAction(
+      util::settings::shortcuts::HEX_DELETE_SELECTION, this,
+      Qt::WidgetWithChildrenShortcut);
+  connect(deleteSelectionAction_, &QAction::triggered, [this]() {
+    removeBytes(selectionStart(), selectionSize());
+    setSelection(selectionStart(), 0);
+  });
+
   saveSelectionAction_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::SAVE_SELECTION_TO_FILE, this,
       Qt::WidgetWithChildrenShortcut);
@@ -243,18 +251,20 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
       util::settings::shortcuts::COPY, this, Qt::WidgetWithChildrenShortcut);
   connect(copy_action, &QAction::triggered, [this]() { copyToClipboard(); });
 
-  auto paste_acton = ShortcutsModel::getShortcutsModel()->createQAction(
+  auto paste_action = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::PASTE, this, Qt::WidgetWithChildrenShortcut);
-  connect(paste_acton, &QAction::triggered, [this]() { pasteFromClipboard(); });
+  connect(paste_action, &QAction::triggered,
+          [this]() { pasteFromClipboard(); });
 
   addAction(copy_action);
-  addAction(paste_acton);
+  addAction(paste_action);
   addAction(createChunkAction_);
   addAction(createChildChunkAction_);
   addAction(goToAddressAction_);
   addAction(removeChunkPassiveAction);
   addAction(selectChunkAction_);
   addAction(saveChunkAction_);
+  addAction(deleteSelectionAction_);
   addAction(saveSelectionAction_);
 
   menu_.addAction(createChunkAction_);
@@ -269,6 +279,7 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
 
   menu_.addSeparator();
 
+  menu_.addAction(deleteSelectionAction_);
   menu_.addAction(saveSelectionAction_);
 
   auto copy_menu = menu_.addMenu("Copy selection as");
@@ -978,6 +989,7 @@ void HexEdit::contextMenuEvent(QContextMenuEvent* event) {
   selectChunkAction_->setEnabled(selectedChunk().isValid());
   saveChunkAction_->setEnabled(selectedChunk().isValid());
 
+  deleteSelectionAction_->setEnabled(selectionActive);
   saveSelectionAction_->setEnabled(selectionActive);
   parsers_menu_.setEnabled(selectionActive);
 
@@ -1003,6 +1015,11 @@ void HexEdit::insertBytes(qint64 pos, uint64_t size, uint64_t byte_value) {
 
 void HexEdit::insertByte(qint64 pos, uint64_t byte_value) {
   insertBytes(pos, data::BinData(bindata_width_, {byte_value}));
+}
+
+void HexEdit::removeBytes(qint64 pos, uint64_t size) {
+  edit_engine_.removeBytes(pos, size);
+  emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
 }
 
 void HexEdit::applyChanges() {
