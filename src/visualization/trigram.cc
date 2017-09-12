@@ -216,14 +216,16 @@ void TrigramWidget::prepareOptions(QMainWindow* visualization_window) {
   brightness_slider_->setMaximum(k_maximum_brightness);
   brightness_slider_->setMaximumWidth(200);
   brightness_slider_->setValue(brightness_);
-  connect(brightness_slider_, SIGNAL(valueChanged(int)), this,
-          SLOT(brightnessSliderMoved(int)));
+  connect(brightness_slider_, &QSlider::valueChanged, this,
+          &TrigramWidget::brightnessSliderMoved);
   layout->addWidget(brightness_slider_);
 
   use_heuristic_checkbox_ = new QCheckBox("Auto");
   use_heuristic_checkbox_->setChecked(use_brightness_heuristic_);
-  connect(use_heuristic_checkbox_, SIGNAL(stateChanged(int)), this,
-          SLOT(setUseBrightnessHeuristic(Qt::CheckState)));
+  connect(use_heuristic_checkbox_, &QCheckBox::stateChanged, this,
+          [this](int arg) {
+            setUseBrightnessHeuristic(static_cast<Qt::CheckState>(arg));
+          });
   layout->addWidget(use_heuristic_checkbox_);
   layout->setStretch(0, 0);
   layout->setStretch(1, 0);

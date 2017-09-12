@@ -56,7 +56,7 @@ class VisualizationPanel : public ui::View {
 
  private slots:
   void setSamplingMethod(const QString& name);
-  void setSampleSize(qint64 kilobytes);
+  void setSampleSize(size_t size);
   void showDigramVisualization();
   void showTrigramVisualization();
   void showLayeredDigramVisualization();
@@ -88,7 +88,7 @@ class VisualizationPanel : public ui::View {
   QByteArray data_;
   ESampler sampler_type_;
   EVisualization visualization_type_;
-  int sample_size_;
+  size_t sample_size_;
   util::ISampler *sampler_, *minimap_sampler_;
   MinimapPanel* minimap_;
   VisualizationWidget* visualization_;
