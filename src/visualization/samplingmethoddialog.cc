@@ -19,6 +19,8 @@
 #include "include/visualization/samplingmethoddialog.h"
 #include "ui_samplingmethoddialog.h"
 
+#include <limits>
+
 namespace veles {
 namespace visualization {
 
@@ -37,8 +39,15 @@ SamplingMethodDialog::SamplingMethodDialog(QWidget* parent)
 
 SamplingMethodDialog::~SamplingMethodDialog() { delete ui; }
 
-void SamplingMethodDialog::setMaximumSampleSize(int size) {
-  ui->sample_size->setMaximum(size);
+// Qt controls operate on ints, so unfortunately we can't represent all the
+// values of size_t in the UI until we fix that controls.
+static int SaturatedCastToInt(size_t val)
+{
+  return static_cast<int>(std::min<size_t>(val, std::numeric_limits<int>::max()));
+}
+
+void SamplingMethodDialog::setMaximumSampleSize(size_t size) {
+  ui->sample_size->setMaximum(SaturatedCastToInt(size));
 }
 
 void SamplingMethodDialog::samplingMethodToggled(bool uniform) {
@@ -46,8 +55,8 @@ void SamplingMethodDialog::samplingMethodToggled(bool uniform) {
                                      : "No sampling");
 }
 
-void SamplingMethodDialog::setSampleSize(int size) {
-  ui->sample_size->setValue(size);
+void SamplingMethodDialog::setSampleSize(size_t size) {
+  ui->sample_size->setValue(SaturatedCastToInt(size));
 }
 
 }  // namespace visualization

@@ -35,12 +35,12 @@ class SamplingMethodDialog : public QDialog {
 
  signals:
   void samplingMethodChanged(QString sampling_method);
-  void sampleSizeChanged(int size);
+  void sampleSizeChanged(size_t size);
 
  public slots:
-  void setMaximumSampleSize(int size);
+  void setMaximumSampleSize(size_t size);
   void samplingMethodToggled(bool uniform);
-  void setSampleSize(int size);
+  void setSampleSize(size_t size);
 
  private:
   Ui::SamplingMethodDialog* ui;

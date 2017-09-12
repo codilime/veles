@@ -71,11 +71,10 @@ VisualizationPanel::VisualizationPanel(
   sampling_method_dialog_->setSampleSize(sample_size_);
   sampling_method_dialog_->setMaximumSampleSize(k_max_sample_size);
 
-  connect(sampling_method_dialog_,
-          SIGNAL(samplingMethodChanged(const QString&)), this,
-          SLOT(setSamplingMethod(const QString&)));
-  connect(sampling_method_dialog_, SIGNAL(sampleSizeChanged(int)), this,
-          SLOT(setSampleSize(int)));
+  connect(sampling_method_dialog_, &SamplingMethodDialog::samplingMethodChanged,
+          this, &VisualizationPanel::setSamplingMethod);
+  connect(sampling_method_dialog_, &SamplingMethodDialog::sampleSizeChanged,
+          this, &VisualizationPanel::setSampleSize);
 
   initLayout();
 }
@@ -183,10 +182,10 @@ void VisualizationPanel::setSamplingMethod(const QString& name) {
   sampler_type_ = new_sampler_type;
 }
 
-void VisualizationPanel::setSampleSize(qint64 kilobytes) {
-  sample_size_ = kilobytes;
+void VisualizationPanel::setSampleSize(size_t size) {
+  sample_size_ = size;
   if (sampler_type_ == ESampler::UNIFORM_SAMPLER) {
-    sampler_->setSampleSize(1024 * kilobytes);
+    sampler_->setSampleSize(1024 * size);
   }
 }
 
