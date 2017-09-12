@@ -50,8 +50,8 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
         address_mapping_.insert(
             end_pos, EditNode(nullptr, it->offset_ + (end_pos - it.key())));
       }
+      // This node can overwrite previous `*it` and that's OK.
       it = address_mapping_.insert(pos, EditNode(bytes));
-      // this node can overwrite previous `*it` and that's OK
 
       trySquash(it);
     } else {
@@ -73,8 +73,8 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
     if (address_mapping_.find(end_pos) == address_mapping_.cend()) {
       address_mapping_.insert(end_pos, last_modified_node);
     }
+    // This can overwrite the first overlapping node and that's OK.
     it = address_mapping_.insert(pos, EditNode(bytes));
-    // it can overwrite the first overlapping node and that's OK
 
     trySquash(it);
   }
@@ -94,8 +94,8 @@ void EditEngine::insertBytes(size_t pos, const data::BinData& bytes,
 
   remap(pos, 0, bytes.size());
 
+  // This can overwrite the node with `pos` key and that's OK.
   auto it = address_mapping_.insert(pos, EditNode(bytes));
-  // it can overwrite the node with `pos` key and that's OK
 
   trySquash(it);
 }
@@ -251,7 +251,7 @@ data::BinData EditEngine::getDataFromEditNode(const EditNode& edit_node,
 }
 
 void EditEngine::remap(size_t pos, size_t old_size, size_t new_size) {
-  // This variable can be overflowed for `old_size` > `new_size`,
+  // This variable can be overflowed when `old_size` > `new_size`,
   // but it will be OK when we add this difference to some address.
   size_t offset = new_size - old_size;
 
@@ -263,24 +263,25 @@ void EditEngine::remap(size_t pos, size_t old_size, size_t new_size) {
     new_address_mapping.insert(it.key(), it.value());
   }
 
-  size_t insert_pos = pos + old_size;
-  auto insert_pos_next_it =
-      old_size > 0 ? address_mapping_.upperBound(insert_pos) : pos_next_it;
-  assert(insert_pos_next_it != address_mapping_.cbegin());
-  auto insert_pos_it = insert_pos_next_it;
-  --insert_pos_it;
+  // end position of the removed data - here we have to split node and save only
+  // the suffix.
+  size_t end_pos = pos + old_size;
+  auto split_node_next_it = address_mapping_.upperBound(end_pos);
+  assert(split_node_next_it != address_mapping_.cbegin());
+  auto split_node_it = split_node_next_it;
+  --split_node_it;
 
   new_address_mapping.insert(
-      insert_pos + offset,
-      EditNode(insert_pos_it->fragment_,
-               insert_pos_it->offset_ + (insert_pos - insert_pos_it.key())));
+      end_pos + offset,
+      EditNode(split_node_it->fragment_,
+               split_node_it->offset_ + (end_pos - split_node_it.key())));
 
-  for (auto it = insert_pos_next_it; it != address_mapping_.cend(); ++it) {
+  for (auto it = split_node_next_it; it != address_mapping_.cend(); ++it) {
+    // This can overwrite the `*pos_it` node and that's OK.
     new_address_mapping.insert(it.key() + offset, it.value());
-    // it can overwrite the `*pos_it` node and that's OK
   }
 
-  address_mapping_ = new_address_mapping;
+  address_mapping_ = std::move(new_address_mapping);
   data_size_difference_ += offset;
 }
 

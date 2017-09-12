@@ -58,8 +58,10 @@ class HexEdit : public QAbstractScrollArea {
   void processEditEvent(QKeyEvent* event);
   uint64_t byteValue(qint64 pos) const;
   void setBytesValues(qint64 pos, const data::BinData& new_data);
-  bool isInsertMode() { return insert_mode_; }
-  void setInsertMode(bool insert_mode) { insert_mode_ = insert_mode; }
+  bool isInInsertMode() const { return in_insert_mode_; }
+  void setInInsertMode(bool in_insert_mode) {
+    in_insert_mode_ = in_insert_mode;
+  }
 
  public slots:
   void newBinData();
@@ -153,7 +155,7 @@ class HexEdit : public QAbstractScrollArea {
   WindowArea current_area_;
   qint64 cursor_pos_in_byte_;
   bool cursor_visible_;
-  bool insert_mode_;
+  bool in_insert_mode_;
 
   CreateChunkDialog* createChunkDialog_;
   GoToAddressDialog* goToAddressDialog_;
@@ -164,7 +166,7 @@ class HexEdit : public QAbstractScrollArea {
   QAction* removeChunkAction_;
   QAction* selectChunkAction_;
   QAction* saveChunkAction_;
-  QAction* deleteSelectionAction_;
+  QAction* delete_selection_action_;
   QAction* saveSelectionAction_;
   QStringList parsers_ids_;
   QMenu menu_;

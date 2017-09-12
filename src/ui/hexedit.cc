@@ -124,7 +124,7 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
       current_area_(WindowArea::HEX),
       cursor_pos_in_byte_(0),
       cursor_visible_(false),
-      insert_mode_(false),
+      in_insert_mode_(false),
       edit_engine_(dataModel_) {
   auto font = util::settings::theme::font();
   setFont(font);
@@ -236,10 +236,10 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
     saveChunkToFile(QFileDialog::getSaveFileName(this, tr("Save File")));
   });
 
-  deleteSelectionAction_ = ShortcutsModel::getShortcutsModel()->createQAction(
+  delete_selection_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::HEX_DELETE_SELECTION, this,
       Qt::WidgetWithChildrenShortcut);
-  connect(deleteSelectionAction_, &QAction::triggered, [this]() {
+  connect(delete_selection_action_, &QAction::triggered, [this]() {
     removeBytes(selectionStart(), selectionSize());
     setSelection(selectionStart(), 0);
   });
@@ -268,7 +268,7 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
   addAction(removeChunkPassiveAction);
   addAction(selectChunkAction_);
   addAction(saveChunkAction_);
-  addAction(deleteSelectionAction_);
+  addAction(delete_selection_action_);
   addAction(saveSelectionAction_);
 
   menu_.addAction(createChunkAction_);
@@ -283,7 +283,7 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
 
   menu_.addSeparator();
 
-  menu_.addAction(deleteSelectionAction_);
+  menu_.addAction(delete_selection_action_);
   menu_.addAction(saveSelectionAction_);
 
   auto copy_menu = menu_.addMenu("Copy selection as");
@@ -994,7 +994,7 @@ void HexEdit::contextMenuEvent(QContextMenuEvent* event) {
   selectChunkAction_->setEnabled(selectedChunk().isValid());
   saveChunkAction_->setEnabled(selectedChunk().isValid());
 
-  deleteSelectionAction_->setEnabled(selectionActive);
+  delete_selection_action_->setEnabled(selectionActive);
   saveSelectionAction_->setEnabled(selectionActive);
   parsers_menu_.setEnabled(selectionActive);
 
@@ -1050,7 +1050,7 @@ void HexEdit::processEditEvent(QKeyEvent* event) {
     if (key < 0x20 || key > 0x7e) {
       return;
     }
-    if (insert_mode_) {
+    if (in_insert_mode_) {
       insertByte(current_position_, key);
     } else {
       setByteValue(current_position_, key);
@@ -1075,7 +1075,7 @@ void HexEdit::processEditEvent(QKeyEvent* event) {
     if (new_val > byte_max_value_) {
       new_val = byte_max_value_;
     }
-    if (insert_mode_ && cursor_pos_in_byte_ == 0) {
+    if (in_insert_mode_ && cursor_pos_in_byte_ == 0) {
       insertByte(current_position_, new_val);
     } else {
       setByteValue(current_position_, new_val);
@@ -1171,7 +1171,7 @@ void HexEdit::pasteFromClipboard(util::encoders::IDecoder* enc) {
   }
 
   auto paste_size = data.size();
-  if (!insert_mode_ && dataBytesCount_ < paste_start_position + paste_size) {
+  if (!in_insert_mode_ && dataBytesCount_ - paste_start_position < paste_size) {
     paste_size = dataBytesCount_ - paste_start_position;
   }
 
@@ -1179,7 +1179,7 @@ void HexEdit::pasteFromClipboard(util::encoders::IDecoder* enc) {
   for (int i = 0; i < paste_size; ++i) {
     new_data.setElement64(i, static_cast<unsigned char>(data[i]));
   }
-  if (insert_mode_) {
+  if (in_insert_mode_) {
     insertBytes(paste_start_position, new_data);
   } else {
     setBytesValues(paste_start_position, new_data);
