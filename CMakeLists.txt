@@ -340,8 +340,8 @@ if(APPLE)
       MACOSX_PACKAGE_LOCATION Resources)
 endif()
 
-if(WIN32)
-  # Don't create console window.
+if(WIN32 AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+  # Don't create console window on non-debug builds.
   set(GUI_TYPE WIN32)
 endif()
 
