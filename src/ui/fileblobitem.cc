@@ -87,12 +87,12 @@ void FileBlobItem::addChildren(const QList<FileBlobItem*>& children) {
 
   for (auto& child : children) {
     children_.append(child);
-    connect(child, SIGNAL(insertingChildren(FileBlobItem*, bool, int)), this,
-            SLOT(insertingChildrenHandle(FileBlobItem*, bool, int)));
-    connect(child, SIGNAL(removingChildren(FileBlobItem*, bool)), this,
-            SLOT(removingChildrenHandle(FileBlobItem*, bool)));
-    connect(child, SIGNAL(dataUpdated(FileBlobItem*)), this,
-            SLOT(dataUpdatedHandle(FileBlobItem*)));
+    connect(child, &FileBlobItem::insertingChildren, this,
+            &FileBlobItem::insertingChildrenHandle);
+    connect(child, &FileBlobItem::removingChildren, this,
+            &FileBlobItem::removingChildrenHandle);
+    connect(child, &FileBlobItem::dataUpdated, this,
+            &FileBlobItem::dataUpdatedHandle);
   }
 
   emit insertingChildren(this, false, children.size());

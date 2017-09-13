@@ -76,26 +76,27 @@ void MinimapPanel::initLayout() {
   layout_->addLayout(minimaps_layout_);
 
   select_range_button_ = new QPushButton("select range", this);
-  connect(select_range_button_, SIGNAL(released()), this,
-          SLOT(showSelectRangeDialog()));
+  connect(select_range_button_, &QPushButton::released, this,
+          &MinimapPanel::showSelectRangeDialog);
   layout_->addWidget(select_range_button_);
 
   auto button_layout = new QHBoxLayout();
   remove_minimap_button_ = new QPushButton();
   remove_minimap_button_->setIcon(QIcon(":/images/minus.png"));
   remove_minimap_button_->setEnabled(false);
-  connect(remove_minimap_button_, SIGNAL(released()), this,
-          SLOT(removeMinimap()));
+  connect(remove_minimap_button_, &QPushButton::released, this,
+          &MinimapPanel::removeMinimap);
   button_layout->addWidget(remove_minimap_button_, 0);
 
   change_mode_button_ = new QPushButton("mode", this);
-  connect(change_mode_button_, SIGNAL(released()), this,
-          SLOT(changeMinimapMode()));
+  connect(change_mode_button_, &QPushButton::released, this,
+          &MinimapPanel::changeMinimapMode);
   button_layout->addWidget(change_mode_button_);
 
   add_minimap_button_ = new QPushButton();
   add_minimap_button_->setIcon(QIcon(":/images/plus.png"));
-  connect(add_minimap_button_, SIGNAL(released()), this, SLOT(addMinimap()));
+  connect(add_minimap_button_, &QPushButton::released, this,
+          &MinimapPanel::addMinimap);
   button_layout->addWidget(add_minimap_button_, 0);
   button_layout->setSpacing(0);
   button_layout->setContentsMargins(0, 0, 0, 0);

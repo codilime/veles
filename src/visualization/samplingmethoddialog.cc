@@ -41,9 +41,9 @@ SamplingMethodDialog::~SamplingMethodDialog() { delete ui; }
 
 // Qt controls operate on ints, so unfortunately we can't represent all the
 // values of size_t in the UI until we fix that controls.
-static int SaturatedCastToInt(size_t val)
-{
-  return static_cast<int>(std::min<size_t>(val, std::numeric_limits<int>::max()));
+static int SaturatedCastToInt(size_t val) {
+  return static_cast<int>(
+      std::min<size_t>(val, std::numeric_limits<int>::max()));
 }
 
 void SamplingMethodDialog::setMaximumSampleSize(size_t size) {

@@ -58,10 +58,10 @@ LogWidget::LogWidget(QWidget* parent) : QMainWindow(parent) {
   setWindowTitle("Log");
   ui_ = new Ui::LogWidget;
   ui_->setupUi(this);
-  connect(ui_->action_clear_, SIGNAL(triggered()), this, SLOT(clearLog()));
+  connect(ui_->action_clear_, &QAction::triggered, this, &LogWidget::clearLog);
 
   checkIODevice();
-  connect(io_proxy_, SIGNAL(newString(QString)), this, SLOT(append(QString)),
+  connect(io_proxy_, &IODeviceProxy::newString, this, &LogWidget::append,
           Qt::QueuedConnection);
 
   setupSaveFileDialog();
@@ -117,9 +117,10 @@ void LogWidget::setupSaveFileDialog() {
   file_dialog_->setFileMode(QFileDialog::AnyFile);
   file_dialog_->setAcceptMode(QFileDialog::AcceptSave);
   file_dialog_->setWindowTitle("Save log to a file");
-  connect(ui_->action_save_, SIGNAL(triggered()), file_dialog_, SLOT(show()));
-  connect(file_dialog_, SIGNAL(fileSelected(const QString&)), this,
-          SLOT(saveFileSelected(const QString&)));
+  connect(ui_->action_save_, &QAction::triggered, file_dialog_,
+          &QFileDialog::show);
+  connect(file_dialog_, &QFileDialog::fileSelected, this,
+          &LogWidget::saveFileSelected);
 }
 
 void LogWidget::checkIODevice() {

@@ -91,16 +91,16 @@ void SubchunkFileBlobItem::subscribeInfo() {
   }
 
   auto dataPromise = dataObj_->asyncSubInfo<dbif::ChunkDataRequest>(this);
-  connect(dataPromise, SIGNAL(gotInfo(veles::dbif::PInfoReply)), this,
-          SLOT(gotChunkDataResponse(veles::dbif::PInfoReply)));
+  connect(dataPromise, &dbif::InfoPromise::gotInfo, this,
+          &SubchunkFileBlobItem::gotChunkDataResponse);
 
   dbif::DescriptionRequest req;
   auto descriptionPromise =
       dataObj_->asyncSubInfo<dbif::DescriptionRequest>(this, req);
-  connect(descriptionPromise, SIGNAL(gotInfo(veles::dbif::PInfoReply)), this,
-          SLOT(gotChunkDescriptionResponse(veles::dbif::PInfoReply)));
-  connect(descriptionPromise, SIGNAL(gotError(veles::dbif::PError)), this,
-          SLOT(gotError(veles::dbif::PError)));
+  connect(descriptionPromise, &dbif::InfoPromise::gotInfo, this,
+          &SubchunkFileBlobItem::gotChunkDescriptionResponse);
+  connect(descriptionPromise, &dbif::InfoPromise::gotError, this,
+          &SubchunkFileBlobItem::gotError);
   infoSubscribed_ = true;
 }
 

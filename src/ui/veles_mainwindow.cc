@@ -158,40 +158,41 @@ void VelesMainWindow::createActions() {
   //  new_file_act_ =
   //  ShortcutsModel::getShortcutsModel()->createQAction(util::settings::shortcuts::NEW_FILE,
   //  this, Qt::ApplicationShortcut); new_file_act_->setStatusTip(tr("Open a new
-  //  file")); connect(new_file_act_, SIGNAL(triggered()), this,
-  //  SLOT(newFile()));
+  //  file")); connect(new_file_act_, &QAction::triggered, this,
+  //  &VelesMainWindow::newFile);
 
   open_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::OPEN_FILE, this, QIcon(":/images/open.png"),
       Qt::ApplicationShortcut);
   open_act_->setStatusTip(tr("Open an existing file"));
-  connect(open_act_, SIGNAL(triggered()), this, SLOT(open()));
+  connect(open_act_, &QAction::triggered, this, &VelesMainWindow::open);
 
   exit_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::EXIT_APPLICATION, this,
       Qt::ApplicationShortcut);
   exit_act_->setStatusTip(tr("Exit the application"));
-  connect(exit_act_, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
+  connect(exit_act_, &QAction::triggered, qApp, &QApplication::closeAllWindows);
 
   show_database_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::SHOW_DATABASE, this, Qt::ApplicationShortcut);
   show_database_act_->setStatusTip(tr("Show database view"));
-  connect(show_database_act_, SIGNAL(triggered()), this, SLOT(showDatabase()));
+  connect(show_database_act_, &QAction::triggered, this,
+          &VelesMainWindow::showDatabase);
 
   show_log_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::SHOW_LOG, this, Qt::ApplicationShortcut);
   show_log_act_->setStatusTip(tr("Show log"));
-  connect(show_log_act_, SIGNAL(triggered()), this, SLOT(showLog()));
+  connect(show_log_act_, &QAction::triggered, this, &VelesMainWindow::showLog);
 
   about_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::SHOW_ABOUT, this, Qt::ApplicationShortcut);
   about_act_->setStatusTip(tr("Show the application's About box"));
-  connect(about_act_, SIGNAL(triggered()), this, SLOT(about()));
+  connect(about_act_, &QAction::triggered, this, &VelesMainWindow::about);
 
   about_qt_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::SHOW_ABOUT_QT, this, Qt::ApplicationShortcut);
   about_qt_act_->setStatusTip(tr("Show the Qt library's About box"));
-  connect(about_qt_act_, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+  connect(about_qt_act_, &QAction::triggered, qApp, &QApplication::aboutQt);
 
   options_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::SHOW_OPTIONS, this, Qt::ApplicationShortcut);

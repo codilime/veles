@@ -59,8 +59,8 @@ VisualizationPanel::VisualizationPanel(
       getSampler(ESampler::UNIFORM_SAMPLER, data_, k_minimap_sample_size);
   minimap_ = new MinimapPanel(this);
   minimap_->setSampler(minimap_sampler_);
-  connect(minimap_, SIGNAL(selectionChanged(size_t, size_t)), this,
-          SLOT(minimapSelectionChanged(size_t, size_t)));
+  connect(minimap_, &MinimapPanel::selectionChanged, this,
+          &VisualizationPanel::minimapSelectionChanged);
 
   visualization_ = getVisualization(visualization_type_, this);
   visualization_root_ = new QMainWindow;
@@ -324,16 +324,16 @@ void VisualizationPanel::initOptionsPanel() {
       util::getColoredIcon(":/images/digram_icon.png", icon_color),
       Qt::WidgetWithChildrenShortcut);
   digram_action_->setToolTip("Digram Visualization");
-  connect(digram_action_, SIGNAL(triggered()), this,
-          SLOT(showDigramVisualization()));
+  connect(digram_action_, &QAction::triggered, this,
+          &VisualizationPanel::showDigramVisualization);
 
   trigram_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::VISUALIZATION_TRIGRAM, this,
       util::getColoredIcon(":/images/trigram_icon.png", icon_color),
       Qt::WidgetWithChildrenShortcut);
   trigram_action_->setToolTip("Trigram Visualization");
-  connect(trigram_action_, SIGNAL(triggered()), this,
-          SLOT(showTrigramVisualization()));
+  connect(trigram_action_, &QAction::triggered, this,
+          &VisualizationPanel::showTrigramVisualization);
 
   layered_digram_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::VISUALIZATION_LAYERED_DIGRAM, this,
@@ -341,8 +341,8 @@ void VisualizationPanel::initOptionsPanel() {
                            false),
       Qt::WidgetWithChildrenShortcut);
   layered_digram_action_->setToolTip("Layered Digram Visualization");
-  connect(layered_digram_action_, SIGNAL(triggered()), this,
-          SLOT(showLayeredDigramVisualization()));
+  connect(layered_digram_action_, &QAction::triggered, this,
+          &VisualizationPanel::showLayeredDigramVisualization);
 
   modes_tool_bar_ = new QToolBar(tr("Modes"));
   modes_tool_bar_->setMovable(false);

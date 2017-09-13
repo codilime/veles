@@ -34,8 +34,9 @@ DatabaseInfo::DatabaseInfo(const dbif::ObjectHandle& database, QWidget* parent)
   model_ = new QStandardItemModel(this);
   ui_->resourcesListView->setModel(model_);
 
-  connect(ui_->goButton, SIGNAL(clicked()), this, SLOT(goClicked()));
-  connect(ui_->newButton, SIGNAL(clicked()), this, SLOT(newClicked()));
+  connect(ui_->goButton, &QPushButton::clicked, this, &DatabaseInfo::goClicked);
+  connect(ui_->newButton, &QPushButton::clicked, this,
+          &DatabaseInfo::newClicked);
 
   connect(ui_->resourcesListView, &QAbstractItemView::clicked,
           [this]() { ui_->goButton->setEnabled(true); });
@@ -52,8 +53,8 @@ DatabaseInfo::DatabaseInfo(const dbif::ObjectHandle& database, QWidget* parent)
 
 void DatabaseInfo::subscribeChildren() {
   childrenPromise_ = database_->asyncSubInfo<dbif::ChildrenRequest>(this);
-  connect(childrenPromise_, SIGNAL(gotInfo(veles::dbif::PInfoReply)), this,
-          SLOT(gotChildrenResponse(veles::dbif::PInfoReply)));
+  connect(childrenPromise_, &dbif::InfoPromise::gotInfo, this,
+          &DatabaseInfo::gotChildrenResponse);
 }
 
 DatabaseInfo::~DatabaseInfo() { delete ui_; }

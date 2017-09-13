@@ -148,8 +148,10 @@ void ConnectionManager::startLocalServer() {
   connect(server_process_, &QProcess::errorOccurred, this,
           &ConnectionManager::serverProcessErrorOccurred);
 #else
-  connect(server_process_, SIGNAL(error(QProcess::ProcessError)), this,
-          SLOT(serverProcessErrorOccurred(QProcess::ProcessError)));
+  connect(
+      server_process_,
+      static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error),
+      this, &ConnectionManager::serverProcessErrorOccurred);
 #endif
 
   QString server_file_path = connection_dialog_->serverScript();
