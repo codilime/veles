@@ -28,8 +28,8 @@ RootFileBlobItem::RootFileBlobItem(const dbif::ObjectHandle& obj,
     : FileBlobItem("", "", "", 0, 0, parent) {
   dataObj_ = obj;
   auto childrenPromise = dataObj_->asyncSubInfo<dbif::ChildrenRequest>(this);
-  connect(childrenPromise, SIGNAL(gotInfo(veles::dbif::PInfoReply)), this,
-          SLOT(gotChildrenResponse(veles::dbif::PInfoReply)));
+  connect(childrenPromise, &dbif::InfoPromise::gotInfo, this,
+          &RootFileBlobItem::gotChildrenResponse);
 }
 
 void RootFileBlobItem::gotChildrenResponse(

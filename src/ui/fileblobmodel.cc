@@ -127,8 +127,8 @@ FileBlobModel::FileBlobModel(const dbif::ObjectHandle& fileBlob,
   dbif::DescriptionRequest req;
   auto descriptionPromise =
       fileBlob_->asyncSubInfo<dbif::DescriptionRequest>(this, req);
-  connect(descriptionPromise, SIGNAL(gotInfo(veles::dbif::PInfoReply)), this,
-          SLOT(gotDescriptionResponse(veles::dbif::PInfoReply)));
+  connect(descriptionPromise, &dbif::InfoPromise::gotInfo, this,
+          &FileBlobModel::gotDescriptionResponse);
 }
 
 void FileBlobModel::gotBytesResponse(const veles::dbif::PInfoReply& reply) {
@@ -146,8 +146,8 @@ void FileBlobModel::gotDescriptionResponse(
       delete bytesPromise_;
       bytesPromise_ =
           fileBlob_->asyncSubInfo<dbif::BlobDataRequest>(this, 0, bytesCount_);
-      connect(bytesPromise_, SIGNAL(gotInfo(veles::dbif::PInfoReply)), this,
-              SLOT(gotBytesResponse(veles::dbif::PInfoReply)));
+      connect(bytesPromise_, &dbif::InfoPromise::gotInfo, this,
+              &FileBlobModel::gotBytesResponse);
     }
   }
 }

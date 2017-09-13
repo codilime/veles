@@ -109,20 +109,21 @@ void HexEditWidget::createActions() {
       util::settings::shortcuts::UPLOAD, this, QIcon(":/images/upload-32.ico"),
       Qt::WidgetWithChildrenShortcut);
   upload_act_->setStatusTip(tr("Upload changes to database"));
-  connect(upload_act_, SIGNAL(triggered()), hex_edit_, SLOT(applyChanges()));
+  connect(upload_act_, &QAction::triggered, hex_edit_, &HexEdit::applyChanges);
   upload_act_->setEnabled(false);
 
   undo_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::UNDO, this, QIcon(":/images/undo.png"),
       Qt::WidgetWithChildrenShortcut);
-  connect(undo_act_, SIGNAL(triggered()), hex_edit_, SLOT(undo()));
+  connect(undo_act_, &QAction::triggered, hex_edit_, &HexEdit::undo);
   undo_act_->setEnabled(false);
 
   discard_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::DISCARD, this,
       style()->standardIcon(QStyle::SP_DialogDiscardButton),
       Qt::WidgetWithChildrenShortcut);
-  connect(discard_act_, SIGNAL(triggered()), hex_edit_, SLOT(discardChanges()));
+  connect(discard_act_, &QAction::triggered, hex_edit_,
+          &HexEdit::discardChanges);
   discard_act_->setEnabled(false);
 
   //  Currently not implemented
@@ -130,13 +131,13 @@ void HexEditWidget::createActions() {
   //      this);
   //  save_as_act_->setShortcuts(QKeySequence::SaveAs);
   //  save_as_act_->setStatusTip(tr("Save the document under a new name"));
-  //  connect(save_as_act_, SIGNAL(triggered()), this, SLOT(saveAs()));
+  //  connect(save_as_act_, &QAction::triggered, this, &HexEditWidget::saveAs);
   //  save_as_act_->setEnabled(false);
 
   //  save_readable_ = new QAction(tr("Save &Readable..."), this);
   //  save_readable_->setStatusTip(tr("Save document in readable form"));
-  // connect(save_readable_, SIGNAL(triggered()), this,
-  // SLOT(saveToReadableFile()));
+  //  connect(save_readable_, &QAction::triggered, this,
+  //          &HexEditWidget::saveToReadableFile);
 
   //  redo_act_ = new QAction(QIcon(":/images/redo.png"), tr("&Redo"), this);
   //  redo_act_->setShortcuts(QKeySequence::Redo);
@@ -146,7 +147,8 @@ void HexEditWidget::createActions() {
       util::settings::shortcuts::HEX_FIND, this, QIcon(":/images/find.png"),
       Qt::WidgetWithChildrenShortcut);
   find_act_->setStatusTip(tr("Show the dialog for finding and replacing"));
-  connect(find_act_, SIGNAL(triggered()), this, SLOT(showSearchDialog()));
+  connect(find_act_, &QAction::triggered, this,
+          &HexEditWidget::showSearchDialog);
 
   find_next_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::HEX_FIND_NEXT, this,
@@ -154,9 +156,9 @@ void HexEditWidget::createActions() {
   find_next_act_->setStatusTip(
       tr("Find next occurrence of the searched pattern"));
   find_next_act_->setEnabled(false);
-  connect(find_next_act_, SIGNAL(triggered()), this, SLOT(findNext()));
-  connect(search_dialog_, SIGNAL(enableFindNext(bool)), this,
-          SLOT(enableFindNext(bool)));
+  connect(find_next_act_, &QAction::triggered, this, &HexEditWidget::findNext);
+  connect(search_dialog_, &SearchDialog::enableFindNext, this,
+          &HexEditWidget::enableFindNext);
 
   QColor icon_color = palette().color(QPalette::WindowText);
   visualization_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
@@ -165,8 +167,8 @@ void HexEditWidget::createActions() {
       Qt::WidgetWithChildrenShortcut);
   visualization_act_->setToolTip(tr("Visualization"));
   visualization_act_->setEnabled(data_model_->binData().size() > 0);
-  connect(visualization_act_, SIGNAL(triggered()), this,
-          SLOT(showVisualization()));
+  connect(visualization_act_, &QAction::triggered, this,
+          &HexEditWidget::showVisualization);
 
   show_node_tree_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::SHOW_NODE_TREE, this,
@@ -175,8 +177,8 @@ void HexEditWidget::createActions() {
   show_node_tree_act_->setEnabled(true);
   show_node_tree_act_->setCheckable(true);
   show_node_tree_act_->setChecked(true);
-  connect(show_node_tree_act_, SIGNAL(triggered(bool)), this,
-          SIGNAL(showNodeTree(bool)));
+  connect(show_node_tree_act_, &QAction::triggered, this,
+          &HexEditWidget::showNodeTree);
 
   //  Currently not implemented
   //  show_minimap_act_ =
@@ -188,27 +190,30 @@ void HexEditWidget::createActions() {
   //  show_minimap_act_->setEnabled(true);
   //  show_minimap_act_->setCheckable(true);
   //  show_minimap_act_->setChecked(false);
-  //  connect(show_minimap_act_, SIGNAL(toggled(bool)), this,
-  //      SIGNAL(showMinimap(bool)));
+  //  connect(show_minimap_act_, &QAction::toggled, this,
+  //          &HexEditWidget::showMinimap);
 
   show_hex_edit_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::OPEN_HEX, this,
       QIcon(":/images/show_hex_edit.png"), Qt::WidgetWithChildrenShortcut);
   show_hex_edit_act_->setToolTip(tr("Hex editor"));
   show_hex_edit_act_->setEnabled(true);
-  connect(show_hex_edit_act_, SIGNAL(triggered()), this, SLOT(showHexEditor()));
+  connect(show_hex_edit_act_, &QAction::triggered, this,
+          &HexEditWidget::showHexEditor);
 
   add_column_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::HEX_ADD_COLUMN, this,
       QIcon(":/images/plus.png"), Qt::WidgetWithChildrenShortcut);
   add_column_act_->setStatusTip(tr("Add column"));
-  connect(add_column_act_, SIGNAL(triggered()), this, SLOT(addColumn()));
+  connect(add_column_act_, &QAction::triggered, this,
+          &HexEditWidget::addColumn);
 
   remove_column_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::HEX_REMOVE_COLUMN, this,
       QIcon(":/images/minus.png"), Qt::WidgetWithChildrenShortcut);
   remove_column_act_->setStatusTip(tr("Remove column"));
-  connect(remove_column_act_, SIGNAL(triggered()), this, SLOT(removeColumn()));
+  connect(remove_column_act_, &QAction::triggered, this,
+          &HexEditWidget::removeColumn);
 
   auto_resize_act_ = new QWidgetAction(this);
   auto_resize_checkbox_ = new QCheckBox(tr("Auto resize"));

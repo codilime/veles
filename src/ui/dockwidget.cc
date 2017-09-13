@@ -95,8 +95,8 @@ DockWidget::DockWidget() : empty_title_bar_(new QWidget(this)) {
   auto first_main_window =
       MainWindowWithDetachableDockWidgets::getFirstMainWindow();
   if (first_main_window != nullptr) {
-    connect(this, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)),
-            first_main_window, SLOT(dockLocationChanged(Qt::DockWidgetArea)));
+    connect(this, &DockWidget::dockLocationChanged, first_main_window,
+            &MainWindowWithDetachableDockWidgets::dockLocationChanged);
   }
 
   maximize_here_action_ = createMoveToNewWindowAndMaximizeAction();
@@ -105,10 +105,10 @@ DockWidget::DockWidget() : empty_title_bar_(new QWidget(this)) {
   addAction(detach_action_);
   createSplitActions();
 
-  connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this,
-          SLOT(displayContextMenu(const QPoint&)));
-  connect(this, SIGNAL(topLevelChanged(bool)), this,
-          SLOT(topLevelChangedNotify(bool)), Qt::QueuedConnection);
+  connect(this, &DockWidget::customContextMenuRequested, this,
+          &DockWidget::displayContextMenu);
+  connect(this, &DockWidget::topLevelChanged, this,
+          &DockWidget::topLevelChangedNotify, Qt::QueuedConnection);
 
   next_tab_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::SWITCH_TAB_NEXT, this,
@@ -374,7 +374,7 @@ QMenu* DockWidget::createMoveToDesktopMenu() {
         menu_move_to_screen);
     action->setData(screen);
     action->setEnabled(!already_there);
-    connect(action, SIGNAL(triggered()), this, SLOT(moveToDesktop()));
+    connect(action, &QAction::triggered, this, &DockWidget::moveToDesktop);
     menu_move_to_screen->addAction(action);
   }
 
@@ -396,7 +396,7 @@ QMenu* DockWidget::createMoveToWindowMenu() {
         menu_move_to_window);
     action->setData(quintptr(window));
     action->setEnabled(!already_there);
-    connect(action, SIGNAL(triggered()), this, SLOT(moveToWindow()));
+    connect(action, &QAction::triggered, this, &DockWidget::moveToWindow);
     menu_move_to_window->addAction(action);
   }
 
@@ -407,7 +407,8 @@ QAction* DockWidget::createMoveToNewWindowAction() {
   auto action = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::DOCK_MOVE_TO_TOP, this,
       Qt::WidgetWithChildrenShortcut);
-  connect(action, SIGNAL(triggered()), this, SLOT(detachToNewTopLevelWindow()));
+  connect(action, &QAction::triggered, this,
+          &DockWidget::detachToNewTopLevelWindow);
 
   return action;
 }
@@ -416,8 +417,8 @@ QAction* DockWidget::createMoveToNewWindowAndMaximizeAction() {
   auto action = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::DOCK_MOVE_TO_TOP_MAX, this,
       QIcon(":/images/maximize.png"), Qt::WidgetWithChildrenShortcut);
-  connect(action, SIGNAL(triggered()), this,
-          SLOT(detachToNewTopLevelWindowAndMaximize()));
+  connect(action, &QAction::triggered, this,
+          &DockWidget::detachToNewTopLevelWindowAndMaximize);
 
   return action;
 }
@@ -428,15 +429,15 @@ void DockWidget::createSplitActions() {
           util::settings::shortcuts::DOCK_SPLIT_HORIZ, this,
           QIcon(":/images/split_horizontally.png"),
           Qt::WidgetWithChildrenShortcut);
-  connect(split_horizontally_action_, SIGNAL(triggered()), this,
-          SLOT(splitHorizontally()));
+  connect(split_horizontally_action_, &QAction::triggered, this,
+          &DockWidget::splitHorizontally);
   addAction(split_horizontally_action_);
 
   split_vertically_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::DOCK_SPLIT_VERT, this,
       QIcon(":/images/split_vertically.png"), Qt::WidgetWithChildrenShortcut);
-  connect(split_vertically_action_, SIGNAL(triggered()), this,
-          SLOT(splitVertically()));
+  connect(split_vertically_action_, &QAction::triggered, this,
+          &DockWidget::splitVertically);
   addAction(split_vertically_action_);
 }
 
@@ -724,9 +725,11 @@ MainWindowWithDetachableDockWidgets::MainWindowWithDetachableDockWidgets(
   mark_active_dock_widget_ = true;
 
   tab_bar_event_filter_ = new TabBarEventFilter(this);
-  connect(this, SIGNAL(childAdded(QObject*)), this,
-          SLOT(childAddedNotify(QObject*)), Qt::QueuedConnection);
-  connect(this, SIGNAL(childRemoved()), this, SLOT(updateDocksAndTabs()),
+  connect(this, &MainWindowWithDetachableDockWidgets::childAdded, this,
+          &MainWindowWithDetachableDockWidgets::childAddedNotify,
+          Qt::QueuedConnection);
+  connect(this, &MainWindowWithDetachableDockWidgets::childRemoved, this,
+          &MainWindowWithDetachableDockWidgets::updateDocksAndTabs,
           Qt::QueuedConnection);
 
   rubber_band_ = new QRubberBand(QRubberBand::Rectangle, this);
@@ -1175,8 +1178,9 @@ void MainWindowWithDetachableDockWidgets::
   QList<QTabBar*> tab_bars = findChildren<QTabBar*>();
   for (auto tab_bar : tab_bars) {
     tab_bar->setTabsClosable(true);
-    connect(tab_bar, SIGNAL(tabCloseRequested(int)), this,
-            SLOT(tabCloseRequested(int)), Qt::UniqueConnection);
+    connect(tab_bar, &QTabBar::tabCloseRequested, this,
+            &MainWindowWithDetachableDockWidgets::tabCloseRequested,
+            Qt::UniqueConnection);
 
     for (int i = 0; i < tab_bar->count(); ++i) {
       QDockWidget* dock_widget = tabToDockWidget(tab_bar, i);
