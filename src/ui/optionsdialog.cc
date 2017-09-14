@@ -15,6 +15,8 @@
  *
  */
 #include "include/ui/optionsdialog.h"
+#include <QColorDialog>
+#include <QFileDialog>
 #include <QMessageBox>
 #include "ui_optionsdialog.h"
 #include "util/settings/hexedit.h"
@@ -28,13 +30,34 @@ OptionsDialog::OptionsDialog(QWidget* parent)
   ui->setupUi(this);
   ui->colorsBox->addItems(util::settings::theme::availableThemes());
 
+  color_dialog = new QColorDialog(this);
+  color_dialog->setCurrentColor(util::settings::hexedit::colorOfText());
+  ui->colorHexEdit->setAutoFillBackground(true);
+  ui->colorHexEdit->setFlat(true);
+
+  connect(ui->colorHexEdit, &QPushButton::clicked, color_dialog,
+          &QColorDialog::show);
+
+  connect(color_dialog, &QColorDialog::colorSelected, this,
+          &OptionsDialog::updateColorButton);
+
   connect(ui->hexColumnsAutoCheckBox, &QCheckBox::stateChanged,
           [this](int state) {
             ui->hexColumnsSpinBox->setEnabled(state != Qt::Checked);
           });
 }
 
-OptionsDialog::~OptionsDialog() { delete ui; }
+OptionsDialog::~OptionsDialog() {
+  color_dialog->deleteLater();
+  delete ui;
+}
+
+void OptionsDialog::updateColorButton() {
+  QPalette pal = ui->colorHexEdit->palette();
+  pal.setColor(QPalette::Button, color_dialog->currentColor());
+  ui->colorHexEdit->setPalette(pal);
+  ui->colorHexEdit->update();
+}
 
 void OptionsDialog::show() {
   ui->colorsBox->setCurrentText(util::settings::theme::currentTheme());
@@ -45,6 +68,7 @@ void OptionsDialog::show() {
   ui->hexColumnsAutoCheckBox->setCheckState(checkState);
   ui->hexColumnsSpinBox->setValue(util::settings::hexedit::columnsNumber());
   ui->hexColumnsSpinBox->setEnabled(checkState != Qt::Checked);
+  updateColorButton();
 
   QWidget::show();
 }
@@ -60,6 +84,7 @@ void OptionsDialog::accept() {
   util::settings::hexedit::setResizeColumnsToWindowWidth(
       ui->hexColumnsAutoCheckBox->checkState() == Qt::Checked);
   util::settings::hexedit::setColumnsNumber(ui->hexColumnsSpinBox->value());
+  util::settings::hexedit::setColorOfText(color_dialog->currentColor());
 
   if (restart_needed) {
     QMessageBox::about(

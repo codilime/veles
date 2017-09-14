@@ -18,6 +18,7 @@
 #include <QSettings>
 #include <QStyleFactory>
 
+#include "util/settings/hexedit.h"
 #include "util/settings/theme.h"
 
 namespace veles {
@@ -88,28 +89,14 @@ QColor chunkBackground(int color_index) {
   }
   QColor ret =
       chunkBackgroundColors_[color_index % chunkBackgroundColors_.size()];
-  if (isDark()) {
-    ret = QColor(ret.red() ^ 0xff, ret.green() ^ 0xff, ret.blue() ^ 0xff);
-  }
 
-  return ret;
+  return colorInvertedIfDark(ret);
 }
 
 QColor byteColor(uint8_t byte) {
-  if (isDark()) {
-    byte ^= 0xFF;
-  }
-
-  int red, blue, green = 0;
-  if (byte <= 0x80) {
-    blue = 0xff;
-    red = qMin(0xff, byte * 2);
-  } else {
-    blue = qMin(0xff, (0xff - byte) * 2);
-    red = 0xff;
-  }
-
-  return colorInvertedIfDark(QColor(red, green, blue));
+  QColor color = util::settings::hexedit::colorOfText();
+  color.setAlpha(byte / 2 + 127);
+  return color;
 }
 
 QFont font() {
