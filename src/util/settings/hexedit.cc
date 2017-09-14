@@ -16,6 +16,7 @@
  */
 #include "util/settings/hexedit.h"
 
+#include <QColor>
 #include <QSettings>
 
 namespace veles {
@@ -41,6 +42,17 @@ bool resizeColumnsToWindowWidth() {
 void setResizeColumnsToWindowWidth(bool on) {
   QSettings settings;
   settings.setValue("hexedit.resizeColumnsToWindowWidth", on);
+}
+
+QColor colorOfText() {
+  QSettings settings;
+  auto v = settings.value("hexedit.colorOfText", QColor(10, 10, 255));
+  return v.value<QColor>();
+}
+
+void setColorOfText(QColor color) {
+  QSettings settings;
+  settings.setValue("hexedit.colorOfText", color);
 }
 
 }  // namespace hexedit

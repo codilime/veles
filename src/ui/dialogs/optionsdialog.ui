@@ -25,7 +25,7 @@
         <item>
          <widget class="QLabel" name="labelHexEditColors">
           <property name="text">
-           <string>Colors</string>
+           <string>Themes</string>
           </property>
          </widget>
         </item>
@@ -37,6 +37,21 @@
           <property name="currentIndex">
            <number>-1</number>
           </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="3" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="labelHexEditWidgetColors">
+          <property name="text">
+           <string>Color</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="colorHexEdit">
          </widget>
         </item>
        </layout>
