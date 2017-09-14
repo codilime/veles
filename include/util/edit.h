@@ -41,6 +41,7 @@ class EditEngine {
   void insertBytes(size_t pos, const data::BinData& bytes,
                    bool add_to_history = true);
   void removeBytes(size_t pos, size_t size, bool add_to_history = true);
+  void remapOrigin(size_t origin_pos, size_t old_size, size_t new_size);
 
   bool hasUndo() const { return !edit_stack_.isEmpty(); }
   /** Undo last changeBytes and returns first byte changed by this operation */

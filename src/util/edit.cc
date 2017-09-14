@@ -38,7 +38,7 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
 
   has_changes_ = true;
 
-  size_t end_pos = pos + bytes.size();
+  const size_t end_pos = pos + bytes.size();
   auto next_it = address_mapping_.upperBound(pos);
   assert(next_it != address_mapping_.cbegin());
   auto it = next_it;
@@ -116,6 +116,53 @@ void EditEngine::removeBytes(size_t pos, size_t size, bool add_to_history) {
   trySquash(address_mapping_.lowerBound(pos));
 }
 
+void EditEngine::remapOrigin(size_t origin_pos, size_t old_size,
+                             size_t new_size) {
+  // This variable can be overflowed when `old_size` > `new_size`,
+  // but it will be OK when we add this difference to some address.
+  const size_t offset = new_size - old_size;
+
+  auto search_it = address_mapping_.cbegin();
+  auto find_local_pos = [this, &search_it](size_t origin_pos) {
+    size_t local_pos = origin_pos;
+    while (search_it != address_mapping_.cend()) {
+      if (search_it->fragment_ == nullptr) {
+        if (origin_pos < search_it->offset_) {
+          local_pos = std::min(local_pos, search_it.key());
+          break;
+        }
+        local_pos = search_it.key() + (origin_pos - search_it->offset_);
+      }
+      ++search_it;
+    }
+    return local_pos;
+  };
+
+  const size_t local_pos = find_local_pos(origin_pos);
+
+  const size_t origin_end_pos = origin_pos + old_size;
+  const size_t local_end_pos = find_local_pos(origin_end_pos);
+
+  // TODO(catsuryuu): Rewrite origin remapping (without using `remap`)
+  // for not losing local changes in deleted range.
+  remap(local_pos, local_end_pos - local_pos, new_size);
+
+  auto local_pos_it = address_mapping_.lowerBound(local_pos);
+  for (auto mutable_it = local_pos_it; mutable_it != address_mapping_.cend();
+       ++mutable_it) {
+    if (mutable_it->fragment_ == nullptr) {
+      mutable_it->offset_ += offset;
+    }
+  }
+
+  if (new_size > 0) {
+    --local_pos_it;
+    if (local_pos_it->fragment_ != nullptr) {
+      address_mapping_.insert(local_pos, EditNode(nullptr, origin_pos));
+    }
+  }
+}
+
 size_t EditEngine::undo() {
   if (!hasUndo()) {
     return 0;
@@ -172,7 +219,7 @@ uint64_t EditEngine::byteValue(size_t pos) const {
 data::BinData EditEngine::bytesValues(size_t pos, size_t size) const {
   data::BinData result = data::BinData(original_data_->binData().width(), size);
 
-  size_t end_pos = pos + size;
+  const size_t end_pos = pos + size;
   auto next_it = address_mapping_.upperBound(pos);
   assert(next_it != address_mapping_.cbegin());
   auto it = next_it;
@@ -210,7 +257,7 @@ data::BinData EditEngine::bytesValues(size_t pos, size_t size) const {
 std::vector<bool> EditEngine::modifiedPositions(size_t pos, size_t size) const {
   std::vector<bool> result(size);
 
-  size_t end_pos = pos + size;
+  const size_t end_pos = pos + size;
   auto next_it = address_mapping_.upperBound(pos);
   assert(next_it != address_mapping_.cbegin());
   auto it = next_it;
@@ -253,19 +300,19 @@ data::BinData EditEngine::getDataFromEditNode(const EditNode& edit_node,
 void EditEngine::remap(size_t pos, size_t old_size, size_t new_size) {
   // This variable can be overflowed when `old_size` > `new_size`,
   // but it will be OK when we add this difference to some address.
-  size_t offset = new_size - old_size;
+  const size_t offset = new_size - old_size;
 
-  auto pos_next_it = address_mapping_.upperBound(pos);
-  assert(pos_next_it != address_mapping_.cbegin());
+  // iterator with key greater or equal `pos`
+  auto it_ge_pos = address_mapping_.lowerBound(pos);
 
   QMap<size_t, EditNode> new_address_mapping;
-  for (auto it = address_mapping_.cbegin(); it != pos_next_it; ++it) {
+  for (auto it = address_mapping_.cbegin(); it != it_ge_pos; ++it) {
     new_address_mapping.insert(it.key(), it.value());
   }
 
   // end position of the removed data - here we have to split node and save only
   // the suffix.
-  size_t end_pos = pos + old_size;
+  const size_t end_pos = pos + old_size;
   auto split_node_next_it = address_mapping_.upperBound(end_pos);
   assert(split_node_next_it != address_mapping_.cbegin());
   auto split_node_it = split_node_next_it;
