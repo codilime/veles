@@ -51,6 +51,10 @@ def get_logging_argparse():
     return parser
 
 
+Url = collections.namedtuple('Url', ['scheme', 'auth_key', 'fingerprint',
+                                     'host', 'port', 'path'])
+
+
 def parse_url(url):
     scheme, url = url.split('://', 1)
     scheme = UrlScheme(scheme.lower())
@@ -68,8 +72,6 @@ def parse_url(url):
         path = None
         host, _, port = loc.rpartition(':')
         port = int(port)
-    Url = collections.namedtuple(
-        'URL', ['scheme', 'auth_key', 'fingerprint', 'host', 'port', 'path'])
     return Url(scheme, auth_key, fingerprint, host, port, path)
 
 
