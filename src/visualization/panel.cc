@@ -49,7 +49,7 @@ VisualizationPanel::VisualizationPanel(
     : veles::ui::View("Visualization", ":/images/trigram_icon.png"),
       sampler_type_(k_default_sampler),
       visualization_type_(k_default_visualization),
-      sample_size_(1024),
+      sample_size_(1024 * 1024),
       data_model_(data_model),
       main_window_(main_window),
       visible_(true) {
@@ -126,7 +126,7 @@ util::ISampler* VisualizationPanel::getSampler(ESampler type,
       return new util::FakeSampler(data);
     case ESampler::UNIFORM_SAMPLER:
       auto* sampler = new util::UniformSampler(data);
-      sampler->setSampleSize(1024 * sample_size);
+      sampler->setSampleSize(sample_size);
       return sampler;
   }
   return nullptr;
@@ -185,7 +185,7 @@ void VisualizationPanel::setSamplingMethod(const QString& name) {
 void VisualizationPanel::setSampleSize(size_t size) {
   sample_size_ = size;
   if (sampler_type_ == ESampler::UNIFORM_SAMPLER) {
-    sampler_->setSampleSize(1024 * size);
+    sampler_->setSampleSize(size);
   }
 }
 

@@ -96,7 +96,7 @@ NodeWidget::NodeWidget(
   } else {
     sampler_data_ = QByteArray("");
     sampler_ = new util::UniformSampler(sampler_data_);
-    sampler_->setSampleSize(4096 * 1024);
+    sampler_->setSampleSize(4 * 1024 * 1024);
     minimap_->setSampler(sampler_);
   }
 
@@ -133,7 +133,7 @@ void NodeWidget::loadBinDataToMinimap() {
       reinterpret_cast<const char*>(data_model_->binData().rawData()),
       static_cast<int>(data_model_->binData().octets()));
   sampler_ = new util::UniformSampler(sampler_data_);
-  sampler_->setSampleSize(4096 * 1024);
+  sampler_->setSampleSize(4 * 1024 * 1024);
   minimap_->setSampler(sampler_);
 }
 
