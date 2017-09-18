@@ -12,7 +12,7 @@ RelWithDebInfo MinSizeRel.")
 endif()
 
 if(APPLE)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10" CACHE STRING "Minimum macOS deployment version")
 endif()
 
 project(VELES C CXX)
