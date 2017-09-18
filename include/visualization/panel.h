@@ -70,8 +70,8 @@ class VisualizationPanel : public ui::View {
   static const std::map<QString, ESampler> k_sampler_map;
   static const ESampler k_default_sampler = ESampler::UNIFORM_SAMPLER;
   static const EVisualization k_default_visualization = EVisualization::TRIGRAM;
-  static const int k_max_sample_size = 128 * 1024;
-  static const int k_minimap_sample_size = 4096;
+  static const int k_max_sample_size = 128 * 1024 * 1024;
+  static const int k_minimap_sample_size = 4 * 1024 * 1024;
 
   static util::ISampler* getSampler(ESampler type, const QByteArray& data,
                                     qint64 sample_size);

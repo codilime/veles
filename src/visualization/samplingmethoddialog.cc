@@ -32,9 +32,10 @@ SamplingMethodDialog::SamplingMethodDialog(QWidget* parent)
           &QWidget::setEnabled);
   connect(ui->sampling_method_uniform, &QRadioButton::toggled, this,
           &SamplingMethodDialog::samplingMethodToggled);
-  connect(ui->sample_size,
-          static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this,
-          &SamplingMethodDialog::sampleSizeChanged);
+  connect(
+      ui->sample_size,
+      static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this,
+      [this](int new_kb_size) { this->sampleSizeChanged(new_kb_size * 1024); });
 }
 
 SamplingMethodDialog::~SamplingMethodDialog() { delete ui; }
@@ -47,7 +48,7 @@ static int SaturatedCastToInt(size_t val) {
 }
 
 void SamplingMethodDialog::setMaximumSampleSize(size_t size) {
-  ui->sample_size->setMaximum(SaturatedCastToInt(size));
+  ui->sample_size->setMaximum(SaturatedCastToInt(size / 1024));
 }
 
 void SamplingMethodDialog::samplingMethodToggled(bool uniform) {
