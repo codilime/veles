@@ -223,7 +223,7 @@ void HexEditWidget::createActions() {
   connect(auto_resize_checkbox_, &QCheckBox::toggled,
           [this](bool toggled) { hex_edit_->setAutoBytesPerRow(toggled); });
 
-  const QString& overwrite_label_ = QStringLiteral("Overwrite");
+  QString overwrite_label_ = QStringLiteral("Overwrite");
 
   change_edit_mode_button_ = new QPushButton(overwrite_label_);
   connect(change_edit_mode_button_, &QPushButton::clicked,
@@ -233,7 +233,7 @@ void HexEditWidget::createActions() {
       util::settings::shortcuts::CHANGE_EDIT_MODE, this,
       Qt::WidgetWithChildrenShortcut);
   connect(change_edit_mode_act_, &QAction::triggered,
-          [this, &overwrite_label_]() {
+          [this, overwrite_label_]() {
             if (hex_edit_->isInInsertMode()) {
               hex_edit_->setInInsertMode(false);
               change_edit_mode_button_->setText(overwrite_label_);
