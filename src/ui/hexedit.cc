@@ -597,6 +597,10 @@ void HexEdit::setBytesValues(qint64 pos, const data::BinData& new_data) {
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
 }
 
+void HexEdit::saveToFile(const QString& file_name) {
+  saveDataToFile(0, edit_engine_.dataSize(), file_name);
+}
+
 void HexEdit::discardChanges() {
   edit_engine_.clear();
   recalculateValues();
@@ -1341,24 +1345,62 @@ void HexEdit::saveChunkToFile(const QString& path) {
   saveDataToFile(byte_offset, size, path);
 }
 
+/**
+ * The data is saved to a temporary file and then moved to the destination,
+ * so that the previous contents wouldn't be destroyed if something went wrong
+ * (e.g. connection with server was broken and couldn't load data to save).
+ */
 void HexEdit::saveDataToFile(qint64 byte_offset, qint64 size,
                              const QString& path) {
   if (byte_offset + size > dataBytesCount_) {
     size = dataBytesCount_ - byte_offset;
   }
+  auto data = edit_engine_.bytesValues(byte_offset, size);
 
-  auto data_to_save = edit_engine_.bytesValues(byte_offset, size);
+  // TODO(catsuryuu): path + ".tmp." + <RANDOM(min. 8 alnums uppercase)>
+  QString tmp_path = path + ".tmp." + "TODO";
 
-  QFile file(path);
+  QFile file(tmp_path);
   if (!file.open(QIODevice::WriteOnly)) {
-    QMessageBox::information(this, tr("Unable to open file"),
-                             file.errorString());
+    QMessageBox::warning(this, tr("Unable to create temporary file"),
+                         tr("Unable to create temporary file '%1': %2")
+                             .arg(tmp_path)
+                             .arg(file.errorString()));
     return;
   }
 
-  QDataStream stream(&file);
-  stream.writeRawData(reinterpret_cast<const char*>(data_to_save.rawData()),
-                      static_cast<int>(data_to_save.octets()));
+  auto remove_tmp_file = [this, &file, &tmp_path]() {
+    if (!file.remove()) {
+      QMessageBox::warning(
+          this, tr("Unable to remove temporary file"),
+          tr("Unable to remove temporary file '%1'").arg(tmp_path));
+    }
+  };
+
+  if (file.write(reinterpret_cast<const char*>(data.rawData()),
+                 static_cast<int>(data.octets())) == -1) {
+    QMessageBox::warning(
+        this, tr("Error writing to temporary file"),
+        tr("Error writing to temporary file '%1'.").arg(tmp_path));
+    remove_tmp_file();
+    return;
+  }
+  if (QFile::exists(path)) {
+    if (!QFile::remove(path)) {
+      QMessageBox::warning(this, tr("Error"),
+                           tr("File \'%1\' cannot be replaced.").arg(path));
+      remove_tmp_file();
+      return;
+    }
+  }
+  if (!file.rename(path)) {
+    QMessageBox::warning(this, tr("Error"),
+                         tr("Error moving temporary file '%1' to '%2'.")
+                             .arg(tmp_path)
+                             .arg(path));
+    remove_tmp_file();
+    return;
+  }
 }
 
 void HexEdit::setParserIds(const QStringList& ids) {
