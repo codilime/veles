@@ -682,6 +682,7 @@ if(APPLE)
       DEPENDS $<TARGET_FILE:main_ui>
   )
   set_target_properties(main_ui PROPERTIES MACOSX_BUNDLE TRUE)
+  set_target_properties(main_ui PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/resources/MacOSXBundleInfo.plist.in)
   install(TARGETS main_ui BUNDLE DESTINATION "./" COMPONENT "application")
   set(CPACK_PACKAGE_EXECUTABLES "veles.app" "VELES")
 endif()
