@@ -43,6 +43,7 @@ QString clientNameDefault();
 QString clientName();
 void setClientName(const QString& client_name);
 
+QString generateRandomConnectionKey();
 QString connectionKeyDefault();
 QString connectionKey();
 void setConnectionKey(const QString& connection_key);

@@ -21,7 +21,6 @@
 #include <cstdint>
 #include <ctime>
 #include <limits>
-#include <random>
 
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
@@ -188,16 +187,8 @@ void ConnectionDialog::clientLocalhost() {
 }
 
 void ConnectionDialog::randomKey() {
-  // TODO(mkow): This is cryptographically-secure on all modern OS-es, but this
-  // isn't explicitely guaranteed by the standard. We should fix it someday.
-  std::random_device rd;
-  std::uniform_int_distribution<uint32_t> uniform;
-  auto gen_key_part = [&rd, &uniform]() {
-    return QString("%1").arg(uniform(rd), 8 /* width */, 16 /* base */,
-                             QChar('0'));
-  };
-  ui_->key_line_edit->setText(gen_key_part() + gen_key_part() + gen_key_part() +
-                              gen_key_part());
+  ui_->key_line_edit->setText(
+      util::settings::connection::generateRandomConnectionKey());
 }
 
 void ConnectionDialog::newServerToggled(bool toggled) {

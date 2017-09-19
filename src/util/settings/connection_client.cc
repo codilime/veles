@@ -20,6 +20,8 @@
 #include <QSettings>
 #include <QStandardPaths>
 
+#include <random>
+
 #include "util/settings/connection_client.h"
 
 namespace veles {
@@ -178,7 +180,21 @@ void setClientName(const QString& client_name) {
   setProfileSettings("connection.client_name", client_name);
 }
 
-QString connectionKeyDefault() { return QString(""); }
+QString generateRandomConnectionKey() {
+  // TODO(mkow): This is cryptographically-secure on all modern OS-es, but this
+  // isn't explicitely guaranteed by the standard. We should fix it someday.
+  std::random_device rd;
+  std::uniform_int_distribution<uint32_t> uniform;
+  auto gen_key_part = [&rd, &uniform]() {
+    return QString("%1").arg(uniform(rd), /*fieldWidth=*/8, /*base=*/16,
+                             QChar('0'));
+  };
+  return gen_key_part() + gen_key_part() + gen_key_part() + gen_key_part();
+}
+
+QString connectionKeyDefault() {
+  return util::settings::connection::generateRandomConnectionKey();
+}
 
 QString connectionKey() {
   return profileSettings("connection.key", connectionKeyDefault()).toString();
