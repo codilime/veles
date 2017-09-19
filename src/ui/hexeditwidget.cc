@@ -104,6 +104,12 @@ QString HexEditWidget::addressAsText(qint64 addr) {
 /*****************************************************************************/
 
 void HexEditWidget::createActions() {
+  save_as_act_ =
+      new QAction(QIcon(":/images/save.png"), tr("Save &as..."), this);
+  save_as_act_->setShortcuts(QKeySequence::SaveAs);
+  save_as_act_->setStatusTip(tr("Save the document under a new name"));
+  connect(save_as_act_, &QAction::triggered, this, &HexEditWidget::saveAs);
+
   upload_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::UPLOAD, this, QIcon(":/images/upload-32.ico"),
       Qt::WidgetWithChildrenShortcut);
@@ -124,19 +130,6 @@ void HexEditWidget::createActions() {
   connect(discard_act_, &QAction::triggered, hex_edit_,
           &HexEdit::discardChanges);
   discard_act_->setEnabled(false);
-
-  //  Currently not implemented
-  //  save_as_act_ = new QAction(QIcon(":/images/save.png"), tr("Save &As..."),
-  //      this);
-  //  save_as_act_->setShortcuts(QKeySequence::SaveAs);
-  //  save_as_act_->setStatusTip(tr("Save the document under a new name"));
-  //  connect(save_as_act_, &QAction::triggered, this, &HexEditWidget::saveAs);
-  //  save_as_act_->setEnabled(false);
-
-  //  save_readable_ = new QAction(tr("Save &Readable..."), this);
-  //  save_readable_->setStatusTip(tr("Save document in readable form"));
-  //  connect(save_readable_, &QAction::triggered, this,
-  //          &HexEditWidget::saveToReadableFile);
 
   //  redo_act_ = new QAction(QIcon(":/images/redo.png"), tr("&Redo"), this);
   //  redo_act_->setShortcuts(QKeySequence::Redo);
@@ -270,17 +263,17 @@ void HexEditWidget::createToolBars() {
   addToolBar(tools_tool_bar_);
 
   file_tool_bar_ = new QToolBar(tr("File"));
+  file_tool_bar_->addAction(save_as_act_);
+  file_tool_bar_->addSeparator();
   file_tool_bar_->addAction(upload_act_);
   file_tool_bar_->addAction(undo_act_);
   file_tool_bar_->addAction(discard_act_);
-  // file_tool_bar_->addAction(save_as_act_);
   file_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
   addToolBar(file_tool_bar_);
 
   edit_tool_bar_ = new QToolBar(tr("Edit"));
 
   // Not implemented yet.
-
   // edit_tool_bar_->addAction(redo_act_);
 
   edit_tool_bar_->addAction(find_act_);
@@ -343,37 +336,6 @@ void HexEditWidget::setupDataModelHandlers() {
 }
 
 /*****************************************************************************/
-/* Other private methods */
-/*****************************************************************************/
-
-bool HexEditWidget::saveFile(const QString& file_name) {
-  QString tmp_file_name = file_name + ".~tmp";
-
-  QFile file(tmp_file_name);
-  file.open(QIODevice::WriteOnly);
-  bool ok = file.write(QByteArray(
-                reinterpret_cast<const char*>(data_model_->binData().rawData()),
-                static_cast<int>(data_model_->binData().size()))) != -1;
-  if (QFile::exists(file_name)) {
-    ok = QFile::remove(file_name);
-  }
-  if (ok) {
-    ok = file.copy(file_name);
-    if (ok) {
-      ok = QFile::remove(tmp_file_name);
-    }
-  }
-  file.close();
-
-  if (!ok) {
-    QMessageBox::warning(this, tr("HexEdit"),
-                         tr("Cannot write file %1.").arg(file_name));
-    return false;
-  }
-  return true;
-}
-
-/*****************************************************************************/
 /* Private Slots */
 /*****************************************************************************/
 
@@ -389,13 +351,13 @@ void HexEditWidget::findNext() { search_dialog_->findNext(); }
 
 void HexEditWidget::showSearchDialog() { search_dialog_->show(); }
 
-bool HexEditWidget::saveAs() {
-  QString file_name = QFileDialog::getSaveFileName(this, tr("Save As"));
+void HexEditWidget::saveAs() {
+  QString file_name = QFileDialog::getSaveFileName(this, tr("Save as..."));
   if (file_name.isEmpty()) {
-    return false;
+    return;
   }
 
-  return saveFile(file_name);
+  hex_edit_->saveToFile(file_name);
 }
 
 void HexEditWidget::showVisualization() {

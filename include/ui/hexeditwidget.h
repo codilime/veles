@@ -73,7 +73,7 @@ class HexEditWidget : public View {
   void parse(QAction* action);
   void findNext();
   void showSearchDialog();
-  bool saveAs();
+  void saveAs();
   void showVisualization();
   void showHexEditor();
   void newBinData();
@@ -84,8 +84,6 @@ class HexEditWidget : public View {
   void removeColumn();
 
  private:
-  bool saveFile(const QString& file_name);
-
   void addChunk(const QString& name, const QString& type,
                 const QString& comment, uint64_t start, uint64_t end,
                 const QModelIndex& index = QModelIndex());
@@ -98,20 +96,16 @@ class HexEditWidget : public View {
 
   MainWindowWithDetachableDockWidgets* main_window_;
 
-  QFile file_;
-  bool is_untitled_;
-
   QToolBar* file_tool_bar_;
   QToolBar* edit_tool_bar_;
   QToolBar* tools_tool_bar_;
   QToolBar* view_tool_bar_;
 
-  QAction* upload_act_;
   QAction* save_as_act_;
-  QAction* save_readable_;
+  QAction* upload_act_;
   QAction* undo_act_;
   QAction* discard_act_;
-  QAction* redo_act_;
+  // QAction* redo_act_;
   QAction* find_act_;
   QAction* find_next_act_;
   QAction* visualization_act_;

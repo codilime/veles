@@ -62,6 +62,7 @@ class HexEdit : public QAbstractScrollArea {
   void setInInsertMode(bool in_insert_mode) {
     in_insert_mode_ = in_insert_mode;
   }
+  void saveToFile(const QString& file_name);
 
  public slots:
   void newBinData();
