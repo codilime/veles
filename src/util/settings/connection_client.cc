@@ -181,8 +181,12 @@ void setClientName(const QString& client_name) {
 }
 
 QString generateRandomConnectionKey() {
+#ifdef __MINGW32__
+// On MinGW random_device outputs the same sequence every time (sic!).
+#error "std::random_device is broken on MinGW"
+#endif
   // TODO(mkow): This is cryptographically-secure on all modern OS-es, but this
-  // isn't explicitely guaranteed by the standard. We should fix it someday.
+  // isn't explicitly guaranteed by the standard. We should fix it someday.
   std::random_device rd;
   std::uniform_int_distribution<uint32_t> uniform;
   auto gen_key_part = [&rd, &uniform]() {
