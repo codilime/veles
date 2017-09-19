@@ -31,10 +31,10 @@ parser = argparse.ArgumentParser(
     add_help=False)
 parser.add_argument(
     'url', help='URL that the server will listen on, in form of: '
-                'VELES[+SSL|+UNIX]://auth_key@([host]:port|path) '
-                '\nThere are 3 supported schemas: VELES - TCP socket, '
-                'VELES+SSL - SSL socket '
-                'VELES+UNIX - UNIX socket (not available on Windows)')
+                'veles[+ssl|+unix]://auth_key@([host]:port|path) '
+                '\nThere are 3 supported schemas: veles - TCP socket, '
+                'veles+ssl - SSL socket '
+                'veles+unix - UNIX socket (not available on Windows)')
 parser.add_argument(
     '--cert-dir', help='Directory in which server will look for certificate '
                        'and key files (named veles.cert and veles.key '

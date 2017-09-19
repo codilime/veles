@@ -34,11 +34,11 @@ def get_client_argparse():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'server_url',
-        help='server URL in form of: VELES[+SSL|+UNIX]://auth_key[:cert-'
+        help='server URL in form of: veles[+ssl|+unix]://auth_key[:cert-'
              'fingerprint]@([host]:port|path) '
-             '\nThere are 3 supported schemas: VELES - TCP socket, '
-             'VELES+SSL - SSL socket '
-             'VELES+UNIX - UNIX socket (not available on Windows)')
+             '\nThere are 3 supported schemas: veles - TCP socket, '
+             'veles+ssl - SSL socket '
+             'veles+unix - UNIX socket (not available on Windows)')
     return parser
 
 

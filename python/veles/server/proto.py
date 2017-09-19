@@ -717,14 +717,14 @@ class ServerProto(asyncio.Protocol):
 
 
 async def create_unix_server(conn, key, path):
-    logger.info('Client url: VELES+UNIX://%s@%s', key, path)
+    logger.info('Client url: veles+unix://%s@%s', key, path)
     key = prepare_auth_key(key)
     return await conn.loop.create_unix_server(
         lambda: ServerProto(conn, key), path)
 
 
 async def create_tcp_server(conn, key, ip, port):
-    logger.info('Client url: VELES://%s@%s:%s', key, ip, port)
+    logger.info('Client url: veles://%s@%s:%s', key, ip, port)
     key = prepare_auth_key(key)
     return await conn.loop.create_server(
         lambda: ServerProto(conn, key), ip, port)
@@ -740,7 +740,7 @@ async def create_ssl_server(conn, key, ip, port, cert_dir):
     cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert)
     fingerprint = cert.digest('sha256').decode().replace(':', '')
 
-    logger.info('Client url: VELES+SSL://%s:%s@%s:%s',
+    logger.info('Client url: veles+ssl://%s:%s@%s:%s',
                 key, fingerprint, ip, port)
     key = prepare_auth_key(key)
     sc = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
