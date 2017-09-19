@@ -15,6 +15,7 @@
  *
  */
 #include "util/settings/hexedit.h"
+
 #include <QColor>
 #include <QSettings>
 
@@ -43,15 +44,15 @@ void setResizeColumnsToWindowWidth(bool on) {
   settings.setValue("hexedit.resizeColumnsToWindowWidth", on);
 }
 
-QColor colorOfText() {
+QColor colorOfBytes() {
   QSettings settings;
-  auto v = settings.value("hexedit.colorOfText", QColor(10, 10, 255));
-  return v.value<QColor>();
+  uint v = settings.value("hexedit.colorOfBytes", QRgb(4280504044)).toUInt();
+  return QColor(QRgb(v));
 }
 
-void setColorOfText(QColor color) {
+void setColorOfBytes(const QColor& color) {
   QSettings settings;
-  settings.setValue("hexedit.colorOfText", color);
+  settings.setValue("hexedit.colorOfBytes", color.rgb());
 }
 
 }  // namespace hexedit

@@ -38,7 +38,7 @@ static QVector<QColor> chunkBackgroundColors_ = {
 
 QString currentTheme() {
   QSettings settings;
-  return settings.value("theme", "normal").toString();
+  return settings.value("theme", "dark").toString();
 }
 
 void setCurrentTheme(const QString& theme) {
@@ -94,7 +94,7 @@ QColor chunkBackground(int color_index) {
 }
 
 QColor byteColor(uint8_t byte) {
-  QColor color = util::settings::hexedit::colorOfText();
+  QColor color = util::settings::hexedit::colorOfBytes();
   color.setAlpha(byte / 2 + 127);
   return color;
 }

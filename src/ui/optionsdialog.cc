@@ -15,6 +15,7 @@
  *
  */
 #include "include/ui/optionsdialog.h"
+
 #include <QColorDialog>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -30,33 +31,28 @@ OptionsDialog::OptionsDialog(QWidget* parent)
   ui->setupUi(this);
   ui->colorsBox->addItems(util::settings::theme::availableThemes());
 
-  color_dialog = new QColorDialog(this);
-  color_dialog->setCurrentColor(util::settings::hexedit::colorOfText());
-  ui->colorHexEdit->setAutoFillBackground(true);
-  ui->colorHexEdit->setFlat(true);
+  color_dialog_ = new QColorDialog(this);
+  color_dialog_->setCurrentColor(util::settings::hexedit::colorOfBytes());
+  ui->byteColorHexEdit->setAutoFillBackground(true);
+  ui->byteColorHexEdit->setFlat(true);
 
-  connect(ui->colorHexEdit, &QPushButton::clicked, color_dialog,
+  connect(ui->byteColorHexEdit, &QPushButton::clicked, color_dialog_,
           &QColorDialog::show);
-
-  connect(color_dialog, &QColorDialog::colorSelected, this,
+  connect(color_dialog_, &QColorDialog::colorSelected, this,
           &OptionsDialog::updateColorButton);
-
   connect(ui->hexColumnsAutoCheckBox, &QCheckBox::stateChanged,
           [this](int state) {
             ui->hexColumnsSpinBox->setEnabled(state != Qt::Checked);
           });
 }
 
-OptionsDialog::~OptionsDialog() {
-  color_dialog->deleteLater();
-  delete ui;
-}
+OptionsDialog::~OptionsDialog() { delete ui; }
 
 void OptionsDialog::updateColorButton() {
-  QPalette pal = ui->colorHexEdit->palette();
-  pal.setColor(QPalette::Button, color_dialog->currentColor());
-  ui->colorHexEdit->setPalette(pal);
-  ui->colorHexEdit->update();
+  QPalette pal = ui->byteColorHexEdit->palette();
+  pal.setColor(QPalette::Button, color_dialog_->currentColor());
+  ui->byteColorHexEdit->setPalette(pal);
+  ui->byteColorHexEdit->update();
 }
 
 void OptionsDialog::show() {
@@ -84,7 +80,7 @@ void OptionsDialog::accept() {
   util::settings::hexedit::setResizeColumnsToWindowWidth(
       ui->hexColumnsAutoCheckBox->checkState() == Qt::Checked);
   util::settings::hexedit::setColumnsNumber(ui->hexColumnsSpinBox->value());
-  util::settings::hexedit::setColorOfText(color_dialog->currentColor());
+  util::settings::hexedit::setColorOfBytes(color_dialog_->currentColor());
 
   if (restart_needed) {
     QMessageBox::about(

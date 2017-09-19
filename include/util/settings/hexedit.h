@@ -27,8 +27,8 @@ int columnsNumber();
 void setColumnsNumber(int number);
 bool resizeColumnsToWindowWidth();
 void setResizeColumnsToWindowWidth(bool on);
-QColor colorOfText();
-void setColorOfText(QColor color);
+QColor colorOfBytes();
+void setColorOfBytes(const QColor& color);
 
 }  // namespace hexedit
 }  // namespace settings

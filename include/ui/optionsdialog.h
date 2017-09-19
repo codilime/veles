@@ -41,7 +41,7 @@ class OptionsDialog : public QDialog {
   void accept() override;
 
  private:
-  QColorDialog* color_dialog;
+  QColorDialog* color_dialog_;
 };
 
 }  // namespace ui
