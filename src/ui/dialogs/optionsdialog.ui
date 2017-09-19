@@ -25,7 +25,7 @@
         <item>
          <widget class="QLabel" name="labelHexEditColors">
           <property name="text">
-           <string>Themes</string>
+           <string>Theme</string>
           </property>
          </widget>
         </item>
@@ -41,36 +41,36 @@
         </item>
        </layout>
       </item>
-      <item row="3" column="0">
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QLabel" name="labelHexEditWidgetColors">
-          <property name="text">
-           <string>Color</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="colorHexEdit">
-         </widget>
-        </item>
-       </layout>
-      </item>
      </layout>
     </widget>
    </item>
    <item>
     <widget class="QGroupBox" name="gbHexEdit">
      <property name="title">
-      <string>HexEdit defaults</string>
+      <string>HexEdit</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QLabel" name="labelHexEditWidgetColors">
+         <property name="text">
+          <string>Byte color</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="byteColorHexEdit">
+        </widget>
+       </item>
+      </layout>
+     </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <widget class="QLabel" name="hexColumnsLabel">
           <property name="text">
-           <string>Columns</string>
+           <string>Default Columns</string>
           </property>
          </widget>
         </item>

@@ -47,6 +47,7 @@ class OptionsDialog : public QDialog {
   ColorPickerButton* color_3d_begin_button_;
   ColorPickerButton* color_3d_end_button_;
   QColorDialog* color_dialog;
+  QColorDialog* color_dialog_;
 };
 
 }  // namespace ui
