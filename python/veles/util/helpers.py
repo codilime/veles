@@ -64,7 +64,7 @@ def parse_url(url):
     if len(auth) == 1:
         fingerprint = None
     else:
-        fingerprint = auth[1].replace(':', '')
+        fingerprint = auth[1].replace(':', '').lower()
     if scheme == UrlScheme.UNIX_SCHEME:
         path = loc
         host, port = None, None
@@ -99,9 +99,9 @@ def generate_ssl_cert(cert_path, key_path):
 
 def validate_cert(cert, fingerprint):
     cert = crypto.load_certificate(crypto.FILETYPE_ASN1, cert)
-    remote_fingerprint = cert.digest('sha256').decode()
-    if fingerprint != remote_fingerprint.replace(':', ''):
+    remote_fingerprint = (cert.digest('sha256').decode().replace(':', '')
+                          .lower())
+    if fingerprint != remote_fingerprint:
         raise ValueError(
             'Certificate fingerprint mismatch! '
-            'expected: {}, got: {}'.format(
-                fingerprint, remote_fingerprint))
+            'expected: {}, got: {}'.format(fingerprint, remote_fingerprint))
