@@ -738,7 +738,7 @@ async def create_ssl_server(conn, key, ip, port, cert_dir):
     with open(cert_path) as f:
         cert = f.read()
     cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert)
-    fingerprint = cert.digest('sha256').decode().replace(':', '')
+    fingerprint = cert.digest('sha256').decode().replace(':', '').lower()
 
     logger.info('Client url: veles+ssl://%s:%s@%s:%s',
                 key, fingerprint, ip, port)
