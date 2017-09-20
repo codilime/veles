@@ -471,6 +471,31 @@ set_target_properties(main_ui PROPERTIES OUTPUT_NAME "veles")
 
 # Post-build: linting
 
+message(STATUS "Looking for clang-format")
+find_program(CLANG_FORMAT NAMES clang-format clang-format-4.0 clang-format-3.9 clang-format-3.8 clang-format-3.7 clang-format-3.6 clang-format-3.5 HINTS ${CLANG_TOOLS_PATH})
+
+if(CLANG_FORMAT)
+  message(STATUS "Looking for clang-format - found")
+  file(GLOB_RECURSE FORMAT_ALL_SOURCE_FILES ${SRC_DIR}/*.cc ${INCLUDE_DIR}/*.h ${TEST_DIR}/*.cc ${TEST_DIR}/*.h)
+  # On Windows, cmd.exe limits commands to 8192 characters.
+  # Please be *very* cautious when editing this code: when command length
+  # exceeds 8192 characters, the 8192th character is silently dropped and the
+  # rest is glued together (sic!).
+  # We pass arguments via a file to overcome the limit.
+  set(FORMAT_CMDLINE_FILE "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/clang-format-cmdline.txt")
+  file(WRITE ${FORMAT_CMDLINE_FILE} "-style=file\n")
+  file(APPEND ${FORMAT_CMDLINE_FILE} "-sort-includes\n")
+  file(APPEND ${FORMAT_CMDLINE_FILE} "-i\n")
+  foreach(FORMAT_SOURCE_FILE ${FORMAT_ALL_SOURCE_FILES})
+    file(APPEND ${FORMAT_CMDLINE_FILE} "${FORMAT_SOURCE_FILE}\n")
+  endforeach()
+  add_custom_target(format COMMAND ${CLANG_FORMAT} "\"@${FORMAT_CMDLINE_FILE}\"")
+else()
+  message(STATUS "Looking for clang-format - not found")
+  message(STATUS "  Build target 'format' will not be available.")
+endif()
+
+
 message(STATUS "Looking for clang-tidy")
 find_program(CLANG_TIDY NAMES clang-tidy clang-tidy-4.0 clang-tidy-3.9 clang-tidy-3.8 clang-tidy-3.7 clang-tidy-3.6 clang-tidy-3.5 HINTS ${CLANG_TOOLS_PATH})
 
@@ -579,30 +604,6 @@ else()
   message(STATUS "  Build target 'lint' will not be available.")
 endif()
 
-
-message(STATUS "Looking for clang-format")
-find_program(CLANG_FORMAT NAMES clang-format clang-format-4.0 clang-format-3.9 clang-format-3.8 clang-format-3.7 clang-format-3.6 clang-format-3.5 HINTS ${CLANG_TOOLS_PATH})
-
-if(CLANG_FORMAT)
-  message(STATUS "Looking for clang-format - found")
-  file(GLOB_RECURSE FORMAT_ALL_SOURCE_FILES ${SRC_DIR}/*.cc ${INCLUDE_DIR}/*.h ${TEST_DIR}/*.cc ${TEST_DIR}/*.h)
-  # On Windows, cmd.exe limits commands to 8192 characters.
-  # Please be *very* cautious when editing this code: when command length
-  # exceeds 8192 characters, the 8192th character is silently dropped and the
-  # rest is glued together (sic!).
-  # We pass arguments via a file to overcome the limit.
-  set(FORMAT_CMDLINE_FILE "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/clang-format-cmdline.txt")
-  file(WRITE ${FORMAT_CMDLINE_FILE} "-style=file\n")
-  file(APPEND ${FORMAT_CMDLINE_FILE} "-sort-includes\n")
-  file(APPEND ${FORMAT_CMDLINE_FILE} "-i\n")
-  foreach(FORMAT_SOURCE_FILE ${FORMAT_ALL_SOURCE_FILES})
-    file(APPEND ${FORMAT_CMDLINE_FILE} "${FORMAT_SOURCE_FILE}\n")
-  endforeach()
-  add_custom_target(format COMMAND ${CLANG_FORMAT} "\"@${FORMAT_CMDLINE_FILE}\"")
-else()
-  message(STATUS "Looking for clang-format - not found")
-  message(STATUS "  Build target 'format' will not be available.")
-endif()
 
 # Post-build packaging
 
