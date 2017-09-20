@@ -100,12 +100,16 @@ void ConnectionManager::locallyCreatedServerStarted() {
 }
 
 void ConnectionManager::locallyCreatedServerFinished(
-    int exit_code, QProcess::ExitStatus /*exit_status*/) {
+    int exit_code, QProcess::ExitStatus exit_status) {
   serverProcessReadyRead();
 
   QTextStream out(LogWidget::output());
-  out << "Process of locally created server finished. Exit code: " << exit_code
-      << "." << endl;
+  out << "Process of locally created server finished.";
+  if (exit_status == QProcess::NormalExit) {
+    out << " Exit code: " << exit_code << "." << endl;
+  } else {  // QProcess::CrashExit
+    out << " Exit status: crashed or killed." << endl;
+  }
   kill_locally_created_server_action_->setEnabled(false);
   server_process_->deleteLater();
   server_process_ = nullptr;
