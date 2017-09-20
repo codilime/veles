@@ -47,8 +47,6 @@ ConnectionDialog::ConnectionDialog(QWidget* parent)
   connect(ui_->cancel_button, &QPushButton::clicked, this, &QDialog::reject);
   connect(ui_->server_localhost_button, &QPushButton::clicked, this,
           &ConnectionDialog::serverLocalhost);
-  connect(ui_->client_localhost_button, &QPushButton::clicked, this,
-          &ConnectionDialog::clientLocalhost);
   connect(ui_->random_key_button, &QPushButton::clicked, this,
           &ConnectionDialog::randomKey);
   connect(ui_->new_server_radio_button, &QPushButton::toggled, this,
@@ -144,10 +142,6 @@ QString ConnectionDialog::serverHost() {
 
 int ConnectionDialog::serverPort() { return ui_->port_spin_box->value(); }
 
-QString ConnectionDialog::clientInterface() {
-  return ui_->client_interface_line_edit->text();
-}
-
 QString ConnectionDialog::authenticationKey() {
   return ui_->key_line_edit->text();
 }
@@ -176,14 +170,8 @@ bool ConnectionDialog::sslEnabled() const {
   return ui_->ssl_checkbox->isChecked();
 }
 
-QString localhost("127.0.0.1");
-
 void ConnectionDialog::serverLocalhost() {
-  ui_->server_host_line_edit->setText(localhost);
-}
-
-void ConnectionDialog::clientLocalhost() {
-  ui_->client_interface_line_edit->setText(localhost);
+  ui_->server_host_line_edit->setText(QStringLiteral("127.0.0.1"));
 }
 
 void ConnectionDialog::randomKey() {
@@ -244,8 +232,6 @@ void ConnectionDialog::loadDefaultValues() {
   ui_->port_spin_box->setValue(util::settings::connection::serverPortDefault());
   ui_->key_line_edit->setText(
       util::settings::connection::connectionKeyDefault());
-  ui_->client_interface_line_edit->setText(
-      util::settings::connection::clientInterfaceDefault());
   ui_->client_name_line_edit->setText(
       util::settings::connection::clientNameDefault());
   ui_->database_line_edit->setText(
@@ -285,8 +271,6 @@ void ConnectionDialog::loadSettings() {
     emit ui_->server_url_line_edit->textEdited(
         util::settings::connection::serverUrl());
   }
-  ui_->client_interface_line_edit->setText(
-      util::settings::connection::clientInterface());
   QString client_name = util::settings::connection::clientName();
   ui_->client_name_line_edit->setText(client_name);
   ui_->database_line_edit->setText(util::settings::connection::databaseName());
@@ -302,8 +286,6 @@ void ConnectionDialog::saveSettings() {
       ui_->new_server_radio_button->isChecked());
   util::settings::connection::setServerHost(ui_->server_host_line_edit->text());
   util::settings::connection::setServerPort(ui_->port_spin_box->value());
-  util::settings::connection::setClientInterface(
-      ui_->client_interface_line_edit->text());
   util::settings::connection::setClientName(ui_->client_name_line_edit->text());
   util::settings::connection::setConnectionKey(
       ui_->save_key_check_box->isChecked() ? ui_->key_line_edit->text() : "");

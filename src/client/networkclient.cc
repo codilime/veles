@@ -59,7 +59,6 @@ NetworkClient::NetworkClient(QObject* parent)
       status_(ConnectionStatus::NotConnected),
       server_name_("127.0.0.1"),
       server_port_(3135),
-      client_interface_name_("127.0.0.1"),
       protocol_version_(1),
       client_name_(""),
       client_version_("[unspecified version]"),
@@ -80,7 +79,6 @@ NetworkClient::ConnectionStatus NetworkClient::connectionStatus() {
 }
 
 void NetworkClient::connect(const QString& server_url,
-                            const QString& client_interface_name,
                             const QString& client_name,
                             const QString& client_version,
                             const QString& client_description,
@@ -118,7 +116,6 @@ void NetworkClient::connect(const QString& server_url,
 
   server_name_ = loc.section(":", 0, -2);
   server_port_ = loc.section(":", -1, -1).toInt();
-  client_interface_name_ = client_interface_name;
   client_name_ = client_name;
   client_version_ = client_version;
   client_description_ = client_description;
@@ -160,28 +157,16 @@ void NetworkClient::connect(const QString& server_url,
         this, &NetworkClient::socketError);
 
     if (output() != nullptr) {
-      *output() << "NetworkClient::connect" << endl
-                << "    client interface: " << client_interface_name_ << endl
-                << "    server host: " << server_name_ << endl
-                << "    server port: " << server_port_ << endl;
+      *output() << "Connecting to " << server_name_ << ":" << server_port_
+                << "..." << endl;
     }
 
-    // TODO(altran01): Why is bind causing a problem here?
-    // if (client_socket_->bind(QHostAddress(client_interface_name))) {
-    /*if (output() != nullptr) {
-      *output() << "NetworkClient: bind successful." << endl;
-    }*/
     if (ssl_enabled_) {
       client_socket_->connectToHostEncrypted(server_name_, server_port_);
     } else {
       client_socket_->connectToHost(server_name_, server_port_);
     }
     setConnectionStatus(ConnectionStatus::Connecting);
-    /*} else {
-      if (output() != nullptr) {
-        *output() << "NetworkClient: bind failed." << endl;
-      }
-    }*/
   }
 }
 
