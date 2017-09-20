@@ -2,4 +2,22 @@
 Language: Cpp
 BasedOnStyle: Google
 DerivePointerAlignment: false
+IncludeCategories:
+  # Regexes are matched from top to bottom.
+
+  # Standard C includes.
+  - Regex:           '^<.*\.h'
+    Priority:        1
+  # MessagePack
+  - Regex:           '<msgpack.*'
+    Priority:        3
+  # Qt includes.
+  - Regex:           '^<Q'
+    Priority:        4
+  # Standard C++ includes.
+  - Regex:           '^<'
+    Priority:        2
+  # Our own includes.
+  - Regex:           '^"'
+    Priority:        5
 ...
