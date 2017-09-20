@@ -20,6 +20,7 @@
 #include <QStandardItemModel>
 #include <QVector>
 #include <QWidget>
+
 #include "data/types.h"
 #include "dbif/promise.h"
 #include "dbif/types.h"

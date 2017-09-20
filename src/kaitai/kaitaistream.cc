@@ -15,9 +15,9 @@
  *
  */
 
-#include <cstring>
-
 #include "kaitai/kaitaistream.h"
+
+#include <cstring>
 
 namespace veles {
 namespace kaitai {

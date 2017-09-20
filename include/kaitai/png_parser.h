@@ -1,5 +1,6 @@
 #include "kaitai/png.h"
 #include "parser/parser.h"
+
 namespace veles {
 namespace kaitai {
 class PngParser : public parser::Parser {

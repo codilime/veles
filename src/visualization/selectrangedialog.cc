@@ -14,12 +14,13 @@
  * limitations under the License.
  *
  */
+#include "visualization/selectrangedialog.h"
+
 #include <cassert>
 #include <functional>
 
 #include <QComboBox>
 
-#include "include/visualization/selectrangedialog.h"
 #include "ui_selectrangedialog.h"
 
 namespace veles {

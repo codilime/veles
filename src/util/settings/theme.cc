@@ -14,11 +14,11 @@
  * limitations under the License.
  *
  */
+#include "util/settings/theme.h"
+
 #include <QFont>
 #include <QSettings>
 #include <QStyleFactory>
-
-#include "util/settings/theme.h"
 
 namespace veles {
 namespace util {

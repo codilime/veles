@@ -1,5 +1,6 @@
 #include "kaitai/bmp.h"
 #include "parser/parser.h"
+
 namespace veles {
 namespace kaitai {
 class BmpParser : public parser::Parser {

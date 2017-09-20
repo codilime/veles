@@ -16,9 +16,12 @@
  */
 
 #include "visualization/base.h"
+
+#include <functional>
+
 #include <QComboBox>
 #include <QLabel>
-#include <functional>
+
 #include "util/sampling/fake_sampler.h"
 #include "util/sampling/uniform_sampler.h"
 

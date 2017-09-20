@@ -15,6 +15,7 @@
  *
  */
 #include "util/encoders/url_encoder.h"
+
 #include "gtest/gtest.h"
 
 #include <QByteArray>

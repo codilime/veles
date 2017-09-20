@@ -17,6 +17,7 @@
 #pragma once
 
 #include <QObject>
+
 #include "dbif/types.h"
 
 namespace veles {

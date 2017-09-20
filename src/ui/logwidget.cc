@@ -14,10 +14,10 @@
  * limitations under the License.
  *
  */
+#include "ui/logwidget.h"
+
 #include <QFile>
 #include <QMutexLocker>
-
-#include "ui/logwidget.h"
 
 namespace veles {
 namespace ui {

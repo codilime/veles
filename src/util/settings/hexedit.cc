@@ -15,6 +15,7 @@
  *
  */
 #include "util/settings/hexedit.h"
+
 #include <QSettings>
 
 namespace veles {

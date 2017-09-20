@@ -1,5 +1,6 @@
 #include "kaitai/avi.h"
 #include "parser/parser.h"
+
 namespace veles {
 namespace kaitai {
 class AviParser : public parser::Parser {

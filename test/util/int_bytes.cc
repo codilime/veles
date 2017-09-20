@@ -16,6 +16,7 @@
  */
 
 #include "util/int_bytes.h"
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 

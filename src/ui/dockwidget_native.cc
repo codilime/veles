@@ -14,10 +14,10 @@
  * limitations under the License.
  *
  */
+#include "ui/dockwidget_native.h"
+
 #include <QDockWidget>
 #include <QTabBar>
-
-#include "ui/dockwidget_native.h"
 
 namespace veles {
 namespace ui {

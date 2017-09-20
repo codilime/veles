@@ -14,14 +14,14 @@
  * limitations under the License.
  *
  */
+#include "util/sampling/uniform_sampler.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <iterator>
 #include <random>
 #include <set>
-
-#include "util/sampling/uniform_sampler.h"
 
 namespace veles {
 namespace util {

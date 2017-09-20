@@ -19,7 +19,7 @@
 #include <QDialog>
 #include <QString>
 
-#include <ui/spinbox.h>
+#include "ui/spinbox.h"
 
 namespace Ui {
 class SelectRangeDialog;

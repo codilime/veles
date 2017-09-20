@@ -17,6 +17,7 @@
 #pragma once
 
 #include <QSharedPointer>
+
 #include "data/types.h"
 
 namespace veles {

@@ -21,7 +21,7 @@
 #include <QtCore>
 
 #include "data/bindata.h"
-#include "include/ui/hexedit.h"
+#include "ui/hexedit.h"
 
 namespace Ui {
 class SearchDialog;

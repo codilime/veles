@@ -14,7 +14,8 @@
  * limitations under the License.
  *
  */
-#include "include/ui/createchunkdialog.h"
+#include "ui/createchunkdialog.h"
+
 #include "ui_createchunkdialog.h"
 
 namespace veles {

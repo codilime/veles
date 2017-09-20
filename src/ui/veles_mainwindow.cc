@@ -14,6 +14,8 @@
  * limitations under the License.
  *
  */
+#include "ui/veles_mainwindow.h"
+
 #include <QAction>
 #include <QApplication>
 #include <QFileDialog>
@@ -33,7 +35,6 @@
 #include "ui/nodetreewidget.h"
 #include "ui/nodewidget.h"
 #include "ui/optionsdialog.h"
-#include "ui/veles_mainwindow.h"
 #include "util/settings/shortcuts.h"
 #include "util/version.h"
 

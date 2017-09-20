@@ -15,7 +15,9 @@
  *
  */
 #include "parser/unpyc.h"
+
 #include <typeinfo>
+
 #include "data/field.h"
 #include "dbif/error.h"
 #include "dbif/info.h"

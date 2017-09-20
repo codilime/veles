@@ -14,6 +14,8 @@
  * limitations under the License.
  *
  */
+#include "visualization/panel.h"
+
 #include <QComboBox>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -25,7 +27,6 @@
 #include "util/sampling/uniform_sampler.h"
 #include "util/settings/shortcuts.h"
 #include "visualization/digram.h"
-#include "visualization/panel.h"
 #include "visualization/trigram.h"
 
 namespace veles {

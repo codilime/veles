@@ -16,10 +16,7 @@
  */
 #pragma once
 
-#include "visualization/digram.h"
-
 #include <cstdint>
-
 #include <vector>
 
 #include <QOpenGLBuffer>

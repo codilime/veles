@@ -15,12 +15,13 @@
  *
  */
 
+#include "client/nodetree.h"
+
 #include <cstring>
 #include <functional>
 
 #include "client/networkclient.h"
 #include "client/node.h"
-#include "client/nodetree.h"
 
 namespace veles {
 namespace client {

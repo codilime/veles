@@ -14,6 +14,8 @@
  * limitations under the License.
  *
  */
+#include "ui/fileblobmodel.h"
+
 #include <QColor>
 #include <QFont>
 #include <QSize>
@@ -21,9 +23,7 @@
 #include "dbif/types.h"
 #include "dbif/universe.h"
 
-#include "ui/fileblobmodel.h"
 #include "ui/rootfileblobitem.h"
-
 #include "util/settings/theme.h"
 
 namespace veles {

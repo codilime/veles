@@ -15,6 +15,8 @@
  *
  */
 
+#include "client/networkclient.h"
+
 #include <cstring>
 #include <functional>
 #include <memory>
@@ -24,7 +26,6 @@
 #include <QSslConfiguration>
 #include <QSslSocket>
 
-#include "client/networkclient.h"
 #include "client/node.h"
 #include "client/nodetree.h"
 #include "proto/exceptions.h"

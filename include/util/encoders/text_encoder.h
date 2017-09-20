@@ -16,11 +16,11 @@
  */
 #pragma once
 
-#include "util/encoders/idecoder.h"
-#include "util/encoders/iencoder.h"
-
 #include <QByteArray>
 #include <QString>
+
+#include "util/encoders/idecoder.h"
+#include "util/encoders/iencoder.h"
 
 namespace veles {
 namespace util {

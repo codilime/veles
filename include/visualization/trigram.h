@@ -16,8 +16,6 @@
  */
 #pragma once
 
-#include "visualization/trigram.h"
-
 #include <cstdint>
 #include <vector>
 

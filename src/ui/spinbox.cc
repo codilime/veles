@@ -14,10 +14,11 @@
  * limitations under the License.
  *
  */
+#include "ui/spinbox.h"
+
 #include <QLineEdit>
 
-#include "include/ui/spinbox.h"
-#include "include/ui/spinboxvalidator.h"
+#include "ui/spinboxvalidator.h"
 
 namespace veles {
 namespace ui {

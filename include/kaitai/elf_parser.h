@@ -1,5 +1,6 @@
 #include "kaitai/elf.h"
 #include "parser/parser.h"
+
 namespace veles {
 namespace kaitai {
 class ElfParser : public parser::Parser {

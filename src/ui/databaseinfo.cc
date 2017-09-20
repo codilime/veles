@@ -15,11 +15,11 @@
  *
  */
 #include "ui/databaseinfo.h"
-#include "ui_databaseinfo.h"
 
 #include "dbif/info.h"
 #include "dbif/promise.h"
 #include "dbif/universe.h"
+#include "ui_databaseinfo.h"
 
 namespace veles {
 namespace ui {

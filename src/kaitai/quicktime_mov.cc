@@ -6,7 +6,6 @@
 namespace veles {
 namespace kaitai {
 namespace quicktime_mov {
-#include "kaitai/quicktime_mov.h"
 
 quicktime_mov_t::quicktime_mov_t(kaitai::kstream* p_io,
                                  kaitai::kstruct* p_parent,

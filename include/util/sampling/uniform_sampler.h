@@ -17,6 +17,7 @@
 #pragma once
 
 #include <vector>
+
 #include "util/sampling/isampler.h"
 
 namespace veles {
