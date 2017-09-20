@@ -46,7 +46,7 @@ void setResizeColumnsToWindowWidth(bool on) {
 
 QColor colorOfBytes() {
   QSettings settings;
-  uint v = settings.value("hexedit.colorOfBytes", QRgb(4280504044)).toUInt();
+  uint v = settings.value("hexedit.colorOfBytes", QRgb(4281073423)).toUInt();
   return QColor(QRgb(v));
 }
 

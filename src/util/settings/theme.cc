@@ -95,8 +95,7 @@ QColor chunkBackground(int color_index) {
 
 QColor byteColor(uint8_t byte) {
   QColor color = util::settings::hexedit::colorOfBytes();
-  color.setAlpha(byte / 2 + 127);
-  return color;
+  return color.darker(100 + (byte ^ 0xFF) * 200 / 255);
 }
 
 QFont font() {
