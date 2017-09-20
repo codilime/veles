@@ -16,6 +16,7 @@
  */
 
 #include "parser/parser.h"
+
 #include "dbif/universe.h"
 
 namespace veles {

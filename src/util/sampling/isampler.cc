@@ -14,10 +14,11 @@
  * limitations under the License.
  *
  */
+#include "util/sampling/isampler.h"
+
 #include <cassert>
 
 #include "util/concurrency/threadpool.h"
-#include "util/sampling/isampler.h"
 
 namespace veles {
 namespace util {

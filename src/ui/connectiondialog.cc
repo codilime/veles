@@ -15,7 +15,6 @@
  *
  */
 #include "ui/connectiondialog.h"
-#include "ui_connectiondialog.h"
 
 #include <climits>
 #include <cstdint>
@@ -28,6 +27,7 @@
 #include <QtGlobal>
 
 #include "client/networkclient.h"
+#include "ui_connectiondialog.h"
 #include "util/settings/connection_client.h"
 
 namespace veles {

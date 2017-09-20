@@ -15,11 +15,8 @@
  *
  */
 #include "parser/utils.h"
+
 #include "dbif/universe.h"
-
-#include "parser/unpng.h"
-#include "parser/unpyc.h"
-
 #include "kaitai/avi_parser.h"
 #include "kaitai/bmp_parser.h"
 #include "kaitai/elf_parser.h"
@@ -28,6 +25,8 @@
 #include "kaitai/png_parser.h"
 #include "kaitai/quicktime_mov_parser.h"
 #include "kaitai/zip_parser.h"
+#include "parser/unpng.h"
+#include "parser/unpyc.h"
 
 namespace veles {
 namespace parser {

@@ -14,12 +14,13 @@
  * limitations under the License.
  *
  */
+#include "ui/connectionmanager.h"
+
 #include <QAction>
 #include <QFileDialog>
 #include <QTimer>
 
 #include "ui/connectiondialog.h"
-#include "ui/connectionmanager.h"
 #include "ui/logwidget.h"
 #include "util/settings/connection_client.h"
 #include "util/settings/shortcuts.h"

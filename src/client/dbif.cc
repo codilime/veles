@@ -15,12 +15,13 @@
  *
  */
 
+#include "client/dbif.h"
+
 #include <memory>
 #include <vector>
 
 #include <QSharedPointer>
 
-#include "client/dbif.h"
 #include "data/types.h"
 #include "db/getter.h"
 #include "network/msgpackobject.h"

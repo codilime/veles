@@ -14,6 +14,8 @@
  * limitations under the License.
  *
  */
+#include "ui/hexedit.h"
+
 #include <algorithm>
 #include <vector>
 
@@ -24,7 +26,6 @@
 #include <QPainter>
 #include <QScrollBar>
 
-#include "ui/hexedit.h"
 #include "util/encoders/factory.h"
 #include "util/misc.h"
 #include "util/settings/theme.h"

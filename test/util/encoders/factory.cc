@@ -15,7 +15,9 @@
  *
  */
 #include "util/encoders/factory.h"
+
 #include "gtest/gtest.h"
+
 #include "util/encoders/base64_encoder.h"
 #include "util/encoders/hex_encoder.h"
 

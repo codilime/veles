@@ -14,14 +14,14 @@
  * limitations under the License.
  *
  */
+#include "visualization/minimap_panel.h"
+
 #include <cmath>
 #include <functional>
 
 #include <QHBoxLayout>
 #include <QSpacerItem>
 #include <QVBoxLayout>
-
-#include "visualization/minimap_panel.h"
 
 namespace veles {
 namespace visualization {

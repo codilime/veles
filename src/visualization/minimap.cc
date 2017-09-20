@@ -15,6 +15,7 @@
  *
  */
 #include "visualization/minimap.h"
+
 #include <cassert>
 #include <cmath>
 #include <cstdlib>

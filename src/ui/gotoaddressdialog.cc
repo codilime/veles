@@ -14,10 +14,11 @@
  * limitations under the License.
  *
  */
-#include "include/ui/gotoaddressdialog.h"
-#include "ui_gotoaddressdialog.h"
+#include "ui/gotoaddressdialog.h"
 
 #include <QMessageBox>
+
+#include "ui_gotoaddressdialog.h"
 
 namespace veles {
 namespace ui {

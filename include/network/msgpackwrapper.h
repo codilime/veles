@@ -18,8 +18,9 @@
 
 #include <cstdint>
 
-#include <QtNetwork/QTcpSocket>
 #include <msgpack.hpp>
+
+#include <QtNetwork/QTcpSocket>
 
 #include "models.h"
 #include "network/msgpackobject.h"

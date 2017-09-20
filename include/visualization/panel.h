@@ -16,6 +16,8 @@
  */
 #pragma once
 
+#include <map>
+
 #include <QAction>
 #include <QBoxLayout>
 #include <QLabel>
@@ -24,8 +26,6 @@
 #include <QToolBar>
 #include <QWidget>
 #include <QWidgetAction>
-
-#include <map>
 
 #include "ui/dockwidget.h"
 #include "ui/fileblobmodel.h"

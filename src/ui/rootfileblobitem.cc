@@ -14,10 +14,11 @@
  * limitations under the License.
  *
  */
+#include "ui/rootfileblobitem.h"
+
 #include <QtAlgorithms>
 
 #include "dbif/universe.h"
-#include "ui/rootfileblobitem.h"
 #include "ui/subchunkfileblobitem.h"
 
 namespace veles {

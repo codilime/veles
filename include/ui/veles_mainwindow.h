@@ -29,7 +29,6 @@
 #include "client/networkclient.h"
 #include "dbif/promise.h"
 #include "dbif/types.h"
-
 #include "ui/connectiondialog.h"
 #include "ui/connectionmanager.h"
 #include "ui/dockwidget.h"

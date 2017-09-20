@@ -1,5 +1,6 @@
 #include "kaitai/gif.h"
 #include "parser/parser.h"
+
 namespace veles {
 namespace kaitai {
 class GifParser : public parser::Parser {

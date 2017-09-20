@@ -18,8 +18,7 @@
 
 #include <QObject>
 
-#include <data/field.h>
-
+#include "data/field.h"
 #include "dbif/types.h"
 #include "ui/fileblobitem.h"
 

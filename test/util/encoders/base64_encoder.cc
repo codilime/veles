@@ -15,6 +15,7 @@
  *
  */
 #include "util/encoders/base64_encoder.h"
+
 #include "gtest/gtest.h"
 
 #include <QByteArray>

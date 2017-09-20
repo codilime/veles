@@ -15,6 +15,7 @@
  *
  */
 #include "util/encoders/c_string_encoder.h"
+
 #include "gtest/gtest.h"
 
 namespace veles {

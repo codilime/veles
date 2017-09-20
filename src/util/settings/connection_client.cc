@@ -14,6 +14,8 @@
  * limitations under the License.
  *
  */
+#include "util/settings/connection_client.h"
+
 #include <QApplication>
 #include <QDir>
 #include <QFileInfo>
@@ -21,8 +23,6 @@
 #include <QStandardPaths>
 
 #include <random>
-
-#include "util/settings/connection_client.h"
 
 namespace veles {
 namespace util {

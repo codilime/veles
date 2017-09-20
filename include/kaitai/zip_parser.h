@@ -1,5 +1,6 @@
 #include "kaitai/zip.h"
 #include "parser/parser.h"
+
 namespace veles {
 namespace kaitai {
 class ZipParser : public parser::Parser {

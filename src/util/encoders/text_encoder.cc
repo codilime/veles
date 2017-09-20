@@ -15,6 +15,7 @@
  *
  */
 #include "util/encoders/text_encoder.h"
+
 #include "util/string_utils.h"
 
 using veles::util::string::stripNulls;

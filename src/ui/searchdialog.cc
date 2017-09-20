@@ -14,7 +14,8 @@
  * limitations under the License.
  *
  */
-#include "include/ui/searchdialog.h"
+#include "ui/searchdialog.h"
+
 #include "ui_searchdialog.h"
 
 namespace veles {

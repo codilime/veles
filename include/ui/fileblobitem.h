@@ -20,6 +20,7 @@
 #include <QList>
 #include <QObject>
 #include <QString>
+
 #include "dbif/types.h"
 
 namespace veles {

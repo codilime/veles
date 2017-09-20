@@ -16,16 +16,15 @@
  */
 #pragma once
 
+#include <map>
+#include <memory>
+
 #include <QBoxLayout>
+#include <QMainWindow>
 #include <QOpenGLFunctions_3_2_Core>
 #include <QOpenGLWidget>
 #include <QSpinBox>
 #include <QString>
-
-#include <map>
-#include <memory>
-
-#include <QMainWindow>
 
 #include "util/sampling/isampler.h"
 

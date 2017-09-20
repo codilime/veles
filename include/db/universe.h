@@ -18,6 +18,7 @@
 
 #include <QObject>
 #include <QStringList>
+
 #include "data/bindata.h"
 #include "db/getter.h"
 #include "dbif/types.h"

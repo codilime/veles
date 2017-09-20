@@ -15,7 +15,9 @@
  *
  */
 #include "include/ui/optionsdialog.h"
+
 #include <QMessageBox>
+
 #include "ui_optionsdialog.h"
 #include "util/settings/hexedit.h"
 #include "util/settings/theme.h"

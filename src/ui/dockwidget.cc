@@ -14,6 +14,8 @@
  * limitations under the License.
  *
  */
+#include "ui/dockwidget.h"
+
 #include <QAction>
 #include <QApplication>
 #include <QCursor>
@@ -27,7 +29,6 @@
 #include <QTabWidget>
 #include <QUrl>
 
-#include "ui/dockwidget.h"
 #include "ui/dockwidget_native.h"
 #include "ui/nodewidget.h"
 #include "util/settings/shortcuts.h"

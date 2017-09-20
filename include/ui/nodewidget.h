@@ -23,17 +23,15 @@
 #include <QToolButton>
 #include <QWidget>
 
-#include "util/sampling/uniform_sampler.h"
-
-#include "visualization/base.h"
-#include "visualization/minimap_panel.h"
-
 #include "ui/dockwidget.h"
 #include "ui/fileblobmodel.h"
 #include "ui/hexedit.h"
 #include "ui/hexeditwidget.h"
 #include "ui/nodetreewidget.h"
 #include "ui/searchdialog.h"
+#include "util/sampling/uniform_sampler.h"
+#include "visualization/base.h"
+#include "visualization/minimap_panel.h"
 
 namespace veles {
 namespace ui {

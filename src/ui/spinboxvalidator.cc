@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-#include "include/ui/spinboxvalidator.h"
+#include "ui/spinboxvalidator.h"
 
 #include <cassert>
 

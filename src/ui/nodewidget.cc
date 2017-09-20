@@ -14,6 +14,8 @@
  * limitations under the License.
  *
  */
+#include "ui/nodewidget.h"
+
 #include <QAction>
 #include <QColorDialog>
 #include <QFileDialog>
@@ -30,15 +32,11 @@
 #include "dbif/info.h"
 #include "dbif/types.h"
 #include "dbif/universe.h"
-
 #include "ui/hexeditwidget.h"
 #include "ui/nodetreewidget.h"
-#include "ui/nodewidget.h"
 #include "ui/veles_mainwindow.h"
-
 #include "util/icons.h"
 #include "util/settings/hexedit.h"
-
 #include "visualization/panel.h"
 
 namespace veles {

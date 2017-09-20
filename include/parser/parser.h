@@ -17,6 +17,7 @@
 #pragma once
 
 #include <QString>
+
 #include "data/bindata.h"
 #include "data/types.h"
 

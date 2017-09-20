@@ -16,11 +16,11 @@
  */
 #pragma once
 
-#include "util/encoders/idecoder.h"
-#include "util/encoders/iencoder.h"
-
 #include <QString>
 #include <QStringList>
+
+#include "util/encoders/idecoder.h"
+#include "util/encoders/iencoder.h"
 
 namespace veles {
 namespace util {

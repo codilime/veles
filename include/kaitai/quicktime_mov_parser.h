@@ -1,5 +1,6 @@
 #include "kaitai/quicktime_mov.h"
 #include "parser/parser.h"
+
 namespace veles {
 namespace kaitai {
 class Quicktime_movParser : public parser::Parser {

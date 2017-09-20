@@ -14,12 +14,13 @@
  * limitations under the License.
  *
  */
-#include <QComboBox>
-
-#include "include/visualization/samplingmethoddialog.h"
-#include "ui_samplingmethoddialog.h"
+#include "visualization/samplingmethoddialog.h"
 
 #include <limits>
+
+#include <QComboBox>
+
+#include "ui_samplingmethoddialog.h"
 
 namespace veles {
 namespace visualization {

@@ -19,8 +19,9 @@
 #include <random>
 #include <vector>
 
-#include <QString>
 #include <msgpack.hpp>
+
+#include <QString>
 
 namespace veles {
 namespace data {

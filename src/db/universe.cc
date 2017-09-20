@@ -14,14 +14,14 @@
  * limitations under the License.
  *
  */
+#include "db/universe.h"
+
 #include <QThread>
 
 #include "db/getter.h"
-#include "db/universe.h"
 #include "dbif/error.h"
 #include "dbif/method.h"
 #include "dbif/promise.h"
-
 #include "parser/utils.h"
 
 namespace veles {

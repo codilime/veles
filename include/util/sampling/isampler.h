@@ -16,7 +16,6 @@
  */
 #pragma once
 
-#include <QByteArray>
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -24,6 +23,8 @@
 #include <map>
 #include <mutex>
 #include <utility>
+
+#include <QByteArray>
 
 namespace veles {
 namespace util {

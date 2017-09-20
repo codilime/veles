@@ -16,13 +16,13 @@
  */
 #include "parser/unpng.h"
 
-#include "parser/stream.h"
-#include "parser/utils.h"
-
 #include <cstdio>
 #include <vector>
 
 #include <zlib.h>
+
+#include "parser/stream.h"
+#include "parser/utils.h"
 
 namespace veles {
 namespace parser {

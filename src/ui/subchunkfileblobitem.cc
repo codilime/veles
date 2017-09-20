@@ -15,9 +15,9 @@
  *
  */
 #include "ui/subchunkfileblobitem.h"
-#include "ui/simplefileblobitem.h"
 
 #include "dbif/universe.h"
+#include "ui/simplefileblobitem.h"
 
 namespace veles {
 namespace ui {

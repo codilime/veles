@@ -1,5 +1,6 @@
 #include "kaitai/microsoft_pe.h"
 #include "parser/parser.h"
+
 namespace veles {
 namespace kaitai {
 class Microsoft_peParser : public parser::Parser {

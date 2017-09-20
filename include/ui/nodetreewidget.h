@@ -24,15 +24,13 @@
 #include <QTreeView>
 #include <QWidget>
 
-#include "visualization/base.h"
-
+#include "dbif/info.h"
+#include "dbif/types.h"
 #include "ui/dockwidget.h"
 #include "ui/fileblobmodel.h"
 #include "ui/hexedit.h"
 #include "ui/searchdialog.h"
-
-#include "dbif/info.h"
-#include "dbif/types.h"
+#include "visualization/base.h"
 
 namespace veles {
 namespace ui {

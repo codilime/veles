@@ -15,6 +15,7 @@
  *
  */
 #include "util/encoders/hex_encoder.h"
+
 #include "gtest/gtest.h"
 
 #include <QByteArray>
