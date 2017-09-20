@@ -79,6 +79,8 @@ class ConnectionManager : public QObject {
   QAction* show_connection_dialog_action_;
   QAction* disconnect_action_;
   QAction* kill_locally_created_server_action_;
+  bool restart_server_after_kill_ = false;  // one-shot
+  bool is_server_process_running_ = false;
   QProcess* server_process_ = nullptr;
   ConnectionDialog* connection_dialog_;
   bool is_local_server_;

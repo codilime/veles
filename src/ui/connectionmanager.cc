@@ -113,14 +113,24 @@ void ConnectionManager::locallyCreatedServerFinished(
   kill_locally_created_server_action_->setEnabled(false);
   server_process_->deleteLater();
   server_process_ = nullptr;
+  is_server_process_running_ = false;
+  if (restart_server_after_kill_) {
+    restart_server_after_kill_ = false;
+    startLocalServer();
+  }
 }
 
 void ConnectionManager::connectionDialogAccepted() {
   is_local_server_ = connection_dialog_->runANewServer();
   if (is_local_server_) {
-    startLocalServer();
-    QTextStream out(LogWidget::output());
-    out << "Waiting for a new server to start..." << endl;
+    if (is_server_process_running_) {
+      restart_server_after_kill_ = true;
+      killLocalServer();
+    } else {
+      startLocalServer();
+      QTextStream out(LogWidget::output());
+      out << "Waiting for a new server to start..." << endl;
+    }
   } else {
     startClient();
   }
@@ -134,9 +144,9 @@ void ConnectionManager::startClient() {
 }
 
 void ConnectionManager::startLocalServer() {
-  if (server_process_ != nullptr) {
-    server_process_->deleteLater();
-  }
+  assert(server_process_ == nullptr);
+  assert(!is_server_process_running_);
+  is_server_process_running_ = true;
   server_process_ = new QProcess(this);
   server_process_->setProcessChannelMode(QProcess::MergedChannels);
   connect(server_process_, &QProcess::started, this,
