@@ -19,6 +19,8 @@
 #include <QColorDialog>
 #include <QFileDialog>
 #include <QMessageBox>
+#include "ui/hexedit.h"
+#include "ui/veles_mainwindow.h"
 #include "ui_optionsdialog.h"
 #include "util/settings/hexedit.h"
 #include "util/settings/theme.h"
@@ -81,6 +83,14 @@ void OptionsDialog::accept() {
       ui->hexColumnsAutoCheckBox->checkState() == Qt::Checked);
   util::settings::hexedit::setColumnsNumber(ui->hexColumnsSpinBox->value());
   util::settings::hexedit::setColorOfBytes(color_dialog_->currentColor());
+
+  for (auto main_window :
+       MainWindowWithDetachableDockWidgets::getMainWindows()) {
+    QList<HexEdit*> widgets = main_window->findChildren<HexEdit*>();
+    for (auto widget : widgets) {
+      widget->viewport()->update();
+    }
+  }
 
   if (restart_needed) {
     QMessageBox::about(
