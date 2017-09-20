@@ -118,6 +118,7 @@ void ConnectionManager::locallyCreatedServerFinished(
     restart_server_after_kill_ = false;
     startLocalServer();
   }
+  disconnect();
 }
 
 void ConnectionManager::connectionDialogAccepted() {
@@ -241,6 +242,7 @@ void ConnectionManager::startLocalServer() {
 }
 
 void ConnectionManager::killLocalServer() {
+  disconnect();
   if (server_process_ != nullptr) {
 #ifdef Q_OS_WIN
     server_process_->kill();
