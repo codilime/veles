@@ -35,10 +35,6 @@ int serverPortDefault();
 int serverPort();
 void setServerPort(int server_port);
 
-QString clientInterfaceDefault();
-QString clientInterface();
-void setClientInterface(const QString& client_interface);
-
 QString clientNameDefault();
 QString clientName();
 void setClientName(const QString& client_name);

@@ -138,9 +138,8 @@ void ConnectionManager::connectionDialogAccepted() {
 
 void ConnectionManager::startClient() {
   network_client_->connect(
-      connection_dialog_->serverUrl(), connection_dialog_->clientInterface(),
-      connection_dialog_->clientName(), veles::util::version::string,
-      "Veles UI", "Veles UI", is_local_server_);
+      connection_dialog_->serverUrl(), connection_dialog_->clientName(),
+      veles::util::version::string, "Veles UI", "Veles UI", is_local_server_);
 }
 
 void ConnectionManager::startLocalServer() {
@@ -276,10 +275,10 @@ void ConnectionManager::serverProcessReadyRead() {
             end_pos = out.indexOf("\n", start_pos);
           }
           QByteArray url = out.mid(start_pos, end_pos - start_pos);
-          network_client_->connect(
-              QString::fromUtf8(url), connection_dialog_->clientInterface(),
-              connection_dialog_->clientName(), veles::util::version::string,
-              "Veles UI", "Veles UI", is_local_server_);
+          network_client_->connect(QString::fromUtf8(url),
+                                   connection_dialog_->clientName(),
+                                   veles::util::version::string, "Veles UI",
+                                   "Veles UI", is_local_server_);
         }
       }
       LogWidget::output()->write(out);

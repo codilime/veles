@@ -57,10 +57,9 @@ class NetworkClient : public QObject {
   explicit NetworkClient(QObject* parent = nullptr);
   ~NetworkClient() override;
   ConnectionStatus connectionStatus();
-  void connect(const QString& server_url, const QString& client_interface_name,
-               const QString& client_name, const QString& client_version,
-               const QString& client_description, const QString& client_type,
-               bool quit_on_close);
+  void connect(const QString& server_url, const QString& client_name,
+               const QString& client_version, const QString& client_description,
+               const QString& client_type, bool quit_on_close);
   void disconnect();
   std::unique_ptr<NodeTree> const& nodeTree();
   uint64_t nextQid();
@@ -115,7 +114,6 @@ class NetworkClient : public QObject {
 
   QString server_name_;
   uint16_t server_port_;
-  QString client_interface_name_;
 
   unsigned int protocol_version_;
   QString client_name_;

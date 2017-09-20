@@ -36,7 +36,6 @@ class ConnectionDialog : public QDialog {
   bool runANewServer();
   QString serverHost();
   int serverPort();
-  QString clientInterface();
   QString authenticationKey();
   QString clientName();
   QString databaseFile();
@@ -47,7 +46,6 @@ class ConnectionDialog : public QDialog {
 
  public slots:
   void serverLocalhost();
-  void clientLocalhost();
   void randomKey();
   void newServerToggled(bool toggled);
   void sslEnabledToggled(bool toggled);

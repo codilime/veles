@@ -142,18 +142,6 @@ void setServerPort(int server_port) {
   setProfileSettings("connection.server_port", server_port);
 }
 
-QString clientInterfaceDefault() { return localhost; }
-
-QString clientInterface() {
-  return profileSettings("connection.client_interface",
-                         clientInterfaceDefault())
-      .toString();
-}
-
-void setClientInterface(const QString& client_interface) {
-  setProfileSettings("connection.client_interface", client_interface);
-}
-
 QString clientName() {
   return profileSettings("connection.client_name", clientNameDefault())
       .toString();
