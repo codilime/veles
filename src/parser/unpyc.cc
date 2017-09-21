@@ -440,10 +440,11 @@ void parseCode(const dbif::ObjectHandle& code, const PycVersion& version) {
     }
   }
 #if 0
-  for (auto &line : lines) {
+  for (auto& line : lines) {
     // XXX set some sort of a prop with line no
     bytecodeBlob->syncRunMethod<dbif::ChunkCreateRequest>(
-      QString("line_%1").arg(std::get<2>(line)), "pyc_line_tag", dbif::ObjectHandle(), std::get<0>(line), std::get<1>(line));
+        QString("line_%1").arg(std::get<2>(line)), "pyc_line_tag",
+        dbif::ObjectHandle(), std::get<0>(line), std::get<1>(line));
   }
 #endif
 }
