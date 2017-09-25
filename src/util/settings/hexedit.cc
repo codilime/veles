@@ -46,13 +46,13 @@ void setResizeColumnsToWindowWidth(bool on) {
 
 QColor colorOfBytes() {
   QSettings settings;
-  uint v = settings.value("hexedit.colorOfBytes", QRgb(4281073423)).toUInt();
-  return QColor(QRgb(v));
+  auto v = settings.value("hexedit.colorOfBytes", QColor(10, 255, 10));
+  return v.value<QColor>();
 }
 
 void setColorOfBytes(const QColor& color) {
   QSettings settings;
-  settings.setValue("hexedit.colorOfBytes", color.rgb());
+  settings.setValue("hexedit.colorOfBytes", color);
 }
 
 }  // namespace hexedit
