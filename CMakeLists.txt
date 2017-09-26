@@ -143,6 +143,7 @@ add_library(veles_base
     ${SRC_DIR}/util/math.cc
     ${SRC_DIR}/util/misc.cc
     ${SRC_DIR}/util/version.cc
+    ${SRC_DIR}/util/random.cc
 )
 
 qt5_use_modules(veles_base Core Gui Widgets)
