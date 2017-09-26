@@ -13,14 +13,6 @@
 namespace veles {
 namespace kaitai {
 namespace quicktime_mov {
-class quicktime_mov_t;
-class quicktime_mov_t;
-class quicktime_mov_t;
-class quicktime_mov_t;
-class quicktime_mov_t;
-class quicktime_mov_t;
-class quicktime_mov_t;
-class quicktime_mov_t;
 
 class quicktime_mov_t : public kaitai::kstruct {
  public:
