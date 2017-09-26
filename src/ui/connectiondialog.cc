@@ -28,6 +28,7 @@
 
 #include "client/networkclient.h"
 #include "ui_connectiondialog.h"
+#include "util/random.h"
 #include "util/settings/connection_client.h"
 
 namespace veles {
@@ -175,8 +176,7 @@ void ConnectionDialog::serverLocalhost() {
 }
 
 void ConnectionDialog::randomKey() {
-  ui_->key_line_edit->setText(
-      util::settings::connection::generateRandomConnectionKey());
+  ui_->key_line_edit->setText(util::generateSecureRandomConnectionKey());
 }
 
 void ConnectionDialog::newServerToggled(bool toggled) {

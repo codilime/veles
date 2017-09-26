@@ -1,6 +1,9 @@
 #include "data/nodeid.h"
 
+#include <algorithm>
+
 #include "util/encoders/hex_encoder.h"
+#include "util/random.h"
 
 using veles::util::encoders::HexEncoder;
 
@@ -13,15 +16,9 @@ const uint8_t NodeID::ROOT_VALUE[NodeID::WIDTH] = {
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 };
 
-std::mt19937 NodeID::random_ = []() {
-  std::array<int, 5> seed_data;
-  std::random_device r;
-  std::generate_n(seed_data.data(), seed_data.size(), std::ref(r));
-  std::seed_seq seq(seed_data.begin(), seed_data.end());
-  return std::mt19937(seq);
-}();
-
-NodeID::NodeID() { std::generate_n(value, WIDTH, std::ref(random_)); }
+NodeID::NodeID() {
+  std::generate_n(value, WIDTH, std::ref(veles::util::g_mersenne_twister));
+}
 
 NodeID::NodeID(const uint8_t* data) { memcpy(value, data, WIDTH); }
 

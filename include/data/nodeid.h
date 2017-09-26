@@ -16,7 +16,6 @@
  */
 #pragma once
 
-#include <random>
 #include <vector>
 
 #include <msgpack.hpp>
@@ -32,7 +31,6 @@ class NodeID {
 
  private:
   uint8_t value[WIDTH];
-  static std::mt19937 random_;
 
  public:
   static const uint8_t NIL_VALUE[WIDTH];

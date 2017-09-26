@@ -22,7 +22,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 
-#include <random>
+#include "util/random.h"
 
 namespace veles {
 namespace util {
@@ -168,24 +168,8 @@ void setClientName(const QString& client_name) {
   setProfileSettings("connection.client_name", client_name);
 }
 
-QString generateRandomConnectionKey() {
-#ifdef __MINGW32__
-// On MinGW random_device outputs the same sequence every time (sic!).
-#error "std::random_device is broken on MinGW"
-#endif
-  // TODO(mkow): This is cryptographically-secure on all modern OS-es, but this
-  // isn't explicitly guaranteed by the standard. We should fix it someday.
-  std::random_device rd;
-  std::uniform_int_distribution<uint32_t> uniform;
-  auto gen_key_part = [&rd, &uniform]() {
-    return QString("%1").arg(uniform(rd), /*fieldWidth=*/8, /*base=*/16,
-                             QChar('0'));
-  };
-  return gen_key_part() + gen_key_part() + gen_key_part() + gen_key_part();
-}
-
 QString connectionKeyDefault() {
-  return util::settings::connection::generateRandomConnectionKey();
+  return util::generateSecureRandomConnectionKey();
 }
 
 QString connectionKey() {

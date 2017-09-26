@@ -28,6 +28,7 @@
 
 #include "util/encoders/factory.h"
 #include "util/misc.h"
+#include "util/random.h"
 #include "util/settings/theme.h"
 
 using veles::util::misc::array_size;
@@ -1362,8 +1363,7 @@ void HexEdit::saveDataToFile(qint64 byte_offset, qint64 size,
   }
   auto data = edit_engine_.bytesValues(byte_offset, size);
 
-  // TODO(catsuryuu): path + ".tmp." + <RANDOM(min. 8 alnums uppercase)>
-  QString tmp_path = path + ".tmp." + "TODO";
+  QString tmp_path = path + ".tmp." + util::generateRandomUppercaseText(12);
 
   QFile file(tmp_path);
   if (!file.open(QIODevice::WriteOnly)) {
