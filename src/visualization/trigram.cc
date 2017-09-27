@@ -197,6 +197,21 @@ void TrigramWidget::prepareOptions(QMainWindow* visualization_window) {
   visualization_window->addToolBar(perspective_toolbar);
 
   /////////////////////////////////////
+  // Scaled points
+  auto* scaled_points_widget_action = new QWidgetAction(this);
+  scaled_points_checkbox_ = new QCheckBox(tr("Scaled points (GPU intensive)"));
+  scaled_points_checkbox_->setChecked(scaled_points_);
+  scaled_points_widget_action->setDefaultWidget(scaled_points_checkbox_);
+  connect(scaled_points_checkbox_, &QCheckBox::toggled,
+          [this](bool toggled) { scaled_points_ = toggled; });
+  auto* scaled_points_toolbar = new QToolBar("Scaled points", this);
+  scaled_points_toolbar->setMovable(false);
+  scaled_points_toolbar->addAction(scaled_points_widget_action);
+  scaled_points_toolbar->addSeparator();
+  scaled_points_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
+  visualization_window->addToolBar(scaled_points_toolbar);
+
+  /////////////////////////////////////
   // Brightness
   auto* brightness_widget_action = new QWidgetAction(this);
   auto* brightness_widget = new QWidget;
@@ -385,6 +400,7 @@ void TrigramWidget::timerEvent(QTimerEvent* /*event*/) {
   animateTo(&c_pos_, mode_ == EVisualizationMode::LAYERED_DIGRAM ? 1.0 : 0.0,
             0.01f);
   animateTo(&c_ort_, perspective_ ? 0.0 : 1.0, 0.02f);
+  animateTo(&c_psiz_, scaled_points_ ? 1.0 : 0.0, 0.02f);
   update();
 }
 
@@ -395,6 +411,8 @@ bool TrigramWidget::initializeVisualizationGL() {
 
   glClearColor(0, 0, 0, 1);
   glEnable(GL_DEPTH_TEST);
+  glEnable(GL_PROGRAM_POINT_SIZE);
+  glEnable(GL_POINT_SPRITE);
 
   if (use_brightness_heuristic_) {
     autoSetBrightness();
@@ -562,17 +580,18 @@ void TrigramWidget::paintGLImpl() {
   // Extract the translation-by-z component of the modelview matrix and use it
   // to get a scale factor for the orthogonal projection (since it would
   // otherwise always be the same size on screen).
-  float tz = m(2, 3);
-  // If tz happens to be positive or 0 (ie. camera is at or past cube center),
-  // we'd get a negative scale factor.  Cap it instead.
-  tz = std::min(tz, -0.001f);
+  float ort_dist = -m(2, 3);
+  // If ort_dist happens to be negative or 0 (ie. camera is at or past cube
+  // center), we'd get a negative scale factor.  Cap it instead.
+  ort_dist = std::max(ort_dist, 0.001f);
   // This factor results in the cube being approximately the same size in both
   // orthogonal and perspective projections -- the plane containing the cube
   // center is the same size on screen.
-  mo.scale(-2.5f / tz);
+  mo.scale(2.5f / ort_dist);
   // The * 4 fudge factor for ortho projection doesn't affect the final result
   // (since it uniformly scales w as well as x, y, z), but improves
-  // the animation between ortho and perspective.
+  // the animation between ortho and perspective.  Note that point size
+  // calculation in vertex shader needs to use the same factor.
   mp = mp * (1 - c_ort_) + mo * c_ort_ * 4;
   QMatrix4x4 mvp = mp * m;
 
@@ -581,7 +600,14 @@ void TrigramWidget::paintGLImpl() {
   program_.setUniformValue("c_cyl", c_cyl_);
   program_.setUniformValue("c_sph", c_sph_);
   program_.setUniformValue("c_pos", c_pos_);
+  program_.setUniformValue("c_ort", c_ort_);
+  program_.setUniformValue("c_psiz", c_psiz_);
+  program_.setUniformValue("ort_dist", ort_dist);
   program_.setUniformValue("xfrm", mvp);
+  // 0.01 is a bit less than 2 / 256, making points close to each other, but
+  // not touching.
+  float point_size_factor = 0.01f * std::min(width_, height_);
+  program_.setUniformValue("point_size_factor", point_size_factor);
   GLfloat c_brightness = brightness_ * brightness_ * brightness_;
   c_brightness /= getDataSize();
   program_.setUniformValue("c_brightness", c_brightness);

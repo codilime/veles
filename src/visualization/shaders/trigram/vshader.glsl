@@ -19,8 +19,10 @@
 uniform mat4 xfrm;
 uniform usamplerBuffer tx;
 uniform uint sz;
-uniform float c_cyl, c_sph, c_pos;
-out float v_pos;
+uniform float ort_dist;
+uniform float c_cyl, c_sph, c_pos, c_ort, c_psiz;
+uniform float point_size_factor;
+out float v_pos, v_factor;
 const float TAU = 3.1415926535897932384626433832795 * 2;
 
 void main() {
@@ -41,4 +43,15 @@ void main() {
 	vec3 spos = vec3(a1pos * a2pos.x, a2pos.y) * v_coord.z;
 	xpos += spos * c_sph;
 	gl_Position = xfrm * vec4(xpos, 1);
+	/* 4.0 here needs to match the ortho animation fudge factor in trigram.cc.  */
+	float factor = c_ort * 4.0 / ort_dist + (1.0 - c_ort);
+	float point_size = point_size_factor / gl_Position.w * factor;
+	point_size = mix(1.0, point_size, c_psiz);
+	if (point_size < 1.0) {
+		gl_PointSize = 1.0;
+		v_factor = point_size * point_size;
+	} else {
+		gl_PointSize = point_size;
+		v_factor = 1.0;
+	}
 }
