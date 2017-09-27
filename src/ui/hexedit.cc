@@ -1069,9 +1069,14 @@ void HexEdit::processEditEvent(QKeyEvent* event) {
       return;
     }
 
-    auto current_val = byteValue(current_position_);
     uint8_t shift = (byteCharsCount_ - 1 - cursor_pos_in_byte_) * 4;
-    uint64_t new_val = current_val & ~(0xfULL << shift);
+    uint64_t new_val;
+    if (in_insert_mode_ && cursor_pos_in_byte_ == 0) {
+      new_val = 0;
+    } else {
+      uint64_t current_val = byteValue(current_position_);
+      new_val = current_val & ~(0xfULL << shift);
+    }
     new_val = new_val | (nibble_val << shift);
     if (new_val > byte_max_value_) {
       new_val = byte_max_value_;
