@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
 
   QApplication app(argc, argv);
   QApplication::setApplicationName("Veles");
-  QApplication::setOrganizationName("Codisec");
+  QApplication::setOrganizationName("CodiSec");
   QApplication::setApplicationVersion(veles::util::version::string);
 
   QApplication::setStyle(veles::util::settings::theme::createStyle());
