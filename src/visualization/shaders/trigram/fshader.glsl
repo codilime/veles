@@ -17,8 +17,13 @@
 #version 330
 
 in float v_pos;
+in float v_factor;
 layout (location = 0, index = 0) out vec4 o_color;
 uniform float c_brightness;
 void main() {
-        o_color = vec4(1.0 - v_pos, 0.5, v_pos, 1) * c_brightness;
+	vec2 diff = vec2(dFdx(gl_PointCoord.x), dFdy(gl_PointCoord.y));
+	float cdist = length(gl_PointCoord.xy - vec2(0.5, 0.5)) - length(diff) / 2;
+	float maxdist = max(0.5 - length(diff) / 2, 0.1);
+	float cscale = clamp((maxdist - cdist)/maxdist, 0.0, 1.0);
+	o_color = vec4(1.0 - v_pos, 0.5, v_pos, 1) * c_brightness * cscale * v_factor;
 }

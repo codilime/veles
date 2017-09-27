@@ -176,6 +176,7 @@ class TrigramWidget : public VisualizationWidget {
   float c_cyl_ = 0;
   float c_pos_ = 0;
   float c_ort_ = 0;
+  float c_psiz_ = 0;
   int width_, height_;
   EVisualizationShape shape_ = EVisualizationShape::CUBE;
   EVisualizationMode mode_ = EVisualizationMode::TRIGRAM;
@@ -191,6 +192,8 @@ class TrigramWidget : public VisualizationWidget {
   bool show_labels_;
   QCheckBox* perspective_checkbox_;
   bool perspective_ = true;
+  QCheckBox* scaled_points_checkbox_;
+  bool scaled_points_ = true;
 
   QList<Manipulator*> manipulators_;
   Manipulator* current_manipulator_;
