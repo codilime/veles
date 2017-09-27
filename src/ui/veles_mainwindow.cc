@@ -95,6 +95,7 @@ void VelesMainWindow::about() {
                         "Version: %1\n"
                         "\n"
                         "Report bugs to contact@veles.io\n"
+                        "IRC: #veles@freenode.net\n"
                         "https://veles.io/\n"
                         "\n"
                         "Copyright 2017 CodiLime\n"
