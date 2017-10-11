@@ -19,10 +19,10 @@
 #include <QColor>
 #include <QFont>
 #include <QSize>
+
 #include "dbif/method.h"
 #include "dbif/types.h"
 #include "dbif/universe.h"
-
 #include "ui/rootfileblobitem.h"
 #include "util/settings/theme.h"
 
@@ -228,11 +228,7 @@ QVariant FileBlobModel::positionColumnData(FileBlobItem* item, int role) const {
     return zeroPaddedHexNumber(begin) + ":" + zeroPaddedHexNumber(end);
   }
   if (role == Qt::FontRole) {
-#ifdef Q_OS_WIN32
-    return QFont("Courier", 10);
-#else
-    return QFont("Monospace", 10);
-#endif
+    return util::settings::theme::fixedFont();
   }
   if (role == ROLE_BEGIN) {
     return QString::number(begin);
