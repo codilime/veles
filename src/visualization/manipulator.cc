@@ -262,6 +262,10 @@ bool FreeManipulator::mouseEvent(QObject* watched, QMouseEvent* event) {
                   280.f * len(delta) /
                       std::min(widget->width(), widget->height())) *
               eye_rotation_ * cube_rotation_;
+          // The expression present above creates not normalized quaternion
+          // from time to time (probably floating-point error accumulation).
+          // Used rotations and decompose assume normalized quaternion hence:
+          cube_rotation_.normalize();
         } else {
           eye_rotation_ = QQuaternion::fromAxisAndAngle(
                               delta.y(), delta.x(), 0.f,
