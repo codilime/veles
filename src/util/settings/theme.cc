@@ -37,7 +37,7 @@ static QVector<QColor> chunkBackgroundColors_ = {
 
 QString currentTheme() {
   QSettings settings;
-  return settings.value("theme", "normal").toString();
+  return settings.value("theme", "dark").toString();
 }
 
 void setCurrentTheme(const QString& theme) {
