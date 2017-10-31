@@ -18,7 +18,7 @@
 
 #include <QAbstractSpinBox>
 
-#include "include/ui/spinboxvalidator.h"
+#include "ui/spinboxvalidator.h"
 
 namespace veles {
 namespace ui {
