@@ -10,3 +10,6 @@ CMakeSettings.json
 *.vsp
 *.vspx
 *.psess
+
+# Qt Creator files
+veles.*
