@@ -97,6 +97,7 @@ class VisualizationPanel : public ui::View {
   QSpinBox* sample_size_box_;
   QBoxLayout *layout_, *options_layout_;
   QWidget* child_options_wrapper_;
+  QActionGroup* visualization_modes_group_;
   QAction *digram_action_, *trigram_action_, *layered_digram_action_;
   QLabel* selection_label_;
 

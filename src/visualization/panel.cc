@@ -319,31 +319,51 @@ void VisualizationPanel::initOptionsPanel() {
 
   /////////////////////////////////////
   // Modes: digram / trigrams
+  visualization_modes_group_ = new QActionGroup(this);
   QColor icon_color = palette().color(QPalette::WindowText);
+
   digram_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
-      util::settings::shortcuts::VISUALIZATION_DIGRAM, this,
+      util::settings::shortcuts::VISUALIZATION_DIGRAM,
+      visualization_modes_group_,
       util::getColoredIcon(":/images/digram_icon.png", icon_color),
       Qt::WidgetWithChildrenShortcut);
   digram_action_->setToolTip("Digram Visualization");
+  digram_action_->setCheckable(true);
   connect(digram_action_, &QAction::triggered, this,
           &VisualizationPanel::showDigramVisualization);
 
   trigram_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
-      util::settings::shortcuts::VISUALIZATION_TRIGRAM, this,
+      util::settings::shortcuts::VISUALIZATION_TRIGRAM,
+      visualization_modes_group_,
       util::getColoredIcon(":/images/trigram_icon.png", icon_color),
       Qt::WidgetWithChildrenShortcut);
   trigram_action_->setToolTip("Trigram Visualization");
+  trigram_action_->setCheckable(true);
   connect(trigram_action_, &QAction::triggered, this,
           &VisualizationPanel::showTrigramVisualization);
 
   layered_digram_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
-      util::settings::shortcuts::VISUALIZATION_LAYERED_DIGRAM, this,
+      util::settings::shortcuts::VISUALIZATION_LAYERED_DIGRAM,
+      visualization_modes_group_,
       util::getColoredIcon(":/images/layered_digram_icon.png", icon_color,
                            false),
       Qt::WidgetWithChildrenShortcut);
   layered_digram_action_->setToolTip("Layered Digram Visualization");
+  layered_digram_action_->setCheckable(true);
   connect(layered_digram_action_, &QAction::triggered, this,
           &VisualizationPanel::showLayeredDigramVisualization);
+
+  switch (visualization_type_) {
+    case EVisualization::DIGRAM:
+      digram_action_->setChecked(true);
+      break;
+    case EVisualization::TRIGRAM:
+      trigram_action_->setChecked(true);
+      break;
+    case EVisualization::LAYERED_DIGRAM:
+      layered_digram_action_->setChecked(true);
+      break;
+  }
 
   modes_tool_bar_ = new QToolBar(tr("Modes"));
   modes_tool_bar_->setMovable(false);
