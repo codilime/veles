@@ -489,7 +489,7 @@ QAction* TrigramWidget::createAction(
     util::settings::shortcuts::ShortcutType type, const QIcon& icon,
     Manipulator* manipulator) {
   auto action = ShortcutsModel::getShortcutsModel()->createQAction(
-      type, this, icon, Qt::WidgetWithChildrenShortcut);
+      type, manipulator_group_, icon, Qt::WidgetWithChildrenShortcut);
   connect(action, &QAction::triggered,
           std::bind(&TrigramWidget::setManipulator, this, manipulator));
   action->setProperty("manipulator", QVariant(qintptr(manipulator)));
@@ -530,33 +530,45 @@ void TrigramWidget::prepareManipulatorToolbar(
   QToolBar* manipulator_toolbar = new QToolBar("Camera manipulators", this);
   manipulator_toolbar->setMovable(false);
 
-  {
-    QAction* action =
-        createAction(util::settings::shortcuts::VISUALIZATION_MANIPULATOR_SPIN,
-                     QIcon(":/images/manipulator_spin.png"), spin_manipulator_);
-    addAction(action);
-    manipulator_toolbar->addAction(action);
-  }
+  manipulator_group_ = new QActionGroup(this);
 
-  {
-    QAction* action = createAction(
-        util::settings::shortcuts::VISUALIZATION_MANIPULATOR_TRACKBALL,
-        QIcon(":/images/manipulator_trackball.png"), trackball_manipulator_);
-    addAction(action);
-    manipulator_toolbar->addAction(action);
-  }
+  spin_manipulator_act_ =
+      createAction(util::settings::shortcuts::VISUALIZATION_MANIPULATOR_SPIN,
+                   QIcon(":/images/manipulator_spin.png"), spin_manipulator_);
+  spin_manipulator_act_->setCheckable(true);
+  manipulator_toolbar->addAction(spin_manipulator_act_);
 
-  {
-    QAction* action =
-        createAction(util::settings::shortcuts::VISUALIZATION_MANIPULATOR_FREE,
-                     QIcon(":/images/manipulator_free.png"), free_manipulator_);
-    addAction(action);
-    manipulator_toolbar->addAction(action);
-  }
+  trackball_manipulator_act_ = createAction(
+      util::settings::shortcuts::VISUALIZATION_MANIPULATOR_TRACKBALL,
+      QIcon(":/images/manipulator_trackball.png"), trackball_manipulator_);
+  trackball_manipulator_act_->setCheckable(true);
+  manipulator_toolbar->addAction(trackball_manipulator_act_);
+
+  free_manipulator_act_ =
+      createAction(util::settings::shortcuts::VISUALIZATION_MANIPULATOR_FREE,
+                   QIcon(":/images/manipulator_free.png"), free_manipulator_);
+  free_manipulator_act_->setCheckable(true);
+  manipulator_toolbar->addAction(free_manipulator_act_);
 
   manipulator_toolbar->addSeparator();
   manipulator_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
   visualization_window->addToolBar(manipulator_toolbar);
+
+  addAction(spin_manipulator_act_);
+  addAction(trackball_manipulator_act_);
+  addAction(free_manipulator_act_);
+
+  connect(this, &TrigramWidget::manipulatorChanged,
+          [this](auto new_manipulator) {
+            if (new_manipulator == free_manipulator_) {
+              free_manipulator_act_->setChecked(true);
+            } else if (new_manipulator == spin_manipulator_) {
+              spin_manipulator_act_->setChecked(true);
+            } else if (new_manipulator == trackball_manipulator_) {
+              trackball_manipulator_act_->setChecked(true);
+            }
+          });
+  emit manipulatorChanged(current_manipulator_);
 }
 
 void TrigramWidget::resizeGLImpl(int w, int h) {

@@ -196,6 +196,10 @@ class TrigramWidget : public VisualizationWidget {
   QCheckBox* scaled_points_checkbox_;
   bool scaled_points_ = true;
 
+  QActionGroup* manipulator_group_;
+  QAction* spin_manipulator_act_;
+  QAction* trackball_manipulator_act_;
+  QAction* free_manipulator_act_;
   QList<Manipulator*> manipulators_;
   Manipulator* current_manipulator_;
   SpinManipulator* spin_manipulator_;
