@@ -181,6 +181,7 @@ class TrigramWidget : public VisualizationWidget {
   EVisualizationShape shape_ = EVisualizationShape::CUBE;
   EVisualizationMode mode_ = EVisualizationMode::TRIGRAM;
 
+  QActionGroup* shape_group_;
   QAction* cube_action_;
   QAction* cylinder_action_;
   QAction* sphere_action_;

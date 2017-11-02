@@ -133,34 +133,51 @@ void TrigramWidget::prepareOptions(QMainWindow* visualization_window) {
   // Shape
   QToolBar* shape_toolbar = new QToolBar("Shape", this);
   shape_toolbar->setMovable(false);
+  shape_group_ = new QActionGroup(this);
+
   cube_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
-      util::settings::shortcuts::TRIGRAM_CUBE, this,
+      util::settings::shortcuts::TRIGRAM_CUBE, shape_group_,
       util::getColoredIcon(":/images/cube.png", icon_color, false),
       Qt::WindowShortcut);
+  cube_action_->setCheckable(true);
   connect(cube_action_, &QAction::triggered,
           std::bind(&TrigramWidget::setShape, this, EVisualizationShape::CUBE));
   shape_toolbar->addAction(cube_action_);
 
   cylinder_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
-      util::settings::shortcuts::TRIGRAM_CYLINDER, this,
+      util::settings::shortcuts::TRIGRAM_CYLINDER, shape_group_,
       util::getColoredIcon(":/images/cylinder.png", icon_color, false),
       Qt::WindowShortcut);
+  cylinder_action_->setCheckable(true);
   connect(
       cylinder_action_, &QAction::triggered,
       std::bind(&TrigramWidget::setShape, this, EVisualizationShape::CYLINDER));
-  shape_toolbar->addAction(cylinder_action_);
 
   sphere_action_ = ShortcutsModel::getShortcutsModel()->createQAction(
-      util::settings::shortcuts::TRIGRAM_SPHERE, this,
+      util::settings::shortcuts::TRIGRAM_SPHERE, shape_group_,
       util::getColoredIcon(":/images/sphere.png", icon_color),
       Qt::WindowShortcut);
-
+  sphere_action_->setCheckable(true);
   connect(
       sphere_action_, &QAction::triggered,
       std::bind(&TrigramWidget::setShape, this, EVisualizationShape::SPHERE));
-  shape_toolbar->addAction(sphere_action_);
+
+  switch (shape_) {
+    case EVisualizationShape::CUBE:
+      cube_action_->setChecked(true);
+      break;
+    case EVisualizationShape::CYLINDER:
+      cylinder_action_->setChecked(true);
+      break;
+    case EVisualizationShape::SPHERE:
+      sphere_action_->setChecked(true);
+      break;
+  }
+
   shape_toolbar->addSeparator();
   shape_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
+  shape_toolbar->addActions(shape_group_->actions());
+
   visualization_window->addToolBar(shape_toolbar);
 
   /////////////////////////////////////
