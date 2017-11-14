@@ -1,6 +1,14 @@
 # Veles - A new age tool for binary analysis
 
-See our home page at https://veles.io or visit us on IRC: [#veles](https://webchat.freenode.net/?channels=#veles) at freenode.
+![A .tar file as seen in Veles](resources/screens/tarball.png)
+
+It is a very difficult task for a human to notice subtle patterns in large
+amounts of binary data, however, us humans are very good at finding patterns in
+images. Statistical visualizations let you find the important bits in a sea of
+binary data - all at a glance.
+
+See our home page at https://veles.io or visit us on IRC:
+[#veles](https://webchat.freenode.net/?channels=#veles) at freenode.
 
 ## Binaries
 
