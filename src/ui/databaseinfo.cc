@@ -33,6 +33,10 @@ DatabaseInfo::DatabaseInfo(const dbif::ObjectHandle& database, QWidget* parent)
 
   model_ = new QStandardItemModel(this);
   ui_->resourcesListView->setModel(model_);
+  ui_->resourcesListView->setStyleSheet(
+      "QListView::item:hover:!selected {"
+      "background-color: palette(alternate-base);"
+      "}");
 
   connect(ui_->goButton, &QPushButton::clicked, this, &DatabaseInfo::goClicked);
   connect(ui_->newButton, &QPushButton::clicked, this,
