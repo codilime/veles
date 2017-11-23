@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>259</width>
-    <height>229</height>
+    <width>337</width>
+    <height>296</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -49,41 +49,72 @@
      <property name="title">
       <string>HexEdit defaults</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="1">
+       <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QLabel" name="hexColumnsLabel">
+         <widget class="QRadioButton" name="unprintablesModeWindows1250">
           <property name="text">
-           <string>Columns</string>
+           <string>Windows-1250</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="3" column="1">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QSpinBox" name="hexColumnsSpinBox">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>1024</number>
+          </property>
+          <property name="value">
+           <number>16</number>
           </property>
          </widget>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <widget class="QSpinBox" name="hexColumnsSpinBox">
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>1024</number>
-            </property>
-            <property name="value">
-             <number>16</number>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="hexColumnsAutoCheckBox">
-            <property name="text">
-             <string>Resize to window width</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <widget class="QCheckBox" name="hexColumnsAutoCheckBox">
+          <property name="text">
+           <string>Resize to window width</string>
+          </property>
+         </widget>
         </item>
        </layout>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="hexColumnsLabel">
+        <property name="text">
+         <string>Columns</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QRadioButton" name="unprintablesModeDots">
+        <property name="text">
+         <string>Dots</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" rowspan="2">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Unprintable characters</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -112,8 +143,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>290</x>
-     <y>160</y>
+     <x>299</x>
+     <y>286</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>
@@ -128,8 +159,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>222</x>
-     <y>154</y>
+     <x>231</x>
+     <y>286</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>

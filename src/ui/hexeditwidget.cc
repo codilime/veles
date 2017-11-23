@@ -84,6 +84,11 @@ HexEditWidget::HexEditWidget(
   setParserIds(dynamic_cast<VelesMainWindow*>(
                    MainWindowWithDetachableDockWidgets::getFirstMainWindow())
                    ->parsersList());
+
+  initUnprintablesMenu();
+  connect(&unprintables_menu_, &QMenu::triggered, hex_edit_,
+          &HexEdit::setUnprintablesMode);
+
   selectionChanged(0, 0);
 }
 
@@ -282,6 +287,18 @@ void HexEditWidget::createToolBars() {
   addToolBar(edit_tool_bar_);
 
   view_tool_bar_ = new QToolBar(tr("View"));
+
+  auto unprintables_tool_button = new QToolButton();
+  unprintables_tool_button->setMenu(&unprintables_menu_);
+  unprintables_tool_button->setPopupMode(QToolButton::InstantPopup);
+  unprintables_tool_button->setIcon(QIcon(":/images/brightness.png"));
+  unprintables_tool_button->setText(tr("&Unprintables"));
+  unprintables_tool_button->setToolTip(tr("Appearance of unprintable bytes"));
+  unprintables_tool_button->setAutoRaise(true);
+  auto unprintables_widget_action = new QWidgetAction(view_tool_bar_);
+  unprintables_widget_action->setDefaultWidget(unprintables_tool_button);
+
+  view_tool_bar_->addAction(unprintables_widget_action);
   view_tool_bar_->addAction(remove_column_act_);
   view_tool_bar_->addAction(add_column_act_);
   view_tool_bar_->addSeparator();
@@ -300,6 +317,13 @@ void HexEditWidget::initParsersMenu() {
   for (const auto& id : parsers_ids_) {
     parsers_menu_.addAction(id);
   }
+}
+
+void HexEditWidget::initUnprintablesMenu() {
+  unprintables_menu_.clear();
+  unprintables_menu_.addAction("dots");
+  unprintables_menu_.addSeparator();
+  unprintables_menu_.addAction("windows-1250");
 }
 
 void HexEditWidget::createSelectionInfo() {

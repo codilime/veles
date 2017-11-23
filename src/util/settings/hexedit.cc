@@ -43,6 +43,16 @@ void setResizeColumnsToWindowWidth(bool on) {
   settings.setValue("hexedit.resizeColumnsToWindowWidth", on);
 }
 
+QString unprintablesModes() {
+  QSettings settings;
+  return settings.value("hexedit.unprintablesMode", "dots").toString();
+}
+
+void setUnprintablesMode(QString mode) {
+  QSettings settings;
+  settings.setValue("hexedit.unprintablesMode", mode);
+}
+
 }  // namespace hexedit
 }  // namespace settings
 }  // namespace util

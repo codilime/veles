@@ -16,6 +16,8 @@
  */
 #pragma once
 
+#include <QString>
+
 namespace veles {
 namespace util {
 namespace settings {
@@ -25,6 +27,8 @@ int columnsNumber();
 void setColumnsNumber(int number);
 bool resizeColumnsToWindowWidth();
 void setResizeColumnsToWindowWidth(bool on);
+QString unprintablesModes();
+void setUnprintablesMode(QString mode);
 
 }  // namespace hexedit
 }  // namespace settings

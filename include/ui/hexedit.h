@@ -24,6 +24,7 @@
 #include <QMouseEvent>
 #include <QStaticText>
 #include <QStringList>
+#include <QTextCodec>
 
 #include "ui/createchunkdialog.h"
 #include "ui/fileblobmodel.h"
@@ -71,6 +72,7 @@ class HexEdit : public QAbstractScrollArea {
   void applyChanges();
   void undo();
   void discardChanges();
+  void setUnprintablesMode(QAction* action);
 
  protected:
   void paintEvent(QPaintEvent* event) override;
@@ -177,6 +179,8 @@ class HexEdit : public QAbstractScrollArea {
   QScopedPointer<util::encoders::TextEncoder> textEncoder_;
   util::EditEngine edit_engine_;
 
+  QString unprintablesModeString;
+
   void recalculateValues();
   void initParseMenu();
   void adjustBytesPerRowToWindowSize();
@@ -188,7 +192,10 @@ class HexEdit : public QAbstractScrollArea {
   WindowArea pointToWindowArea(QPoint pos);
   QString addressAsText(qint64 pos);
   QString hexRepresentationFromByte(uint64_t byte_val);
-  static QString asciiRepresentationFromByte(uint64_t byte_val);
+
+  QString asciiRepresentationFromByte(uint64_t byte_val);
+  void updateAsciiCache();
+  void updateHexCache();
 
   static QColor byteTextColorFromByteValue(uint64_t byte_val);
   QColor byteBackroundColorFromPos(qint64 pos, bool modified);

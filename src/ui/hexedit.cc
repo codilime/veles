@@ -29,7 +29,10 @@
 #include "util/encoders/factory.h"
 #include "util/misc.h"
 #include "util/random.h"
+#include "util/settings/hexedit.h"
 #include "util/settings/theme.h"
+
+#include <unistd.h>
 
 using veles::util::misc::array_size;
 
@@ -142,16 +145,9 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
   recalculateValues();
 
   // Initialize hex & ASCII text cache.
-  for (size_t i = 0; i < array_size(hex_text_cache_); i++) {
-    hex_text_cache_[i].setPerformanceHint(QStaticText::ModerateCaching);
-    hex_text_cache_[i].setText(hexRepresentationFromByte(i));
-    hex_text_cache_[i].setTextFormat(Qt::PlainText);
-  }
-  for (size_t i = 0; i < array_size(ascii_text_cache_); i++) {
-    ascii_text_cache_[i].setPerformanceHint(QStaticText::ModerateCaching);
-    ascii_text_cache_[i].setText(asciiRepresentationFromByte(i));
-    ascii_text_cache_[i].setTextFormat(Qt::PlainText);
-  }
+  unprintablesModeString = util::settings::hexedit::unprintablesModes();
+  updateAsciiCache();
+  updateHexCache();
 
   connect(verticalScrollBar(), &QAbstractSlider::valueChanged, this,
           &HexEdit::recalculateValues);
@@ -475,6 +471,21 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
   });
 }
 
+void HexEdit::updateAsciiCache() {
+  for (size_t i = 0; i < array_size(ascii_text_cache_); i++) {
+    ascii_text_cache_[i].setPerformanceHint(QStaticText::ModerateCaching);
+    ascii_text_cache_[i].setText(asciiRepresentationFromByte(i));
+    ascii_text_cache_[i].setTextFormat(Qt::PlainText);
+  }
+}
+
+void HexEdit::updateHexCache() {
+  for (size_t i = 0; i < array_size(hex_text_cache_); i++) {
+    hex_text_cache_[i].setPerformanceHint(QStaticText::ModerateCaching);
+    hex_text_cache_[i].setText(hexRepresentationFromByte(i));
+    hex_text_cache_[i].setTextFormat(Qt::PlainText);
+  }
+}
 QModelIndex HexEdit::selectedChunk() {
   if (chunkSelectionModel_ == nullptr) {
     return {};
@@ -609,6 +620,12 @@ void HexEdit::discardChanges() {
   viewport()->update();
 }
 
+void HexEdit::setUnprintablesMode(QAction* action) {
+  unprintablesModeString = action->text();
+  updateAsciiCache();
+  viewport()->update();
+}
+
 qint64 HexEdit::selectionStart() {
   if (selection_size_ < 0) {
     return current_position_ + selection_size_ + 1;
@@ -643,10 +660,32 @@ QString HexEdit::addressAsText(qint64 pos) {
 }
 
 QString HexEdit::asciiRepresentationFromByte(uint64_t byte_val) {
-  if (byte_val >= 0x20 && byte_val < 0x7f) {
-    return QChar::fromLatin1(byte_val);
+  static QTextCodec* windows1250 = QTextCodec::codecForName("windows-1250");
+
+  if (unprintablesModeString.compare("windows-1250") == 0) {
+    // 0x85 is NEL, 0xa0 is nbsp in unicode, but we want to display them
+    // 0x83, ..., 0x98 are undefined in used codeing
+    if (byte_val != 0x85 && byte_val != 0xa0 &&
+        (QChar(static_cast<uint>(byte_val)).isSpace() ||
+         QChar(static_cast<uint>(byte_val)).isNull() || byte_val == 0x83 ||
+         byte_val == 0x88 || byte_val == 0x90 || byte_val == 0x98)) {
+      return QChar(static_cast<uint>(' '));
+    }
+
+    // printable ascii chars
+    if (byte_val >= 0x20 && byte_val < 0x7f) {
+      return QChar::fromLatin1(byte_val);
+    }
+
+    // ascii-unprintable chars
+    char a = (static_cast<char>(byte_val));
+    return byte_val >= 0x7f
+               ? windows1250->toUnicode(&a, 1)
+               : QChar(static_cast<uint>(byte_val) + 0x180);  // greek
   }
-  return ".";
+  // dots fallback
+  return (byte_val >= 0x20 && byte_val < 0x7f) ? QChar::fromLatin1(byte_val)
+                                               : QString(".");
 }
 
 QColor HexEdit::byteTextColorFromByteValue(uint64_t byte_val) {
@@ -814,7 +853,7 @@ void HexEdit::paintEvent(QPaintEvent* event) {
       auto bgc = byteBackroundColorFromPos(
           byte_idx, modified_positions[byte_idx - start_byte]);
       bool redraw_hex = invalidated_rect.intersects(hex_rect);
-      bool redraw_ascii = invalidated_rect.intersects(ascii_rect);
+      bool redraw_ascii = true;  // invalidated_rect.intersects(ascii_rect);
       if (redraw_hex && bgc.isValid()) {
         painter.fillRect(hex_rect, bgc);
       }
