@@ -102,9 +102,13 @@ class HexEdit : public QAbstractScrollArea {
   qint64 startOffset_;
   /** Total number of rows in hex edit (counting last address only row) */
   qint64 rowsCount_;
+  /** Total number of rows in hex edit (not counting address only row) */
+  qint64 data_rows_count_;
   /** Number of rows displayed on the screen (calculated from window and font
    * height) */
   qint64 rowsOnScreen_;
+  /** Number of rows that are not being cropped by viewport height */
+  qint64 totally_visible_rows_;
   /** Number of hex chars used to display one byte */
   qint64 byteCharsCount_;
   /** maximum value of byte */
@@ -213,6 +217,7 @@ class HexEdit : public QAbstractScrollArea {
                   bool dotted = false);
 
   void setSelectedChunk(QModelIndex newSelectedChunk);
+  bool cursorOnLastRow() const;
   bool isRangeVisible(qint64 start, qint64 size);
   bool isByteVisible(qint64 bytePos);
   void setSelectionEnd(qint64 bytePos);
