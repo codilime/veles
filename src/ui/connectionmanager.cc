@@ -220,6 +220,9 @@ void ConnectionManager::startLocalServer() {
   if (!check_file.exists()) {
     python_interpreter_executable = QString("python3");
   }
+#elif defined(Q_OS_FREEBSD)
+  QString python_interpreter_executable(
+   "/usr/local/bin/python3");
 #else
 #warning \
     "This OS is not officially supported, you may need to set this string manually."
