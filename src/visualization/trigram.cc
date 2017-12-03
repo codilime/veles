@@ -229,6 +229,21 @@ void TrigramWidget::prepareOptions(QMainWindow* visualization_window) {
   visualization_window->addToolBar(scaled_points_toolbar);
 
   /////////////////////////////////////
+  // Hide axes
+  auto* show_axes_widget_action = new QWidgetAction(this);
+  show_axes_checkbox_ = new QCheckBox(tr("Show axes"));
+  show_axes_checkbox_->setChecked(show_axes_);
+  show_axes_widget_action->setDefaultWidget(show_axes_checkbox_);
+  connect(show_axes_checkbox_, &QCheckBox::toggled,
+          [this](bool toggled) { show_axes_ = toggled; });
+  auto* show_axes_toolbar = new QToolBar("Show axes", this);
+  show_axes_toolbar->setMovable(false);
+  show_axes_toolbar->addAction(show_axes_widget_action);
+  show_axes_toolbar->addSeparator();
+  show_axes_toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
+  visualization_window->addToolBar(show_axes_toolbar);
+
+  /////////////////////////////////////
   // Brightness
   auto* brightness_widget_action = new QWidgetAction(this);
   auto* brightness_widget = new QWidget;
@@ -648,7 +663,9 @@ void TrigramWidget::paintGLImpl() {
   program_.release();
 
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  paintRF(mvp);
+  if (show_axes_) {
+    paintRF(mvp);
+  }
   glDepthFunc(GL_LESS);
   if (show_labels_) {
     paintLabels(mp, m);

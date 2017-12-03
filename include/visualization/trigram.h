@@ -195,6 +195,8 @@ class TrigramWidget : public VisualizationWidget {
   bool perspective_ = true;
   QCheckBox* scaled_points_checkbox_;
   bool scaled_points_ = true;
+  QCheckBox* show_axes_checkbox_;
+  bool show_axes_ = true;
 
   QActionGroup* manipulator_group_;
   QAction* spin_manipulator_act_;
