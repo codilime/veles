@@ -62,6 +62,8 @@ TrigramWidget::TrigramWidget(QWidget* parent) : VisualizationWidget(parent) {
   setManipulator(manipulators_.front());
   time_.start();
   setFocusPolicy(Qt::StrongFocus);
+  color_begin_ = QVector3D{1.0, 0.5, 0.0};
+  color_end_ = QVector3D{0.0, 0.5, 1.0};
 }
 
 TrigramWidget::~TrigramWidget() {
@@ -640,6 +642,8 @@ void TrigramWidget::paintGLImpl() {
   GLfloat c_brightness = brightness_ * brightness_ * brightness_;
   c_brightness /= getDataSize();
   program_.setUniformValue("c_brightness", c_brightness);
+  program_.setUniformValue("c_color_begin", color_begin_);
+  program_.setUniformValue("c_color_end", color_end_);
   glUniform1ui(loc_sz, size);
   glDrawArrays(GL_POINTS, 0, size - 2);
 

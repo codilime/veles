@@ -180,6 +180,8 @@ class TrigramWidget : public VisualizationWidget {
   int width_, height_;
   EVisualizationShape shape_ = EVisualizationShape::CUBE;
   EVisualizationMode mode_ = EVisualizationMode::TRIGRAM;
+  QVector3D color_begin_;
+  QVector3D color_end_;
 
   QActionGroup* shape_group_;
   QAction* cube_action_;
