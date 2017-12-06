@@ -462,6 +462,10 @@ bool TrigramWidget::initializeVisualizationGL() {
 
 void TrigramWidget::initShaders() {
   if (!program_.addShaderFromSourceFile(QOpenGLShader::Vertex,
+                                        ":/trigram/coords.glsl")) {
+    close();
+  }
+  if (!program_.addShaderFromSourceFile(QOpenGLShader::Vertex,
                                         ":/trigram/vshader.glsl")) {
     close();
   }
@@ -821,31 +825,17 @@ void TrigramWidget::paintRF(const QMatrix4x4& mvp) {
   rf_vao_.bind();
   rf_program_.bind();
   rf_program_.setUniformValue("mvp", mvp);
-  switch (shape_) {
-    case EVisualizationShape::CUBE:
-      if (c_cyl_ == 0.f && c_sph_ == 0.f) {
-        glDrawArrays(GL_LINES, 0, 6);
-      }
-      break;
-    case EVisualizationShape::CYLINDER:
-      if (c_cyl_ == 1.f) {
-        glDrawArrays(GL_LINES, 6, 4);
-      }
-      break;
-    case EVisualizationShape::SPHERE:
-      if (c_sph_ == 1.f) {
-        glDrawArrays(GL_LINES, 10, 2);
-      }
-      break;
-    default:
-      break;
-  }
+  rf_program_.setUniformValue("c_cyl", c_cyl_);
+  rf_program_.setUniformValue("c_sph", c_sph_);
+  glDrawArrays(GL_LINES, 0, 6);
   rf_program_.release();
   rf_vao_.release();
 }
 
 void TrigramWidget::initRF() {
   rf_program_.create();
+  rf_program_.addShaderFromSourceFile(QOpenGLShader::Vertex,
+                                      ":/trigram/coords.glsl");
   rf_program_.addShaderFromSourceFile(QOpenGLShader::Vertex,
                                       ":/trigram/rf_vshader.glsl");
   rf_program_.addShaderFromSourceFile(QOpenGLShader::Fragment,
@@ -855,23 +845,12 @@ void TrigramWidget::initRF() {
 
   // clang-format off
   static const float rf_vert[] = {
-      //cube
-      -1.f, -1.f, -1.f, 1.f, 0.f, 0.f,
-       1.f, -1.f, -1.f, 1.f, 0.f, 0.f,
-      -1.f, -1.f, -1.f, 0.f, 1.f, 0.f,
-      -1.f,  1.f, -1.f, 0.f, 1.f, 0.f,
-      -1.f, -1.f, -1.f, 0.f, 0.f, 1.f,
-      -1.f, -1.f,  1.f, 0.f, 0.f, 1.f,
-
-      //cylinder
-      0.f, 0.f, -1.f, 1.f, 0.f, 1.f,
-      0.f, 0.f,  1.f, 1.f, 0.f, 1.f,
-      0.f, 0.f, -1.f, 1.f, 0.f, 1.f,
-      1.f, 0.f, -1.f, 1.f, 0.f, 1.f,
-
-      //sphere
-      0.f, 0.f, 0.f, 1.f, 0.f, 1.f,
-      0.f, 0.f, 1.f, 1.f, 0.f, 1.f
+      0.f, 0.f, 0.f, 1.f, 0.f, 0.f,
+      1.f, 0.f, 0.f, 1.f, 0.f, 0.f,
+      0.f, 0.f, 0.f, 0.f, 1.f, 0.f,
+      0.f, 1.f, 0.f, 0.f, 1.f, 0.f,
+      0.f, 0.f, 0.f, 0.f, 0.f, 1.f,
+      0.f, 0.f, 1.f, 0.f, 0.f, 1.f,
   };
   // clang-format on
 
