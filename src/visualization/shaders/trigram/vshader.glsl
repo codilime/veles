@@ -20,10 +20,11 @@ uniform mat4 xfrm;
 uniform usamplerBuffer tx;
 uniform uint sz;
 uniform float ort_dist;
-uniform float c_cyl, c_sph, c_pos, c_ort, c_psiz;
+uniform float c_pos, c_ort, c_psiz;
 uniform float point_size_factor;
 out float v_pos, v_factor;
-const float TAU = 3.1415926535897932384626433832795 * 2;
+
+vec3 apply_coord_system(vec3 vert);
 
 void main() {
 	int vid = gl_VertexID;
@@ -34,15 +35,7 @@ void main() {
 	vec3 v_coord = vec3(float(x)+0.5, float(y)+0.5, float(z)+0.5) / 256.0;
 	v_coord.z *= (1.0 - c_pos);
 	v_coord.z += c_pos * v_pos;
-	vec3 xpos = v_coord * vec3(2, 2, 2) - vec3(1, 1, 1);
-	xpos *= (1.0 - c_cyl - c_sph);
-	vec2 a1pos = vec2(cos(v_coord.x * TAU), sin(v_coord.x * TAU));
-	vec2 a2pos = vec2(sin(v_coord.y * TAU / 2.0), cos(v_coord.y * TAU / 2.0));
-	vec3 cpos = vec3(a1pos * v_coord.y, v_coord.z * 2.0 - 1.0);
-	xpos += cpos * c_cyl;
-	vec3 spos = vec3(a1pos * a2pos.x, a2pos.y) * v_coord.z;
-	xpos += spos * c_sph;
-	gl_Position = xfrm * vec4(xpos, 1);
+	gl_Position = xfrm * vec4(apply_coord_system(v_coord), 1);
 	/* 4.0 here needs to match the ortho animation fudge factor in trigram.cc.  */
 	float factor = c_ort * 4.0 / ort_dist + (1.0 - c_ort);
 	float point_size = point_size_factor / gl_Position.w * factor;

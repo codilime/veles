@@ -8,6 +8,7 @@
 		<file>minimap/background_fshader.glsl</file>
 		<file>digram/vshader.glsl</file>
 		<file>digram/fshader.glsl</file>
+		<file>trigram/coords.glsl</file>
 		<file>trigram/vshader.glsl</file>
 		<file>trigram/fshader.glsl</file>
 		<file>trigram/label_vshader.glsl</file>
