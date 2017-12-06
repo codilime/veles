@@ -642,7 +642,7 @@ void VisualizationMinimap::updateLinePositions(bool keep_selection,
       }
       end = start + size;
       if (end >= sample_size_) {
-        end = sample_size_ - 1;
+        end = sample_size_;
         start = end - size;
       }
     }
