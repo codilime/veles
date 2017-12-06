@@ -43,14 +43,18 @@ void setResizeColumnsToWindowWidth(bool on) {
   settings.setValue("hexedit.resizeColumnsToWindowWidth", on);
 }
 
-QString unprintablesMode() {
+veles::ui::HexEdit::UnprintablesMode unprintablesMode() {
   QSettings settings;
-  return settings.value("hexedit.unprintablesMode", "Dots").toString();
+
+  int default_value =
+      static_cast<int>(veles::ui::HexEdit::UnprintablesMode::Dots);
+  return static_cast<veles::ui::HexEdit::UnprintablesMode>(
+      settings.value("hexedit.unprintablesMode", default_value).toInt());
 }
 
-void setUnprintablesMode(const QString& mode) {
+void setUnprintablesMode(veles::ui::HexEdit::UnprintablesMode mode) {
   QSettings settings;
-  settings.setValue("hexedit.unprintablesMode", mode);
+  settings.setValue("hexedit.unprintablesMode", static_cast<int>(mode));
 }
 
 }  // namespace hexedit

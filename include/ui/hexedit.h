@@ -40,6 +40,11 @@ namespace ui {
 class HexEdit : public QAbstractScrollArea {
   Q_OBJECT
  public:
+  enum class UnprintablesMode {
+    Dots,
+    Windows_1250,
+  };  // do not change the order as settings may invalidate.
+
   explicit HexEdit(FileBlobModel* dataModel,
                    QItemSelectionModel* selectionModel = nullptr,
                    QWidget* parent = nullptr);
@@ -64,7 +69,8 @@ class HexEdit : public QAbstractScrollArea {
     in_insert_mode_ = in_insert_mode;
   }
   void saveToFile(const QString& file_name);
-  std::vector<QString> getListOfUnprintablesModes();
+  QString unprintablesModeToString(UnprintablesMode mode);
+  void setUnprintablesMode(UnprintablesMode mode);
 
  public slots:
   void newBinData();
@@ -73,7 +79,6 @@ class HexEdit : public QAbstractScrollArea {
   void applyChanges();
   void undo();
   void discardChanges();
-  void setUnprintablesMode(QAction* action);
 
  protected:
   void paintEvent(QPaintEvent* event) override;
@@ -180,7 +185,7 @@ class HexEdit : public QAbstractScrollArea {
   QScopedPointer<util::encoders::TextEncoder> textEncoder_;
   util::EditEngine edit_engine_;
 
-  QString unprintables_mode_string_;
+  UnprintablesMode unprintables_mode_;
   QTextCodec* windows1250_codec_;
 
   void recalculateValues();

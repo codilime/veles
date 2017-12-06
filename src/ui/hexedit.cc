@@ -145,7 +145,7 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
   recalculateValues();
 
   // Initialize hex & ASCII text cache.
-  unprintables_mode_string_ = util::settings::hexedit::unprintablesMode();
+  unprintables_mode_ = util::settings::hexedit::unprintablesMode();
   updateAsciiCache();
   updateHexCache();
 
@@ -598,25 +598,31 @@ void HexEdit::saveToFile(const QString& file_name) {
   saveDataToFile(0, edit_engine_.dataSize(), file_name);
 }
 
-std::vector<QString> HexEdit::getListOfUnprintablesModes() {
-  std::vector<QString> modes;
-  modes.push_back("Dots");
-  if (windows1250_codec_ != nullptr) {
-    modes.push_back("Windows-1250");
+QString HexEdit::unprintablesModeToString(UnprintablesMode mode) {
+  switch (mode) {
+    case UnprintablesMode::Windows_1250:
+      return "Windows-1250";
+    case UnprintablesMode::Dots:
+    default:
+      return "Dots";
   }
-  return modes;
+}
+
+void HexEdit::setUnprintablesMode(UnprintablesMode mode) {
+  unprintables_mode_ = mode;
+  if (mode == UnprintablesMode::Windows_1250 && windows1250_codec_ == nullptr) {
+    QMessageBox::warning(this, "Error", "Windows-1250 is unavailable.",
+                         QMessageBox::Ok);
+    return;
+  }
+  updateAsciiCache();
+  viewport()->update();
 }
 
 void HexEdit::discardChanges() {
   edit_engine_.clear();
   recalculateValues();
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
-  viewport()->update();
-}
-
-void HexEdit::setUnprintablesMode(QAction* action) {
-  unprintables_mode_string_ = action->text();
-  updateAsciiCache();
   viewport()->update();
 }
 
@@ -658,7 +664,7 @@ QString HexEdit::asciiRepresentationFromByte(uint64_t byte_val) {
     return ".";
   }
   if (windows1250_codec_ != nullptr &&
-      unprintables_mode_string_.compare("Windows-1250") == 0) {
+      unprintables_mode_ == UnprintablesMode::Windows_1250) {
     char a = veles::util::misc::ucharToChar(byte_val);
     QChar unicode_repr = windows1250_codec_->toUnicode(&a, 1).at(0);
 

@@ -18,6 +18,7 @@
 
 #include <QMessageBox>
 
+#include <ui/hexedit.h>
 #include "ui_optionsdialog.h"
 #include "util/settings/hexedit.h"
 #include "util/settings/theme.h"
@@ -49,9 +50,11 @@ void OptionsDialog::show() {
   ui->hexColumnsSpinBox->setEnabled(checkState != Qt::Checked);
 
   ui->unprintablesModeDots->setChecked(
-      util::settings::hexedit::unprintablesMode() == "Dots");
+      util::settings::hexedit::unprintablesMode() ==
+      veles::ui::HexEdit::UnprintablesMode::Dots);
   ui->unprintablesModeWindows1250->setChecked(
-      util::settings::hexedit::unprintablesMode() == "Windows-1250");
+      util::settings::hexedit::unprintablesMode() ==
+      veles::ui::HexEdit::UnprintablesMode::Windows_1250);
 
   QWidget::show();
 }
@@ -70,10 +73,10 @@ void OptionsDialog::accept() {
 
   if (ui->unprintablesModeDots->isChecked())
     util::settings::hexedit::setUnprintablesMode(
-        ui->unprintablesModeDots->text());
+        veles::ui::HexEdit::UnprintablesMode::Dots);
   if (ui->unprintablesModeWindows1250->isChecked())
     util::settings::hexedit::setUnprintablesMode(
-        ui->unprintablesModeWindows1250->text());
+        veles::ui::HexEdit::UnprintablesMode::Windows_1250);
 
   if (restart_needed) {
     QMessageBox::about(

@@ -86,8 +86,6 @@ HexEditWidget::HexEditWidget(
                    ->parsersList());
 
   initUnprintablesMenu();
-  connect(&unprintables_menu_, &QMenu::triggered, hex_edit_,
-          &HexEdit::setUnprintablesMode);
 
   selectionChanged(0, 0);
 }
@@ -321,8 +319,16 @@ void HexEditWidget::initParsersMenu() {
 
 void HexEditWidget::initUnprintablesMenu() {
   unprintables_menu_.clear();
-  for (auto& mode : hex_edit_->getListOfUnprintablesModes()) {
-    unprintables_menu_.addAction(mode);
+
+  HexEdit::UnprintablesMode modes[] = {HexEdit::UnprintablesMode::Dots,
+                                       HexEdit::UnprintablesMode::Windows_1250};
+
+  for (auto mode : modes) {
+    QAction* action = new QAction(hex_edit_->unprintablesModeToString(mode),
+                                  &unprintables_menu_);
+    connect(action, &QAction::triggered,
+            [=]() { this->hex_edit_->setUnprintablesMode(mode); });
+    unprintables_menu_.addAction(action);
   }
 }
 
