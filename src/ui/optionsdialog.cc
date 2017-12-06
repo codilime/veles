@@ -17,10 +17,14 @@
 #include "ui/optionsdialog.h"
 
 #include <QMessageBox>
+#include <QPushButton>
 
+#include "ui/veles_mainwindow.h"
 #include "ui_optionsdialog.h"
 #include "util/settings/hexedit.h"
 #include "util/settings/theme.h"
+#include "util/settings/visualization.h"
+#include "visualization/trigram.h"
 
 namespace veles {
 namespace ui {
@@ -34,6 +38,14 @@ OptionsDialog::OptionsDialog(QWidget* parent)
           [this](int state) {
             ui->hexColumnsSpinBox->setEnabled(state != Qt::Checked);
           });
+
+  // Initialize color pickers.
+  auto color_begin = util::settings::visualization::colorBegin();
+  auto color_end = util::settings::visualization::colorEnd();
+  color_3d_begin_button_ = new ColorPickerButton(color_begin, this);
+  color_3d_end_button_ = new ColorPickerButton(color_end, this);
+  ui->visualizationGradientLayout->addWidget(color_3d_begin_button_);
+  ui->visualizationGradientLayout->addWidget(color_3d_end_button_);
 }
 
 OptionsDialog::~OptionsDialog() { delete ui; }
@@ -62,6 +74,18 @@ void OptionsDialog::accept() {
   util::settings::hexedit::setResizeColumnsToWindowWidth(
       ui->hexColumnsAutoCheckBox->checkState() == Qt::Checked);
   util::settings::hexedit::setColumnsNumber(ui->hexColumnsSpinBox->value());
+
+  util::settings::visualization::setColorBegin(
+      color_3d_begin_button_->getColor());
+  util::settings::visualization::setColorEnd(color_3d_end_button_->getColor());
+
+  for (auto main_window :
+       MainWindowWithDetachableDockWidgets::getMainWindows()) {
+    for (auto widget :
+         main_window->findChildren<visualization::TrigramWidget*>()) {
+      widget->reloadSettings();
+    }
+  }
 
   if (restart_needed) {
     QMessageBox::about(

@@ -114,6 +114,7 @@ class TrigramWidget : public VisualizationWidget {
 
  public slots:
   void brightnessSliderMoved(int value);
+  void reloadSettings();
 
  protected:
   void refresh(const AdditionalResampleDataPtr& ad) override;

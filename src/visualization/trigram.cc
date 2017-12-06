@@ -62,8 +62,8 @@ TrigramWidget::TrigramWidget(QWidget* parent) : VisualizationWidget(parent) {
   setManipulator(manipulators_.front());
   time_.start();
   setFocusPolicy(Qt::StrongFocus);
-  color_begin_ = QVector3D{1.0, 0.5, 0.0};
-  color_end_ = QVector3D{0.0, 0.5, 1.0};
+
+  reloadSettings();
 }
 
 TrigramWidget::~TrigramWidget() {
@@ -348,6 +348,15 @@ void TrigramWidget::brightnessSliderMoved(int value) {
   util::settings::visualization::setAutoBrightness(false);
   use_heuristic_checkbox_->setChecked(false);
   setBrightness(value);
+}
+
+void TrigramWidget::reloadSettings() {
+  auto qcolor_to_vector = [](const QColor& color) {
+    return QVector3D{color.red() / 255.f, color.green() / 255.f,
+                     color.blue() / 255.f};
+  };
+  color_begin_ = qcolor_to_vector(util::settings::visualization::colorBegin());
+  color_end_ = qcolor_to_vector(util::settings::visualization::colorEnd());
 }
 
 void TrigramWidget::setUseBrightnessHeuristic(Qt::CheckState state) {
