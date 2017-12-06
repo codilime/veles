@@ -47,10 +47,11 @@ void OptionsDialog::show() {
   ui->hexColumnsAutoCheckBox->setCheckState(checkState);
   ui->hexColumnsSpinBox->setValue(util::settings::hexedit::columnsNumber());
   ui->hexColumnsSpinBox->setEnabled(checkState != Qt::Checked);
+
   ui->unprintablesModeDots->setChecked(
-      util::settings::hexedit::unprintablesModes() == "dots");
+      util::settings::hexedit::unprintablesMode() == "Dots");
   ui->unprintablesModeWindows1250->setChecked(
-      util::settings::hexedit::unprintablesModes() == "windows-1250");
+      util::settings::hexedit::unprintablesMode() == "Windows-1250");
 
   QWidget::show();
 }
@@ -68,9 +69,11 @@ void OptionsDialog::accept() {
   util::settings::hexedit::setColumnsNumber(ui->hexColumnsSpinBox->value());
 
   if (ui->unprintablesModeDots->isChecked())
-    util::settings::hexedit::setUnprintablesMode("dots");
+    util::settings::hexedit::setUnprintablesMode(
+        ui->unprintablesModeDots->text());
   if (ui->unprintablesModeWindows1250->isChecked())
-    util::settings::hexedit::setUnprintablesMode("windows-1250");
+    util::settings::hexedit::setUnprintablesMode(
+        ui->unprintablesModeWindows1250->text());
 
   if (restart_needed) {
     QMessageBox::about(

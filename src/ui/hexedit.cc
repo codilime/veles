@@ -32,8 +32,6 @@
 #include "util/settings/hexedit.h"
 #include "util/settings/theme.h"
 
-#include <unistd.h>
-
 using veles::util::misc::array_size;
 
 namespace veles {
@@ -130,7 +128,9 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
       cursor_pos_in_byte_(0),
       cursor_visible_(false),
       in_insert_mode_(false),
-      edit_engine_(dataModel_) {
+      edit_engine_(dataModel_),
+      windows1250_codec_(QTextCodec::codecForName("windows-1250")) {
+  // TODO Add log warning if codec is unavailable (== nullptr)
   auto font = util::settings::theme::font();
   setFont(font);
 
@@ -145,7 +145,7 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
   recalculateValues();
 
   // Initialize hex & ASCII text cache.
-  unprintablesModeString = util::settings::hexedit::unprintablesModes();
+  unprintables_mode_string_ = util::settings::hexedit::unprintablesMode();
   updateAsciiCache();
   updateHexCache();
 
@@ -471,21 +471,6 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
   });
 }
 
-void HexEdit::updateAsciiCache() {
-  for (size_t i = 0; i < array_size(ascii_text_cache_); i++) {
-    ascii_text_cache_[i].setPerformanceHint(QStaticText::ModerateCaching);
-    ascii_text_cache_[i].setText(asciiRepresentationFromByte(i));
-    ascii_text_cache_[i].setTextFormat(Qt::PlainText);
-  }
-}
-
-void HexEdit::updateHexCache() {
-  for (size_t i = 0; i < array_size(hex_text_cache_); i++) {
-    hex_text_cache_[i].setPerformanceHint(QStaticText::ModerateCaching);
-    hex_text_cache_[i].setText(hexRepresentationFromByte(i));
-    hex_text_cache_[i].setTextFormat(Qt::PlainText);
-  }
-}
 QModelIndex HexEdit::selectedChunk() {
   if (chunkSelectionModel_ == nullptr) {
     return {};
@@ -613,6 +598,15 @@ void HexEdit::saveToFile(const QString& file_name) {
   saveDataToFile(0, edit_engine_.dataSize(), file_name);
 }
 
+std::vector<QString> HexEdit::getListOfUnprintablesModes() {
+  std::vector<QString> modes;
+  modes.push_back("Dots");
+  if (windows1250_codec_ != nullptr) {
+    modes.push_back("Windows-1250");
+  }
+  return modes;
+}
+
 void HexEdit::discardChanges() {
   edit_engine_.clear();
   recalculateValues();
@@ -621,7 +615,7 @@ void HexEdit::discardChanges() {
 }
 
 void HexEdit::setUnprintablesMode(QAction* action) {
-  unprintablesModeString = action->text();
+  unprintables_mode_string_ = action->text();
   updateAsciiCache();
   viewport()->update();
 }
@@ -660,32 +654,53 @@ QString HexEdit::addressAsText(qint64 pos) {
 }
 
 QString HexEdit::asciiRepresentationFromByte(uint64_t byte_val) {
-  static QTextCodec* windows1250 = QTextCodec::codecForName("windows-1250");
+  if (byte_val > 0xff) {
+    return ".";
+  }
+  if (windows1250_codec_ != nullptr &&
+      unprintables_mode_string_.compare("Windows-1250") == 0) {
+    char a = veles::util::misc::ucharToChar(byte_val);
+    QChar unicode_repr = windows1250_codec_->toUnicode(&a, 1).at(0);
 
-  if (unprintablesModeString.compare("windows-1250") == 0) {
-    // 0x85 is NEL, 0xa0 is nbsp in unicode, but we want to display them
-    // 0x83, ..., 0x98 are undefined in used codeing
-    if (byte_val != 0x85 && byte_val != 0xa0 &&
-        (QChar(static_cast<uint>(byte_val)).isSpace() ||
-         QChar(static_cast<uint>(byte_val)).isNull() || byte_val == 0x83 ||
-         byte_val == 0x88 || byte_val == 0x90 || byte_val == 0x98)) {
-      return QChar(static_cast<uint>(' '));
+    bool is_undefined_windows1250 = byte_val == 0x81 || byte_val == 0x83 ||
+                                    byte_val == 0x88 || byte_val == 0x90 ||
+                                    byte_val == 0x98;
+
+    bool is_whitespace = unicode_repr.isSpace() || unicode_repr.isNull();
+
+    if (is_whitespace || is_undefined_windows1250) {
+      return " ";
     }
 
-    // printable ascii chars
+    // printable ASCII chars
     if (byte_val >= 0x20 && byte_val < 0x7f) {
       return QChar::fromLatin1(byte_val);
     }
 
-    // ascii-unprintable chars
-    char a = (static_cast<char>(byte_val));
-    return byte_val >= 0x7f
-               ? windows1250->toUnicode(&a, 1)
-               : QChar(static_cast<uint>(byte_val) + 0x180);  // greek
+    // unprintable ASCII chars
+    return byte_val >= 0x7f ? windows1250_codec_->toUnicode(&a, 1)
+                            : QChar(static_cast<uint>(byte_val) +
+                                    0x180);  // greek for < 0x20
   }
-  // dots fallback
+  // dots mode
   return (byte_val >= 0x20 && byte_val < 0x7f) ? QChar::fromLatin1(byte_val)
                                                : QString(".");
+}
+
+void HexEdit::updateAsciiCache() {
+  for (size_t i = 0; i < array_size(ascii_text_cache_); i++) {
+    ascii_text_cache_[i].setPerformanceHint(QStaticText::ModerateCaching);
+    ascii_text_cache_[i].setText(asciiRepresentationFromByte(i));
+    ascii_text_cache_[i].setTextFormat(Qt::PlainText);
+  }
+}
+
+void HexEdit::updateHexCache() {
+  for (size_t i = 0; i < array_size(hex_text_cache_); i++) {
+    hex_text_cache_[i].setPerformanceHint(QStaticText::ModerateCaching);
+    hex_text_cache_[i].setText(hexRepresentationFromByte(i));
+    hex_text_cache_[i].setTextFormat(Qt::PlainText);
+  }
 }
 
 QColor HexEdit::byteTextColorFromByteValue(uint64_t byte_val) {
@@ -853,7 +868,7 @@ void HexEdit::paintEvent(QPaintEvent* event) {
       auto bgc = byteBackroundColorFromPos(
           byte_idx, modified_positions[byte_idx - start_byte]);
       bool redraw_hex = invalidated_rect.intersects(hex_rect);
-      bool redraw_ascii = true;  // invalidated_rect.intersects(ascii_rect);
+      bool redraw_ascii = invalidated_rect.intersects(ascii_rect);
       if (redraw_hex && bgc.isValid()) {
         painter.fillRect(hex_rect, bgc);
       }

@@ -321,9 +321,9 @@ void HexEditWidget::initParsersMenu() {
 
 void HexEditWidget::initUnprintablesMenu() {
   unprintables_menu_.clear();
-  unprintables_menu_.addAction("dots");
-  unprintables_menu_.addSeparator();
-  unprintables_menu_.addAction("windows-1250");
+  for (auto& mode : hex_edit_->getListOfUnprintablesModes()) {
+    unprintables_menu_.addAction(mode);
+  }
 }
 
 void HexEditWidget::createSelectionInfo() {

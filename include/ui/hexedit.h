@@ -64,6 +64,7 @@ class HexEdit : public QAbstractScrollArea {
     in_insert_mode_ = in_insert_mode;
   }
   void saveToFile(const QString& file_name);
+  std::vector<QString> getListOfUnprintablesModes();
 
  public slots:
   void newBinData();
@@ -179,7 +180,8 @@ class HexEdit : public QAbstractScrollArea {
   QScopedPointer<util::encoders::TextEncoder> textEncoder_;
   util::EditEngine edit_engine_;
 
-  QString unprintablesModeString;
+  QString unprintables_mode_string_;
+  QTextCodec* windows1250_codec_;
 
   void recalculateValues();
   void initParseMenu();

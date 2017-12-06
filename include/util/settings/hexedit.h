@@ -27,8 +27,8 @@ int columnsNumber();
 void setColumnsNumber(int number);
 bool resizeColumnsToWindowWidth();
 void setResizeColumnsToWindowWidth(bool on);
-QString unprintablesModes();
-void setUnprintablesMode(QString mode);
+QString unprintablesMode();
+void setUnprintablesMode(const QString& mode);
 
 }  // namespace hexedit
 }  // namespace settings
