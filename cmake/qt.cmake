@@ -2,6 +2,7 @@
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Concurrent REQUIRED)
 set(CMAKE_AUTOMOC ON)
 set(WIN_DEPLOY_DIR "${CMAKE_CURRENT_BINARY_DIR}/windeployqt_output/")
 set(WINDEPLOYQT_ARGS "--no-translations" "--compiler-runtime" "--angle" "--dir" ${WIN_DEPLOY_DIR})
