@@ -19,6 +19,8 @@
 #include <QDialog>
 #include <QtCore>
 
+#include "ui/color_picker_button.h"
+
 namespace Ui {
 class OptionsDialog;
 }
@@ -37,6 +39,10 @@ class OptionsDialog : public QDialog {
 
  public slots:
   void accept() override;
+
+ private:
+  ColorPickerButton* color_3d_begin_button_;
+  ColorPickerButton* color_3d_end_button_;
 };
 
 }  // namespace ui

@@ -16,6 +16,8 @@
  */
 #pragma once
 
+#include <QColor>
+
 namespace veles {
 namespace util {
 namespace settings {
@@ -29,6 +31,12 @@ void setAutoBrightness(bool autoBrightness);
 
 int brightness();
 void setBrightness(int brightness);
+
+QColor colorBegin();
+void setColorBegin(const QColor& color);
+
+QColor colorEnd();
+void setColorEnd(const QColor& color);
 
 }  // namespace visualization
 }  // namespace settings

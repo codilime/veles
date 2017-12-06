@@ -52,6 +52,24 @@ void setBrightness(int brightness) {
   QSettings().setValue("visualization.brightness", brightness);
 }
 
+QColor colorBegin() {
+  auto v = QSettings().value("visualization.color_begin", QColor(255, 127, 0));
+  return v.value<QColor>();
+}
+
+void setColorBegin(const QColor& color) {
+  QSettings().setValue("visualization.color_begin", color);
+}
+
+QColor colorEnd() {
+  auto v = QSettings().value("visualization.color_end", QColor(0, 127, 255));
+  return v.value<QColor>();
+}
+
+void setColorEnd(const QColor& color) {
+  QSettings().setValue("visualization.color_end", color);
+}
+
 }  // namespace visualization
 }  // namespace settings
 }  // namespace util
