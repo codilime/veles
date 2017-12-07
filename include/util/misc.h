@@ -26,6 +26,8 @@ inline size_t array_size(T (&/*arr*/)[SIZE]) {
   return SIZE;
 }
 
+char ucharToChar(unsigned char value);
+
 }  // namespace misc
 }  // namespace util
 }  // namespace veles

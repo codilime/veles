@@ -16,6 +16,9 @@
  */
 #pragma once
 
+#include <ui/hexedit.h>
+#include <QString>
+
 namespace veles {
 namespace util {
 namespace settings {
@@ -25,6 +28,8 @@ int columnsNumber();
 void setColumnsNumber(int number);
 bool resizeColumnsToWindowWidth();
 void setResizeColumnsToWindowWidth(bool on);
+veles::ui::HexEdit::UnprintablesMode unprintablesMode();
+void setUnprintablesMode(veles::ui::HexEdit::UnprintablesMode);
 
 }  // namespace hexedit
 }  // namespace settings

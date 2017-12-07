@@ -92,6 +92,7 @@ class HexEditWidget : public View {
   void createActions();
   void createToolBars();
   void initParsersMenu();
+  void initUnprintablesMenu();
   void createSelectionInfo();
 
   MainWindowWithDetachableDockWidgets* main_window_;
@@ -127,6 +128,7 @@ class HexEditWidget : public View {
 
   QStringList parsers_ids_;
   QMenu parsers_menu_;
+  QMenu unprintables_menu_;
   QLabel* selection_label_;
 };
 

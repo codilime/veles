@@ -24,6 +24,7 @@
 #include <QMouseEvent>
 #include <QStaticText>
 #include <QStringList>
+#include <QTextCodec>
 
 #include "ui/createchunkdialog.h"
 #include "ui/fileblobmodel.h"
@@ -39,6 +40,11 @@ namespace ui {
 class HexEdit : public QAbstractScrollArea {
   Q_OBJECT
  public:
+  enum class UnprintablesMode {
+    Dots,
+    Windows_1250,
+  };  // do not change the order as settings may invalidate.
+
   explicit HexEdit(FileBlobModel* dataModel,
                    QItemSelectionModel* selectionModel = nullptr,
                    QWidget* parent = nullptr);
@@ -63,6 +69,8 @@ class HexEdit : public QAbstractScrollArea {
     in_insert_mode_ = in_insert_mode;
   }
   void saveToFile(const QString& file_name);
+  QString unprintablesModeToString(UnprintablesMode mode);
+  void setUnprintablesMode(UnprintablesMode mode);
 
  public slots:
   void newBinData();
@@ -177,6 +185,9 @@ class HexEdit : public QAbstractScrollArea {
   QScopedPointer<util::encoders::TextEncoder> textEncoder_;
   util::EditEngine edit_engine_;
 
+  UnprintablesMode unprintables_mode_;
+  QTextCodec* windows1250_codec_;
+
   void recalculateValues();
   void initParseMenu();
   void adjustBytesPerRowToWindowSize();
@@ -188,7 +199,10 @@ class HexEdit : public QAbstractScrollArea {
   WindowArea pointToWindowArea(QPoint pos);
   QString addressAsText(qint64 pos);
   QString hexRepresentationFromByte(uint64_t byte_val);
-  static QString asciiRepresentationFromByte(uint64_t byte_val);
+
+  QString asciiRepresentationFromByte(uint64_t byte_val);
+  void updateAsciiCache();
+  void updateHexCache();
 
   static QColor byteTextColorFromByteValue(uint64_t byte_val);
   QColor byteBackroundColorFromPos(qint64 pos, bool modified);
