@@ -48,6 +48,13 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")  # For clang-tidy
   set(ADDITIONAL_LINK_LIBRARIES "pthread")
 endif()
+
+# FreeBSD support
+if(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
+  # Link BSD threading.
+  list(APPEND ADDITIONAL_LINK_LIBRARIES "thr")
+endif()
+
 if(MSVC)
   # Uncomment this line to use instrumentation in Visual Studio.
   # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /Profile")
