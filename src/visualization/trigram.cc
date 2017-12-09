@@ -679,10 +679,10 @@ void TrigramWidget::paintGLImpl() {
   texture_->release();
   program_.release();
 
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   if (show_axes_) {
     paintRF(mvp);
   }
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDepthFunc(GL_LESS);
   if (show_labels_) {
     paintLabels(mp, m);
@@ -840,6 +840,7 @@ void TrigramWidget::paintRF(const QMatrix4x4& mvp) {
   rf_program_.setUniformValue("mvp", mvp);
   rf_program_.setUniformValue("c_cyl", c_cyl_);
   rf_program_.setUniformValue("c_sph", c_sph_);
+  rf_program_.setUniformValue("c_viewport_size", QVector2D{static_cast<float>(width_), static_cast<float>(height_)});
   glDrawArrays(GL_LINES, 0, 6);
   rf_program_.release();
   rf_vao_.release();
@@ -851,6 +852,8 @@ void TrigramWidget::initRF() {
                                       ":/trigram/coords.glsl");
   rf_program_.addShaderFromSourceFile(QOpenGLShader::Vertex,
                                       ":/trigram/rf_vshader.glsl");
+  rf_program_.addShaderFromSourceFile(QOpenGLShader::Geometry,
+                                      ":/trigram/rf_gshader.glsl");
   rf_program_.addShaderFromSourceFile(QOpenGLShader::Fragment,
                                       ":/trigram/rf_fshader.glsl");
   rf_program_.link();

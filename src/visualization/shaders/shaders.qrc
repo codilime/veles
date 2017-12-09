@@ -14,6 +14,7 @@
 		<file>trigram/label_vshader.glsl</file>
 		<file>trigram/label_fshader.glsl</file>
 		<file>trigram/rf_vshader.glsl</file>
+		<file>trigram/rf_gshader.glsl</file>
 		<file>trigram/rf_fshader.glsl</file>
 	</qresource>
 </RCC>
