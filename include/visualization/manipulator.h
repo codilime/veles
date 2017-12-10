@@ -87,7 +87,7 @@ class TrackballManipulator : public Manipulator {
   QQuaternion rotation_;
 
   bool lmb_drag_;
-  QPoint prev_pos_;
+  QPoint saved_cursor_pos_;
 
   float factor_;
   float time_;

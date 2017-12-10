@@ -55,7 +55,6 @@ TrackballManipulator::TrackballManipulator(QObject* parent)
     : Manipulator(parent) {
   rotation_ = QQuaternion();
   lmb_drag_ = false;
-  prev_pos_ = QPoint();
 
   init_position_ = QVector3D();
   factor_ = 1.f;
@@ -107,26 +106,32 @@ bool TrackballManipulator::eventFilter(QObject* watched, QEvent* event) {
 }
 
 bool TrackballManipulator::mouseEvent(QWidget* widget, QMouseEvent* event) {
+  auto widget_center = widget->geometry().bottomRight() / 2;
   if (event->type() == QEvent::MouseButtonPress &&
       event->button() == Qt::LeftButton) {
     lmb_drag_ = true;
-    prev_pos_ = event->pos();
+    widget->setCursor(Qt::BlankCursor);
+    saved_cursor_pos_ = QCursor::pos();
+    QCursor::setPos(widget->mapToGlobal(widget_center));
   } else if (event->type() == QEvent::MouseButtonRelease &&
              event->button() == Qt::LeftButton) {
     lmb_drag_ = false;
+    widget->unsetCursor();
+    QCursor::setPos(saved_cursor_pos_);
   } else if (event->type() == QEvent::MouseMove) {
     if ((event->buttons() & Qt::LeftButton) != 0) {
       if (!lmb_drag_) {
         lmb_drag_ = true;
-        prev_pos_ = event->pos();
       } else {
-        QPoint delta = event->pos() - prev_pos_;
-        rotation_ = QQuaternion::fromAxisAndAngle(
-                        delta.y(), delta.x(), 0.f,
-                        280.f * len(delta) /
-                            std::min(widget->width(), widget->height())) *
-                    rotation_;
-        prev_pos_ = event->pos();
+        QPoint delta = event->pos() - widget_center;
+        if (delta.x() != 0 && delta.y() != 0) {
+          rotation_ = QQuaternion::fromAxisAndAngle(
+                          delta.y(), delta.x(), 0.f,
+                          280.f * len(delta) /
+                              std::min(widget->width(), widget->height())) *
+                      rotation_;
+          QCursor::setPos(widget->mapToGlobal(widget_center));
+        }
       }
     } else {
       lmb_drag_ = false;

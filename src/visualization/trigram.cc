@@ -402,7 +402,8 @@ void TrigramWidget::autoSetBrightness() {
 }
 
 bool TrigramWidget::event(QEvent* event) {
-  if (event->type() == QEvent::MouseMove) {
+  if (event->type() == QEvent::MouseMove ||
+      event->type() == QEvent::MouseButtonPress) {
     auto* mouse_event = static_cast<QMouseEvent*>(event);
     if ((mouse_event->buttons() & Qt::LeftButton) != 0 &&
         current_manipulator_ == spin_manipulator_) {
