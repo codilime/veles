@@ -130,7 +130,7 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
       in_insert_mode_(false),
       edit_engine_(dataModel_),
       windows1250_codec_(QTextCodec::codecForName("windows-1250")) {
-  // TODO Add log warning if codec is unavailable (== nullptr)
+  // TODO Log warning if codec is unavailable (== nullptr)
   auto font = util::settings::theme::font();
   setFont(font);
 
@@ -600,7 +600,7 @@ void HexEdit::saveToFile(const QString& file_name) {
 
 QString HexEdit::unprintablesModeToString(UnprintablesMode mode) {
   switch (mode) {
-    case UnprintablesMode::Windows_1250:
+    case UnprintablesMode::Windows1250:
       return "Windows-1250";
     case UnprintablesMode::Dots:
     default:
@@ -609,12 +609,12 @@ QString HexEdit::unprintablesModeToString(UnprintablesMode mode) {
 }
 
 void HexEdit::setUnprintablesMode(UnprintablesMode mode) {
-  unprintables_mode_ = mode;
-  if (mode == UnprintablesMode::Windows_1250 && windows1250_codec_ == nullptr) {
-    QMessageBox::warning(this, "Error", "Windows-1250 is unavailable.",
+  if (mode == UnprintablesMode::Windows1250 && windows1250_codec_ == nullptr) {
+    QMessageBox::warning(this, "Error", "Windows-1250 encoding is unavailable.",
                          QMessageBox::Ok);
     return;
   }
+  unprintables_mode_ = mode;
   updateAsciiCache();
   viewport()->update();
 }
@@ -664,17 +664,20 @@ QString HexEdit::asciiRepresentationFromByte(uint64_t byte_val) {
     return ".";
   }
   if (windows1250_codec_ != nullptr &&
-      unprintables_mode_ == UnprintablesMode::Windows_1250) {
-    char a = veles::util::misc::ucharToChar(byte_val);
-    QChar unicode_repr = windows1250_codec_->toUnicode(&a, 1).at(0);
-
+      unprintables_mode_ == UnprintablesMode::Windows1250) {
     bool is_undefined_windows1250 = byte_val == 0x81 || byte_val == 0x83 ||
                                     byte_val == 0x88 || byte_val == 0x90 ||
                                     byte_val == 0x98;
 
-    bool is_whitespace = unicode_repr.isSpace() || unicode_repr.isNull();
+    if (is_undefined_windows1250) {
+      return " ";
+    }
 
-    if (is_whitespace || is_undefined_windows1250) {
+    char a = veles::util::misc::ucharToChar(byte_val);
+    QChar unicode_repr = windows1250_codec_->toUnicode(&a, 1).at(0);
+
+    // 0x7f decodes to DEL in CP1250 which is unprintable
+    if (unicode_repr.isSpace() || unicode_repr.isNull() || byte_val == 0x7f) {
       return " ";
     }
 
@@ -684,9 +687,9 @@ QString HexEdit::asciiRepresentationFromByte(uint64_t byte_val) {
     }
 
     // unprintable ASCII chars
-    return byte_val >= 0x7f ? windows1250_codec_->toUnicode(&a, 1)
-                            : QChar(static_cast<uint>(byte_val) +
-                                    0x180);  // greek for < 0x20
+    return byte_val > 0x7f ? windows1250_codec_->toUnicode(&a, 1)
+                           : QChar(static_cast<uint>(byte_val) +
+                                   0x180);  // greek for < 0x20
   }
   // dots mode
   return (byte_val >= 0x20 && byte_val < 0x7f) ? QChar::fromLatin1(byte_val)

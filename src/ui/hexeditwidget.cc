@@ -321,13 +321,13 @@ void HexEditWidget::initUnprintablesMenu() {
   unprintables_menu_.clear();
 
   HexEdit::UnprintablesMode modes[] = {HexEdit::UnprintablesMode::Dots,
-                                       HexEdit::UnprintablesMode::Windows_1250};
+                                       HexEdit::UnprintablesMode::Windows1250};
 
   for (auto mode : modes) {
     QAction* action = new QAction(hex_edit_->unprintablesModeToString(mode),
                                   &unprintables_menu_);
     connect(action, &QAction::triggered,
-            [=]() { this->hex_edit_->setUnprintablesMode(mode); });
+            [this, mode]() { this->hex_edit_->setUnprintablesMode(mode); });
     unprintables_menu_.addAction(action);
   }
 }

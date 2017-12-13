@@ -16,8 +16,9 @@
  */
 #pragma once
 
-#include <ui/hexedit.h>
 #include <QString>
+
+#include "ui/hexedit.h"
 
 namespace veles {
 namespace util {

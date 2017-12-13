@@ -14,8 +14,10 @@
  * limitations under the License.
  *
  */
-#include "util/misc.h"
+
 #include <cstdint>
+
+#include "util/misc.h"
 
 namespace veles {
 namespace util {

@@ -41,9 +41,10 @@ class HexEdit : public QAbstractScrollArea {
   Q_OBJECT
  public:
   enum class UnprintablesMode {
+    // do not change the order as settings may invalidate.
     Dots,
-    Windows_1250,
-  };  // do not change the order as settings may invalidate.
+    Windows1250,
+  };
 
   explicit HexEdit(FileBlobModel* dataModel,
                    QItemSelectionModel* selectionModel = nullptr,
@@ -69,7 +70,7 @@ class HexEdit : public QAbstractScrollArea {
     in_insert_mode_ = in_insert_mode;
   }
   void saveToFile(const QString& file_name);
-  QString unprintablesModeToString(UnprintablesMode mode);
+  static QString unprintablesModeToString(UnprintablesMode mode);
   void setUnprintablesMode(UnprintablesMode mode);
 
  public slots:
