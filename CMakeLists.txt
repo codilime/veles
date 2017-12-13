@@ -360,6 +360,7 @@ add_executable(main_ui
     ${INCLUDE_DIR}/ui/veles_mainwindow.h
     ${INCLUDE_DIR}/ui/connectionmanager.h
     ${INCLUDE_DIR}/ui/color_picker_button.h
+    ${INCLUDE_DIR}/ui/disasm/disasmwidget.h
     ${INCLUDE_DIR}/ui/dockwidget.h
     ${INCLUDE_DIR}/ui/dockwidget_native.h
     ${INCLUDE_DIR}/ui/hexeditwidget.h
@@ -388,6 +389,7 @@ add_executable(main_ui
     ${SRC_DIR}/ui/veles_mainwindow.cc
     ${SRC_DIR}/ui/connectionmanager.cc
     ${SRC_DIR}/ui/color_picker_button.cc
+    ${SRC_DIR}/ui/disasm/disasmwidget.cc
     ${SRC_DIR}/ui/dockwidget.cc
     ${SRC_DIR}/ui/dockwidget_native.cc
     ${SRC_DIR}/ui/hexeditwidget.cc
