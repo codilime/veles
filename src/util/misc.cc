@@ -30,11 +30,11 @@ namespace misc {
 char ucharToChar(unsigned char value) {
   if (value < 0x80) {
     return static_cast<char>(value);
-  } else {
-    int64_t int_value = static_cast<int64_t>(value);
-    int_value -= 0x100;
-    return static_cast<char>(int_value);
   }
+
+  auto int_value = static_cast<int64_t>(value);
+  int_value -= 0x100;
+  return static_cast<char>(int_value);
 }
 
 }  // namespace misc

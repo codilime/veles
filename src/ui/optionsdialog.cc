@@ -71,12 +71,14 @@ void OptionsDialog::accept() {
       ui->hexColumnsAutoCheckBox->checkState() == Qt::Checked);
   util::settings::hexedit::setColumnsNumber(ui->hexColumnsSpinBox->value());
 
-  if (ui->unprintablesModeDots->isChecked())
+  if (ui->unprintablesModeDots->isChecked()) {
     util::settings::hexedit::setUnprintablesMode(
         veles::ui::HexEdit::UnprintablesMode::Dots);
-  if (ui->unprintablesModeWindows1250->isChecked())
+  }
+  if (ui->unprintablesModeWindows1250->isChecked()) {
     util::settings::hexedit::setUnprintablesMode(
         veles::ui::HexEdit::UnprintablesMode::Windows1250);
+  }
 
   if (restart_needed) {
     QMessageBox::about(

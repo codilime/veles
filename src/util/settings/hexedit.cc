@@ -46,7 +46,7 @@ void setResizeColumnsToWindowWidth(bool on) {
 veles::ui::HexEdit::UnprintablesMode unprintablesMode() {
   QSettings settings;
 
-  int default_value =
+  auto default_value =
       static_cast<int>(veles::ui::HexEdit::UnprintablesMode::Dots);
   return static_cast<veles::ui::HexEdit::UnprintablesMode>(
       settings.value("hexedit.unprintablesMode", default_value).toInt());

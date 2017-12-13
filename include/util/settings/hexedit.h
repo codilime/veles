@@ -30,7 +30,7 @@ void setColumnsNumber(int number);
 bool resizeColumnsToWindowWidth();
 void setResizeColumnsToWindowWidth(bool on);
 veles::ui::HexEdit::UnprintablesMode unprintablesMode();
-void setUnprintablesMode(veles::ui::HexEdit::UnprintablesMode);
+void setUnprintablesMode(veles::ui::HexEdit::UnprintablesMode mode);
 
 }  // namespace hexedit
 }  // namespace settings

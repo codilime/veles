@@ -130,7 +130,7 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
       in_insert_mode_(false),
       edit_engine_(dataModel_),
       windows1250_codec_(QTextCodec::codecForName("windows-1250")) {
-  // TODO Log warning if codec is unavailable (== nullptr)
+  // TODO(mkow) Log warning if codec is unavailable (== nullptr)
   auto font = util::settings::theme::font();
   setFont(font);
 
