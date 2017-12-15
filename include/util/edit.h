@@ -61,16 +61,16 @@ class EditEngine {
   void removeBytes(size_t pos, size_t size, bool add_to_history = true);
   /**
    * Updates the EditEngine after remapping request from server.
-   * It can occur e.g. when someone from the other client do an insert
-   * or a removal.
+   * It can occur e.g. when other client do an insert or a removal.
    * Works in pessimistic time O(numberOfLocalEdits).
    */
   void remapOrigin(size_t origin_pos, size_t old_size, size_t new_size);
 
-  /** Return whether there is any change to undo. */
+  /** Returns whether there is any change to undo. */
   bool hasUndo() const { return !edit_stack_.isEmpty(); }
-  /** Undo last change and returns first byte changed by this operation. */
-  // TODO(catsuryuu): `undo` works only with `modifyBytes`
+  /** Reverts last change and returns first byte changed by this operation. */
+  // TODO(catsuryuu): `undo` works only with `modifyBytes`.
+  // `insertBytes`, `removeBytes` and `remapOrigin` can break the edit stack.
   size_t undo();
 
   bool hasChanges() const { return has_changes_; }
