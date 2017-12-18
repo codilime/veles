@@ -1,0 +1,382 @@
+#!/usr/bin/env python3
+
+from veles.plugins.java import ns
+from veles.data.bindata import BinData
+from veles.defs.symbol import Symbol
+from veles.parser.parser import *
+
+for struct in ns.structs.values():
+    print(f'{struct.name}:')
+    for field in struct.fields.values():
+        print(f'\t{field.name}: {field}')
+
+import sys
+
+
+def sext(val, bit):
+    if val & (1 << bit):
+        return val - (2 << bit)
+    return val
+
+
+class Indenter:
+    def __init__(self, printer):
+        self.printer = printer
+
+    def __enter__(self):
+        self.printer.ilevel += 1
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.printer.ilevel -= 1
+
+
+class Printer:
+    def __init__(self):
+        self.ilevel = 0
+        self.indent = Indenter(self)
+
+    def __call__(self, pos, str):
+        indent = '    ' * self.ilevel
+        if pos is None:
+            print('--------{} {}'.format(indent, str))
+        else:
+            print('{:08x}{} {}'.format(pos, indent, str))
+
+
+class ParsedStruct:
+    def __init__(self, data, pos, struct, name, params):
+        self.data = data
+        self.pos_start = pos
+        self.pos_end = None
+        self.struct = struct
+        self.name = name
+        self.entries = []
+        self.fields = {}
+        self.params = params
+
+    def print(self, printer):
+        printer(self.pos_start, '{} = struct {} {{'.format(self.name, self.struct.name))
+        with printer.indent:
+            for entry in self.entries:
+                entry.print(printer)
+        printer(self.pos_end, '}')
+
+    def get_field_val(self, field):
+        pfield = self.fields[field]
+        if isinstance(pfield, (ParsedFieldInt, ParsedComputedInt)):
+            return pfield.value
+        else:
+            # XXX
+            return pfield.raw_value[0]
+
+    def get_param_val(self, param):
+        return self.params[param]
+
+
+class ParsedLoopState:
+    def __init__(self, parent, vars):
+        self.parent = parent
+        self.vars = vars
+        self.last = None
+
+    def get_field_val(self, field):
+        return self.parent.get_field_val(field)
+
+    def get_param_val(self, param):
+        return self.parent.get_param_val(param)
+
+    def get_loop_var_val(self, var):
+        return self.vars[var]
+
+    def get_last(self):
+        return self.last
+
+
+class ParsedChildArray:
+    def __init__(self, data, pos_start, field, num):
+        self.data = data
+        self.pos_start = pos_start
+        self.pos_end = None
+        self.field = field
+        self.num = num
+        self.children = []
+        self.states = []
+
+    def print(self, printer):
+        printer(self.pos_start, 'struct {}[] {} = {{'.format(self.field.type.struct.name, self.field.name))
+        with printer.indent:
+            for i, child in enumerate(self.children):
+                state = self.states[i]
+                for var, val in state.vars.items():
+                    printer(child.pos_start, 'loop-var {} = {}'.format(var.name, val))
+                child.print(printer)
+            state = self.states[-1]
+            for var, val in state.vars.items():
+                printer(self.pos_end, 'loop-var {} = {}'.format(var.name, val))
+        printer(self.pos_end, '}')
+
+
+class ParsedField:
+    def __init__(
+            self,
+            data,
+            pos_start,
+            pos_end,
+            field,
+            repacker,
+            num,
+            raw_value):
+        self.data = data
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+        self.field = field
+        self.repacker = repacker
+        self.num = num
+        self.raw_value = raw_value
+
+
+class ParsedFieldBindata(ParsedField):
+    def __init__(self,
+            data, pos_start, pos_end, field,
+            repacker, num, raw_value,
+            display):
+        super().__init__(data, pos_start, pos_end, field,
+                repacker, num, raw_value)
+        self.display = display
+
+    def print(self, printer):
+        if isinstance(self.display, ParserBinDisplayRaw):
+            printer(self.pos_start, 'raw {} = {}'.format(self.field.name, self.raw_value))
+        elif isinstance(self.display, ParserBinDisplayString):
+            value = '"'
+            for c in self.raw_value:
+                if c in {ord('\"'), ord('\\')}:
+                    value += '\\' + c
+                elif c in range(0x20, 0x7f):
+                    value += chr(c)
+                elif c == ord('\n'):
+                    value += '\\n'
+                elif c == ord('\t'):
+                    value += '\\t'
+                else:
+                    value += '\\x{:02x}'.format(c)
+            value += '"'
+            printer(self.pos_start, 'string {} = {} [{}]'.format(self.field.name, value, self.raw_value))
+        elif isinstance(self.display, ParserBinDisplayUnsigned):
+            value = ', '.join(str(x) for x in self.raw_value)
+            printer(self.pos_start, 'uint[] {} = {} [{}]'.format(self.field.name, value, self.raw_value))
+        elif isinstance(self.display, ParserBinDisplaySigned):
+            value = ', '.join(str(sext(x, self.raw_value.width - 1)) for x in self.raw_value)
+            printer(self.pos_start, 'sint[] {} = {} [{}]'.format(self.field.name, value, self.raw_value))
+        else:
+            print(self.display)
+            assert 0
+
+
+class ParsedFieldInt(ParsedField):
+    def __init__(self,
+            data, pos_start, pos_end, field,
+            repacker, num, raw_value,
+            value):
+        super().__init__(data, pos_start, pos_end, field,
+                repacker, num, raw_value)
+        self.value = value
+
+    def print(self, printer):
+        printer(self.pos_start, 'int {} = {} [{}]'.format(self.field.name, self.value, self.raw_value))
+
+
+class ParsedFieldIntArray(ParsedField):
+    def __init__(self,
+            data, pos_start, pos_end, field,
+            repacker, num, raw_value,
+            values):
+        super().__init__(data, pos_start, pos_end, field,
+                repacker, num, raw_value)
+        self.values = values
+
+    def print(self, printer):
+        printer(self.pos_start, 'int[] {} = {} [{}]'.format(self.field.name, ', '.join(str(x) for x in self.values), self.raw_value))
+
+
+class ParsedComputedInt:
+    def __init__(self, data, pos, field, value):
+        self.data = data
+        self.pos = pos
+        self.field = field
+        self.value = value
+
+    def print(self, printer):
+        printer(self.pos, 'int {} = {} [computed]'.format(self.field.name, self.value))
+
+
+with open(sys.argv[1], 'rb') as f:
+    d = f.read()
+    d = BinData(8, d)
+
+
+def eval_expr(env, expr):
+    if isinstance(expr, ParserExprConstInt):
+        return expr.value
+    if isinstance(expr, ParserExprSub):
+        return eval_expr(env, expr.e1) - eval_expr(env, expr.e2)
+    if isinstance(expr, ParserExprAdd):
+        return eval_expr(env, expr.e1) + eval_expr(env, expr.e2)
+    if isinstance(expr, ParserExprEq):
+        return eval_expr(env, expr.e1) == eval_expr(env, expr.e2)
+    if isinstance(expr, ParserExprField):
+        return env.get_field_val(expr.field)
+    if isinstance(expr, ParserExprLoopVar):
+        return env.get_loop_var_val(expr.var)
+    if isinstance(expr, ParserExprParam):
+        return env.get_param_val(expr.param)
+    if isinstance(expr, ParserExprGetField):
+        sub = eval_expr(env, expr.expr)
+        return sub.get_field_val(expr.field)
+    if isinstance(expr, ParserExprLast):
+        return env.get_last()
+    print(expr)
+    assert 0
+
+def eval_pred(struct, pred, expr):
+    if isinstance(pred, ParserPredEq):
+        val = eval_expr(struct, pred.val)
+        return val == expr
+    print(pred)
+    assert 0
+
+
+def parse_struct(data, pos, struct, name, params):
+    res = ParsedStruct(data, pos, struct, name, params)
+    res.pos_end = eval_ops(res, data, pos, struct.ops)
+    return res
+
+def eval_ops(res, data, pos, ops):
+    for op in ops:
+        if isinstance(op, ParserOpField):
+            if op.field in res.fields:
+                raise ValueError('duplicate field {}'.format(op.field))
+            num = eval_expr(res, op.num)
+            repacker = op.repacker
+            size = repacker.repack_size(num)
+            pos_end = pos + size
+            if pos_end > len(data):
+                # XXX
+                return None
+            raw_value = repacker.repack(data, pos, num)
+            if isinstance(op.interp, ParserFieldInterpBindata):
+                field = ParsedFieldBindata(
+                    data,
+                    pos,
+                    pos_end,
+                    op.field,
+                    repacker,
+                    num,
+                    raw_value,
+                    op.interp.display,
+                )
+            elif isinstance(op.interp, ParserFieldInterpInt):
+                value = raw_value[0]
+                if op.interp.signed:
+                    if value & (1 << (raw_value.width - 1)):
+                        value -= 1 << raw_value.width
+                field = ParsedFieldInt(
+                    data,
+                    pos,
+                    pos_end,
+                    op.field,
+                    repacker,
+                    num,
+                    raw_value,
+                    value,
+                )
+            elif isinstance(op.interp, ParserFieldInterpIntArray):
+                values = []
+                for value in raw_value:
+                    if op.interp.signed:
+                        if value & (1 << (raw_value.width - 1)):
+                            value -= 1 << raw_value.width
+                    values.append(value)
+                field = ParsedFieldIntArray(
+                    data,
+                    pos,
+                    pos_end,
+                    op.field,
+                    repacker,
+                    num,
+                    raw_value,
+                    values,
+                )
+            else:
+                assert 0
+            pos = pos_end
+            res.fields[op.field] = field
+            res.entries.append(field)
+        elif isinstance(op, ParserOpCompute):
+            if op.field in res.fields:
+                raise ValueError('duplicate field {}'.format(op.field))
+            value = eval_expr(res, op.expr)
+            field = ParsedComputedInt(
+                data,
+                pos,
+                op.field,
+                value,
+            )
+            res.fields[op.field] = field
+            res.entries.append(field)
+        elif isinstance(op, (ParserOpChildLoop, ParserOpChildArray)):
+            is_array = isinstance(op, ParserOpChildArray)
+            if is_array:
+                num = eval_expr(res, op.num)
+            array = ParsedChildArray(data, pos, op.field, num)
+            res.entries.append(array)
+            init_vars = {
+                var: eval_expr(res, var.initial)
+                for var in op.vars
+            }
+            state = ParsedLoopState(res, init_vars)
+            array.states.append(state)
+            idx = 0
+            while True:
+                if is_array:
+                    end = idx == num
+                else:
+                    end = eval_expr(state, op.end)
+                if end:
+                    break
+                params = {}
+                for param, expr in op.params:
+                    params[param] = eval_expr(state, expr)
+                sub = parse_struct(data, pos, op.field.type.struct, '[{}]'.format(idx), params)
+                state.last = sub
+                array.children.append(sub)
+                if sub.pos_end is None:
+                    return None
+                pos = sub.pos_end
+                next_vars = {
+                    var: eval_expr(state, var.next)
+                    for var in op.vars
+                }
+                state = ParsedLoopState(res, next_vars)
+                idx += 1
+                array.states.append(state)
+            array.pos_end = pos
+        elif isinstance(op, ParserOpMatch):
+            expr = eval_expr(res, op.expr)
+            for case in op.cases:
+                if eval_pred(res, case.pred, expr):
+                    pos = eval_ops(res, data, pos, case.ops)
+                    break
+            else:
+                print('no case {}'.format(expr))
+                return None
+        else:
+            print(op)
+            assert 0
+    return pos
+
+s = parse_struct(d, 0, ns.structs['class_file'], 'root', {})
+
+print(s.pos_end, len(d))
+
+s.print(Printer())
