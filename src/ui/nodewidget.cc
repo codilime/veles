@@ -50,7 +50,7 @@ NodeWidget::NodeWidget(
     MainWindowWithDetachableDockWidgets* main_window,
     const QSharedPointer<FileBlobModel>& data_model,
     const QSharedPointer<QItemSelectionModel>& selection_model)
-    : View("Hex editor", ":/images/show_hex_edit.png"),
+    : IconAwareView("Hex editor", ":/images/show_hex_edit.png"),
       main_window_(main_window),
       minimap_(nullptr),
       minimap_dock_(nullptr),

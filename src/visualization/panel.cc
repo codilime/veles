@@ -47,7 +47,7 @@ const std::map<QString, VisualizationPanel::ESampler>
 VisualizationPanel::VisualizationPanel(
     ui::MainWindowWithDetachableDockWidgets* main_window,
     const QSharedPointer<ui::FileBlobModel>& data_model, QWidget* parent)
-    : veles::ui::View("Visualization", ":/images/trigram_icon.png"),
+    : veles::ui::IconAwareView("Visualization", ":/images/trigram_icon.png"),
       sampler_type_(k_default_sampler),
       visualization_type_(k_default_visualization),
       sample_size_(1024 * 1024),
@@ -417,7 +417,7 @@ void VisualizationPanel::initOptionsPanel() {
       Qt::WidgetWithChildrenShortcut);
 
   connect(open_hex, &QAction::triggered,
-          [this]() { createHexEditor(main_window_, data_model_); });
+          [this]() { main_window_->createHexEditTab(data_model_); });
   addAction(open_hex);
 
   QAction* open_visualization =

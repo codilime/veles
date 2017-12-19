@@ -36,7 +36,7 @@
 namespace veles {
 namespace ui {
 
-class NodeWidget : public View {
+class NodeWidget : public IconAwareView {
   Q_OBJECT
 
  public:

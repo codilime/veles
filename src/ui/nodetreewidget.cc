@@ -54,7 +54,7 @@ NodeTreeWidget::NodeTreeWidget(
     MainWindowWithDetachableDockWidgets* main_window,
     const QSharedPointer<FileBlobModel>& data_model,
     const QSharedPointer<QItemSelectionModel>& selection_model)
-    : View("Node tree", ":/images/show_node_tree.png"),
+    : IconAwareView("Node tree", ":/images/show_node_tree.png"),
       main_window_(main_window),
       data_model_(data_model),
       selection_model_(selection_model) {

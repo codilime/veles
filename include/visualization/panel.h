@@ -37,7 +37,7 @@
 namespace veles {
 namespace visualization {
 
-class VisualizationPanel : public ui::View {
+class VisualizationPanel : public ui::IconAwareView {
   Q_OBJECT
 
  public:

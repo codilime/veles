@@ -611,17 +611,17 @@ bool TabBarEventFilter::mouseButtonDblClick(QTabBar* tab_bar,
 /* View */
 /*****************************************************************************/
 
-std::map<QString, QIcon*> View::icons_;
+std::map<QString, QIcon*> IconAwareView::icons_;
 
-View::View(const QString& category, const QString& path) {
+IconAwareView::IconAwareView(const QString& category, const QString& path) {
   getOrCreateIcon(category, path);
-  connect(qApp, &QGuiApplication::lastWindowClosed, &View::deleteIcons);
+  connect(qApp, &QGuiApplication::lastWindowClosed, &IconAwareView::deleteIcons);
   setFocusPolicy(Qt::StrongFocus);
 }
 
-View::~View() {}
+IconAwareView::~IconAwareView() {}
 
-void View::getOrCreateIcon(const QString& category, const QString& icon_path) {
+void IconAwareView::getOrCreateIcon(const QString& category, const QString& icon_path) {
   QIcon* icon = nullptr;
   auto iter = icons_.find(category);
   if (iter == icons_.end()) {
@@ -632,14 +632,14 @@ void View::getOrCreateIcon(const QString& category, const QString& icon_path) {
   setWindowIcon(*icon);
 }
 
-void View::deleteIcons() {
+void IconAwareView::deleteIcons() {
   for (auto icon : icons_) {
     delete icon.second;
   }
   icons_.clear();
 }
 
-void View::createVisualization(
+void IconAwareView::createVisualization(
     MainWindowWithDetachableDockWidgets* main_window,
     const QSharedPointer<FileBlobModel>& data_model) {
   auto* panel = new visualization::VisualizationPanel(main_window, data_model);
@@ -660,11 +660,6 @@ void View::createVisualization(
   //  if (sibling == nullptr) {
   //    main_window->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
   //  }
-}
-
-void View::createHexEditor(MainWindowWithDetachableDockWidgets* main_window,
-                           const QSharedPointer<FileBlobModel>& data_model) {
-  static_cast<VelesMainWindow*>(main_window)->createHexEditTab(data_model);
 }
 
 /*****************************************************************************/
@@ -1333,6 +1328,21 @@ bool MainWindowWithDetachableDockWidgets::splitDockWidgetImpl(
   }
 
   return !main_window->tabifiedDockWidgets(first).contains(second);
+}
+
+void MainWindowWithDetachableDockWidgets::createHexEditTab(const QSharedPointer<FileBlobModel>& data_model) {
+  QSharedPointer<QItemSelectionModel> selection_model(
+      new QItemSelectionModel(data_model.data()));
+
+  auto* node_widget = new NodeWidget(this, data_model, selection_model);
+  addTab(node_widget, data_model->path().join(" : "), nullptr);
+}
+
+void MainWindowWithDetachableDockWidgets::createHexEditTab(const QString& fileName,
+                                       const dbif::ObjectHandle& fileBlob) {
+  QSharedPointer<FileBlobModel> data_model(
+      new FileBlobModel(fileBlob, {QFileInfo(fileName).fileName()}));
+  createHexEditTab(data_model);
 }
 
 }  // namespace ui
