@@ -426,7 +426,7 @@ void VisualizationPanel::initOptionsPanel() {
           Qt::WidgetWithChildrenShortcut);
 
   connect(open_visualization, &QAction::triggered,
-          [this]() { createVisualization(main_window_, data_model_); });
+          [this]() { main_window_->createVisualization(data_model_); });
   addAction(open_visualization);
 }
 

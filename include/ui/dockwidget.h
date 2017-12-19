@@ -164,8 +164,6 @@ class IconAwareView : public QMainWindow {
  protected:
   void getOrCreateIcon(const QString& category, const QString& icon_path);
   static void deleteIcons();
-  void createVisualization(MainWindowWithDetachableDockWidgets* main_window,
-                           const QSharedPointer<FileBlobModel>& data_model);
 
   static std::map<QString, QIcon*> icons_;
 };
@@ -183,7 +181,6 @@ class MainWindowWithDetachableDockWidgets : public QMainWindow {
   DockWidget* addTab(QWidget* widget, const QString& title,
                      DockWidget* sibling = nullptr);
   DockWidget* wrapWithDock(QWidget* widget, const QString& title);
-
 
   void bringDockWidgetToFront(QDockWidget* dock_widget);
   void moveDockWidgetToWindow(DockWidget* dock_widget);
@@ -219,6 +216,7 @@ class MainWindowWithDetachableDockWidgets : public QMainWindow {
   void createHexEditTab(const QString& fileName,
                         const dbif::ObjectHandle& fileBlob);
   void createHexEditTab(const QSharedPointer<FileBlobModel>& data_model);
+  void createVisualization(const QSharedPointer<FileBlobModel>& data_model);
 
  public slots:
   void dockLocationChanged(Qt::DockWidgetArea area);

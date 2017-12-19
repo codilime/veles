@@ -361,7 +361,7 @@ void HexEditWidget::saveAs() {
 }
 
 void HexEditWidget::showVisualization() {
-  createVisualization(main_window_, data_model_);
+  main_window_->createVisualization(data_model_);
 }
 
 void HexEditWidget::showHexEditor() {

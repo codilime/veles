@@ -615,13 +615,15 @@ std::map<QString, QIcon*> IconAwareView::icons_;
 
 IconAwareView::IconAwareView(const QString& category, const QString& path) {
   getOrCreateIcon(category, path);
-  connect(qApp, &QGuiApplication::lastWindowClosed, &IconAwareView::deleteIcons);
+  connect(qApp, &QGuiApplication::lastWindowClosed,
+          &IconAwareView::deleteIcons);
   setFocusPolicy(Qt::StrongFocus);
 }
 
 IconAwareView::~IconAwareView() {}
 
-void IconAwareView::getOrCreateIcon(const QString& category, const QString& icon_path) {
+void IconAwareView::getOrCreateIcon(const QString& category,
+                                    const QString& icon_path) {
   QIcon* icon = nullptr;
   auto iter = icons_.find(category);
   if (iter == icons_.end()) {
@@ -637,29 +639,6 @@ void IconAwareView::deleteIcons() {
     delete icon.second;
   }
   icons_.clear();
-}
-
-void IconAwareView::createVisualization(
-    MainWindowWithDetachableDockWidgets* main_window,
-    const QSharedPointer<FileBlobModel>& data_model) {
-  auto* panel = new visualization::VisualizationPanel(main_window, data_model);
-  panel->setData(
-      QByteArray(reinterpret_cast<const char*>(data_model->binData().rawData()),
-                 static_cast<int>(data_model->binData().size())));
-  panel->setAttribute(Qt::WA_DeleteOnClose);
-
-  // FIXME: main_window_ needs to be updated when docks are moved around,
-  // then we can use this behaviour without any weird effects
-  // auto sibling = DockWidget::getParentDockWidget(this);
-  DockWidget* sibling = nullptr;
-
-  auto dock_widget =
-      main_window->addTab(panel, data_model->path().join(" : "), sibling);
-  connect(dock_widget, &DockWidget::visibilityChanged, panel,
-          &visualization::VisualizationPanel::visibilityChanged);
-  //  if (sibling == nullptr) {
-  //    main_window->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
-  //  }
 }
 
 /*****************************************************************************/
@@ -725,7 +704,8 @@ MainWindowWithDetachableDockWidgets::~MainWindowWithDetachableDockWidgets() {
   }
 }
 
-DockWidget* MainWindowWithDetachableDockWidgets::wrapWithDock(QWidget* widget, const QString& title){
+DockWidget* MainWindowWithDetachableDockWidgets::wrapWithDock(
+    QWidget* widget, const QString& title) {
   auto* dock_widget = new DockWidget;
   dock_widget->setAllowedAreas(Qt::AllDockWidgetAreas);
   dock_widget->setWindowTitle(title);
@@ -1330,7 +1310,8 @@ bool MainWindowWithDetachableDockWidgets::splitDockWidgetImpl(
   return !main_window->tabifiedDockWidgets(first).contains(second);
 }
 
-void MainWindowWithDetachableDockWidgets::createHexEditTab(const QSharedPointer<FileBlobModel>& data_model) {
+void MainWindowWithDetachableDockWidgets::createHexEditTab(
+    const QSharedPointer<FileBlobModel>& data_model) {
   QSharedPointer<QItemSelectionModel> selection_model(
       new QItemSelectionModel(data_model.data()));
 
@@ -1338,11 +1319,29 @@ void MainWindowWithDetachableDockWidgets::createHexEditTab(const QSharedPointer<
   addTab(node_widget, data_model->path().join(" : "), nullptr);
 }
 
-void MainWindowWithDetachableDockWidgets::createHexEditTab(const QString& fileName,
-                                       const dbif::ObjectHandle& fileBlob) {
+void MainWindowWithDetachableDockWidgets::createHexEditTab(
+    const QString& fileName, const dbif::ObjectHandle& fileBlob) {
   QSharedPointer<FileBlobModel> data_model(
       new FileBlobModel(fileBlob, {QFileInfo(fileName).fileName()}));
   createHexEditTab(data_model);
+}
+
+void MainWindowWithDetachableDockWidgets::createVisualization(
+    const QSharedPointer<FileBlobModel>& data_model) {
+  auto* panel = new visualization::VisualizationPanel(this, data_model);
+
+  panel->setData(
+      QByteArray(reinterpret_cast<const char*>(data_model->binData().rawData()),
+                 static_cast<int>(data_model->binData().size())));
+  panel->setAttribute(Qt::WA_DeleteOnClose);
+
+  // FIXME: main_window_ needs to be updated when docks are moved around,
+  // then we can use this behaviour without any weird effects
+  // auto sibling = DockWidget::getParentDockWidget(this);
+
+  auto dock_widget = addTab(panel, data_model->path().join(" : "), nullptr);
+  connect(dock_widget, &DockWidget::visibilityChanged, panel,
+          &visualization::VisualizationPanel::visibilityChanged);
 }
 
 }  // namespace ui
