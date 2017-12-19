@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-#include "ui/searchdialog.h"
+#include "ui/dialogs/searchdialog.h"
 
 #include "ui_searchdialog.h"
 

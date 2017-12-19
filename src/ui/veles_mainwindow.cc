@@ -30,11 +30,11 @@
 #include "dbif/types.h"
 #include "dbif/universe.h"
 #include "ui/databaseinfo.h"
+#include "ui/dialogs/optionsdialog.h"
 #include "ui/hexeditwidget.h"
 #include "ui/logwidget.h"
 #include "ui/nodetreewidget.h"
 #include "ui/nodewidget.h"
-#include "ui/optionsdialog.h"
 #include "util/settings/shortcuts.h"
 #include "util/version.h"
 

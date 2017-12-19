@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-#include "ui/optionsdialog.h"
+#include "ui/dialogs/optionsdialog.h"
 
 #include <QMessageBox>
 #include <QPushButton>

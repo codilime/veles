@@ -29,7 +29,7 @@
 
 #include "client/networkclient.h"
 #include "network/msgpackwrapper.h"
-#include "ui/connectiondialog.h"
+#include "ui/dialogs/connectiondialog.h"
 #include "ui_connectionnotificationwidget.h"
 
 namespace veles {
