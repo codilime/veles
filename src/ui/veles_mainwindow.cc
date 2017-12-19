@@ -329,12 +329,7 @@ void VelesMainWindow::createDb() {
         nc, *data::NodeID::getRootNodeId(), dbif::ObjectType::ROOT);
   }
   auto database_info = new DatabaseInfo(database_);
-  auto* dock_widget = new DockWidget;
-  dock_widget->setAllowedAreas(Qt::AllDockWidgetAreas);
-  dock_widget->setWindowTitle("Database");
-  dock_widget->setFeatures(QDockWidget::DockWidgetMovable |
-                           QDockWidget::DockWidgetFloatable);
-  dock_widget->setWidget(database_info);
+  auto* dock_widget = wrapWithDock(database_info, "Database");
   dock_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
   auto children = findChildren<DockWidget*>();
   if (!children.empty()) {
@@ -404,10 +399,7 @@ void VelesMainWindow::createFileBlob(const QString& file_name) {
           });
 }
 
-void VelesMainWindow::createHexEditTab(const QString& fileName,
-                                       const dbif::ObjectHandle& fileBlob) {
-  QSharedPointer<FileBlobModel> data_model(
-      new FileBlobModel(fileBlob, {QFileInfo(fileName).fileName()}));
+void VelesMainWindow::createHexEditTab(const QSharedPointer<FileBlobModel>& data_model) {
   QSharedPointer<QItemSelectionModel> selection_model(
       new QItemSelectionModel(data_model.data()));
 
@@ -415,13 +407,15 @@ void VelesMainWindow::createHexEditTab(const QString& fileName,
   addTab(node_widget, data_model->path().join(" : "), nullptr);
 }
 
+void VelesMainWindow::createHexEditTab(const QString& fileName,
+                                       const dbif::ObjectHandle& fileBlob) {
+  QSharedPointer<FileBlobModel> data_model(
+      new FileBlobModel(fileBlob, {QFileInfo(fileName).fileName()}));
+  createHexEditTab(data_model);
+}
+
 void VelesMainWindow::createLogWindow() {
-  auto* dock_widget = new DockWidget;
-  dock_widget->setAllowedAreas(Qt::AllDockWidgetAreas);
-  dock_widget->setWindowTitle("Log");
-  dock_widget->setFeatures(QDockWidget::DockWidgetMovable |
-                           QDockWidget::DockWidgetFloatable);
-  dock_widget->setWidget(new LogWidget);
+  auto* dock_widget = wrapWithDock(new LogWidget, "Log");
   dock_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 
   auto children = findChildren<DockWidget*>();

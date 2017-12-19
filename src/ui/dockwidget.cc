@@ -664,20 +664,7 @@ void View::createVisualization(
 
 void View::createHexEditor(MainWindowWithDetachableDockWidgets* main_window,
                            const QSharedPointer<FileBlobModel>& data_model) {
-  QSharedPointer<QItemSelectionModel> new_selection_model(
-      new QItemSelectionModel(data_model.data()));
-  auto* node_edit =
-      new NodeWidget(main_window, data_model, new_selection_model);
-
-  // FIXME: main_window_ needs to be updated when docks are moved around,
-  // then we can use this behaviour without any weird effects
-  // auto sibling = DockWidget::getParentDockWidget(this);
-  DockWidget* sibling = nullptr;
-
-  main_window->addTab(node_edit, data_model->path().join(" : "), sibling);
-  //  if (sibling == nullptr) {
-  //    main_window->addDockWidget(Qt::RightDockWidgetArea, dock_widget);
-  //  }
+  static_cast<VelesMainWindow*>(main_window)->createHexEditTab(data_model);
 }
 
 /*****************************************************************************/
@@ -743,9 +730,7 @@ MainWindowWithDetachableDockWidgets::~MainWindowWithDetachableDockWidgets() {
   }
 }
 
-DockWidget* MainWindowWithDetachableDockWidgets::addTab(QWidget* widget,
-                                                        const QString& title,
-                                                        DockWidget* sibling) {
+DockWidget* MainWindowWithDetachableDockWidgets::wrapWithDock(QWidget* widget, const QString& title){
   auto* dock_widget = new DockWidget;
   dock_widget->setAllowedAreas(Qt::AllDockWidgetAreas);
   dock_widget->setWindowTitle(title);
@@ -757,6 +742,13 @@ DockWidget* MainWindowWithDetachableDockWidgets::addTab(QWidget* widget,
   dock_widget->setWindowIcon(widget != nullptr ? widget->windowIcon()
                                                : QIcon());
   dock_widget->addCloseAction();
+  return dock_widget;
+}
+
+DockWidget* MainWindowWithDetachableDockWidgets::addTab(QWidget* widget,
+                                                        const QString& title,
+                                                        DockWidget* sibling) {
+  auto* dock_widget = wrapWithDock(widget, title);
 
   if (sibling != nullptr) {
     tabifyDockWidget(sibling, dock_widget);

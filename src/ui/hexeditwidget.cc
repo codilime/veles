@@ -365,7 +365,7 @@ void HexEditWidget::showVisualization() {
 }
 
 void HexEditWidget::showHexEditor() {
-  createHexEditor(main_window_, data_model_);
+  static_cast<VelesMainWindow*>(main_window_)->createHexEditTab(data_model_);
 }
 
 void HexEditWidget::newBinData() {
