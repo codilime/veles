@@ -112,6 +112,7 @@ class HexEditWidget : public IconAwareView {
   QAction* show_node_tree_act_;
   QAction* show_minimap_act_;
   QAction* show_hex_edit_act_;
+  QAction* show_disasm_act_;
   QAction* add_column_act_;
   QAction* remove_column_act_;
   QWidgetAction* auto_resize_act_;
