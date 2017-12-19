@@ -39,7 +39,7 @@
 namespace veles {
 namespace ui {
 
-class HexEditWidget : public View {
+class HexEditWidget : public IconAwareView {
   Q_OBJECT
 
  public:

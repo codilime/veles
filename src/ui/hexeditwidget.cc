@@ -53,7 +53,7 @@ HexEditWidget::HexEditWidget(
     MainWindowWithDetachableDockWidgets* main_window,
     const QSharedPointer<FileBlobModel>& data_model,
     const QSharedPointer<QItemSelectionModel>& selection_model)
-    : View("Hex editor", ":/images/show_hex_edit.png"),
+    : IconAwareView("Hex editor", ":/images/show_hex_edit.png"),
       main_window_(main_window),
       data_model_(data_model),
       selection_model_(selection_model) {
@@ -365,7 +365,7 @@ void HexEditWidget::showVisualization() {
 }
 
 void HexEditWidget::showHexEditor() {
-  static_cast<VelesMainWindow*>(main_window_)->createHexEditTab(data_model_);
+  main_window_->createHexEditTab(data_model_);
 }
 
 void HexEditWidget::newBinData() {

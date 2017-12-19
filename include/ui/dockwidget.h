@@ -147,15 +147,15 @@ class TabBarEventFilter : public QObject {
 };
 
 /*****************************************************************************/
-/* View */
+/* IconAwareView */
 /*****************************************************************************/
 
-class View : public QMainWindow {
+class IconAwareView : public QMainWindow {
   Q_OBJECT
 
  public:
-  View(const QString& category, const QString& path);
-  ~View() override;
+  IconAwareView(const QString& category, const QString& path);
+  ~IconAwareView() override;
   virtual void reapplySettings(){};
 
  signals:
@@ -166,8 +166,6 @@ class View : public QMainWindow {
   static void deleteIcons();
   void createVisualization(MainWindowWithDetachableDockWidgets* main_window,
                            const QSharedPointer<FileBlobModel>& data_model);
-  void createHexEditor(MainWindowWithDetachableDockWidgets* main_window,
-                       const QSharedPointer<FileBlobModel>& data_model);
 
   static std::map<QString, QIcon*> icons_;
 };
@@ -218,6 +216,9 @@ class MainWindowWithDetachableDockWidgets : public QMainWindow {
   static void setActiveDockWidget(DockWidget* dock_widget);
   static void focusNextPrevDock(DockWidget* dock_widget, bool next);
   std::set<MainWindowWithDetachableDockWidgets*> allMainWindows();
+  void createHexEditTab(const QString& fileName,
+                        const dbif::ObjectHandle& fileBlob);
+  void createHexEditTab(const QSharedPointer<FileBlobModel>& data_model);
 
  public slots:
   void dockLocationChanged(Qt::DockWidgetArea area);

@@ -119,7 +119,7 @@ void VelesMainWindow::init() {
   connect(options_dialog_, &QDialog::accepted, [this]() {
     for (auto main_window :
          MainWindowWithDetachableDockWidgets::getMainWindows()) {
-      QList<View*> views = main_window->findChildren<View*>();
+      QList<IconAwareView*> views = main_window->findChildren<IconAwareView*>();
       for (auto view : views) {
         view->reapplySettings();
       }
@@ -397,21 +397,6 @@ void VelesMainWindow::createFileBlob(const QString& file_name) {
             QMessageBox::warning(this, tr("Veles"),
                                  tr("Cannot load file %1.").arg(file_name));
           });
-}
-
-void VelesMainWindow::createHexEditTab(const QSharedPointer<FileBlobModel>& data_model) {
-  QSharedPointer<QItemSelectionModel> selection_model(
-      new QItemSelectionModel(data_model.data()));
-
-  auto* node_widget = new NodeWidget(this, data_model, selection_model);
-  addTab(node_widget, data_model->path().join(" : "), nullptr);
-}
-
-void VelesMainWindow::createHexEditTab(const QString& fileName,
-                                       const dbif::ObjectHandle& fileBlob) {
-  QSharedPointer<FileBlobModel> data_model(
-      new FileBlobModel(fileBlob, {QFileInfo(fileName).fileName()}));
-  createHexEditTab(data_model);
 }
 
 void VelesMainWindow::createLogWindow() {
