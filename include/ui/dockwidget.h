@@ -184,6 +184,9 @@ class MainWindowWithDetachableDockWidgets : public QMainWindow {
   ~MainWindowWithDetachableDockWidgets() override;
   DockWidget* addTab(QWidget* widget, const QString& title,
                      DockWidget* sibling = nullptr);
+  DockWidget* wrapWithDock(QWidget* widget, const QString& title);
+
+
   void bringDockWidgetToFront(QDockWidget* dock_widget);
   void moveDockWidgetToWindow(DockWidget* dock_widget);
   void findTwoNonTabifiedDocks(DockWidget** sibling1, DockWidget** sibling2);
