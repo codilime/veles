@@ -325,14 +325,14 @@ target_link_libraries(veles_db veles_dbif parser)
 # Resources
 qt5_add_resources(RESOURCES resources/veles.qrc)
 qt5_wrap_ui(FORMS
-    ${SRC_DIR}/ui/connectiondialog.ui
+    ${SRC_DIR}/ui/dialogs/connectiondialog.ui
     ${SRC_DIR}/ui/connectionnotificationwidget.ui
-    ${SRC_DIR}/ui/createchunkdialog.ui
+    ${SRC_DIR}/ui/dialogs/createchunkdialog.ui
     ${SRC_DIR}/ui/databaseinfo.ui
-    ${SRC_DIR}/ui/gotoaddressdialog.ui
+    ${SRC_DIR}/ui/dialogs/gotoaddressdialog.ui
     ${SRC_DIR}/ui/logwidget.ui
-    ${SRC_DIR}/ui/optionsdialog.ui
-    ${SRC_DIR}/ui/searchdialog.ui
+    ${SRC_DIR}/ui/dialogs/optionsdialog.ui
+    ${SRC_DIR}/ui/dialogs/searchdialog.ui
     ${SRC_DIR}/ui/shortcutselection.ui
     ${SRC_DIR}/ui/shortcutssettings.ui
 )
@@ -365,23 +365,25 @@ add_executable(main_ui
     ${INCLUDE_DIR}/ui/hexeditwidget.h
     ${INCLUDE_DIR}/ui/nodetreewidget.h
     ${INCLUDE_DIR}/ui/nodewidget.h
-    ${INCLUDE_DIR}/ui/optionsdialog.h
+    ${INCLUDE_DIR}/ui/dialogs/optionsdialog.h
     ${INCLUDE_DIR}/ui/hexedit.h
-    ${INCLUDE_DIR}/ui/searchdialog.h
-    ${INCLUDE_DIR}/ui/gotoaddressdialog.h
+    ${INCLUDE_DIR}/ui/dialogs/searchdialog.h
+    ${INCLUDE_DIR}/ui/dialogs/gotoaddressdialog.h
     ${INCLUDE_DIR}/ui/slice.h
     ${INCLUDE_DIR}/ui/fileblobitem.h
     ${INCLUDE_DIR}/ui/rootfileblobitem.h
     ${INCLUDE_DIR}/ui/subchunkfileblobitem.h
     ${INCLUDE_DIR}/ui/simplefileblobitem.h
     ${INCLUDE_DIR}/ui/fileblobmodel.h
-    ${INCLUDE_DIR}/ui/createchunkdialog.h
+    ${INCLUDE_DIR}/ui/dialogs/createchunkdialog.h
     ${INCLUDE_DIR}/ui/databaseinfo.h
     ${INCLUDE_DIR}/ui/spinbox.h
     ${INCLUDE_DIR}/ui/spinboxvalidator.h
-    ${INCLUDE_DIR}/ui/connectiondialog.h
+    ${INCLUDE_DIR}/ui/dialogs/connectiondialog.h
     ${INCLUDE_DIR}/ui/shortcutedit.h
     ${INCLUDE_DIR}/ui/shortcutssettings.h
+    ${INCLUDE_DIR}/ui/filters/activatedockeventfilter.h
+    ${INCLUDE_DIR}/ui/filters/tabbareventfilter.h
     ${INCLUDE_DIR}/ui/mainwindowwithdetachabledockwidgets.h
     ${INCLUDE_DIR}/ui/velesapplication.h
     ${SRC_DIR}/ui/main.cc
@@ -394,21 +396,23 @@ add_executable(main_ui
     ${SRC_DIR}/ui/hexeditwidget.cc
     ${SRC_DIR}/ui/nodetreewidget.cc
     ${SRC_DIR}/ui/nodewidget.cc
-    ${SRC_DIR}/ui/optionsdialog.cc
+    ${SRC_DIR}/ui/dialogs/optionsdialog.cc
     ${SRC_DIR}/ui/hexedit.cc
-    ${SRC_DIR}/ui/searchdialog.cc
-    ${SRC_DIR}/ui/gotoaddressdialog.cc
+    ${SRC_DIR}/ui/dialogs/searchdialog.cc
+    ${SRC_DIR}/ui/dialogs/gotoaddressdialog.cc
     ${SRC_DIR}/ui/fileblobitem.cc
     ${SRC_DIR}/ui/subchunkfileblobitem.cc
     ${SRC_DIR}/ui/rootfileblobitem.cc
     ${SRC_DIR}/ui/fileblobmodel.cc
-    ${SRC_DIR}/ui/createchunkdialog.cc
+    ${SRC_DIR}/ui/dialogs/createchunkdialog.cc
     ${SRC_DIR}/ui/databaseinfo.cc
     ${SRC_DIR}/ui/spinbox.cc
     ${SRC_DIR}/ui/spinboxvalidator.cc
-    ${SRC_DIR}/ui/connectiondialog.cc
+    ${SRC_DIR}/ui/dialogs/connectiondialog.cc
     ${SRC_DIR}/ui/shortcutedit.cc
     ${SRC_DIR}/ui/shortcutssettings.cc
+    ${SRC_DIR}/ui/filters/activatedockeventfilter.cc
+    ${SRC_DIR}/ui/filters/tabbareventfilter.cc
     ${SRC_DIR}/ui/mainwindowwithdetachabledockwidgets.cc
     ${RESOURCES}
     ${VISUALIZATION_SHADERS}

@@ -25,9 +25,9 @@
 #include <QStaticText>
 #include <QStringList>
 
-#include "ui/createchunkdialog.h"
+#include "ui/dialogs/createchunkdialog.h"
+#include "ui/dialogs/gotoaddressdialog.h"
 #include "ui/fileblobmodel.h"
-#include "ui/gotoaddressdialog.h"
 #include "util/edit.h"
 #include "util/encoders/hex_encoder.h"
 #include "util/encoders/text_encoder.h"

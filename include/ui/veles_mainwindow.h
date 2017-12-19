@@ -29,11 +29,11 @@
 #include "client/networkclient.h"
 #include "dbif/promise.h"
 #include "dbif/types.h"
-#include "ui/connectiondialog.h"
 #include "ui/connectionmanager.h"
+#include "ui/dialogs/connectiondialog.h"
+#include "ui/dialogs/optionsdialog.h"
 #include "ui/dockwidget.h"
 #include "ui/mainwindowwithdetachabledockwidgets.h"
-#include "ui/optionsdialog.h"
 #include "ui/shortcutssettings.h"
 
 namespace veles {

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-#include "ui/gotoaddressdialog.h"
+#include "ui/dialogs/gotoaddressdialog.h"
 
 #include <QMessageBox>
 

@@ -54,19 +54,6 @@ class QProxyStyleForDockWidgetWithIconOnTitleBar : public QProxyStyle {
 };
 
 /*****************************************************************************/
-/* ActivateDockEventFilter */
-/*****************************************************************************/
-class ActivateDockEventFilter : public QObject {
-  Q_OBJECT
-
- public:
-  explicit ActivateDockEventFilter(QObject* parent = nullptr);
-
- protected:
-  bool eventFilter(QObject* watched, QEvent* event) override;
-};
-
-/*****************************************************************************/
 /* DockWidget */
 /*****************************************************************************/
 
@@ -117,33 +104,6 @@ class DockWidget : public QDockWidget {
   QAction* dock_close_action_ = nullptr;
   QAction* next_tab_action_;
   QAction* prev_tab_action_;
-};
-
-/*****************************************************************************/
-/* TabBarEventFilter */
-/*****************************************************************************/
-
-class TabBarEventFilter : public QObject {
-  Q_OBJECT
-
- public:
-  explicit TabBarEventFilter(QObject* parent = nullptr);
-
- public slots:
-  void tabMoved(int from, int to);
-  void currentChanged(int index);
-
- protected:
-  bool eventFilter(QObject* watched, QEvent* event) Q_DECL_OVERRIDE;
-  virtual bool mouseMove(QTabBar* tab_bar, QMouseEvent* event);
-  virtual bool mouseButtonPress(QTabBar* tab_bar, QMouseEvent* event);
-  virtual bool mouseButtonRelease(QTabBar* tab_bar, QMouseEvent* event);
-  virtual bool mouseButtonDblClick(QTabBar* tab_bar, QMouseEvent* event);
-
-  QTabBar* dragged_tab_bar_ = nullptr;
-  int dragged_tab_index_ = -1;
-  QPoint drag_init_pos_;
-  static const int k_drag_treshold_ = 5;
 };
 
 /*****************************************************************************/

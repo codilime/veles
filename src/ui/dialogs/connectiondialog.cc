@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-#include "ui/connectiondialog.h"
+#include "ui/dialogs/connectiondialog.h"
 
 #include <climits>
 #include <cstdint>

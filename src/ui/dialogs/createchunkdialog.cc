@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-#include "ui/createchunkdialog.h"
+#include "ui/dialogs/createchunkdialog.h"
 
 #include "ui_createchunkdialog.h"
 
