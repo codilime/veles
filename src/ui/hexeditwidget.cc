@@ -159,6 +159,16 @@ void HexEditWidget::createActions() {
   connect(visualization_act_, &QAction::triggered, this,
           &HexEditWidget::showVisualization);
 
+  show_disasm_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
+      util::settings::shortcuts::OPEN_DISASM, this,
+      QIcon(":/images/brightness.png"), Qt::WidgetWithChildrenShortcut);
+
+  show_disasm_act_->setToolTip(tr("Show disassembler"));
+  show_disasm_act_->setEnabled(true);
+  show_disasm_act_->setCheckable(false);
+  show_disasm_act_->setChecked(false);
+  // TODO(prybicki) add connect here
+
   show_node_tree_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::SHOW_NODE_TREE, this,
       QIcon(":/images/show_node_tree.png"), Qt::WidgetWithChildrenShortcut);
@@ -254,8 +264,10 @@ void HexEditWidget::createToolBars() {
 
   addAction(visualization_act_);
   addAction(show_hex_edit_act_);
+  addAction(show_disasm_act_);
   tools_tool_bar_->addAction(visualization_act_);
   tools_tool_bar_->addAction(show_hex_edit_act_);
+  tools_tool_bar_->addAction(show_disasm_act_);
   tools_tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
   addToolBar(tools_tool_bar_);
 

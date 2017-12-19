@@ -110,6 +110,7 @@ enum ShortcutType : uint32_t {
   SAVE_CHUNK_TO_FILE = 75,
   CHANGE_EDIT_MODE = 76,
   HEX_DELETE_SELECTION = 77,
+  OPEN_DISASM = 78
 };
 
 QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts();

@@ -73,6 +73,7 @@ QMap<ShortcutType, QList<QKeySequence>> defaultShortcuts() {
     defaults[OPEN_VISUALIZATION] = {
         QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_V)};
     defaults[OPEN_HEX] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H)};
+    defaults[OPEN_DISASM] = {QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_D)};
     defaults[VISUALIZATION_DIGRAM] = {QKeySequence(Qt::Key_1)};
     defaults[VISUALIZATION_TRIGRAM] = {QKeySequence(Qt::Key_2)};
     defaults[VISUALIZATION_LAYERED_DIGRAM] = {QKeySequence(Qt::Key_3)};
@@ -429,6 +430,7 @@ ShortcutsModel::ShortcutsModel() : root_(new ShortcutsItem()) {
                   tr("Open/close minimap for current dock"));
   addShortcutType(COPY, global, tr("&Copy"), tr("Copy"));
   addShortcutType(PASTE, global, tr("&Paste"), tr("Paste"));
+  addShortcutType(OPEN_DISASM, global, tr("&Disassembler"));
 
   auto network = addCategory(tr("Network"), root_);
   addShortcutType(SHOW_CONNECT_DIALOG, network, tr("Connect..."),
