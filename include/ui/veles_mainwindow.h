@@ -50,6 +50,9 @@ class VelesMainWindow : public MainWindowWithDetachableDockWidgets {
   VelesMainWindow();
   void addFile(const QString& path);
   QStringList parsersList() { return parsers_list_; }
+  void createHexEditTab(const QString& fileName,
+                        const dbif::ObjectHandle& fileBlob);
+  void createHexEditTab(const QSharedPointer<FileBlobModel>& data_model);
 
  protected:
   void dropEvent(QDropEvent* ev) override;

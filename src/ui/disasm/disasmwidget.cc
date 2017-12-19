@@ -90,7 +90,6 @@ void AddressColumnWidget::paintEvent(QPaintEvent* event)  // override
     painter.drawText(boundingBox, Qt::AlignHCenter | Qt::AlignVCenter,
                      addressToText(addressVector[i]), &boundingBox);
 
-
     currentAddressPositionY += currentAddressHeight;
   }
 }
