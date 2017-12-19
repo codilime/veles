@@ -2,16 +2,20 @@
 
 #include <QDockWidget>
 #include <QObject>
-#include <QPushButton>
+#include <QTextBrowser>
+#include <QVBoxLayout>
+#include <QtWidgets/QPushButton>
 
 class DisasmWidget : public QDockWidget {
   Q_OBJECT
 
-  QPushButton tmp;
+  QVBoxLayout main_layout_;
+  QTextBrowser debug_output_widget_;
 
  public:
   DisasmWidget();
 
-  virtual void paintEvent(QPaintEvent* event);
+  void setDebugText(QString text);
+
   virtual ~DisasmWidget();
 };
