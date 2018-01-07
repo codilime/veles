@@ -2,122 +2,122 @@
 (endian big)
 
 (struct cp_info
- (param-int index)
- (field tag 8)
- (match tag
-  (1
-   (field length 16 (unsigned-int))
-   (field* utf8 8 length (string))
-   (compute-int next_index (+ index 1)) ; XXX nuke me
+  (param-int index)
+  (field tag 8)
+  (match tag
+    (1
+      (field length 16 (unsigned-int))
+      (field* utf8 8 length (string))
+      (compute-int next_index (+ index 1)) ; XXX nuke me
+    )
+    (3
+      (field value_int 32 (signed-wrap-int))
+      (compute-int next_index (+ index 1)) ; XXX nuke me
+    )
+    (4
+      ; XXX mark as float
+      (field bytes_float 32)
+      (compute-int next_index (+ index 1)) ; XXX nuke me
+    )
+    (5
+      (field value_long 64 (signed-wrap-int))
+      (compute-int next_index (+ index 2))
+    )
+    (6
+      ; XXX mark as float
+      (field bytes_double 64)
+      (compute-int next_index (+ index 2))
+    )
+    (7
+      (field name_index 16 (unsigned-int))
+      (compute-int next_index (+ index 1)) ; XXX nuke me
+    )
+    (8
+      (field string_index 16 (unsigned-int))
+      (compute-int next_index (+ index 1)) ; XXX nuke me
+    )
+    (9
+      (field class_index 16 (unsigned-int))
+      (field name_and_type_index 16 (unsigned-int))
+      (compute-int next_index (+ index 1)) ; XXX nuke me
+    )
+    (10
+      (field class_index 16 (unsigned-int))
+      (field name_and_type_index 16 (unsigned-int))
+      (compute-int next_index (+ index 1)) ; XXX nuke me
+    )
+    (11
+      (field class_index 16 (unsigned-int))
+      (field name_and_type_index 16 (unsigned-int))
+      (compute-int next_index (+ index 1)) ; XXX nuke me
+    )
+    (12
+      (field name_index 16 (unsigned-int))
+      (field descriptor_index 16 (unsigned-int))
+      (compute-int next_index (+ index 1)) ; XXX nuke me
+    )
+    (15
+      ; enum
+      (field reference_kind 8)
+      (field reference_index 16 (unsigned-int))
+      (compute-int next_index (+ index 1)) ; XXX nuke me
+    )
+    (16
+      (field descriptor_index 16 (unsigned-int))
+      (compute-int next_index (+ index 1)) ; XXX nuke me
+    )
+    (18
+      (field bootstrap_method_attr_index 16 (unsigned-int))
+      (field name_and_type_index 16 (unsigned-int))
+      (compute-int next_index (+ index 1)) ; XXX nuke me
+    )
+    ; XXX
+    ;(default-compute-int next_index (+ index 1))
   )
-  (3
-   (field value_int 32 (signed-wrap-int))
-   (compute-int next_index (+ index 1)) ; XXX nuke me
-  )
-  (4
-   ; XXX mark as float
-   (field bytes_float 32)
-   (compute-int next_index (+ index 1)) ; XXX nuke me
-  )
-  (5
-   (field value_long 64 (signed-wrap-int))
-   (compute-int next_index (+ index 2))
-  )
-  (6
-   ; XXX mark as float
-   (field bytes_double 64)
-   (compute-int next_index (+ index 2))
-  )
-  (7
-   (field name_index 16 (unsigned-int))
-   (compute-int next_index (+ index 1)) ; XXX nuke me
-  )
-  (8
-   (field string_index 16 (unsigned-int))
-   (compute-int next_index (+ index 1)) ; XXX nuke me
-  )
-  (9
-   (field class_index 16 (unsigned-int))
-   (field name_and_type_index 16 (unsigned-int))
-   (compute-int next_index (+ index 1)) ; XXX nuke me
-  )
-  (10
-   (field class_index 16 (unsigned-int))
-   (field name_and_type_index 16 (unsigned-int))
-   (compute-int next_index (+ index 1)) ; XXX nuke me
-  )
-  (11
-   (field class_index 16 (unsigned-int))
-   (field name_and_type_index 16 (unsigned-int))
-   (compute-int next_index (+ index 1)) ; XXX nuke me
-  )
-  (12
-   (field name_index 16 (unsigned-int))
-   (field descriptor_index 16 (unsigned-int))
-   (compute-int next_index (+ index 1)) ; XXX nuke me
-  )
-  (15
-   ; enum
-   (field reference_kind 8)
-   (field reference_index 16 (unsigned-int))
-   (compute-int next_index (+ index 1)) ; XXX nuke me
-  )
-  (16
-   (field descriptor_index 16 (unsigned-int))
-   (compute-int next_index (+ index 1)) ; XXX nuke me
-  )
-  (18
-   (field bootstrap_method_attr_index 16 (unsigned-int))
-   (field name_and_type_index 16 (unsigned-int))
-   (compute-int next_index (+ index 1)) ; XXX nuke me
-  )
-  ; XXX
-  ;(default-compute-int next_index (+ index 1))
- )
 )
 
 (struct field_info
- ; XXX bitfield
- (field access_flags 16)
- (field name_index 16 (unsigned-int))
- (field descriptor_index 16 (unsigned-int))
- (field attributes_count 16 (unsigned-int))
- (child* attributes attribute_info attributes_count)
+  ; XXX bitfield
+  (field access_flags 16)
+  (field name_index 16 (unsigned-int))
+  (field descriptor_index 16 (unsigned-int))
+  (field attributes_count 16 (unsigned-int))
+  (child* attributes attribute_info attributes_count)
 )
 
 (struct method_info
- (field access_flags 16)
- (field name_index 16 (unsigned-int))
- (field descriptor_index 16 (unsigned-int))
- (field attributes_count 16 (unsigned-int))
- (child* attributes attribute_info attributes_count)
+  (field access_flags 16)
+  (field name_index 16 (unsigned-int))
+  (field descriptor_index 16 (unsigned-int))
+  (field attributes_count 16 (unsigned-int))
+  (child* attributes attribute_info attributes_count)
 )
 
 (struct attribute_info
- (field attribute_name_index 16 (unsigned-int))
- (field attribute_length 32 (unsigned-int))
- (field* info 8 attribute_length)
+  (field attribute_name_index 16 (unsigned-int))
+  (field attribute_length 32 (unsigned-int))
+  (field* info 8 attribute_length)
 )
 
 (struct class_file
- (field sig 32)
- (field major_version 16 (unsigned-int))
- (field minor_version 16 (unsigned-int))
- (field constant_pool_count 16 (unsigned-int))
- (child-loop constant_pool cp_info
-  (var index 1 (get-field (last) next_index))
-  (end (= index constant_pool_count))
-  (param index index)
- )
- (field access_flags 16 (unsigned-int))
- (field this_class 16 (unsigned-int))
- (field super_class 16 (unsigned-int))
- (field interfaces_count 16 (unsigned-int))
- (field* interfaces 16 interfaces_count (unsigned-int))
- (field fields_count 16 (unsigned-int))
- (child* fields field_info fields_count)
- (field methods_count 16 (unsigned-int))
- (child* methods method_info methods_count)
- (field attributes_count 16 (unsigned-int))
- (child* attributes attribute_info attributes_count)
+  (field sig 32)
+  (field major_version 16 (unsigned-int))
+  (field minor_version 16 (unsigned-int))
+  (field constant_pool_count 16 (unsigned-int))
+  (child-loop constant_pool cp_info
+    (var-int index 1 (get-field (last) next_index))
+    (end (= index constant_pool_count))
+    (param index index)
+  )
+  (field access_flags 16 (unsigned-int))
+  (field this_class 16 (unsigned-int))
+  (field super_class 16 (unsigned-int))
+  (field interfaces_count 16 (unsigned-int))
+  (field* interfaces 16 interfaces_count (unsigned-int))
+  (field fields_count 16 (unsigned-int))
+  (child* fields field_info fields_count)
+  (field methods_count 16 (unsigned-int))
+  (child* methods method_info methods_count)
+  (field attributes_count 16 (unsigned-int))
+  (child* attributes attribute_info attributes_count)
 )

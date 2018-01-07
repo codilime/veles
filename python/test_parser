@@ -1,16 +1,27 @@
 #!/usr/bin/env python3
 
-from veles.plugins.java import ns
+import sys
+from pathlib import Path
+
 from veles.data.bindata import BinData
 from veles.defs.symbol import Symbol
 from veles.parser.parser import *
+from veles.parser.compile import compile_parser
+from veles.defs.sexpr import parse_sexpr
+
+ns = compile_parser(parse_sexpr(
+    Path(sys.argv[1]).read_text()
+))
 
 for struct in ns.structs.values():
     print(f'{struct.name}:')
     for field in struct.fields.values():
         print(f'\t{field.name}: {field}')
 
-import sys
+
+class IncompleteException(Exception): pass
+class MissingFieldException(IncompleteException): pass
+class ComputationError(Exception): pass
 
 
 def sext(val, bit):
@@ -57,19 +68,24 @@ class ParsedStruct:
     def print(self, printer):
         printer(self.pos_start, '{} = struct {} {{'.format(self.name, self.struct.name))
         with printer.indent:
+            for param, val in self.params.items():
+                printer(self.pos_start, 'param {} = {}'.format(param.name, val))
             for entry in self.entries:
                 entry.print(printer)
         printer(self.pos_end, '}')
 
     def get_field_val(self, field):
+        if field not in self.fields:
+            raise MissingFieldException('missing field {} of {} at {:08x}'.format(field.name, self.struct.name, self.pos_start), self, field)
         pfield = self.fields[field]
         if isinstance(pfield, (ParsedFieldInt, ParsedComputedInt)):
             return pfield.value
-        else:
-            # XXX
-            return pfield.raw_value[0]
+        elif isinstance(pfield, ParsedFieldBindata):
+            return pfield.raw_value
 
     def get_param_val(self, param):
+        if param not in self.params:
+            raise IncompleteException('missing param {} of {} at {:08x}'.format(param.name, self.struct.name, self.pos_start))
         return self.params[param]
 
 
@@ -86,6 +102,8 @@ class ParsedLoopState:
         return self.parent.get_param_val(param)
 
     def get_loop_var_val(self, var):
+        if var not in self.vars:
+            raise IncompleteException('missing var {} of {} at {:08x}'.format(var.name, self.parent.struct.name, self.parent.pos_start))
         return self.vars[var]
 
     def get_last(self):
@@ -210,20 +228,20 @@ class ParsedComputedInt:
         printer(self.pos, 'int {} = {} [computed]'.format(self.field.name, self.value))
 
 
-with open(sys.argv[1], 'rb') as f:
+with open(sys.argv[3], 'rb') as f:
     d = f.read()
     d = BinData(8, d)
 
 
 def eval_expr(env, expr):
-    if isinstance(expr, ParserExprConstInt):
+    if isinstance(expr, (ParserExprConstInt, ParserExprConstBindata)):
         return expr.value
     if isinstance(expr, ParserExprSub):
         return eval_expr(env, expr.e1) - eval_expr(env, expr.e2)
     if isinstance(expr, ParserExprAdd):
         return eval_expr(env, expr.e1) + eval_expr(env, expr.e2)
-    if isinstance(expr, ParserExprEq):
-        return eval_expr(env, expr.e1) == eval_expr(env, expr.e2)
+    if isinstance(expr, ParserExprEqInt):
+        return BinData(1, [eval_expr(env, expr.e1) == eval_expr(env, expr.e2)])
     if isinstance(expr, ParserExprField):
         return env.get_field_val(expr.field)
     if isinstance(expr, ParserExprLoopVar):
@@ -341,7 +359,7 @@ def eval_ops(res, data, pos, ops):
                 if is_array:
                     end = idx == num
                 else:
-                    end = eval_expr(state, op.end)
+                    end = bool(eval_expr(state, op.end)[0])
                 if end:
                     break
                 params = {}
@@ -375,7 +393,7 @@ def eval_ops(res, data, pos, ops):
             assert 0
     return pos
 
-s = parse_struct(d, 0, ns.structs['class_file'], 'root', {})
+s = parse_struct(d, 0, ns.structs[sys.argv[2]], 'root', {})
 
 print(s.pos_end, len(d))
 

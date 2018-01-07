@@ -9,7 +9,7 @@ from .parser import (
     ParserStruct,
     ParserExprAdd,
     ParserExprSub,
-    ParserExprEq,
+    ParserExprEqInt,
     ParserExprConstInt,
     ParserExprGetField,
     ParserExprLast,
@@ -37,12 +37,28 @@ from .parser import (
 )
 
 
-class StExpr(StAny): pass 
-class StPred(StAny): pass 
-class StStructOp(StAny): pass 
-class StTopOp(StAny): pass 
-class StFieldMod(StAny): pass 
-class StChildLoopMod(StAny): pass 
+class StExpr(StAny):
+    pass
+
+
+class StPred(StAny):
+    pass
+
+
+class StStructOp(StAny):
+    pass
+
+
+class StTopOp(StAny):
+    pass
+
+
+class StFieldMod(StAny):
+    pass
+
+
+class StChildLoopMod(StAny):
+    pass
 
 
 class StWidth(StForm):
@@ -124,7 +140,9 @@ class StComputeInt(StFieldBase, StForm):
         return ParserTypeInt()
 
     def xlat_op(self, struct, endian):
-        return ParserOpCompute(self.field_ref, self.expr.xlat(struct))
+        type = self.get_type(struct.namespace, struct)
+        expr = type.convert(self.expr.xlat(struct))
+        return ParserOpCompute(self.field_ref, expr)
 
 
 class StFieldSimple(StFieldBase):
@@ -154,7 +172,7 @@ class StFieldSimple(StFieldBase):
 
     def xlat_op(self, struct, endian):
         if self.is_array:
-            num = self.num.xlat(struct)
+            num = ParserTypeInt().convert(self.num.xlat(struct))
         else:
             num = ParserExprConstInt(1)
         repacker = Repacker(endian, struct.width, self.width)
@@ -213,7 +231,8 @@ class StChildArray(StFieldBase, StForm):
         return ParserTypeStructArray(sub_struct, num)
 
     def xlat_op(self, struct, endian):
-        loop = ParserOpChildArray(struct, self.field_ref, self.num.xlat(struct))
+        num = ParserTypeInt().convert(self.num.xlat(struct))
+        loop = ParserOpChildArray(struct, self.field_ref, num)
         # XXX params, vars...
         return loop
 
@@ -234,7 +253,7 @@ class StChildLoop(StFieldBase, StForm):
         self.end = None
         self.params = []
         for mod in self.mods:
-            if isinstance(mod, StModLoopVar):
+            if isinstance(mod, StModLoopVarInt):
                 self.vars.append(mod)
             elif isinstance(mod, StModLoopEnd):
                 if self.end is not None:
@@ -253,19 +272,22 @@ class StChildLoop(StFieldBase, StForm):
         sub_struct = struct.namespace.structs[self.struct]
         loop = ParserOpChildLoop(struct, self.field_ref)
         for var in self.vars:
-            if var.name in loop.vars or var.name in struct.fields or var.name in struct.params:
+            if (var.name in loop.vars or var.name in struct.fields or
+                    var.name in struct.params):
                 raise ValueError('variable {} already exists'.format(var.name))
-            cvar = ParserLoopVar(var.name, var.initial.xlat(struct))
+            type = var.get_type()
+            initial = type.convert(var.initial.xlat(struct))
+            cvar = ParserLoopVar(var.name, type, initial)
             loop.var_dict[var.name] = cvar
             loop.vars.append(cvar)
             var.ref = cvar
         for var in self.vars:
-            var.ref.next = var.next.xlat(loop)
-        loop.end = self.end.xlat(loop)
-        loop.params = [
-            (sub_struct.params[param.name], param.value.xlat(loop))
-            for param in self.params
-        ]
+            var.ref.next = var.ref.type.convert(var.next.xlat(loop))
+        loop.end = ParserTypeBindata(1, 1).convert(self.end.xlat(loop))
+        for param in self.params:
+            sparam = sub_struct.params[param.name]
+            expr = sparam.type.convert(param.value.xlat(loop))
+            loop.params.append((sparam, expr))
         return loop
 
 
@@ -292,13 +314,15 @@ class StMatch(StForm):
 
     def xlat_op(self, struct, endian):
         cases = []
+        expr = self.expr.xlat(struct)
+        type = expr.get_type()
         for case in self.cases:
             cases.append(ParserCase(
-                case.pred.xlat(struct),
+                case.pred.xlat(type, struct),
                 ParserCompiler.xlat_ops(struct, case.ops, endian),
             ))
         return ParserOpMatch(
-            self.expr.xlat(struct),
+            expr,
             cases
         )
 
@@ -371,13 +395,16 @@ class StModString(StModTypeBindata, StForm):
         return ParserBinDisplayString()
 
 
-class StModLoopVar(StForm):
-    tag = 'var'
+class StModLoopVarInt(StForm):
+    tag = 'var-int'
     fields = [
         ('name', StSymbolRaw),
         ('initial', StExpr),
         ('next', StExpr),
     ]
+
+    def get_type(self):
+        return ParserTypeInt()
 
 
 class StModParam(StForm):
@@ -420,7 +447,16 @@ class StExprPlus(StExprBin):
 
 class StExprEq(StExprBin):
     tag = '='
-    cls = ParserExprEq
+
+    def xlat(self, env):
+        e1 = self.e1.xlat(env)
+        e2 = self.e2.xlat(env)
+        t1 = e1.get_type()
+        t2 = e2.get_type()
+        if isinstance(t1, ParserTypeInt) and isinstance(t2, ParserTypeInt):
+            return ParserExprEqInt(e1, e2)
+        else:
+            raise TypeError(t1, t2)
 
 
 class StExprGetField(StForm):
@@ -460,8 +496,8 @@ class StPredEq(StWrap):
     field = 'expr'
     matcher = StExpr
 
-    def xlat(self, env):
-        return ParserPredEq(self.expr.xlat(env))
+    def xlat(self, type, env):
+        return ParserPredEq(type.convert(self.expr.xlat(env)))
 
 
 StExpr.matchers = [
@@ -503,7 +539,7 @@ StFieldMod.matchers = [
 ]
 
 StChildLoopMod.matchers = [
-    StModLoopVar,
+    StModLoopVarInt,
     StModLoopEnd,
     StModParam,
 ]

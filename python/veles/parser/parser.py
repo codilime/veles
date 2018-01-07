@@ -1,3 +1,6 @@
+from veles.data.bindata import BinData
+
+
 class ParserNamespace:
     def __init__(self):
         self.structs = {}
@@ -50,6 +53,9 @@ class ParserOpField(ParserOp):
         self.num = num
         self.interp = interp
 
+    def can_read_input(self):
+        return True
+
 
 class ParserOpChildArray(ParserOp):
     def __init__(self, struct, field, num):
@@ -68,6 +74,9 @@ class ParserOpChildArray(ParserOp):
 
     def get_item_type(self):
         return ParserTypeStruct(self.field.type.struct)
+
+    def can_read_input(self):
+        return True
 
 
 class ParserOpChildLoop(ParserOp):
@@ -88,11 +97,24 @@ class ParserOpChildLoop(ParserOp):
     def get_item_type(self):
         return ParserTypeStruct(self.field.type.struct)
 
+    def can_read_input(self):
+        return True
+
 
 class ParserOpMatch(ParserOp):
     def __init__(self, expr, cases):
         self.expr = expr
         self.cases = cases
+        self.reads_input = any(
+            any(
+                op.can_read_input()
+                for op in case.ops
+            )
+            for case in cases
+        )
+
+    def can_read_input(self):
+        return self.reads_input
 
 
 class ParserOpCompute(ParserOp):
@@ -100,11 +122,15 @@ class ParserOpCompute(ParserOp):
         self.field = field
         self.expr = expr
 
+    def can_read_input(self):
+        return False
+
 
 class ParserLoopVar:
-    def __init__(self, name, initial):
+    def __init__(self, name, type, initial):
         self.name = name
-        self.initial = initial
+        self.type = type
+        self.initial = self.type.convert(initial)
         # To be updated later.
         self.next = None
 
@@ -127,22 +153,29 @@ class ParserExprParam(ParserExpr):
         return self.param.type
 
 
-# XXX lots of get_types need to be implemented
-
 class ParserExprField(ParserExpr):
     def __init__(self, field):
         self.field = field
+
+    def get_type(self):
+        return self.field.type
 
 
 class ParserExprLoopVar(ParserExpr):
     def __init__(self, var):
         self.var = var
 
+    def get_type(self):
+        return self.var.type
+
 
 class ParserExprGetField(ParserExpr):
     def __init__(self, expr, field):
         self.expr = expr
         self.field = field
+
+    def get_type(self):
+        return self.field.type
 
 
 class ParserExprLast(ParserExpr):
@@ -157,23 +190,43 @@ class ParserExprConstInt(ParserExpr):
     def __init__(self, value):
         self.value = value
 
+    def get_type(self):
+        return ParserTypeInt()
+
+
+class ParserExprConstBindata(ParserExpr):
+    def __init__(self, value):
+        self.value = value
+
+    def get_type(self):
+        return ParserTypeBindata(self.value.width, len(self.value))
+
 
 class ParserExprAdd(ParserExpr):
     def __init__(self, e1, e2):
-        self.e1 = e1
-        self.e2 = e2
+        self.e1 = ParserTypeInt().convert(e1)
+        self.e2 = ParserTypeInt().convert(e2)
+
+    def get_type(self):
+        return ParserTypeInt()
 
 
 class ParserExprSub(ParserExpr):
     def __init__(self, e1, e2):
-        self.e1 = e1
-        self.e2 = e2
+        self.e1 = ParserTypeInt().convert(e1)
+        self.e2 = ParserTypeInt().convert(e2)
+
+    def get_type(self):
+        return ParserTypeInt()
 
 
-class ParserExprEq(ParserExpr):
+class ParserExprEqInt(ParserExpr):
     def __init__(self, e1, e2):
-        self.e1 = e1
-        self.e2 = e2
+        self.e1 = ParserTypeInt().convert(e1)
+        self.e2 = ParserTypeInt().convert(e2)
+
+    def get_type(self):
+        return ParserTypeBindata(1, 1, ParserBinDisplayBool())
 
 
 class ParserPred:
@@ -205,6 +258,10 @@ class ParserBinDisplayString(ParserBinDisplay):
     pass
 
 
+class ParserBinDisplayBool(ParserBinDisplay):
+    pass
+
+
 class ParserType:
     pass
 
@@ -224,6 +281,8 @@ class ParserTypeBindata(ParserType):
             res = 's{}'.format(self.width)
         elif isinstance(self.display, ParserBinDisplayString):
             res = 'c{}'.format(self.width)
+        elif isinstance(self.display, ParserBinDisplayBool):
+            res = 'bool'
         else:
             assert 0
         if self.num is None:
@@ -236,6 +295,20 @@ class ParserTypeBindata(ParserType):
         # XXX
         raise NotImplementedError
 
+    def convert(self, expr):
+        t = expr.get_type()
+        if isinstance(t, ParserTypeBindata):
+            if self.width is not None and self.width != t.width:
+                raise TypeError
+            if self.num is not None and self.num != t.num:
+                raise TypeError
+            return expr
+        if (self.width is not None and self.num == 1 and
+                isinstance(expr, ParserExprConstInt)):
+            return ParserExprConstBindata(BinData(self.width, [expr.value]))
+        else:
+            raise TypeError
+
 
 class ParserTypeInt(ParserType):
     def __and__(self, other):
@@ -245,6 +318,13 @@ class ParserTypeInt(ParserType):
 
     def __str__(self):
         return 'int'
+
+    def convert(self, expr):
+        t = expr.get_type()
+        if isinstance(t, ParserTypeInt):
+            return expr
+        else:
+            raise TypeError
 
 
 class ParserTypeIntArray(ParserType):
