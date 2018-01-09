@@ -779,6 +779,7 @@ void HexEdit::paintEvent(QPaintEvent* event) {
   auto separator_length = viewport()->height();
   auto address_bar_area_rect =
       QRect(-startPosX_, 0, separator_offset + startPosX_, separator_length);
+
   painter.fillRect(address_bar_area_rect,
                    viewport()->palette().color(QPalette::AlternateBase));
   painter.drawLine(separator_offset, 0, separator_offset, separator_length);
