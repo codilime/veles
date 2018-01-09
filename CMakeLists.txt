@@ -362,6 +362,7 @@ add_executable(main_ui
     ${INCLUDE_DIR}/ui/color_picker_button.h
     ${INCLUDE_DIR}/ui/dockwidget.h
     ${INCLUDE_DIR}/ui/dockwidget_native.h
+    ${INCLUDE_DIR}/ui/elidedlabel.h
     ${INCLUDE_DIR}/ui/hexeditwidget.h
     ${INCLUDE_DIR}/ui/nodetreewidget.h
     ${INCLUDE_DIR}/ui/nodewidget.h
@@ -389,6 +390,7 @@ add_executable(main_ui
     ${SRC_DIR}/ui/color_picker_button.cc
     ${SRC_DIR}/ui/dockwidget.cc
     ${SRC_DIR}/ui/dockwidget_native.cc
+    ${SRC_DIR}/ui/elidedlabel.cc
     ${SRC_DIR}/ui/hexeditwidget.cc
     ${SRC_DIR}/ui/nodetreewidget.cc
     ${SRC_DIR}/ui/nodewidget.cc

@@ -35,6 +35,7 @@
 #include "dbif/types.h"
 #include "dbif/universe.h"
 #include "ui/nodewidget.h"
+#include "ui/elidedlabel.h"
 #include "ui/veles_mainwindow.h"
 #include "util/icons.h"
 #include "util/settings/hexedit.h"
@@ -97,7 +98,7 @@ void HexEditWidget::setParserIds(const QStringList& ids) {
 }
 
 QString HexEditWidget::addressAsText(qint64 addr) {
-  return QString::number(addr, 16).rightJustified(sizeof(qint64) * 2, '0');
+  return QString::number(addr, 16).rightJustified(8, '0');
 }
 
 /*****************************************************************************/
@@ -310,13 +311,22 @@ void HexEditWidget::createSelectionInfo() {
   selection_panel->setLayout(layout);
 
   layout->addWidget(change_edit_mode_button_);
-  selection_label_ = new QLabel;
+  selection_label_ = new ElidedLabel;
+  static_cast<ElidedLabel*>(selection_label_)->setElideMode(Qt::ElideRight);
   selection_label_->setFont(util::settings::theme::font());
   selection_label_->setText("");
   selection_label_->setTextInteractionFlags(Qt::TextSelectableByMouse |
                                             Qt::TextSelectableByKeyboard);
+//  selection_label_->setWordWrap(true);
+
+//  auto* scroll_area = new QScrollArea;
+//  scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//  scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//  scroll_area->setWidget(selection_label_);
+
   auto* statusBar = new QStatusBar(this);
-  statusBar->addWidget(selection_label_);
+//  statusBar->addWidget(scroll_area);
+  statusBar->addWidget(selection_label_, 1);
   setStatusBar(statusBar);
 
   widget_action->setDefaultWidget(selection_panel);
@@ -379,11 +389,16 @@ void HexEditWidget::enableFindNext(bool enable) {
 }
 
 void HexEditWidget::selectionChanged(qint64 start_addr, qint64 selection_size) {
-  selection_label_->setText(
-      QString("%1:%2 (%3 bytes)")
-          .arg(addressAsText(start_addr))
-          .arg(addressAsText(start_addr + selection_size))
-          .arg(QString::number(selection_size, 10).rightJustified(8, '0')));
+
+  QString text = QString("Selection %1:%2 (%3 byte%4)")
+                 .arg(addressAsText(start_addr))
+                 .arg(addressAsText(start_addr + selection_size))
+                 .arg(QString::number(selection_size, 10))
+                 .arg(selection_size > 1 ? QString('s'):QString());
+  QFontMetrics metrics(selection_label_->font());
+  QString elidedText = metrics.elidedText(text, Qt::ElideRight, selection_label_->width());
+  selection_label_->setText(elidedText);
+
 }
 
 void HexEditWidget::editStateChanged(bool has_changes, bool has_undo) {
