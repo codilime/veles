@@ -29,6 +29,7 @@
 #include <QTreeView>
 #include <QVBoxLayout>
 #include <QWidgetAction>
+#include <QStatusBar>
 
 #include "dbif/info.h"
 #include "dbif/types.h"
@@ -307,7 +308,6 @@ void HexEditWidget::createSelectionInfo() {
   auto* selection_panel = new QWidget;
   auto* layout = new QHBoxLayout;
   selection_panel->setLayout(layout);
-  layout->addStretch(1);
 
   layout->addWidget(change_edit_mode_button_);
   selection_label_ = new QLabel;
@@ -315,7 +315,9 @@ void HexEditWidget::createSelectionInfo() {
   selection_label_->setText("");
   selection_label_->setTextInteractionFlags(Qt::TextSelectableByMouse |
                                             Qt::TextSelectableByKeyboard);
-  layout->addWidget(selection_label_);
+  auto* statusBar = new QStatusBar(this);
+  statusBar->addWidget(selection_label_);
+  setStatusBar(statusBar);
 
   widget_action->setDefaultWidget(selection_panel);
   auto* selection_toolbar = new QToolBar;
