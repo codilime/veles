@@ -1,6 +1,7 @@
 #include "ui/elidedlabel.h"
 
 #include <QDebug>
+#include <QLayout>
 #include <QPainter>
 #include <QResizeEvent>
 
@@ -8,7 +9,8 @@ ElidedLabel::ElidedLabel(QWidget* parent, Qt::WindowFlags f)
     : QLabel(parent, f)
     , elideMode_(Qt::ElideRight)
 {
-    setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+    setMinimumWidth(1);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 }
 
 ElidedLabel::ElidedLabel(const QString& txt, QWidget* parent, Qt::WindowFlags f)
