@@ -38,6 +38,8 @@ OptionsDialog::OptionsDialog(QWidget* parent)
           [this](int state) {
             ui->hexColumnsSpinBox->setEnabled(state != Qt::Checked);
           });
+  connect(ui->buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked,
+          this, &OptionsDialog::applyChanges);
 
   // Initialize color pickers.
   auto color_begin = util::settings::visualization::colorBegin();
@@ -63,7 +65,7 @@ void OptionsDialog::show() {
   QWidget::show();
 }
 
-void OptionsDialog::accept() {
+void OptionsDialog::applyChanges() {
   bool restart_needed = false;
   QString newTheme = ui->colorsBox->currentText();
   if (newTheme != util::settings::theme::currentTheme()) {
@@ -92,7 +94,10 @@ void OptionsDialog::accept() {
         this, tr("Options change"),
         tr("Some changes will only take effect after application restart"));
   }
+}
 
+void OptionsDialog::accept() {
+  applyChanges();
   emit accepted();
   QDialog::hide();
 }

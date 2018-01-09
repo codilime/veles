@@ -36,6 +36,7 @@ class OptionsDialog : public QDialog {
   ~OptionsDialog() override;
   Ui::OptionsDialog* ui;
   void show();
+  void applyChanges();
 
  public slots:
   void accept() override;
