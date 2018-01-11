@@ -191,7 +191,7 @@ void HexEditWidget::createActions() {
   show_hex_edit_act_->setToolTip(tr("Hex editor"));
   show_hex_edit_act_->setEnabled(true);
   connect(show_hex_edit_act_, &QAction::triggered, this,
-          &HexEditWidget::showHexEditor);
+          &HexEditWidget::openHexEditor);
 
   add_column_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::HEX_ADD_COLUMN, this,
@@ -364,7 +364,7 @@ void HexEditWidget::showVisualization() {
   main_window_->createVisualization(data_model_);
 }
 
-void HexEditWidget::showHexEditor() {
+void HexEditWidget::openHexEditor() {
   main_window_->createHexEditTab(data_model_);
 }
 
