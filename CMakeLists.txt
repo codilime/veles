@@ -382,6 +382,7 @@ add_executable(main_ui
     ${INCLUDE_DIR}/ui/connectiondialog.h
     ${INCLUDE_DIR}/ui/shortcutedit.h
     ${INCLUDE_DIR}/ui/shortcutssettings.h
+    ${INCLUDE_DIR}/ui/mainwindowwithdetachabledockwidgets.h
     ${SRC_DIR}/ui/main.cc
     ${SRC_DIR}/ui/logwidget.cc
     ${SRC_DIR}/ui/veles_mainwindow.cc
@@ -407,6 +408,7 @@ add_executable(main_ui
     ${SRC_DIR}/ui/connectiondialog.cc
     ${SRC_DIR}/ui/shortcutedit.cc
     ${SRC_DIR}/ui/shortcutssettings.cc
+    ${SRC_DIR}/ui/mainwindowwithdetachabledockwidgets.cc
     ${RESOURCES}
     ${VISUALIZATION_SHADERS}
     ${FORMS}

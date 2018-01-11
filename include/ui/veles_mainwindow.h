@@ -32,6 +32,7 @@
 #include "ui/connectiondialog.h"
 #include "ui/connectionmanager.h"
 #include "ui/dockwidget.h"
+#include "ui/mainwindowwithdetachabledockwidgets.h"
 #include "ui/optionsdialog.h"
 #include "ui/shortcutssettings.h"
 

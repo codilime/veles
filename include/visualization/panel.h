@@ -29,6 +29,7 @@
 
 #include "ui/dockwidget.h"
 #include "ui/fileblobmodel.h"
+#include "ui/mainwindowwithdetachabledockwidgets.h"
 #include "ui/nodetreewidget.h"
 #include "visualization/base.h"
 #include "visualization/minimap_panel.h"
