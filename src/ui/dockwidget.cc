@@ -609,7 +609,7 @@ bool TabBarEventFilter::mouseButtonDblClick(QTabBar* tab_bar,
 }
 
 /*****************************************************************************/
-/* View */
+/* IconAwareView */
 /*****************************************************************************/
 
 std::map<QString, QIcon*> IconAwareView::icons_;

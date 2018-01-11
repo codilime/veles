@@ -148,6 +148,10 @@ class TabBarEventFilter : public QObject {
 
 /*****************************************************************************/
 /* IconAwareView */
+/* This is the parent class for all Tabs. It enables each Tab to have an Icon.
+ * As the parent of Tabs, this class will probably have more responsibilities in
+ * the future.
+ */
 /*****************************************************************************/
 
 class IconAwareView : public QMainWindow {
