@@ -603,7 +603,7 @@ uint64_t HexEdit::byteValue(qint64 pos) const {
 }
 
 void HexEdit::setBytesValues(qint64 pos, const data::BinData& new_data) {
-  edit_engine_.changeBytes(pos, new_data);
+  edit_engine_.modifyBytes(pos, new_data);
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
 }
 

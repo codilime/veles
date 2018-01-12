@@ -28,6 +28,12 @@
 namespace veles {
 namespace util {
 
+/**
+ * EditEngine is an abstraction layer for FileBlobModel, which keeps current
+ * (local) changes (before uploading them to the backend) and editing history.
+ * It works in quite efficient way even on huge files.
+ */
+
 class EditEngine {
  public:
   explicit EditEngine(ui::FileBlobModel* original_data,
@@ -36,26 +42,59 @@ class EditEngine {
     initAddressMapping();
   }
 
-  void changeBytes(size_t pos, const data::BinData& bytes,
+  /**
+   * Substitutes `bytes.size()` bytes starting from position `pos`
+   * for values from `bytes`.
+   */
+  void modifyBytes(size_t pos, const data::BinData& bytes,
                    bool add_to_history = true);
+  /**
+   * Inserts data from `bytes` in position `pos`.
+   * Works in pessimistic time O(numberOfLocalEdits + bytes.size()).
+   */
   void insertBytes(size_t pos, const data::BinData& bytes,
                    bool add_to_history = true);
+  /**
+   * Removes `size` bytes starting from position `pos`.
+   * Works in pessimistic time O(numberOfLocalEdits).
+   */
   void removeBytes(size_t pos, size_t size, bool add_to_history = true);
+  /**
+   * Updates the EditEngine after remapping request from server.
+   * It can occur e.g. when other client do an insert or a removal.
+   * Works in pessimistic time O(numberOfLocalEdits).
+   */
   void remapOrigin(size_t origin_pos, size_t old_size, size_t new_size);
 
+  /** Returns whether there is any change to undo. */
   bool hasUndo() const { return !edit_stack_.isEmpty(); }
-  /** Undo last changeBytes and returns first byte changed by this operation */
+  /** Reverts last change and returns first byte changed by this operation. */
+  // TODO(catsuryuu): `undo` works only with `modifyBytes`.
+  // `insertBytes`, `removeBytes` and `remapOrigin` can break the edit stack.
   size_t undo();
 
   bool hasChanges() const { return has_changes_; }
+  /**
+   * Uploads all local changes to FileBlobModel.
+   * After applying there is no local changes left.
+   */
   void applyChanges();
+  /** Removes all local changes. */
   void clear();
 
+  /** Returns size of local data state. */
   size_t dataSize() const {
     return original_data_->binData().size() + data_size_difference_;
   }
+  /** Returns value of byte from position `pos`. */
   uint64_t byteValue(size_t pos) const;
+  /** Returns `size` bytes starting from position `pos`. */
   data::BinData bytesValues(size_t pos, size_t size) const;
+  /**
+   * Returns `size` boolean values that correspond to bytes starting from
+   * position `pos` and indicates whether specific bytes have been changed
+   * or not.
+   */
   std::vector<bool> modifiedPositions(size_t pos, size_t size) const;
 
  private:

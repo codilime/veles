@@ -20,7 +20,30 @@
 namespace veles {
 namespace util {
 
-void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
+/**
+ * Current (local) data from a file is kept as address mapping:
+ * from position in current file to EditNode (in address_mapping_ attribute).
+ *
+ * EditNode represents a fragment of data.
+ * If `fragment_` field equals nullptr then it represents a fragment of data
+ * from server (original data).
+ * Otherwise `fragment_` points to BinData, which is the content of the fragment
+ * (maybe only some subsequence of BinData).
+ * `offset_` field denotes the begin of relevant data within BinData
+ * or original data.
+ *
+ * The size of the fragment is equal to the distance between its start position
+ * (key in the address_mapping_) and the start position of the next fragment.
+ * For the last fragment, `dataSize()` is used instead of start position
+ * of the next fragment.
+ *
+ * The last fragment must be from original data (it means that `fragment_`
+ * must be equal nullptr), even if its length is equal zero.
+ * It's an assumption that allows some simplifications in the implementation.
+ *
+ */
+
+void EditEngine::modifyBytes(size_t pos, const data::BinData& bytes,
                              bool add_to_history) {
   if (bytes.size() == 0) {
     return;
@@ -45,7 +68,9 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
   --it;
 
   if (next_it == address_mapping_.cend() || end_pos <= next_it.key()) {
+    // This is the case when whole query range is located in only one node.
     if (it->fragment_ == nullptr) {
+      // TODO(catsuryuu): little refactoring
       if (address_mapping_.find(end_pos) == address_mapping_.cend()) {
         address_mapping_.insert(
             end_pos, EditNode(nullptr, it->offset_ + (end_pos - it.key())));
@@ -59,6 +84,9 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
                              bytes);
     }
   } else {
+    // This is the case when query range is located in two or more nodes.
+
+    // Remove nodes overlapped entirely (maybe none).
     ++it;
     ++next_it;
     while (next_it != address_mapping_.cend() && next_it.key() < end_pos) {
@@ -66,13 +94,16 @@ void EditEngine::changeBytes(size_t pos, const data::BinData& bytes,
       ++next_it;
     }
 
+    // Crop the last overlapping node.
+    // TODO(catsuryuu): little refactoring
     EditNode last_modified_node = it.value();
     last_modified_node.offset_ += end_pos - it.key();
     address_mapping_.erase(it);
-
     if (address_mapping_.find(end_pos) == address_mapping_.cend()) {
       address_mapping_.insert(end_pos, last_modified_node);
     }
+
+    // Insert new bytes.
     // This can overwrite the first overlapping node and that's OK.
     it = address_mapping_.insert(pos, EditNode(bytes));
 
@@ -116,6 +147,8 @@ void EditEngine::removeBytes(size_t pos, size_t size, bool add_to_history) {
   trySquash(address_mapping_.lowerBound(pos));
 }
 
+// TODO(catsuryuu): Rewrite origin remapping (without using `remap`)
+// for not losing local changes in deleted range.
 void EditEngine::remapOrigin(size_t origin_pos, size_t old_size,
                              size_t new_size) {
   // This variable can be overflowed when `old_size` > `new_size`,
@@ -123,6 +156,9 @@ void EditEngine::remapOrigin(size_t origin_pos, size_t old_size,
   const size_t offset = new_size - old_size;
 
   auto search_it = address_mapping_.cbegin();
+  // Translate position in original data to corresponding position in local
+  // data, using `search_it` for searching (to not start from the beginning
+  // each time).
   auto find_local_pos = [this, &search_it](size_t origin_pos) {
     size_t local_pos = origin_pos;
     while (search_it != address_mapping_.cend()) {
@@ -143,10 +179,10 @@ void EditEngine::remapOrigin(size_t origin_pos, size_t old_size,
   const size_t origin_end_pos = origin_pos + old_size;
   const size_t local_end_pos = find_local_pos(origin_end_pos);
 
-  // TODO(catsuryuu): Rewrite origin remapping (without using `remap`)
-  // for not losing local changes in deleted range.
+  // Correct keys in `address_mapping_`.
   remap(local_pos, local_end_pos - local_pos, new_size);
 
+  // Correct offsets in nodes with original data fragments.
   auto local_pos_it = address_mapping_.lowerBound(local_pos);
   for (auto mutable_it = local_pos_it; mutable_it != address_mapping_.cend();
        ++mutable_it) {
@@ -156,6 +192,10 @@ void EditEngine::remapOrigin(size_t origin_pos, size_t old_size,
   }
 
   if (new_size > 0) {
+    // After calling `remap` we should ensure that the node that corresponds to
+    // position `local_pos` is appropriate.
+    // But if previous fragment is from the original data, the address mapping
+    // is already correct.
     --local_pos_it;
     if (local_pos_it->fragment_ != nullptr) {
       address_mapping_.insert(local_pos, EditNode(nullptr, origin_pos));
@@ -171,7 +211,7 @@ size_t EditEngine::undo() {
   auto range = edit_stack_.back();
   auto last_change = edit_stack_data_.back();
 
-  changeBytes(range.first, last_change, false);
+  modifyBytes(range.first, last_change, false);
 
   edit_stack_data_.pop_back();
   edit_stack_.pop_back();
@@ -180,11 +220,14 @@ size_t EditEngine::undo() {
 }
 
 void EditEngine::applyChanges() {
+  // Upload to FileBlobModel every fragment that isn't from original data
+  // (i.e. fragment_ != nullptr).
   for (auto it = address_mapping_.cbegin(); it != address_mapping_.cend();
        ++it) {
     if (it->fragment_ != nullptr) {
       auto next_it = it;
-      ++next_it;
+      ++next_it;  // It exists because last EditNode should be from original
+                  // data.
       assert(next_it != address_mapping_.cend());
 
       size_t size = next_it.key() - it.key();
@@ -194,6 +237,8 @@ void EditEngine::applyChanges() {
                                     it.key());
     }
   }
+
+  // Remove uploaded changes from EditEngine (i.e. clear address mapping).
   initAddressMapping();
 }
 
@@ -226,15 +271,20 @@ data::BinData EditEngine::bytesValues(size_t pos, size_t size) const {
   --it;
 
   if (next_it == address_mapping_.cend() || end_pos <= next_it.key()) {
+    // This is the case when whole query range is located in only one node.
     result.setData(0, size,
                    getDataFromEditNode(it.value(), pos - it.key(), size));
   } else {
+    // This is the case when query range is located in two or more nodes.
+
+    // Copy data from first relevant node.
     size_t size_to_write = next_it.key() - pos;
     result.setData(
         0, size_to_write,
         getDataFromEditNode(it.value(), pos - it.key(), size_to_write));
     size_t bytes_written = size_to_write;
 
+    // Copy data from inner relevant nodes (maybe none).
     ++it;
     ++next_it;
     while (next_it != address_mapping_.cend() && next_it.key() < end_pos) {
@@ -246,6 +296,7 @@ data::BinData EditEngine::bytesValues(size_t pos, size_t size) const {
       ++next_it;
     }
 
+    // Copy data from last relevant node.
     size_to_write = size - bytes_written;
     result.setData(bytes_written, size_to_write,
                    getDataFromEditNode(it.value(), 0, size_to_write));
@@ -263,6 +314,9 @@ std::vector<bool> EditEngine::modifiedPositions(size_t pos, size_t size) const {
   auto it = next_it;
   --it;
 
+  // Set `true` on chosen range in `result`, but only if current node (pointed
+  // by `it`) is not from original data (i.e. fragment_ != nullptr), what means
+  // that it was modified.
   auto set_result_true = [&it, &result](size_t start, size_t end) {
     if (it->fragment_ != nullptr) {
       for (size_t i = start; i < end; ++i) {
@@ -272,9 +326,15 @@ std::vector<bool> EditEngine::modifiedPositions(size_t pos, size_t size) const {
   };
 
   if (next_it == address_mapping_.cend() || end_pos <= next_it.key()) {
+    // This is the case when whole query range is located in only one node.
     set_result_true(0, size);
   } else {
+    // This is the case when query range is located in two or more nodes.
+
+    // Process first relevant node.
     set_result_true(0, next_it.key() - pos);
+
+    // Process inner relevant nodes (maybe none).
     ++it;
     ++next_it;
     while (next_it != address_mapping_.cend() && next_it.key() < end_pos) {
@@ -282,6 +342,8 @@ std::vector<bool> EditEngine::modifiedPositions(size_t pos, size_t size) const {
       ++it;
       ++next_it;
     }
+
+    // Process last relevant node.
     set_result_true(it.key() - pos, size);
   }
 
@@ -297,6 +359,17 @@ data::BinData EditEngine::getDataFromEditNode(const EditNode& edit_node,
   return edit_node.fragment_->data(edit_node.offset_ + offset, size);
 }
 
+/**
+ * Rearranges `address_mapping_` for removing `old_size` bytes starting from
+ * position `pos` and inserting `new_size` bytes there.
+ *
+ * If `new_size > 0`, it's required to do an insert to `address_mapping` in
+ * position `pos` with `new_size` bytes, because there will be a gap in
+ * address mapping after the `remap` call.
+ *
+ * Works in pessimistic time O(address_mapping_.size()).
+ * Warning: It invalidates ALL iterators in `address_mapping_`.
+ */
 void EditEngine::remap(size_t pos, size_t old_size, size_t new_size) {
   // This variable can be overflowed when `old_size` > `new_size`,
   // but it will be OK when we add this difference to some address.
@@ -306,6 +379,7 @@ void EditEngine::remap(size_t pos, size_t old_size, size_t new_size) {
   auto it_ge_pos = address_mapping_.lowerBound(pos);
 
   QMap<size_t, EditNode> new_address_mapping;
+  // Fragments that have beginnings before `pos` are copied unchanged.
   for (auto it = address_mapping_.cbegin(); it != it_ge_pos; ++it) {
     new_address_mapping.insert(it.key(), it.value());
   }
@@ -318,13 +392,15 @@ void EditEngine::remap(size_t pos, size_t old_size, size_t new_size) {
   auto split_node_it = split_node_next_it;
   --split_node_it;
 
+  // Insert the suffix of splitted node (with address shifted by `offset`).
   new_address_mapping.insert(
       end_pos + offset,
       EditNode(split_node_it->fragment_,
                split_node_it->offset_ + (end_pos - split_node_it.key())));
 
+  // Fragments that have beginnings after `end_pos` are copied with address
+  // shifted by `offset`.
   for (auto it = split_node_next_it; it != address_mapping_.cend(); ++it) {
-    // This can overwrite the `*pos_it` node and that's OK.
     new_address_mapping.insert(it.key() + offset, it.value());
   }
 
@@ -333,7 +409,7 @@ void EditEngine::remap(size_t pos, size_t old_size, size_t new_size) {
 }
 
 /*
- * Warning: it can invalidate iterator `it`
+ * Warning: it can invalidate iterator `it`.
  */
 void EditEngine::trySquashWithPrev(const QMap<size_t, EditNode>::iterator& it) {
   if (it == address_mapping_.cbegin()) {
@@ -347,7 +423,7 @@ void EditEngine::trySquashWithPrev(const QMap<size_t, EditNode>::iterator& it) {
   } else {
     if (prev->fragment_ != nullptr) {
       auto next = it;
-      ++next;  // it exists because last EditNode should be from original
+      ++next;  // It exists because last EditNode should be from original data.
       auto prev_size = it.key() - prev.key();
       auto it_size = next.key() - it.key();
       address_mapping_.insert(
@@ -358,6 +434,10 @@ void EditEngine::trySquashWithPrev(const QMap<size_t, EditNode>::iterator& it) {
   }
 }
 
+/**
+ * Tries to squash the node from iterator `it` with both adjacent nodes
+ * (if they exist).
+ */
 void EditEngine::trySquash(const QMap<size_t, EditNode>::iterator& it) {
   auto next = it;
   ++next;
