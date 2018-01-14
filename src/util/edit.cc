@@ -70,8 +70,9 @@ void EditEngine::modifyBytes(size_t pos, const data::BinData& bytes,
   if (next_it == address_mapping_.cend() || end_pos <= next_it.key()) {
     // This is the case when whole query range is located in only one node.
     if (it->fragment_ == nullptr) {
-      // TODO(catsuryuu): little refactoring
-      if (address_mapping_.find(end_pos) == address_mapping_.cend()) {
+      if (next_it == address_mapping_.cend() || end_pos != next_it.key()) {
+        // Ending part of the modified fragment has to remain unchanged,
+        // so we must insert new node for it.
         address_mapping_.insert(
             end_pos, EditNode(nullptr, it->offset_ + (end_pos - it.key())));
       }
@@ -89,17 +90,16 @@ void EditEngine::modifyBytes(size_t pos, const data::BinData& bytes,
     // Remove nodes overlapped entirely (maybe none).
     ++it;
     ++next_it;
-    while (next_it != address_mapping_.cend() && next_it.key() < end_pos) {
+    while (next_it != address_mapping_.cend() && next_it.key() <= end_pos) {
       it = address_mapping_.erase(it);
       ++next_it;
     }
 
-    // Crop the last overlapping node.
-    // TODO(catsuryuu): little refactoring
-    EditNode last_modified_node = it.value();
-    last_modified_node.offset_ += end_pos - it.key();
-    address_mapping_.erase(it);
-    if (address_mapping_.find(end_pos) == address_mapping_.cend()) {
+    if (it.key() < end_pos) {
+      // Crop the last overlapping node.
+      EditNode last_modified_node = it.value();
+      last_modified_node.offset_ += end_pos - it.key();
+      address_mapping_.erase(it);
       address_mapping_.insert(end_pos, last_modified_node);
     }
 
