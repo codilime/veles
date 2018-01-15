@@ -70,9 +70,9 @@ void EditEngine::modifyBytes(size_t pos, const data::BinData& bytes,
   if (next_it == address_mapping_.cend() || end_pos <= next_it.key()) {
     // This is the case when whole query range is located in only one node.
     if (it->fragment_ == nullptr) {
-      if (next_it == address_mapping_.cend() || end_pos != next_it.key()) {
+      if (next_it == address_mapping_.cend() || end_pos < next_it.key()) {
         // Ending part of the modified fragment has to remain unchanged,
-        // so we must insert new node for it.
+        // so we must insert a new node for it.
         address_mapping_.insert(
             end_pos, EditNode(nullptr, it->offset_ + (end_pos - it.key())));
       }
