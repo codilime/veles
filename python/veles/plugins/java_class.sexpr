@@ -98,8 +98,12 @@
   (param-int-map constant_pool_map cp_info)
   ; XXX bitfield
   (field access_flags 16)
-  (field name_index 16 (unsigned-int))
-  (field descriptor_index 16 (unsigned-int))
+  (field name_index 16
+    (map-lookup cp_info constant_pool_map)
+  )
+  (field descriptor_index 16
+    (map-lookup cp_info constant_pool_map)
+  )
   (field attributes_count 16 (unsigned-int))
   (child* attributes attribute_info attributes_count
     (param constant_pool_map constant_pool_map)
@@ -109,8 +113,12 @@
 (struct method_info
   (param-int-map constant_pool_map cp_info)
   (field access_flags 16)
-  (field name_index 16 (unsigned-int))
-  (field descriptor_index 16 (unsigned-int))
+  (field name_index 16
+    (map-lookup cp_info constant_pool_map)
+  )
+  (field descriptor_index 16
+    (map-lookup cp_info constant_pool_map)
+  )
   (field attributes_count 16 (unsigned-int))
   (child* attributes attribute_info attributes_count
     (param constant_pool_map constant_pool_map)
@@ -119,7 +127,9 @@
 
 (struct attribute_info
   (param-int-map constant_pool_map cp_info)
-  (field attribute_name_index 16 (unsigned-int))
+  (field attribute_name_index 16
+    (map-lookup cp_info constant_pool_map)
+  )
   (field attribute_length 32 (unsigned-int))
   (field* info 8 attribute_length)
 )
@@ -138,10 +148,16 @@
   )
   (int-map-bounds constant_pool_map 1 constant_pool_count)
   (field access_flags 16 (unsigned-int))
-  (field this_class 16 (unsigned-int))
-  (field super_class 16 (unsigned-int))
+  (field this_class 16
+    (map-lookup cp_info constant_pool_map)
+  )
+  (field super_class 16
+    (map-lookup cp_info constant_pool_map)
+  )
   (field interfaces_count 16 (unsigned-int))
-  (field* interfaces 16 interfaces_count (unsigned-int))
+  (field* interfaces 16 interfaces_count
+    (map-lookup cp_info constant_pool_map)
+  )
   (field fields_count 16 (unsigned-int))
   (child* fields field_info fields_count
     (param constant_pool_map constant_pool_map)

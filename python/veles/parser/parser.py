@@ -506,3 +506,13 @@ class ParserFieldInterpInt:
 class ParserFieldInterpIntArray:
     def __init__(self, signed):
         self.signed = signed
+
+
+class ParserFieldInterpMapLookup:
+    def __init__(self, map):
+        self.map = map
+
+
+class ParserFieldInterpMapLookupArray:
+    def __init__(self, map):
+        self.map = map

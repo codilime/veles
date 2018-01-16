@@ -37,6 +37,8 @@ from .parser import (
     ParserFieldInterpBindata,
     ParserFieldInterpInt,
     ParserFieldInterpIntArray,
+    ParserFieldInterpMapLookup,
+    ParserFieldInterpMapLookupArray,
     ParserBinDisplayString,
     ParserBinDisplaySigned,
     ParserBinDisplayUnsigned,
@@ -512,6 +514,36 @@ class StModString(StModTypeBindata, StForm):
         return ParserBinDisplayString()
 
 
+class StModMapLookup(StModType, StForm):
+    tag = 'map-lookup'
+    fields = [
+        ('type', StSymbolRaw),
+        ('map', StExpr),
+    ]
+
+    def get_type(self, namespace, width):
+        return ParserTypeStruct(namespace.structs[self.type])
+
+    def get_type_array(self, namespace, width, num):
+        return ParserTypeStructArray(namespace.structs[self.type], num)
+
+    def get_interp(self, struct, endian):
+        type = ParserTypeStruct(struct.namespace.structs[self.type])
+        map = self.map.xlat(struct)
+        mtype = map.get_type()
+        if not isinstance(mtype, ParserTypeIntMap) or mtype.subtype != type:
+            raise TypeError
+        return ParserFieldInterpMapLookup(map)
+
+    def get_interp_array(self, struct, endian):
+        type = ParserTypeStruct(struct.namespace.structs[self.type])
+        map = self.map.xlat(struct)
+        mtype = map.get_type()
+        if not isinstance(mtype, ParserTypeIntMap) or mtype.subtype != type:
+            raise TypeError
+        return ParserFieldInterpMapLookupArray(map)
+
+
 class StModLoopVarInt(StForm):
     tag = 'var-int'
     fields = [
@@ -672,6 +704,7 @@ StFieldMod.matchers = [
     StModUnsignedInt,
     StModSignedWrapInt,
     StModString,
+    StModMapLookup,
 ]
 
 StChildLoopMod.matchers = [

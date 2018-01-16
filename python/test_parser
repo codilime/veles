@@ -236,6 +236,38 @@ class ParsedFieldIntArray(ParsedField):
         printer(self.pos_start, 'int[] {} = {} [{}]'.format(self.field.name, ', '.join(str(x) for x in self.values), self.raw_value))
 
 
+class ParsedFieldRef(ParsedField):
+    def __init__(self,
+            data, pos_start, pos_end, field,
+            repacker, num, raw_value,
+            index, ref):
+        super().__init__(data, pos_start, pos_end, field,
+                repacker, num, raw_value)
+        self.index = index
+        self.ref = ref
+
+    def print(self, printer):
+        printer(self.pos_start, '{} {} = {} [{}] [{}]'.format(self.field.type, self.field.name, self.ref, self.index, self.raw_value))
+
+
+class ParsedFieldRefArray(ParsedField):
+    def __init__(self,
+            data, pos_start, pos_end, field,
+            repacker, num, raw_value,
+            indices, refs):
+        super().__init__(data, pos_start, pos_end, field,
+                repacker, num, raw_value)
+        self.indices = indices
+        self.refs = refs
+
+    def print(self, printer):
+        printer(self.pos_start, '{} {} = {} [{}] [{}]'.format(
+            self.field.type, self.field.name,
+            ', '.join(str(ref) for ref in self.refs),
+            ', '.join(str(index) for index in self.indices),
+            self.raw_value))
+
+
 class ParsedComputedInt:
     def __init__(self, data, pos, field, value):
         self.data = data
@@ -269,6 +301,12 @@ class ParsedIntMap:
 
     def __str__(self):
         return '{} #{}'.format(self.field.type, self.index)
+
+    def lookup(self, index):
+        # XXX
+        if index in self.values:
+            return self.values[index]
+        return ...
 
 
 with open(sys.argv[3], 'rb') as f:
@@ -372,7 +410,38 @@ def eval_ops(res, data, pos, ops):
                     raw_value,
                     values,
                 )
+            elif isinstance(op.interp, ParserFieldInterpMapLookup):
+                map = eval_expr(res, op.interp.map)
+                index = raw_value[0]
+                ref = map.lookup(index)
+                field = ParsedFieldRef(
+                    data,
+                    pos,
+                    pos_end,
+                    op.field,
+                    repacker,
+                    num,
+                    raw_value,
+                    index,
+                    ref,
+                )
+            elif isinstance(op.interp, ParserFieldInterpMapLookupArray):
+                map = eval_expr(res, op.interp.map)
+                indices = list(raw_value)
+                refs = [map.lookup(index) for index in indices]
+                field = ParsedFieldRefArray(
+                    data,
+                    pos,
+                    pos_end,
+                    op.field,
+                    repacker,
+                    num,
+                    raw_value,
+                    indices,
+                    refs,
+                )
             else:
+                print(op.interp)
                 assert 0
             pos = pos_end
             res.fields[op.field] = field
