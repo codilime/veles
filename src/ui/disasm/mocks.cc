@@ -210,14 +210,6 @@ void EntryFactory::generate(ChunkNode* node) {
 
   if (!node->chunk()->collapsed) {
     switch (node->chunk()->meta_type) {
-      case ChunkType::INSTRUCTION: {
-        auto entry = std::make_shared<EntryField>(node->chunk());
-        entry->pos.setNum(next_bookmark_++);
-        entry->field_type = FieldType::STRING;
-        entry->value = std::make_unique<FieldValueString>(randomInstruction());
-        entries_.emplace_back(entry);
-        break;
-      }
       case ChunkType::DATA: {
         auto entry = std::make_shared<EntryField>(node->chunk());
         entry->pos.setNum(next_bookmark_++);
@@ -263,6 +255,15 @@ void MockWindow::generateEntries() {
   for (auto& e : entries) {
     bookmarks_.emplace_back(e->pos);
     bookmark_entry_[e->pos] = i++;
+  }
+
+  // generate [ChunkID] -> Entry
+  chunk_entry_.clear();
+  for (auto e : entries) {
+    if (e->type() == EntryType::CHUNK_BEGIN) {
+      auto* entry_begin = reinterpret_cast<EntryChunkBegin*>(e.get());
+      chunk_entry_[entry_begin->chunk->id] = entry_begin->pos;
+    }
   }
 }
 
@@ -341,19 +342,26 @@ void MockWindow::runChunkCollapseToggle(const ChunkID& id) {
   emit dataChanged();
 }
 
+Bookmark MockWindow::getPositionByChunk(const ChunkID& chunk) {
+  assert(chunk_entry_.find(chunk) != chunk_entry_.end());
+  return chunk_entry_[chunk];
+}
+
 MockBlob::MockBlob(std::shared_ptr<ChunkNode> root) { root_ = std::move(root); }
 
 std::unique_ptr<Window> MockBlob::createWindow(const Bookmark& pos,
                                                unsigned prev_n,
                                                unsigned next_n) {
-  std::unique_ptr<Window> mw = std::make_unique<MockWindow>(root_);
+  std::unique_ptr<MockWindow> mw = std::make_unique<MockWindow>(root_);
   auto entries = mw->entries();
 
   auto ei = std::rand() % entries.size();
   entrypoint_ = entries[ei]->pos;
 
   mw->seek(pos, prev_n, next_n);
-  return mw;
+
+  this->window_ = mw.get();
+  return std::unique_ptr<Window>(std::move(mw));
 }
 
 QFuture<Bookmark> MockBlob::getEntrypoint() {
@@ -361,11 +369,16 @@ QFuture<Bookmark> MockBlob::getEntrypoint() {
 }
 
 QFuture<Bookmark> MockBlob::getPosition(ScrollbarIndex index) {
-  return QtConcurrent::run([=]() { return Bookmark(); });
+  return QtConcurrent::run([=]() {
+    auto entries = window_->entries();
+    assert(entries.size() <= index);
+    return entries[index]->pos;
+  });
 }
 
 QFuture<Bookmark> MockBlob::getPositionByChunk(const ChunkID& chunk) {
-  return QtConcurrent::run([=]() { return Bookmark(); });
+  return QtConcurrent::run(
+      [=]() { return window_->getPositionByChunk(chunk); });
 }
 
 }  // namespace mocks
