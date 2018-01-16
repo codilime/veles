@@ -17,7 +17,7 @@ class AddressColumnWidget : public QWidget {
   QVector<QRectF> renderRectVector;
   QHash<Address, unsigned> hintsDict;
 
-  bool debugPainting = false;
+  bool debugPainting = true;
   QPointF mousePosition;
 
   QString addressToText(Address address);

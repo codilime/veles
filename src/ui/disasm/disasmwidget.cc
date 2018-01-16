@@ -9,10 +9,10 @@ DisasmWidget::DisasmWidget() {
                                    17, 18, 19, 20, 21, 22, 23, 24});
 
   address_column.setHintMap({{13, 2}, {23, 5}});
-  address_column.setMaximumWidth(100);
-  address_column.setMinimumHeight(800);
+  address_column.setFixedWidth(100);  // todo(zpp) fix it somewhen
 
   main_layout.addWidget(&address_column);
+  main_layout.addWidget(&rich_text_widget);
   setLayout(&main_layout);
 }
 

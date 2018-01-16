@@ -3,12 +3,23 @@
 namespace veles {
 namespace ui {
 
+AddressColumnWidget::AddressColumnWidget() { setMouseTracking(true); }
+
 void AddressColumnWidget::paintEvent(QPaintEvent* event)  // override
 {
   QPainter painter(this);
   QStylePainter stylePainter(this);
 
   painter.fillRect(rect(), palette().color(QPalette::AlternateBase));
+
+  if (debugPainting)  // todo(zpp) such things can be done by inheriting
+                      // DebuggableWidget
+  {
+    auto full_rect = rect();
+    full_rect.setWidth(full_rect.width() - 1);
+    full_rect.setHeight(full_rect.height() - 1);
+    painter.drawRect(full_rect);
+  }
 
   const auto rowHeight = (1 + 0.25) * QFontMetricsF(painter.font()).height();
 
@@ -67,8 +78,6 @@ void AddressColumnWidget::mouseMoveEvent(QMouseEvent* event) {
   mousePosition = event->localPos();
   update();
 }
-
-AddressColumnWidget::AddressColumnWidget() { setMouseTracking(true); }
 
 void AddressColumnWidget::leaveEvent(QEvent* event) { update(); }
 
