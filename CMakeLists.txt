@@ -385,6 +385,7 @@ add_executable(main_ui
     ${INCLUDE_DIR}/ui/spinboxvalidator.h
     ${INCLUDE_DIR}/ui/dialogs/connectiondialog.h
     ${INCLUDE_DIR}/ui/shortcutedit.h
+    ${INCLUDE_DIR}/ui/mainwindowwithdetachabledockwidgets.h
     ${INCLUDE_DIR}/ui/shortcutssettings.h
     ${INCLUDE_DIR}/ui/filters/activatedockeventfilter.h
     ${INCLUDE_DIR}/ui/filters/tabbareventfilter.h
@@ -418,6 +419,7 @@ add_executable(main_ui
     ${SRC_DIR}/ui/spinboxvalidator.cc
     ${SRC_DIR}/ui/dialogs/connectiondialog.cc
     ${SRC_DIR}/ui/shortcutedit.cc
+    ${SRC_DIR}/ui/mainwindowwithdetachabledockwidgets.cc
     ${SRC_DIR}/ui/shortcutssettings.cc
     ${SRC_DIR}/ui/filters/activatedockeventfilter.cc
     ${SRC_DIR}/ui/filters/tabbareventfilter.cc
