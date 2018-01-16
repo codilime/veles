@@ -20,6 +20,7 @@
 #include <QDesktopWidget>
 #include <QLayout>
 #include <QTabBar>
+#include <ui/disasm/disasmtab.h>
 
 #include "ui/filters/activatedockeventfilter.h"
 #include "ui/nodewidget.h"
@@ -729,6 +730,12 @@ void MainWindowWithDetachableDockWidgets::createVisualization(
   auto dock_widget = addTab(panel, data_model->path().join(" : "), nullptr);
   connect(dock_widget, &DockWidget::visibilityChanged, panel,
           &visualization::VisualizationPanel::visibilityChanged);
+}
+
+void MainWindowWithDetachableDockWidgets::createDisasmTab() {
+  auto* disasm_tab = new DisasmTab;
+  addTab(disasm_tab, "Disasm Tab", nullptr);
+
 }
 
 }  // namespace ui
