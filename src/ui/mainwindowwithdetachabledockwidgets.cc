@@ -1,10 +1,10 @@
 #include "ui/mainwindowwithdetachabledockwidgets.h"
 
+#include <ui/disasm/disasmtab.h>
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QLayout>
 #include <QTabBar>
-#include <ui/disasm/disasmtab.h>
 
 #include "ui/nodewidget.h"
 #include "visualization/panel.h"
@@ -718,7 +718,6 @@ void MainWindowWithDetachableDockWidgets::createVisualization(
 void MainWindowWithDetachableDockWidgets::createDisasmTab() {
   auto* disasm_tab = new DisasmTab;
   addTab(disasm_tab, "Disasm Tab", nullptr);
-
 }
 
 }  // namespace ui
