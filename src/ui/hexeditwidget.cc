@@ -171,6 +171,7 @@ void HexEditWidget::createActions() {
   show_disasm_act_->setCheckable(false);
   show_disasm_act_->setChecked(false);
   // TODO(prybicki) add connect here
+  connect(show_disasm_act_, &QAction::triggered, this, &HexEditWidget::showDisasmTab);
 
   show_node_tree_act_ = ShortcutsModel::getShortcutsModel()->createQAction(
       util::settings::shortcuts::SHOW_NODE_TREE, this,
@@ -374,6 +375,10 @@ void HexEditWidget::saveAs() {
 
 void HexEditWidget::showVisualization() {
   main_window_->createVisualization(data_model_);
+}
+
+void HexEditWidget::showDisasmTab() {
+  main_window_->createDisasmTab();
 }
 
 void HexEditWidget::openHexEditor() {

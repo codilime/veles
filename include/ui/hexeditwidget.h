@@ -75,6 +75,7 @@ class HexEditWidget : public IconAwareView {
   void showSearchDialog();
   void saveAs();
   void showVisualization();
+  void showDisasmTab();
   void openHexEditor();
   void newBinData();
   void enableFindNext(bool enable);

@@ -60,6 +60,7 @@ class MainWindowWithDetachableDockWidgets : public QMainWindow {
                         const dbif::ObjectHandle& fileBlob);
   void createHexEditTab(const QSharedPointer<FileBlobModel>& data_model);
   void createVisualization(const QSharedPointer<FileBlobModel>& data_model);
+  void createDisasmTab();
 
  public slots:
   void dockLocationChanged(Qt::DockWidgetArea area);

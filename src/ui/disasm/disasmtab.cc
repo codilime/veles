@@ -1,7 +1,13 @@
-#include "ui/disasm/disasmwidget.h"
+#include "ui/disasm/disasmtab.h"
 
-DisasmWidget::DisasmWidget() : tmp("Hello disasm!", this) { tmp.move(10, 10); }
+namespace veles {
+namespace ui {
 
-void DisasmWidget::paintEvent(QPaintEvent* event) { tmp.update(); }
+DisasmTab::DisasmTab() : IconAwareView("",""), tmp("Hello disasm!", this) { tmp.move(10, 10); }
 
-DisasmWidget::~DisasmWidget() {}
+void DisasmTab::paintEvent(QPaintEvent* event) { tmp.update(); }
+
+DisasmTab::~DisasmTab() {}
+
+}  // namespace ui
+}  // namespace veles
