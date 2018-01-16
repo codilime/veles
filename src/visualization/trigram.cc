@@ -34,6 +34,7 @@
 #include <QToolButton>
 #include <QWidgetAction>
 
+#include "ui/velesapplication.h"
 #include "util/icons.h"
 #include "util/settings/visualization.h"
 
@@ -64,6 +65,9 @@ TrigramWidget::TrigramWidget(QWidget* parent) : VisualizationWidget(parent) {
   setFocusPolicy(Qt::StrongFocus);
 
   reloadSettings();
+  connect(ui::VelesApplication::instance(),
+          &ui::VelesApplication::settingsChanged, this,
+          &TrigramWidget::reloadSettings);
 }
 
 TrigramWidget::~TrigramWidget() {

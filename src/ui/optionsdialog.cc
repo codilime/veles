@@ -20,6 +20,7 @@
 #include <QPushButton>
 
 #include "ui/veles_mainwindow.h"
+#include "ui/velesapplication.h"
 #include "ui_optionsdialog.h"
 #include "util/settings/hexedit.h"
 #include "util/settings/theme.h"
@@ -81,13 +82,7 @@ void OptionsDialog::applyChanges() {
       color_3d_begin_button_->getColor());
   util::settings::visualization::setColorEnd(color_3d_end_button_->getColor());
 
-  for (auto main_window :
-       MainWindowWithDetachableDockWidgets::getMainWindows()) {
-    for (auto widget :
-         main_window->findChildren<visualization::TrigramWidget*>()) {
-      widget->reloadSettings();
-    }
-  }
+  emit VelesApplication::instance()->settingsChanged();
 
   if (restart_needed) {
     QMessageBox::about(

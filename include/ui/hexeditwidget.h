@@ -47,7 +47,6 @@ class HexEditWidget : public IconAwareView {
       MainWindowWithDetachableDockWidgets* main_window,
       const QSharedPointer<FileBlobModel>& data_model,
       const QSharedPointer<QItemSelectionModel>& selection_model);
-  void reapplySettings() override;
   void setParserIds(const QStringList& ids);
   QString addressAsText(qint64 addr);
   QAction* uploadAction() const { return upload_act_; }

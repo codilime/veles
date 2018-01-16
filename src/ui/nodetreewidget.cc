@@ -77,7 +77,6 @@ NodeTreeWidget::NodeTreeWidget(
 
   registered_line_edit_ = nullptr;
 
-  NodeTreeWidget::reapplySettings();
   setWindowTitle(data_model_->path().join(" : "));
 
   // We don't need this now, but it might be useful in the future.

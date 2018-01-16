@@ -383,6 +383,7 @@ add_executable(main_ui
     ${INCLUDE_DIR}/ui/shortcutedit.h
     ${INCLUDE_DIR}/ui/shortcutssettings.h
     ${INCLUDE_DIR}/ui/mainwindowwithdetachabledockwidgets.h
+    ${INCLUDE_DIR}/ui/velesapplication.h
     ${SRC_DIR}/ui/main.cc
     ${SRC_DIR}/ui/logwidget.cc
     ${SRC_DIR}/ui/veles_mainwindow.cc

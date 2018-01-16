@@ -21,6 +21,7 @@
 
 #include "ui/dockwidget.h"
 #include "ui/veles_mainwindow.h"
+#include "ui/velesapplication.h"
 #include "util/concurrency/threadpool.h"
 #include "util/settings/theme.h"
 #include "util/version.h"
@@ -39,7 +40,10 @@ int main(int argc, char* argv[]) {
 
   QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
 
-  QApplication app(argc, argv);
+  // *Do not* change the type of `app`, otherwise VelesApplication::instance
+  // will break.
+  veles::ui::VelesApplication app(argc, argv);
+
   QApplication::setApplicationName("Veles");
   QApplication::setOrganizationName("CodiSec");
   QApplication::setApplicationVersion(veles::util::version::string);

@@ -160,7 +160,6 @@ class IconAwareView : public QMainWindow {
  public:
   IconAwareView(const QString& category, const QString& path);
   ~IconAwareView() override;
-  virtual void reapplySettings(){};
 
  signals:
   void maximize();
