@@ -116,16 +116,6 @@ void VelesMainWindow::init() {
 
   options_dialog_ = new OptionsDialog(this);
 
-  connect(options_dialog_, &QDialog::accepted, [this]() {
-    for (auto main_window :
-         MainWindowWithDetachableDockWidgets::getMainWindows()) {
-      QList<IconAwareView*> views = main_window->findChildren<IconAwareView*>();
-      for (auto view : views) {
-        view->reapplySettings();
-      }
-    }
-  });
-
   tool_bar_ = addToolBar("Connection");
   tool_bar_->setContextMenuPolicy(Qt::PreventContextMenu);
 

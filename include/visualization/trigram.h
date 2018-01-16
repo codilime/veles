@@ -114,7 +114,6 @@ class TrigramWidget : public VisualizationWidget {
 
  public slots:
   void brightnessSliderMoved(int value);
-  void reloadSettings();
 
  protected:
   void refresh(const AdditionalResampleDataPtr& ad) override;
@@ -159,6 +158,7 @@ class TrigramWidget : public VisualizationWidget {
   void setShape(EVisualizationShape shape);
   void setUseBrightnessHeuristic(Qt::CheckState state);
   void setManipulator(Manipulator* manipulator);
+  void reloadSettings();
 
  private:
   int brightness_;  // has to be set through setBrightness()

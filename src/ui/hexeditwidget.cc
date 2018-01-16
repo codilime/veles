@@ -73,7 +73,6 @@ HexEditWidget::HexEditWidget(
 
   setupDataModelHandlers();
 
-  HexEditWidget::reapplySettings();
   setWindowTitle(data_model_->path().join(" : "));
 
   hex_edit_->setBytesPerRow(
@@ -86,8 +85,6 @@ HexEditWidget::HexEditWidget(
                    ->parsersList());
   selectionChanged(0, 0);
 }
-
-void HexEditWidget::reapplySettings() {}
 
 void HexEditWidget::setParserIds(const QStringList& ids) {
   parsers_ids_ = ids;
