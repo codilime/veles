@@ -228,7 +228,6 @@ void EntryFactory::generate(ChunkNode* node) {
             std::make_unique<FieldValueString>(entry->raw_bytes.toString());
         entries_.emplace_back(entry);
         break;
-        
       }
       default:
         break;
@@ -373,4 +372,3 @@ QFuture<Bookmark> MockBlob::getPositionByChunk(const ChunkID& chunk) {
 }  // namespace disasm
 }  // namespace ui
 }  // namespace veles
-
