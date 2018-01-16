@@ -12,10 +12,11 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QStylePainter>
 
-using Address = uint64_t;
+#include "ui/dockwidget.h"
 
-// vector adresów
-// mapa hintów
+namespace veles {
+namespace ui {
+using Address = uint64_t;
 
 class AddressColumnWidget : public QWidget {
   Q_OBJECT
@@ -40,14 +41,22 @@ class AddressColumnWidget : public QWidget {
   void leaveEvent(QEvent* event) override;
 };
 
-class DisasmWidget : public QDockWidget {
-  Q_OBJECT
-
-  QVBoxLayout main_layout_;
-  AddressColumnWidget debug_widget;
+class DisasmWidget : public QWidget {
+  QHBoxLayout main_layout;
+  AddressColumnWidget address_column;
 
  public:
   DisasmWidget();
-
-  virtual ~DisasmWidget();
 };
+
+class DisasmTab : public IconAwareView {
+  Q_OBJECT
+
+  DisasmWidget disasm_widget;
+
+ public:
+  DisasmTab();
+};
+
+}  // namespace ui
+}  // namespace veles
