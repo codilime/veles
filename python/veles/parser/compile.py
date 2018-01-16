@@ -1,7 +1,7 @@
 from veles.defs.symbol import Symbol
 from veles.defs.st import (
     StForm, StList, StAny, StPosIntRaw, StInt, StSymbol, StWrap,
-    StEnum, StSymbolRaw
+    StEnum, StSymbolRaw, StNil
 )
 from veles.data.repack import Endian, Repacker
 from .parser import (
@@ -13,18 +13,24 @@ from .parser import (
     ParserExprConstInt,
     ParserExprGetField,
     ParserExprLast,
+    ParserExprSelf,
+    ParserExprNil,
     ParserPredEq,
     ParserField,
     ParserParam,
     ParserTypeBindata,
     ParserTypeInt,
     ParserTypeIntArray,
+    ParserTypeIntMap,
     ParserTypeStruct,
     ParserTypeStructArray,
     ParserCase,
     ParserOpMatch,
     ParserOpField,
     ParserOpCompute,
+    ParserOpMakeIntMap,
+    ParserOpIntMapStore,
+    ParserOpIntMapBounds,
     ParserOpChildArray,
     ParserOpChildLoop,
     ParserLoopVar,
@@ -58,6 +64,10 @@ class StFieldMod(StAny):
 
 
 class StChildLoopMod(StAny):
+    pass
+
+
+class StChildArrayMod(StAny):
     pass
 
 
@@ -112,6 +122,25 @@ class StParamInt(StForm):
         if self.name in struct.params:
             raise ValueError('duplicate param for {}'.format(struct.name))
         struct.params[self.name] = ParserParam(self.name, ParserTypeInt())
+
+    def xlat_op(self, struct, endian):
+        return None
+
+
+class StParamIntMap(StForm):
+    tag = 'param-int-map'
+    fields = [
+        ('name', StSymbolRaw),
+        ('struct', StSymbolRaw),
+    ]
+
+    def prep_fields(self, namespace, struct):
+        if self.name in struct.params:
+            raise ValueError('duplicate param for {}'.format(struct.name))
+        sub_struct = namespace.structs[self.struct]
+        sub_type = ParserTypeStruct(sub_struct)
+        type = ParserTypeIntMap(sub_type)
+        struct.params[self.name] = ParserParam(self.name, type)
 
     def xlat_op(self, struct, endian):
         return None
@@ -223,6 +252,20 @@ class StChildArray(StFieldBase, StForm):
         ('num', StExpr),
     ]
 
+    rest_field = 'mods'
+    rest_matcher = StChildArrayMod
+
+    def post_parse(self):
+        self.vars = []
+        self.params = []
+        for mod in self.mods:
+            if isinstance(mod, StModLoopVarInt):
+                self.vars.append(mod)
+            elif isinstance(mod, StModParam):
+                self.params.append(mod)
+            else:
+                assert 0
+
     def get_type(self, namespace, struct):
         num = None
         if isinstance(self.num, StExprConstInt):
@@ -231,9 +274,25 @@ class StChildArray(StFieldBase, StForm):
         return ParserTypeStructArray(sub_struct, num)
 
     def xlat_op(self, struct, endian):
+        sub_struct = struct.namespace.structs[self.struct]
         num = ParserTypeInt().convert(self.num.xlat(struct))
         loop = ParserOpChildArray(struct, self.field_ref, num)
-        # XXX params, vars...
+        for var in self.vars:
+            if (var.name in loop.vars or var.name in struct.fields or
+                    var.name in struct.params):
+                raise ValueError('variable {} already exists'.format(var.name))
+            type = var.get_type()
+            initial = type.convert(var.initial.xlat(struct))
+            cvar = ParserLoopVar(var.name, type, initial)
+            loop.var_dict[var.name] = cvar
+            loop.vars.append(cvar)
+            var.ref = cvar
+        for var in self.vars:
+            var.ref.next = var.ref.type.convert(var.next.xlat(loop))
+        for param in self.params:
+            sparam = sub_struct.params[param.name]
+            expr = sparam.type.convert(param.value.xlat(loop))
+            loop.params.append((sparam, expr))
         return loop
 
 
@@ -289,6 +348,64 @@ class StChildLoop(StFieldBase, StForm):
             expr = sparam.type.convert(param.value.xlat(loop))
             loop.params.append((sparam, expr))
         return loop
+
+
+class StMakeIntMap(StFieldBase, StForm):
+    tag = 'make-int-map'
+    fields = [
+        ('field', StSymbolRaw),
+        ('struct', StSymbolRaw),
+    ]
+
+    def get_type(self, namespace, struct):
+        sub_struct = namespace.structs[self.struct]
+        sub_type = ParserTypeStruct(sub_struct)
+        return ParserTypeIntMap(sub_type)
+
+    def xlat_op(self, struct, endian):
+        return ParserOpMakeIntMap(self.field_ref)
+
+
+class StIntMapStore(StForm):
+    tag = 'int-map-store'
+    fields = [
+        ('map', StExpr),
+        ('index', StExpr),
+        ('val', StExpr),
+    ]
+
+    def prep_fields(self, namespace, struct):
+        pass
+
+    def xlat_op(self, struct, endian):
+        map = self.map.xlat(struct)
+        type = map.get_type()
+        if not isinstance(type, ParserTypeIntMap):
+            raise TypeError('need an intmap')
+        index = ParserTypeInt().convert(self.index.xlat(struct))
+        val = type.subtype.convert(self.val.xlat(struct))
+        return ParserOpIntMapStore(map, index, val)
+
+
+class StIntMapBounds(StForm):
+    tag = 'int-map-bounds'
+    fields = [
+        ('map', StExpr),
+        ('lo', StExpr),
+        ('hi', StExpr),
+    ]
+
+    def prep_fields(self, namespace, struct):
+        pass
+
+    def xlat_op(self, struct, endian):
+        map = self.map.xlat(struct)
+        type = map.get_type()
+        if not isinstance(type, ParserTypeIntMap):
+            raise TypeError('need an intmap')
+        lo = ParserTypeInt().convert(self.lo.xlat(struct))
+        hi = ParserTypeInt().convert(self.hi.xlat(struct))
+        return ParserOpIntMapBounds(map, lo, hi)
 
 
 class StCase(StList):
@@ -482,6 +599,14 @@ class StExprLast(StForm):
         return ParserExprLast(env)
 
 
+class StExprSelf(StForm):
+    tag = 'self'
+    fields = []
+
+    def xlat(self, env):
+        return ParserExprSelf(env)
+
+
 class StExprConstInt(StInt):
     def xlat(self, env):
         return ParserExprConstInt(self.val)
@@ -490,6 +615,11 @@ class StExprConstInt(StInt):
 class StExprVar(StSymbol):
     def xlat(self, env):
         return env.lookup_var(self.val)
+
+
+class StExprNil(StNil):
+    def xlat(self, env):
+        return ParserExprNil()
 
 
 class StPredEq(StWrap):
@@ -508,6 +638,8 @@ StExpr.matchers = [
     StExprEq,
     StExprGetField,
     StExprLast,
+    StExprSelf,
+    StExprNil,
 ]
 
 StPred.matchers = [
@@ -518,11 +650,15 @@ StStructOp.matchers = [
     StWidth,
     StEndian,
     StParamInt,
+    StParamIntMap,
     StComputeInt,
     StField,
     StFieldArray,
     StChildArray,
     StChildLoop,
+    StMakeIntMap,
+    StIntMapStore,
+    StIntMapBounds,
     StMatch,
 ]
 
@@ -541,6 +677,11 @@ StFieldMod.matchers = [
 StChildLoopMod.matchers = [
     StModLoopVarInt,
     StModLoopEnd,
+    StModParam,
+]
+
+StChildArrayMod.matchers = [
+    StModLoopVarInt,
     StModParam,
 ]
 

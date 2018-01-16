@@ -23,6 +23,9 @@ class ParserStruct:
             return ParserExprParam(self.params[var])
         raise ValueError('unknown var {}'.format(var))
 
+    def get_self_type(self):
+        return ParserTypeStruct(self)
+
 
 class ParserParam:
     def __init__(self, name, type):
@@ -75,6 +78,9 @@ class ParserOpChildArray(ParserOp):
     def get_item_type(self):
         return ParserTypeStruct(self.field.type.struct)
 
+    def get_self_type(self):
+        return self.struct.get_self_type()
+
     def can_read_input(self):
         return True
 
@@ -96,6 +102,9 @@ class ParserOpChildLoop(ParserOp):
 
     def get_item_type(self):
         return ParserTypeStruct(self.field.type.struct)
+
+    def get_self_type(self):
+        return self.struct.get_self_type()
 
     def can_read_input(self):
         return True
@@ -121,6 +130,34 @@ class ParserOpCompute(ParserOp):
     def __init__(self, field, expr):
         self.field = field
         self.expr = expr
+
+    def can_read_input(self):
+        return False
+
+
+class ParserOpIntMapStore(ParserOp):
+    def __init__(self, map, index, val):
+        self.map = map
+        self.index = index
+        self.val = val
+
+    def can_read_input(self):
+        return False
+
+
+class ParserOpIntMapBounds(ParserOp):
+    def __init__(self, map, lo, hi):
+        self.map = map
+        self.lo = lo
+        self.hi = hi
+
+    def can_read_input(self):
+        return False
+
+
+class ParserOpMakeIntMap(ParserOp):
+    def __init__(self, field):
+        self.field = field
 
     def can_read_input(self):
         return False
@@ -186,6 +223,14 @@ class ParserExprLast(ParserExpr):
         return self.env.get_item_type()
 
 
+class ParserExprSelf(ParserExpr):
+    def __init__(self, env):
+        self.env = env
+
+    def get_type(self):
+        return self.env.get_self_type()
+
+
 class ParserExprConstInt(ParserExpr):
     def __init__(self, value):
         self.value = value
@@ -229,6 +274,19 @@ class ParserExprEqInt(ParserExpr):
         return ParserTypeBindata(1, 1, ParserBinDisplayBool())
 
 
+class ParserExprNil(ParserExpr):
+    def get_type(self):
+        return ParserTypeNil()
+
+
+class ParserExprNilStruct(ParserExpr):
+    def __init__(self, struct):
+        self.struct = struct
+
+    def get_type(self):
+        return ParserTypeStruct(self.struct)
+
+
 class ParserPred:
     pass
 
@@ -263,7 +321,30 @@ class ParserBinDisplayBool(ParserBinDisplay):
 
 
 class ParserType:
-    pass
+    def __eq__(self, other):
+        raise NotImplementedError
+
+    def convert(self, expr):
+        t = expr.get_type()
+        if t == self:
+            return expr
+        else:
+            raise TypeError
+
+
+class ParserTypeNil(ParserType):
+    def __and__(self, other):
+        return other
+
+    def __str__(self):
+        return 'nil'
+
+    def convert(self, expr):
+        t = expr.get_type()
+        if isinstance(t, ParserTypeNil):
+            return expr
+        else:
+            raise TypeError
 
 
 class ParserTypeBindata(ParserType):
@@ -346,6 +427,24 @@ class ParserTypeIntArray(ParserType):
             return 'int[{}]'.format(self.num)
 
 
+class ParserTypeIntMap(ParserType):
+    def __init__(self, subtype):
+        self.subtype = subtype
+
+    def __and__(self, other):
+        # XXX this sucks
+        if not isinstance(other, ParserTypeIntMap) or self.subtype != other.subtype:
+            raise TypeError('type conflict: {} vs {}'.format(self, other))
+        return ParserTypeIntMap(num)
+
+    def __str__(self):
+        return '{}[int]'.format(self.subtype)
+
+
+    def __eq__(self, other):
+        return isinstance(other, ParserTypeIntMap) and self.subtype == other.subtype
+
+
 class ParserTypeStructArray(ParserType):
     def __init__(self, struct, num):
         self.struct = struct
@@ -380,6 +479,18 @@ class ParserTypeStruct(ParserType):
 
     def __str__(self):
         return 'struct {}'.format(self.struct.name)
+
+    def convert(self, expr):
+        t = expr.get_type()
+        if isinstance(t, ParserTypeNil):
+            return ParserExprNilStruct(self.struct)
+        if isinstance(t, ParserTypeStruct) and self.struct == t.struct:
+            return expr
+        else:
+            raise TypeError
+
+    def __eq__(self, other):
+        return isinstance(other, ParserTypeStruct) and self.struct == other.struct
 
 
 class ParserFieldInterpBindata:

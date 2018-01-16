@@ -2,73 +2,91 @@
 (endian big)
 
 (struct cp_info
+  (param-int-map constant_pool_map cp_info)
   (param-int index)
+  (int-map-store constant_pool_map index (self))
   (field tag 8)
   (match tag
+    ; utf8
     (1
       (field length 16 (unsigned-int))
-      (field* utf8 8 length (string))
+      (field* utf8 8 length (string)) ; XXX cesu
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
+    ; const int
     (3
       (field value_int 32 (signed-wrap-int))
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
+    ; const float
     (4
       ; XXX mark as float
       (field bytes_float 32)
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
+    ; const long
     (5
       (field value_long 64 (signed-wrap-int))
       (compute-int next_index (+ index 2))
+      (int-map-store constant_pool_map (+ index 1) #nil)
     )
+    ; const double
     (6
       ; XXX mark as float
       (field bytes_double 64)
       (compute-int next_index (+ index 2))
+      (int-map-store constant_pool_map (+ index 1) #nil)
     )
+    ; class
     (7
-      (field name_index 16 (unsigned-int))
+      (field name_index 16 (unsigned-int)) ; XXX lookup
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
+    ; const string
     (8
-      (field string_index 16 (unsigned-int))
+      (field string_index 16 (unsigned-int)) ; XXX lookup
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
+    ; fieldref
     (9
-      (field class_index 16 (unsigned-int))
-      (field name_and_type_index 16 (unsigned-int))
+      (field class_index 16 (unsigned-int)) ; XXX lookup
+      (field name_and_type_index 16 (unsigned-int)) ; XXX lookup
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
+    ; methodref
     (10
-      (field class_index 16 (unsigned-int))
-      (field name_and_type_index 16 (unsigned-int))
+      (field class_index 16 (unsigned-int)) ; XXX lookup
+      (field name_and_type_index 16 (unsigned-int)) ; XXX lookup
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
+    ; interfacemethodref
     (11
-      (field class_index 16 (unsigned-int))
-      (field name_and_type_index 16 (unsigned-int))
+      (field class_index 16 (unsigned-int)) ; XXX lookup
+      (field name_and_type_index 16 (unsigned-int)) ; XXX lookup
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
+    ; nameandtype
     (12
-      (field name_index 16 (unsigned-int))
-      (field descriptor_index 16 (unsigned-int))
+      (field name_index 16 (unsigned-int)) ; XXX lookup
+      (field descriptor_index 16 (unsigned-int)) ; XXX lookup
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
+    ; methodhandle
     (15
       ; enum
       (field reference_kind 8)
-      (field reference_index 16 (unsigned-int))
+      (field reference_index 16 (unsigned-int)) ; XXX lookup
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
+    ; methodtype
     (16
-      (field descriptor_index 16 (unsigned-int))
+      (field descriptor_index 16 (unsigned-int)) ; XXX lookup
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
+    ; invokedynamic
     (18
-      (field bootstrap_method_attr_index 16 (unsigned-int))
-      (field name_and_type_index 16 (unsigned-int))
+      (field bootstrap_method_attr_index 16 (unsigned-int)) ; XXX lookup later
+      (field name_and_type_index 16 (unsigned-int)) ; XXX lookup
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
     ; XXX
@@ -77,29 +95,37 @@
 )
 
 (struct field_info
+  (param-int-map constant_pool_map cp_info)
   ; XXX bitfield
   (field access_flags 16)
   (field name_index 16 (unsigned-int))
   (field descriptor_index 16 (unsigned-int))
   (field attributes_count 16 (unsigned-int))
-  (child* attributes attribute_info attributes_count)
+  (child* attributes attribute_info attributes_count
+    (param constant_pool_map constant_pool_map)
+  )
 )
 
 (struct method_info
+  (param-int-map constant_pool_map cp_info)
   (field access_flags 16)
   (field name_index 16 (unsigned-int))
   (field descriptor_index 16 (unsigned-int))
   (field attributes_count 16 (unsigned-int))
-  (child* attributes attribute_info attributes_count)
+  (child* attributes attribute_info attributes_count
+    (param constant_pool_map constant_pool_map)
+  )
 )
 
 (struct attribute_info
+  (param-int-map constant_pool_map cp_info)
   (field attribute_name_index 16 (unsigned-int))
   (field attribute_length 32 (unsigned-int))
   (field* info 8 attribute_length)
 )
 
 (struct class_file
+  (make-int-map constant_pool_map cp_info)
   (field sig 32)
   (field major_version 16 (unsigned-int))
   (field minor_version 16 (unsigned-int))
@@ -108,16 +134,24 @@
     (var-int index 1 (get-field (last) next_index))
     (end (= index constant_pool_count))
     (param index index)
+    (param constant_pool_map constant_pool_map)
   )
+  (int-map-bounds constant_pool_map 1 constant_pool_count)
   (field access_flags 16 (unsigned-int))
   (field this_class 16 (unsigned-int))
   (field super_class 16 (unsigned-int))
   (field interfaces_count 16 (unsigned-int))
   (field* interfaces 16 interfaces_count (unsigned-int))
   (field fields_count 16 (unsigned-int))
-  (child* fields field_info fields_count)
+  (child* fields field_info fields_count
+    (param constant_pool_map constant_pool_map)
+  )
   (field methods_count 16 (unsigned-int))
-  (child* methods method_info methods_count)
+  (child* methods method_info methods_count
+    (param constant_pool_map constant_pool_map)
+  )
   (field attributes_count 16 (unsigned-int))
-  (child* attributes attribute_info attributes_count)
+  (child* attributes attribute_info attributes_count
+    (param constant_pool_map constant_pool_map)
+  )
 )

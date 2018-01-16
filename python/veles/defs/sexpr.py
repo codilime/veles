@@ -61,7 +61,8 @@ def tokenize(data):
                 yield 'bool', True
             elif c == 'f':
                 yield 'bool', False
-            elif c == 'n':
+            elif c == 'n' and data[pos:pos+2] == 'il':
+                pos += 2
                 yield 'nil', None
             elif c == 'x':
                 start_pos = pos
