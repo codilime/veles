@@ -18,6 +18,94 @@ using Bookmark = QByteArray;
 using Address = uint64_t;
 using ChunkID = QByteArray;
 
+class TextRepr {
+ public:
+  virtual ~TextRepr() = default;
+  virtual QString string() const = 0;
+
+  TextRepr* parent;
+  std::vector<std::unique_ptr<TextRepr>> children;
+};
+
+class Text : TextRepr {
+ public:
+  Text(QString text, bool highlight);
+  Text() = default;
+
+  QString string() const override;
+  QString text();
+  bool highlight();
+
+ private:
+  QString text_;
+  bool highlight_ = false;
+};
+
+enum class KeywordType { OPCODE, MODIFIER, LABEL, REGISTER };
+
+class Keyword : TextRepr {
+ public:
+  Keyword(QString text, KeywordType kc, ChunkID link);
+
+  QString string() const override;
+  QString text() const;
+  KeywordType keywordType();
+  const ChunkID chunkID() const;
+
+ private:
+  QString text_;
+  KeywordType keyword_type_;
+  ChunkID link_;
+};
+
+class Blank : TextRepr {
+ public:
+  QString string() const override;
+};
+
+class Number : TextRepr {
+ public:
+  Number(qint64 value, unsigned bit_width, unsigned base);
+
+  QString string() const override;
+  const qint64 value();
+  const unsigned bit_width();
+  const unsigned base();
+
+ private:
+  // TODO(mkow): value - this is temporary
+  qint64 value_;
+
+  unsigned bit_width_;
+  unsigned base_;
+};
+
+class String : TextRepr {
+ public:
+  explicit String(QString text);
+
+  QString string() const override;
+  QString text();
+
+ private:
+  // We do only support QString. For now.
+  // TODO(mkow)
+  QString text_;
+};
+
+class Sublist : TextRepr {
+ public:
+  explicit Sublist(std::vector<std::unique_ptr<TextRepr>> children);
+  explicit Sublist();
+
+  QString string() const override;
+  void addChild(std::unique_ptr<TextRepr> child);
+  const std::vector<std::unique_ptr<TextRepr>>& children();
+
+ private:
+  std::vector<std::unique_ptr<TextRepr>> children_;
+};
+
 struct Chunk {
   ChunkID id;
   ChunkID parent_id;
@@ -28,9 +116,10 @@ struct Chunk {
   Address addr_begin;
   Address addr_end;
 
-  QString display_name;
   QString type;
-  QString text_repr;
+  QString display_name;
+  std::unique_ptr<TextRepr> text_repr;
+
   QString comment;
   uint64_t flags;
 };

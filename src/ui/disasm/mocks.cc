@@ -84,12 +84,12 @@ void ChunkFactory::setType(ChunkMeta* chunk, ChunkType type) const {
 void ChunkFactory::setTextRepresentation(ChunkMeta* chunk) const {
   switch (chunk->meta_type) {
     case ChunkType::INSTRUCTION: {
-      chunk->text_repr = randomInstruction();
+      // chunk->text_repr = randomInstruction();
       break;
     }
     case ChunkType::DATA: {
       auto text = veles::util::generateRandomUppercaseText(10);
-      chunk->text_repr = text;
+      // chunk->text_repr = text;
       chunk->raw_bytes = veles::data::BinData(
           8, 10, reinterpret_cast<const uint8_t*>(text.toUtf8().constData()));
       break;
