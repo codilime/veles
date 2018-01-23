@@ -59,7 +59,7 @@ void AddressColumnWidget::paintEvent(QPaintEvent* event)  // override
 }
 
 QString AddressColumnWidget::addressToText(Address address) {
-  return "0x" + QString::number(address, 16).rightJustified(4 * 2, '0');
+  return QString::number(address, 16).rightJustified(4 * 2, '0');
 }
 
 void AddressColumnWidget::setHintMap(decltype(hintsDict) && hintsDict) {

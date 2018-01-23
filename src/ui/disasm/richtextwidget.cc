@@ -1,9 +1,9 @@
+#include "ui/disasm/richtextwidget.h"
 
-#include <include/ui/disasm/richtextwidget.h>
-#include <iostream>
 #include <QPaintEvent>
 #include <QtGui/QPainter>
 #include <QtWidgets/QWidget>
+
 namespace veles {
 namespace ui {
 
