@@ -158,10 +158,12 @@ step and the build itself:
 - Copy `libeay32.dll` and `ssleay32.dll` from
 `veles-build-${name}\openssl-1.0.2l\out32dll` to a separate folder outside the
 build directory and set CMake var `OPENSSL_DLL_DIR` to it. Do this step for all
-used configurations (e.g. `Debug` and `RelWithDebInfo`)
+used configurations (e.g. `Debug` and `RelWithDebInfo`).
 - Copy `zlibstatic.lib` (or `zlibstaticd.lib` for debug builds) from
 `veles-build-${name}\zlib\${name}\` to a separate folder and point
-`ZLIB_LIBRARY` to it. Repeat for all used configurations.
+`ZLIB_LIBRARY` to it. Do the same with `zlib.h` and `zconf.h` from
+`veles-build-${name}\prefix\include\`, this time using `ZLIB_INCLUDE_DIR`.
+Repeat for all used configurations.
 
 
 ## Additional Info
