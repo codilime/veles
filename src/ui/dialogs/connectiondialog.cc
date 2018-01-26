@@ -100,7 +100,17 @@ ConnectionDialog::ConnectionDialog(QWidget* parent)
   connect(ui_->server_url_line_edit, &QLineEdit::textEdited,
           [this](const QString& text) {
             QString trimmed_text = text.trimmed();
+            int pos = ui_->server_url_line_edit->cursorPosition();
+
+            if (trimmed_text.length() > 0) {
+              pos = std::max(pos - text.indexOf(trimmed_text.at(0)), 0);
+              pos = std::min(pos, trimmed_text.length());
+            } else {
+              pos = 0;
+            }
             ui_->server_url_line_edit->setText(trimmed_text);
+            ui_->server_url_line_edit->setCursorPosition(pos);
+
             QString scheme = trimmed_text.section("://", 0, 0).toLower();
             if (scheme == client::SCHEME_SSL) {
               ui_->ssl_checkbox->setChecked(true);
