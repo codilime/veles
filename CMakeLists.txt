@@ -273,11 +273,13 @@ file(GLOB kaitai_sources "${SRC_DIR}/kaitai/*.cc")
 add_library(parser
     ${INCLUDE_DIR}/parser/parser.h
     ${INCLUDE_DIR}/parser/stream.h
+    ${INCLUDE_DIR}/parser/unogg.h
     ${INCLUDE_DIR}/parser/unpyc.h
     ${INCLUDE_DIR}/parser/unpng.h
     ${INCLUDE_DIR}/parser/utils.h
     ${kaitai_headers}
     ${SRC_DIR}/parser/parser.cc
+    ${SRC_DIR}/parser/unogg.cc
     ${SRC_DIR}/parser/unpyc.cc
     ${SRC_DIR}/parser/unpng.cc
     ${SRC_DIR}/parser/utils.cc
