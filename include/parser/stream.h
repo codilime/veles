@@ -18,6 +18,8 @@
 
 #include <cassert>
 
+#include <string>
+
 #include "data/repack.h"
 #include "dbif/info.h"
 #include "dbif/types.h"
@@ -237,6 +239,17 @@ class StreamParser {
     std::vector<uint8_t> res;
     for (size_t i = 0; i < data.size(); i++) {
       res.push_back(static_cast<uint8_t>(data.element64(i)));
+    }
+    return res;
+  }
+
+  std::string getString(const QString& name, uint64_t len) {
+    auto data =
+        getData(name, data::Repacker(), len,
+                data::FieldHighType::string(data::FieldHighType::STRING_RAW));
+    std::string res(len, '\0');
+    for (size_t i = 0; i < data.size(); i++) {
+      res[i] = static_cast<char>(data.element64(i));
     }
     return res;
   }
