@@ -94,11 +94,12 @@ class StreamParser {
     return res;
   }
 
-  data::BinData getDataUntil(const QString& name, const data::Repacker& repack,
-                             data::BinData termination,
-                             const data::FieldHighType& high_type,
-                             bool include_termination = true) {
-    assert(termination.size() == 1);
+  template <class Func>
+  data::BinData getDataUntilCond(const QString& name,
+                                 const data::Repacker& repack,
+                                 Func&& termination_condition,
+                                 const data::FieldHighType& high_type,
+                                 bool include_termination = true) {
     data::BinData res(repack.to_width, 0);
     size_t num_elements = 1;
     size_t src_size = repack.repackSize(num_elements);
@@ -116,7 +117,7 @@ class StreamParser {
       data = repack.repack(data, 0, num_elements);
 
       for (size_t dataIndex = 0; dataIndex < data.size(); ++dataIndex) {
-        if (data[dataIndex] == termination) {
+        if (termination_condition(data[dataIndex])) {
           if (include_termination) {
             dataIndex += 1;
           }
@@ -240,16 +241,26 @@ class StreamParser {
     return res;
   }
 
-  std::vector<uint8_t> getBytesUntil(const QString& name, uint8_t termination,
-                                     bool include_termination = true) {
-    auto data = getDataUntil(name, data::Repacker(),
-                             data::BinData::fromRawData(8, {termination}),
-                             data::FieldHighType(), include_termination);
+  template <class Func>
+  std::vector<uint8_t> getBytesUntilCond(const QString& name,
+                                         Func&& termination_condition,
+                                         bool include_termination = true) {
+    auto data = getDataUntilCond(name, data::Repacker(),
+                                 std::forward<Func>(termination_condition),
+                                 data::FieldHighType(), include_termination);
     std::vector<uint8_t> res;
     for (size_t i = 0; i < data.size(); i++) {
       res.push_back(static_cast<uint8_t>(data.element64(i)));
     }
     return res;
+  }
+
+  std::vector<uint8_t> getBytesUntil(const QString& name, uint8_t termination,
+                                     bool include_termination = true) {
+    auto bindata_termination = data::BinData::fromRawData(8, {termination});
+    return getBytesUntilCond(
+        name, [=](data::BinData c) { return c == bindata_termination; },
+        include_termination);
   }
 
   uint8_t getByte(const QString& name) {
