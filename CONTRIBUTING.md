@@ -54,7 +54,6 @@ did. From now on your branch is *public* and you shouldn't forcepush
  into previous feature commits.
 * Your code will be merged into master.
 
-
 ### File placement
 We have some rules as to where to place new files:
 * All things that depend on Qt should be placed in `ui` folder
