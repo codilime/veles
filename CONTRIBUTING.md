@@ -40,7 +40,7 @@ Notice you might find some older code that doesn't conform to GCS.
   * Keep your commits atomic (one feature per commit).
   * Add descriptive commit messages. One-liners are fine for small,
     obvious changes, but bigger changes should have longer commit messages.
-  * Make sure email in your commits metadata is linked with your GitHub
+  * Make sure the email in your commits metadata is linked with your GitHub
     account.
   * Use `format` build target (for Linux run `make format`) relatively
     often to avoid huge "Style fix" commits.
