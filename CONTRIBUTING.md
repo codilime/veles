@@ -14,7 +14,7 @@ and create an issue on GitHub.
 
 ## Submitting changes
 
-#### Formal requirement
+### Formal requirement
 
 You **NEED** to have a signed CLA sent to CodiLime before your code can be
 merged. You can download one from [Contributor License
@@ -22,19 +22,20 @@ Agreement](https://www.codisec.com/cla). Sign it and then send a scan of it to
 contact@codisec.com. You can open a pull request and have it reviewed while we
 process your CLA.
  
-#### Style
+### Style
 We are trying to stick as close as possible to [Google C++ Style Guide].
 Refer to this document whenever in doubt.
-With a few exceptions:
-* We use `#pragma once`
-* We have to use raw pointers in many places, because of Qt
+Usually:
+* We use `#pragma once`.
+* We have to use raw pointers in many places, because of Qt.
 * We don't like the Hungarian notation used for constants, so maybe we will
 switch to CAPS_NOTATION at some point.
-* You might fing some older code that doesn't conform GCS
 
-#### Contribution pipeline
+Notice you might find some older code that doesn't conform to GCS.
 
-* Create your own branch. Name it `wip/your github nick/descriptive-branch-name`.
+### Contribution pipeline
+
+* Create your own branch. Name it `wip/your GitHub nick/descriptive-branch-name`.
 * Develop your branch. Remember to:
   * Keep your commits atomic (one feature per commit).
   * Add descriptive commit messages. One-liners are fine for small,
@@ -43,8 +44,8 @@ switch to CAPS_NOTATION at some point.
    account.
   * Use `format` build target (for Linux run `make format`) relatively
    often to avoid huge "Style fix" commits.
-* When you think you're done open GitHub PR with a clear list of what you've
-done. From now on your branch is `public` and you shouldn't forcepush
+* When you think you're done open a GitHub PR with a clear list of what you
+did. From now on your branch is *public* and you shouldn't forcepush
 (`git push -f`) anything to it. If you really need to/want to pushforce
 *first* ask reviewers for permission.
 * Every PR has to pass clang-tidy checks (`lint` build target).
@@ -55,16 +56,16 @@ done. From now on your branch is `public` and you shouldn't forcepush
 
 You can find more information about pull requests [here][pr_guide].
 
-#### File placement
+### File placement
 We have some rules as to where to place new files:
-* All things that depend on Qt should be placed in *ui* folder
-* There should be as few things in *util* folder as possible. *util* is only
-for pieces of code that don't belong to any existing folders and are to small
+* All things that depend on Qt should be placed in `ui` folder
+* There should be as few things in `util` folder as possible. `util` is only
+for pieces of code that don't belong to any existing folders and are too small
 to have their own folder
 
 <br><br>
 Thanks for taking your time to contribute to Veles!
 
-   [Google C++ Style Guide]: <https://google.github.io/styleguide/cppguide.html>
-   [ms_guide]: <https://support.microsoft.com/en-us/help/13443/windows-which-operating-system>
-   [pr_guide]: <https://guides.github.com/activities/contributing-to-open-source/#contributing>
+[Google C++ Style Guide]: <https://google.github.io/styleguide/cppguide.html>
+[ms_guide]: <https://support.microsoft.com/en-us/help/13443/windows-which-operating-system>
+[pr_guide]: <https://guides.github.com/activities/contributing-to-open-source/#contributing>
