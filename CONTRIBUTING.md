@@ -39,11 +39,11 @@ Notice you might find some older code that doesn't conform to GCS.
 * Develop your branch. Remember to:
   * Keep your commits atomic (one feature per commit).
   * Add descriptive commit messages. One-liners are fine for small,
-   obvious changes, but bigger changes should have longer commit messages.
+    obvious changes, but bigger changes should have longer commit messages.
   * Make sure email in your commits metadata is linked with your GitHub
-   account.
+    account.
   * Use `format` build target (for Linux run `make format`) relatively
-   often to avoid huge "Style fix" commits.
+    often to avoid huge "Style fix" commits.
 * When you think you're done open a GitHub PR with a clear list of what you
 did. From now on your branch is *public* and you shouldn't forcepush
 (`git push -f`) anything to it. If you really need to/want to pushforce
@@ -54,7 +54,6 @@ did. From now on your branch is *public* and you shouldn't forcepush
  into previous feature commits.
 * Your code will be merged into master.
 
-You can find more information about pull requests [here][pr_guide].
 
 ### File placement
 We have some rules as to where to place new files:
@@ -68,4 +67,3 @@ Thanks for taking your time to contribute to Veles!
 
 [Google C++ Style Guide]: <https://google.github.io/styleguide/cppguide.html>
 [ms_guide]: <https://support.microsoft.com/en-us/help/13443/windows-which-operating-system>
-[pr_guide]: <https://guides.github.com/activities/contributing-to-open-source/#contributing>
