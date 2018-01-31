@@ -96,7 +96,7 @@ struct FieldValueFloat : FieldValue {};
 struct FieldValueRef : FieldValue {};
 
 struct FieldValueString : FieldValue {
-  FieldValueString(const QString& s);
+  explicit FieldValueString(const QString& s);
 
   QString value;
 };
@@ -142,7 +142,7 @@ class Window : public QObject {
   virtual const std::vector<std::shared_ptr<Entry>> entries() = 0;
   virtual QFuture<void> chunkCollapseToggle(const ChunkID& id) = 0;
 
-  virtual ~Window(){};
+  virtual ~Window() {};
 
  signals:
   void updateScrollbar();

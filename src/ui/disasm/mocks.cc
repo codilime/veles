@@ -129,7 +129,9 @@ void ChunkTreeFactory::setAddresses(ChunkNode* root_node, Address begin,
   root->addr_end = end;
 
   auto& children = root_node->children();
-  if (children.empty()) return;
+  if (children.empty()) {
+    return;
+  }
 
   Address length = (end - begin + 1) / children.size();
 
@@ -137,7 +139,9 @@ void ChunkTreeFactory::setAddresses(ChunkNode* root_node, Address begin,
   child_begin = begin;
   for (auto& child : children) {
     child_end = child_begin + length;
-    if (child_end > end) child_end = end;
+    if (child_end > end) {
+      child_end = end;
+    }
     setAddresses(child.get(), child_begin, child_end);
     child_begin += length;
   }
@@ -146,7 +150,9 @@ void ChunkTreeFactory::setAddresses(ChunkNode* root_node, Address begin,
 std::unique_ptr<ChunkNode> ChunkTreeFactory::generateTree(ChunkType type) {
   auto root = std::make_unique<ChunkNode>(chunk_factory_.generate(type));
 
-  if (type == ChunkType::INSTRUCTION || type == ChunkType::DATA) return root;
+  if (type == ChunkType::INSTRUCTION || type == ChunkType::DATA) {
+    return root;
+  }
 
   ChunkType next_type;
   switch (type) {
@@ -154,7 +160,7 @@ std::unique_ptr<ChunkNode> ChunkTreeFactory::generateTree(ChunkType type) {
       next_type = ChunkType::SECTION;
       break;
     case ChunkType::SECTION:
-      if (std::rand() % 2)
+      if (std::rand() % 2 != 0)
         next_type = ChunkType::BASIC_BLOCK;
       else
         next_type = ChunkType::DATA;
@@ -279,25 +285,33 @@ void MockWindow::seek(const Bookmark& pos, unsigned prev_n, unsigned next_n) {
       break;
     }
   }
-  if (b == -1) return;
+  if (b == -1) {
+    return;
+  }
 
   auto entry_index = bookmark_entry_.find(bookmarks_[b]);
-  if (entry_index == bookmark_entry_.end()) return;
+  if (entry_index == bookmark_entry_.end()) {
+    return;
+  }
 
-  if (entry_index->second < prev_n)
+  if (entry_index->second < prev_n) {
     entries_active_.first = 0;
-  else
+  }
+  else {
     entries_active_.first = entry_index->second - prev_n;
+  }
 
   if (entries_.empty()) {
     entries_active_.second = 0;
     return;
   }
 
-  if (entry_index->second + next_n >= entries_.size())
+  if (entry_index->second + next_n >= entries_.size()) {
     entries_active_.second = entries_.size() - 1;
-  else
+  }
+  else {
     entries_active_.second = entry_index->second + next_n;
+  }
 }
 
 Bookmark MockWindow::currentPosition() {
