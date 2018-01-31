@@ -1,9 +1,11 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include <QString>
 
+#include "ui/disasm/disasm.h"
 #include "util/random.h"
 
 namespace veles {
@@ -22,8 +24,11 @@ enum class Instruction { MOV, PUSH, POP, ADD, SUB, INC, DEC };
 
 enum class Register { EAX, EBX, ECX, EDX, EDI, ESI, ESP, EBP };
 
-QString randomInstruction();
-QString randomRegister();
+std::unique_ptr<Sublist> randomInstruction(ChunkID chunk_id);
+std::unique_ptr<String> makeString(QString s);
+std::unique_ptr<Blank> makeBlank();
+std::unique_ptr<Keyword> makeOpcodeKeyword(Instruction instr, ChunkID chunk_id);
+std::unique_ptr<Keyword> makeRegisterKeyword(Register reg, ChunkID chunk_id);
 
 }  // namespace mocks
 }  // namespace disasm

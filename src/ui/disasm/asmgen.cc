@@ -34,22 +34,43 @@ std::map<Register, QString> reg_mnemo = {
     {Register::EDX, "edx"}, {Register::EDI, "edi"}, {Register::ESI, "esi"},
     {Register::ESP, "esp"}, {Register::EBP, "ebp"}};
 
-QString randomInstruction() {
-  auto instr = *random_choice(begin(instructions), end(instructions));
+std::unique_ptr<Sublist> randomInstruction(ChunkID chunk_id) {
+  Instruction instr = *random_choice(begin(instructions), end(instructions));
+
+  std::vector<std::unique_ptr<TextRepr>> children;
   if (ins_oper_num[instr] == 1) {
-    return QString("%1 %2").arg(ins_mnemo[instr]).arg(randomRegister());
+    children.emplace_back(makeOpcodeKeyword(instr, chunk_id));
+    children.emplace_back(makeBlank());
+    children.emplace_back(makeRegisterKeyword(
+        *random_choice(begin(registers), end(registers)), chunk_id));
   } else if (ins_oper_num[instr] == 2) {
-    return QString("%1 %2, %3")
-        .arg(ins_mnemo[instr])
-        .arg(randomRegister())
-        .arg(randomRegister());
+    children.emplace_back(makeOpcodeKeyword(instr, chunk_id));
+    children.emplace_back(makeBlank());
+    children.emplace_back(makeRegisterKeyword(
+        *random_choice(begin(registers), end(registers)), chunk_id));
+    children.emplace_back(makeString(","));
+    children.emplace_back(makeBlank());
+    children.emplace_back(makeRegisterKeyword(
+        *random_choice(begin(registers), end(registers)), chunk_id));
   }
-  return "[Instruction]";
+  return std::make_unique<Sublist>(std::move(children));
 }
 
-QString randomRegister() {
-  auto reg = *random_choice(begin(registers), end(registers));
-  return reg_mnemo[reg];
+std::unique_ptr<String> makeString(QString s) {
+  return std::make_unique<String>(s);
+}
+
+std::unique_ptr<Blank> makeBlank() { return std::make_unique<Blank>(); }
+
+std::unique_ptr<Keyword> makeOpcodeKeyword(Instruction instr,
+                                           ChunkID chunk_id) {
+  return std::make_unique<Keyword>(ins_mnemo[instr], KeywordType::OPCODE,
+                                   chunk_id);
+}
+
+std::unique_ptr<Keyword> makeRegisterKeyword(Register reg, ChunkID chunk_id) {
+  return std::make_unique<Keyword>(reg_mnemo[reg], KeywordType::REGISTER,
+                                   chunk_id);
 }
 
 }  // namespace mocks

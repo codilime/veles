@@ -24,10 +24,9 @@ class TextRepr {
   virtual QString string() const = 0;
 
   TextRepr* parent;
-  std::vector<std::unique_ptr<TextRepr>> children;
 };
 
-class Text : TextRepr {
+class Text : public TextRepr {
  public:
   Text(QString text, bool highlight);
   Text() = default;
@@ -43,7 +42,7 @@ class Text : TextRepr {
 
 enum class KeywordType { OPCODE, MODIFIER, LABEL, REGISTER };
 
-class Keyword : TextRepr {
+class Keyword : public TextRepr {
  public:
   Keyword(QString text, KeywordType kc, ChunkID link);
 
@@ -58,12 +57,12 @@ class Keyword : TextRepr {
   ChunkID link_;
 };
 
-class Blank : TextRepr {
+class Blank : public TextRepr {
  public:
   QString string() const override;
 };
 
-class Number : TextRepr {
+class Number : public TextRepr {
  public:
   Number(qint64 value, unsigned bit_width, unsigned base);
 
@@ -80,7 +79,7 @@ class Number : TextRepr {
   unsigned base_;
 };
 
-class String : TextRepr {
+class String : public TextRepr {
  public:
   explicit String(QString text);
 
@@ -93,7 +92,7 @@ class String : TextRepr {
   QString text_;
 };
 
-class Sublist : TextRepr {
+class Sublist : public TextRepr {
  public:
   explicit Sublist(std::vector<std::unique_ptr<TextRepr>> children);
   explicit Sublist();

@@ -1,6 +1,7 @@
 #include <iomanip>
 #include <iostream>
 
+#include "ui/disasm/asmgen.h"
 #include "ui/disasm/disasm.h"
 #include "ui/disasm/mocks.h"
 
@@ -42,7 +43,8 @@ std::ostream& operator<<(std::ostream& os, Entry* entry) {
       auto* ent = reinterpret_cast<EntryChunkBegin*>(entry);
       hex_print(os, ent->chunk->addr_begin);
       os << " ChunkBegin(id: " << ent->chunk->id.toStdString()
-         << ", type: " << ent->chunk->type.toStdString() << ")";
+         << ", type: " << ent->chunk->type.toStdString() << ") ";
+      os << ent->chunk->text_repr->string().toStdString();
       break;
     }
     case EntryType::CHUNK_END: {
