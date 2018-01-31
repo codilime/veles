@@ -278,19 +278,13 @@ void MockWindow::seek(const Bookmark& pos, unsigned prev_n, unsigned next_n) {
 
   current_position_ = pos;
 
-  int b = -1;
-  for (size_t bi = 0; bi < bookmarks_.size(); bi++) {
-    if (bookmarks_[bi] == pos) {
-      b = static_cast<int>(bi);
-      break;
-    }
-  }
-  if (b == -1) {
+  auto x = std::find(std::begin(bookmarks_), std::end(bookmarks_), pos);
+  if (x == std::end(bookmarks_)) {
     return;
   }
 
-  auto entry_index = bookmark_entry_.find(bookmarks_[b]);
-  if (entry_index == bookmark_entry_.end()) {
+  auto entry_index = bookmark_entry_.find(*x);
+  if (entry_index == std::end(bookmark_entry_)) {
     return;
   }
 
