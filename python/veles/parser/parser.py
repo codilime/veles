@@ -239,6 +239,14 @@ class ParserExprConstInt(ParserExpr):
         return ParserTypeInt()
 
 
+class ParserExprConstString(ParserExpr):
+    def __init__(self, value):
+        self.value = value
+
+    def get_type(self):
+        return ParserTypeConstString(len(self.value))
+
+
 class ParserExprConstBindata(ParserExpr):
     def __init__(self, value):
         self.value = value
@@ -347,6 +355,14 @@ class ParserTypeNil(ParserType):
             raise TypeError
 
 
+class ParserTypeConstString(ParserType):
+    def __init__(self, num):
+        self.num = num
+
+    def __str__(self):
+        return 'string'
+
+
 class ParserTypeBindata(ParserType):
     def __init__(self, width, num, display=ParserBinDisplayRaw()):
         self.width = width
@@ -384,9 +400,13 @@ class ParserTypeBindata(ParserType):
             if self.num is not None and self.num != t.num:
                 raise TypeError
             return expr
-        if (self.width is not None and self.num == 1 and
+        elif (self.width is not None and self.num == 1 and
                 isinstance(expr, ParserExprConstInt)):
             return ParserExprConstBindata(BinData(self.width, [expr.value]))
+        elif isinstance(t, ParserTypeConstString):
+            return ParserExprConstBindata(BinData(self.width,
+                [ord(c) for c in expr.value]
+            ))
         else:
             raise TypeError
 

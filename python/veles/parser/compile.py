@@ -1,7 +1,7 @@
 from veles.defs.symbol import Symbol
 from veles.defs.st import (
     StForm, StList, StAny, StPosIntRaw, StInt, StSymbol, StWrap,
-    StEnum, StSymbolRaw, StNil
+    StEnum, StSymbolRaw, StNil, StString,
 )
 from veles.data.repack import Endian, Repacker
 from .parser import (
@@ -11,6 +11,7 @@ from .parser import (
     ParserExprSub,
     ParserExprEqInt,
     ParserExprConstInt,
+    ParserExprConstString,
     ParserExprGetField,
     ParserExprLast,
     ParserExprSelf,
@@ -644,6 +645,11 @@ class StExprConstInt(StInt):
         return ParserExprConstInt(self.val)
 
 
+class StExprConstString(StString):
+    def xlat(self, env):
+        return ParserExprConstString(self.val)
+
+
 class StExprVar(StSymbol):
     def xlat(self, env):
         return env.lookup_var(self.val)
@@ -664,6 +670,7 @@ class StPredEq(StWrap):
 
 StExpr.matchers = [
     StExprConstInt,
+    StExprConstString,
     StExprVar,
     StExprMinus,
     StExprPlus,

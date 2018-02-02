@@ -90,7 +90,10 @@ class ParsedStruct:
             return pfield.raw_value
         elif isinstance(pfield, ParsedIntMap):
             return pfield
+        elif isinstance(pfield, ParsedFieldRef):
+            return pfield.ref
         else:
+            print(pfield)
             assert 0
 
     def get_param_val(self, param):
@@ -503,7 +506,9 @@ def eval_ops(res, data, pos, ops):
                     break
             else:
                 print('no case {}'.format(expr))
-                return None
+                if op.can_read_input():
+                    return None
+                # XXX message
         elif isinstance(op, ParserOpMakeIntMap):
             if op.field in res.fields:
                 raise ValueError('duplicate field {}'.format(op.field))

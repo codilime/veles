@@ -39,54 +39,80 @@
     )
     ; class
     (7
-      (field name_index 16 (unsigned-int)) ; XXX lookup
+      (field name_index 16
+        (map-lookup cp_info constant_pool_map)
+      )
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
     ; const string
     (8
-      (field string_index 16 (unsigned-int)) ; XXX lookup
+      (field string_index 16
+        (map-lookup cp_info constant_pool_map)
+      )
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
     ; fieldref
     (9
-      (field class_index 16 (unsigned-int)) ; XXX lookup
-      (field name_and_type_index 16 (unsigned-int)) ; XXX lookup
+      (field class_index 16
+        (map-lookup cp_info constant_pool_map)
+      )
+      (field name_and_type_index 16
+        (map-lookup cp_info constant_pool_map)
+      )
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
     ; methodref
     (10
-      (field class_index 16 (unsigned-int)) ; XXX lookup
-      (field name_and_type_index 16 (unsigned-int)) ; XXX lookup
+      (field class_index 16
+        (map-lookup cp_info constant_pool_map)
+      )
+      (field name_and_type_index 16
+        (map-lookup cp_info constant_pool_map)
+      )
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
     ; interfacemethodref
     (11
-      (field class_index 16 (unsigned-int)) ; XXX lookup
-      (field name_and_type_index 16 (unsigned-int)) ; XXX lookup
+      (field class_index 16
+        (map-lookup cp_info constant_pool_map)
+      )
+      (field name_and_type_index 16
+        (map-lookup cp_info constant_pool_map)
+      )
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
     ; nameandtype
     (12
-      (field name_index 16 (unsigned-int)) ; XXX lookup
-      (field descriptor_index 16 (unsigned-int)) ; XXX lookup
+      (field name_index 16
+        (map-lookup cp_info constant_pool_map)
+      )
+      (field descriptor_index 16
+        (map-lookup cp_info constant_pool_map)
+      )
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
     ; methodhandle
     (15
       ; enum
       (field reference_kind 8)
-      (field reference_index 16 (unsigned-int)) ; XXX lookup
+      (field reference_index 16
+        (map-lookup cp_info constant_pool_map)
+      )
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
     ; methodtype
     (16
-      (field descriptor_index 16 (unsigned-int)) ; XXX lookup
+      (field descriptor_index 16
+        (map-lookup cp_info constant_pool_map)
+      )
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
     ; invokedynamic
     (18
       (field bootstrap_method_attr_index 16 (unsigned-int)) ; XXX lookup later
-      (field name_and_type_index 16 (unsigned-int)) ; XXX lookup
+      (field name_and_type_index 16
+        (map-lookup cp_info constant_pool_map)
+      )
       (compute-int next_index (+ index 1)) ; XXX nuke me
     )
     ; XXX
@@ -132,6 +158,14 @@
   )
   (field attribute_length 32 (unsigned-int))
   (field* info 8 attribute_length)
+  (match (get-field attribute_name_index utf8)
+    ("ConstantValue"
+      (compute-int is-const 1)
+    )
+    ("Code"
+      (compute-int is-code 1)
+    )
+  )
 )
 
 (struct class_file

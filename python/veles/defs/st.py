@@ -153,6 +153,16 @@ class StPosIntRaw(StIntRaw):
             raise StMatchFail('int must be positive')
 
 
+class StString:
+    @classmethod
+    def parse(cls, sexpr):
+        if not isinstance(sexpr, str):
+            raise StMatchFail('not a string')
+        res = cls()
+        res.val = sexpr
+        return res
+
+
 class StNil:
     @classmethod
     def parse(cls, sexpr):
