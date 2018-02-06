@@ -361,10 +361,12 @@ add_executable(main_ui
     ${INCLUDE_DIR}/ui/connectionmanager.h
     ${INCLUDE_DIR}/ui/color_picker_button.h
     ${INCLUDE_DIR}/ui/disasm/mocks.h
-    ${INCLUDE_DIR}/ui/disasm/label.h
+    ${INCLUDE_DIR}/ui/disasm/row.h
+    ${INCLUDE_DIR}/ui/disasm/rows.h
     ${INCLUDE_DIR}/ui/disasm/asmgen.h
     ${INCLUDE_DIR}/ui/disasm/disasm.h
     ${INCLUDE_DIR}/ui/disasm/tab.h
+    ${INCLUDE_DIR}/ui/disasm/arrows.h
     ${INCLUDE_DIR}/ui/disasm/widget.h
     ${INCLUDE_DIR}/ui/dockwidget.h
     ${INCLUDE_DIR}/ui/dockwidget_native.h
@@ -398,7 +400,9 @@ add_executable(main_ui
     ${SRC_DIR}/ui/connectionmanager.cc
     ${SRC_DIR}/ui/color_picker_button.cc
     ${SRC_DIR}/ui/disasm/tab.cc
-    ${SRC_DIR}/ui/disasm/label.cc
+    ${SRC_DIR}/ui/disasm/arrows.cc
+    ${SRC_DIR}/ui/disasm/rows.cc
+    ${SRC_DIR}/ui/disasm/row.cc
     ${SRC_DIR}/ui/disasm/mocks.cc
     ${SRC_DIR}/ui/disasm/asmgen.cc
     ${SRC_DIR}/ui/disasm/disasm.cc

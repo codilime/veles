@@ -26,11 +26,11 @@ namespace veles {
 namespace ui {
 namespace disasm {
 
-class Label : public QLabel {
+class Row : public QLabel {
   Q_OBJECT
 
  public:
-  Label(const disasm::Entry& entry);
+  explicit Row(const disasm::Entry& entry);
 };
 
 }  // namespace disasm

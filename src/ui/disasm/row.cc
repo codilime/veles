@@ -15,17 +15,17 @@
  *
  */
 
-#include "ui/disasm/label.h"
+#include "ui/disasm/row.h"
 
 namespace veles {
 namespace ui {
 namespace disasm {
 
-Label::Label(const Entry& e) : QLabel() {
+Row::Row(const Entry& e) : QLabel() {
   switch (e.type()) {
     case EntryType::CHUNK_BEGIN: {
       auto* ent = reinterpret_cast<EntryChunkBegin const*>(&e);
-      setText(QString(ent->chunk->text_repr.get()->string()));
+      setText(QString(ent->chunk->text_repr->string()));
       break;
     }
     case EntryType::CHUNK_END: {
@@ -46,6 +46,7 @@ Label::Label(const Entry& e) : QLabel() {
     default: { break; }
   }
 }
-}
-}
-}
+
+}  // namespace disasm
+}  // namespace ui
+}  // namespace veles

@@ -25,9 +25,10 @@ Widget::Widget() {
   setupMocks();
   getEntrypoint();
 
-  // main_layout.addWidget(&rich_text_widget);
-  main_layout.addLayout(&sub_layout);
-  setLayout(&main_layout);
+  layout_.addWidget(&arrows_);
+  layout_.addWidget(&rows_);
+
+  setLayout(&layout_);
 }
 
 void Widget::setupMocks() {
@@ -45,23 +46,20 @@ void Widget::setupMocks() {
 }
 
 void Widget::getEntrypoint() {
-  entrypoint_ = blob_.get()->getEntrypoint();
+  entrypoint_ = blob_->getEntrypoint();
 
-  watcher_.setFuture(entrypoint_);
+  entrypoint_watcher_.setFuture(entrypoint_);
 
-  QObject::connect(&watcher_, SIGNAL(finished()), this, SLOT(getWindow()));
+  QObject::connect(&entrypoint_watcher_, SIGNAL(finished()), this,
+                   SLOT(getWindow()));
 }
 
 void Widget::getWindow() {
-  Bookmark e = entrypoint_.result();
-  window_ = blob_.get()->createWindow(e, 2, 10);
+  Bookmark entrypoint = entrypoint_.result();
+  window_ = blob_->createWindow(entrypoint, 2, 10);
 
-  auto entries = window_.get()->entries();
-
-  for (auto e : entries) {
-    Label* label = new Label(*(e.get()));
-    sub_layout.addWidget(label);
-  }
+  auto entries = window_->entries();
+  rows_.generate(entries);
 }
 
 }  // namespace disasm

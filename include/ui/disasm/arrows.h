@@ -17,47 +17,14 @@
 
 #pragma once
 
-#include <QObject>
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QLabel>
-
-#include "ui/disasm/arrows.h"
-#include "ui/disasm/disasm.h"
-#include "ui/disasm/mocks.h"
-#include "ui/disasm/rows.h"
+#include <QWidget>
 
 namespace veles {
 namespace ui {
 namespace disasm {
 
-/*
- * Container for component widgets (arrows column, disassembled code column,
- * etc).
- * Responsible for rendering them in right position.
- */
-class Widget : public QWidget {
+class Arrows : public QWidget {
   Q_OBJECT
-
-  QHBoxLayout layout_;
-
- public slots:
-  void getWindow();
-
- public:
-  Widget();
-
-  void setupMocks();
-  void getEntrypoint();
-
- private:
-  QFutureWatcher<Bookmark> entrypoint_watcher_;
-  QFuture<Bookmark> entrypoint_;
-
-  std::unique_ptr<Blob> blob_;
-  std::unique_ptr<Window> window_;
-
-  Arrows arrows_;
-  Rows rows_;
 };
 
 }  // namespace disasm
