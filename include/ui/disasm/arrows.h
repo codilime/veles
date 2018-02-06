@@ -25,6 +25,9 @@ namespace disasm {
 
 class Arrows : public QWidget {
   Q_OBJECT
+
+ public:
+  Arrows();
 };
 
 }  // namespace disasm

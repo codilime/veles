@@ -15,10 +15,14 @@
  *
  */
 
-#include "ui/disasm/row.h"
+#include "ui/disasm/arrows.h"
 
 namespace veles {
 namespace ui {
-namespace disasm {}  // namespace disasm
+namespace disasm {
+
+Arrows::Arrows() { setHidden(true); }
+
+}  // namespace disasm
 }  // namespace ui
 }  // namespace veles
