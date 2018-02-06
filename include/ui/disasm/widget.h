@@ -31,8 +31,8 @@ namespace ui {
 namespace disasm {
 
 /*
- * Container for component widgets (arrows column, disassembled code column,
- * etc).
+ * Container for component widgets (arrows column,
+ * disassembled code column, etc).
  * Responsible for rendering them in right position.
  */
 class Widget : public QWidget {
@@ -50,8 +50,8 @@ class Widget : public QWidget {
   void getEntrypoint();
 
  private:
-  QFutureWatcher<Bookmark> entrypoint_watcher_;
   QFuture<Bookmark> entrypoint_;
+  QFutureWatcher<Bookmark> entrypoint_watcher_;
 
   std::unique_ptr<Blob> blob_;
   std::unique_ptr<Window> window_;
