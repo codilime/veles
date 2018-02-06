@@ -20,15 +20,15 @@
 
 #include <QApplication>
 #include <QDesktopWidget>
-#include <QMainWindow>
 #include <QLayout>
+#include <QMainWindow>
 #include <QString>
 #include <QTabBar>
 #include <QWidget>
 
 #include "ui/disasm/tab.h"
-#include "ui/filters/tabbareventfilter.h"
 #include "ui/filters/activatedockeventfilter.h"
+#include "ui/filters/tabbareventfilter.h"
 #include "ui/nodewidget.h"
 
 #include "dockwidget.h"

@@ -10,10 +10,10 @@ namespace ui {
 namespace disasm {
 
 class Label : public QLabel {
- Q_OBJECT
+  Q_OBJECT
 
  public:
-  Label(const disasm::Entry &entry);
+  Label(const disasm::Entry& entry);
 };
 
 }  // namespace disasm

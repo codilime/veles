@@ -1,8 +1,8 @@
 #pragma once
 
 #include <QObject>
-#include <QtWidgets/QLabel>
 #include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QLabel>
 
 #include "ui/disasm/disasm.h"
 #include "ui/disasm/label.h"
@@ -18,14 +18,13 @@ namespace disasm {
  * Responsible for rendering them in right position.
  */
 class Widget : public QWidget {
- Q_OBJECT
+  Q_OBJECT
   QHBoxLayout main_layout;
   QVBoxLayout sub_layout;
 
  public slots:
 
   void getWindow();
-
 
  public:
   Widget();

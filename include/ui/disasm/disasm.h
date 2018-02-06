@@ -232,7 +232,7 @@ class Window : public QObject {
   virtual const std::vector<std::shared_ptr<Entry>> entries() = 0;
   virtual QFuture<void> chunkCollapseToggle(const ChunkID& id) = 0;
 
-  virtual ~Window() {};
+  virtual ~Window(){};
 
  signals:
   void updateScrollbar();

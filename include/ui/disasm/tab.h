@@ -8,7 +8,7 @@ namespace ui {
 namespace disasm {
 
 class Tab : public IconAwareView {
- Q_OBJECT
+  Q_OBJECT
 
   Widget disasm_widget;
 

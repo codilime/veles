@@ -16,12 +16,14 @@ Widget::Widget() {
 void Widget::setupMocks() {
   mocks::ChunkTreeFactory ctf;
 
-  std::unique_ptr<mocks::ChunkNode> root = ctf.generateTree(mocks::ChunkType::FILE);
+  std::unique_ptr<mocks::ChunkNode> root =
+      ctf.generateTree(mocks::ChunkType::FILE);
   ctf.setAddresses(root.get(), 0, 0x1000);
 
   std::shared_ptr<mocks::ChunkNode> sroot{root.release()};
 
-  std::unique_ptr<mocks::MockBlob> mb = std::make_unique<mocks::MockBlob>(sroot);
+  std::unique_ptr<mocks::MockBlob> mb =
+      std::make_unique<mocks::MockBlob>(sroot);
   blob_ = std::unique_ptr<Blob>(std::move(mb));
 }
 
@@ -40,7 +42,7 @@ void Widget::getWindow() {
   auto entries = window_.get()->entries();
 
   for (auto e : entries) {
-    Label *label = new Label(*(e.get()));
+    Label* label = new Label(*(e.get()));
     sub_layout.addWidget(label);
   }
 }

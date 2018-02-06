@@ -293,8 +293,7 @@ void MockWindow::seek(const Bookmark& pos, unsigned prev_n, unsigned next_n) {
 
   if (entry_index->second < prev_n) {
     entries_active_.first = 0;
-  }
-  else {
+  } else {
     entries_active_.first = entry_index->second - prev_n;
   }
 
@@ -305,8 +304,7 @@ void MockWindow::seek(const Bookmark& pos, unsigned prev_n, unsigned next_n) {
 
   if (entry_index->second + next_n >= entries_.size()) {
     entries_active_.second = entries_.size() - 1;
-  }
-  else {
+  } else {
     entries_active_.second = entry_index->second + next_n;
   }
 }
