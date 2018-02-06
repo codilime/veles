@@ -23,9 +23,9 @@ namespace disasm {
 
 Tab::Tab() : IconAwareView("", "") {
   //  auto* dock_address_column = new DockWidget;
-  //  dock_address_column->setWidget(&disasm_widget);
+  //  dock_address_column->setWidget(&widget);
   //  addDockWidget(Qt::LeftDockWidgetArea, dock_address_column);
-  setCentralWidget(&disasm_widget);
+  setCentralWidget(&widget);
 }
 
 }  // namespace disasm

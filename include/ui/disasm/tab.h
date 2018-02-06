@@ -27,7 +27,7 @@ namespace disasm {
 class Tab : public IconAwareView {
   Q_OBJECT
 
-  Widget disasm_widget;
+  Widget widget;
 
  public:
   Tab();
