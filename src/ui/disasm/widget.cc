@@ -2,8 +2,9 @@
 
 namespace veles {
 namespace ui {
+namespace disasm {
 
-DisasmWidget::DisasmWidget() {
+Widget::Widget() {
   setupMocks();
   getEntrypoint();
 
@@ -12,38 +13,38 @@ DisasmWidget::DisasmWidget() {
   setLayout(&main_layout);
 }
 
-void DisasmWidget::setupMocks() {
-  disasm::mocks::ChunkTreeFactory ctf;
+void Widget::setupMocks() {
+  mocks::ChunkTreeFactory ctf;
 
-  std::unique_ptr<disasm::mocks::ChunkNode> root = ctf.generateTree(disasm::mocks::ChunkType::FILE);
+  std::unique_ptr<mocks::ChunkNode> root = ctf.generateTree(mocks::ChunkType::FILE);
   ctf.setAddresses(root.get(), 0, 0x1000);
 
-  std::shared_ptr<disasm::mocks::ChunkNode> sroot{root.release()};
+  std::shared_ptr<mocks::ChunkNode> sroot{root.release()};
 
-  std::unique_ptr<disasm::mocks::MockBlob> mb = std::make_unique<disasm::mocks::MockBlob>(sroot);
-  blob_ = std::unique_ptr<disasm::Blob>(std::move(mb));
+  std::unique_ptr<mocks::MockBlob> mb = std::make_unique<mocks::MockBlob>(sroot);
+  blob_ = std::unique_ptr<Blob>(std::move(mb));
 }
 
-void DisasmWidget::getEntrypoint() {
+void Widget::getEntrypoint() {
   entrypoint_ = blob_.get()->getEntrypoint();
 
   watcher_.setFuture(entrypoint_);
 
-  QObject::connect(&watcher_, SIGNAL(finished()),
-          this, SLOT(getWindow()));
+  QObject::connect(&watcher_, SIGNAL(finished()), this, SLOT(getWindow()));
 }
 
-void DisasmWidget::getWindow() {
-  disasm::Bookmark e = entrypoint_.result();
+void Widget::getWindow() {
+  Bookmark e = entrypoint_.result();
   window_ = blob_.get()->createWindow(e, 2, 10);
 
   auto entries = window_.get()->entries();
 
   for (auto e : entries) {
-    DisasmLabel* label = new DisasmLabel(*(e.get()));
+    Label *label = new Label(*(e.get()));
     sub_layout.addWidget(label);
   }
 }
 
+}  // namespace disasm
 }  // namespace ui
 }  // namespace veles

@@ -10,9 +10,6 @@
 #include "data/bindata.h"
 #include "data/repack.h"
 
-//TODO REMOVE
-#include <iostream>
-
 namespace veles {
 namespace ui {
 namespace disasm {

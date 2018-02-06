@@ -7,13 +7,15 @@
 
 namespace veles {
 namespace ui {
+namespace disasm {
 
-class DisasmLabel : public QLabel {
+class Label : public QLabel {
  Q_OBJECT
 
  public:
-  DisasmLabel(const disasm::Entry& entry);
+  Label(const disasm::Entry &entry);
 };
 
+}  // namespace disasm
 }  // namespace ui
 }  // namespace veles

@@ -16,16 +16,6 @@
  */
 #include "ui/mainwindowwithdetachabledockwidgets.h"
 
-#include <ui/disasm/tab.h>
-#include <QApplication>
-#include <QDesktopWidget>
-#include <QLayout>
-#include <QTabBar>
-
-#include "ui/filters/activatedockeventfilter.h"
-#include "ui/nodewidget.h"
-#include "visualization/panel.h"
-
 namespace veles {
 namespace ui {
 
@@ -733,7 +723,7 @@ void MainWindowWithDetachableDockWidgets::createVisualization(
 }
 
 void MainWindowWithDetachableDockWidgets::createDisasmTab() {
-  auto* disasm_tab = new DisasmTab;
+  auto* disasm_tab = new disasm::Tab;
   addTab(disasm_tab, "Disasm Tab", nullptr);
 }
 

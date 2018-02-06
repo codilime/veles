@@ -2,28 +2,28 @@
 
 namespace veles {
 namespace ui {
+namespace disasm {
 
-
-DisasmLabel::DisasmLabel(const disasm::Entry& e) : QLabel() {
+Label::Label(const Entry &e) : QLabel() {
   switch (e.type()) {
-    case disasm::EntryType::CHUNK_BEGIN: {
-      auto* ent = reinterpret_cast<disasm::EntryChunkBegin const *>(&e);
+    case EntryType::CHUNK_BEGIN: {
+      auto *ent = reinterpret_cast<EntryChunkBegin const *>(&e);
       setText(QString(ent->chunk->text_repr.get()->string()));
       break;
     }
-    case disasm::EntryType::CHUNK_END: {
-      auto* ent = reinterpret_cast<disasm::EntryChunkEnd const *>(&e);
+    case EntryType::CHUNK_END: {
+      auto *ent = reinterpret_cast<EntryChunkEnd const *>(&e);
       setText(QString(ent->chunk->id));
       break;
     }
-    case disasm::EntryType::OVERLAP: {
+    case EntryType::OVERLAP: {
       setText("Overlap");
       break;
     }
-    case disasm::EntryType::FIELD: {
-      auto* ent = reinterpret_cast<disasm::EntryField const *>(&e);
-      auto cent = const_cast<disasm::EntryField *>(ent);
-      setText(QString(disasm::EntryFieldStringRepresentation(cent).c_str()));
+    case EntryType::FIELD: {
+      auto *ent = reinterpret_cast<EntryField const *>(&e);
+      auto cent = const_cast<EntryField *>(ent);
+      setText(QString(EntryFieldStringRepresentation(cent).c_str()));
       break;
     }
     default: {
@@ -32,5 +32,6 @@ DisasmLabel::DisasmLabel(const disasm::Entry& e) : QLabel() {
   }
 }
 
+}
 }
 }

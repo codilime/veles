@@ -18,12 +18,21 @@
 
 #include <set>
 
+#include <QApplication>
+#include <QDesktopWidget>
 #include <QMainWindow>
+#include <QLayout>
 #include <QString>
+#include <QTabBar>
 #include <QWidget>
 
-#include "dockwidget.h"
+#include "ui/disasm/tab.h"
 #include "ui/filters/tabbareventfilter.h"
+#include "ui/filters/activatedockeventfilter.h"
+#include "ui/nodewidget.h"
+
+#include "dockwidget.h"
+#include "visualization/panel.h"
 
 namespace veles {
 namespace ui {

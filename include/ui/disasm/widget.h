@@ -3,31 +3,35 @@
 #include <QObject>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QHBoxLayout>
-#include "ui/disasm/label.h"
+
 #include "ui/disasm/disasm.h"
+#include "ui/disasm/label.h"
 
 #include "ui/disasm/mocks.h"
 
 namespace veles {
 namespace ui {
+namespace disasm {
 
 /*
  * Container for component widgets (address column, hex column, etc).
  * Responsible for rendering them in right position.
  */
-class DisasmWidget : public QWidget {
-  Q_OBJECT
+class Widget : public QWidget {
+ Q_OBJECT
   QHBoxLayout main_layout;
   QVBoxLayout sub_layout;
 
  public slots:
+
   void getWindow();
 
 
  public:
-  DisasmWidget();
+  Widget();
 
   void setupMocks();
+
   void getEntrypoint();
 
  private:
@@ -39,5 +43,6 @@ class DisasmWidget : public QWidget {
   QFutureWatcher<disasm::Bookmark> watcher_;
 };
 
+}  // namespace disasm
 }  // namespace ui
 }  // namespace veles

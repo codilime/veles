@@ -5,15 +5,17 @@
 
 namespace veles {
 namespace ui {
+namespace disasm {
 
-class DisasmTab : public IconAwareView {
-  Q_OBJECT
+class Tab : public IconAwareView {
+ Q_OBJECT
 
-  DisasmWidget disasm_widget;
+  Widget disasm_widget;
 
  public:
-  DisasmTab();
+  Tab();
 };
 
+}  // namespace disasm
 }  // namespace ui
 }  // namespace veles
