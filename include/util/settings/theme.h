@@ -29,6 +29,7 @@ namespace theme {
 QString currentTheme();
 void setCurrentTheme(const QString& theme);
 QStringList availableThemes();
+const QString& getDefaultTheme();
 QPalette pallete();
 QStyle* createStyle();
 QColor highlightingColor();

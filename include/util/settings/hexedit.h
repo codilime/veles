@@ -21,8 +21,10 @@ namespace util {
 namespace settings {
 namespace hexedit {
 
+int getDefaultColumnsNumber();
 int columnsNumber();
 void setColumnsNumber(int number);
+bool getDefaultResizeColumnsToWindowWidth();
 bool resizeColumnsToWindowWidth();
 void setResizeColumnsToWindowWidth(bool on);
 

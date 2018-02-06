@@ -41,6 +41,8 @@ OptionsDialog::OptionsDialog(QWidget* parent)
           });
   connect(ui->buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked,
           this, &OptionsDialog::applyChanges);
+  connect(ui->resetToDefaultsButton, &QPushButton::clicked, this,
+          &OptionsDialog::resetToDefaults);
 
   // Initialize color pickers.
   auto color_begin = util::settings::visualization::colorBegin();
@@ -63,7 +65,30 @@ void OptionsDialog::show() {
   ui->hexColumnsSpinBox->setValue(util::settings::hexedit::columnsNumber());
   ui->hexColumnsSpinBox->setEnabled(checkState != Qt::Checked);
 
+  color_3d_begin_button_->setColor(util::settings::visualization::colorBegin());
+  color_3d_end_button_->setColor(util::settings::visualization::colorEnd());
+
   QWidget::show();
+}
+
+void OptionsDialog::resetToDefaults() {
+  Qt::CheckState checkState = Qt::Unchecked;
+
+  if (util::settings::hexedit::getDefaultResizeColumnsToWindowWidth()) {
+    checkState = Qt::Checked;
+  }
+
+  ui->colorsBox->setCurrentText(util::settings::theme::getDefaultTheme());
+
+  ui->hexColumnsAutoCheckBox->setCheckState(checkState);
+  ui->hexColumnsSpinBox->setValue(
+      util::settings::hexedit::getDefaultColumnsNumber());
+  ui->hexColumnsSpinBox->setEnabled(checkState != Qt::Checked);
+
+  color_3d_begin_button_->setColor(
+      util::settings::visualization::getDefaultColorBegin());
+  color_3d_end_button_->setColor(
+      util::settings::visualization::getDefaultColorEnd());
 }
 
 void OptionsDialog::applyChanges() {

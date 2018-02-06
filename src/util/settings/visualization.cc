@@ -25,6 +25,9 @@ namespace util {
 namespace settings {
 namespace visualization {
 
+static const QColor defaultColorBegin_ = QColor(255, 127, 0);
+static const QColor defaultColorEnd_ = QColor(0, 127, 255);
+
 bool showCaptions() {
   return QSettings().value("visualization.show_captions", false).toBool();
 }
@@ -52,8 +55,11 @@ void setBrightness(int brightness) {
   QSettings().setValue("visualization.brightness", brightness);
 }
 
+const QColor& getDefaultColorBegin() { return defaultColorBegin_; }
+
 QColor colorBegin() {
-  auto v = QSettings().value("visualization.color_begin", QColor(255, 127, 0));
+  auto v =
+      QSettings().value("visualization.color_begin", getDefaultColorBegin());
   return v.value<QColor>();
 }
 
@@ -61,8 +67,10 @@ void setColorBegin(const QColor& color) {
   QSettings().setValue("visualization.color_begin", color);
 }
 
+const QColor& getDefaultColorEnd() { return defaultColorEnd_; }
+
 QColor colorEnd() {
-  auto v = QSettings().value("visualization.color_end", QColor(0, 127, 255));
+  auto v = QSettings().value("visualization.color_end", getDefaultColorEnd());
   return v.value<QColor>();
 }
 

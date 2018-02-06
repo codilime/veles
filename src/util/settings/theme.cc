@@ -25,6 +25,8 @@ namespace util {
 namespace settings {
 namespace theme {
 
+static const QString darkThemeStr = "dark";
+
 static bool isDark_ = false;
 static bool isDarkCached_ = false;
 
@@ -37,7 +39,7 @@ static QVector<QColor> chunkBackgroundColors_ = {
 
 QString currentTheme() {
   QSettings settings;
-  return settings.value("theme", "dark").toString();
+  return settings.value("theme", getDefaultTheme()).toString();
 }
 
 void setCurrentTheme(const QString& theme) {
@@ -45,7 +47,9 @@ void setCurrentTheme(const QString& theme) {
   settings.setValue("theme", theme);
 }
 
-QStringList availableThemes() { return {"normal", "dark"}; }
+QStringList availableThemes() { return {"normal", darkThemeStr}; }
+
+const QString& getDefaultTheme() { return darkThemeStr; }
 
 QPalette pallete() {
   QPalette pallete;
@@ -72,7 +76,7 @@ QPalette pallete() {
 }
 
 QStyle* createStyle() {
-  if (currentTheme() == "dark") {
+  if (currentTheme() == darkThemeStr) {
     return QStyleFactory::create("Fusion");
   }
   return nullptr;
@@ -122,7 +126,7 @@ QFont font() {
 
 static bool isDark() {
   if (!isDarkCached_) {
-    isDark_ = currentTheme() == "dark";
+    isDark_ = currentTheme() == darkThemeStr;
     isDarkCached_ = true;
   }
   return isDark_;
