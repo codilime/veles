@@ -31,7 +31,7 @@
 #include "dbif/universe.h"
 #include "ui/databaseinfo.h"
 #include "ui/dialogs/optionsdialog.h"
-#include "ui/disasm/disasmwidget.h"
+#include "ui/disasm/widget.h"
 #include "ui/hexeditwidget.h"
 #include "ui/logwidget.h"
 #include "ui/nodetreewidget.h"

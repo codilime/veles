@@ -3,9 +3,7 @@
 #include <QObject>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QHBoxLayout>
-#include "richtextwidget.h"
-#include "ui/disasm/addresscolumn.h"
-#include "ui/disasm/disasmlabel.h"
+#include "ui/disasm/label.h"
 #include "ui/disasm/disasm.h"
 
 #include "ui/disasm/mocks.h"
@@ -21,8 +19,6 @@ class DisasmWidget : public QWidget {
   Q_OBJECT
   QHBoxLayout main_layout;
   QVBoxLayout sub_layout;
-  AddressColumnWidget address_column;
-  RichTextWidget rich_text_widget;
 
  public slots:
   void getWindow();

@@ -1,4 +1,4 @@
-#include "ui/disasm/disasmtab.h"
+#include "ui/disasm/tab.h"
 
 namespace veles {
 namespace ui {

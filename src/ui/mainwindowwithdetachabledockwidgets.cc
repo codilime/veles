@@ -16,7 +16,7 @@
  */
 #include "ui/mainwindowwithdetachabledockwidgets.h"
 
-#include <ui/disasm/disasmtab.h>
+#include <ui/disasm/tab.h>
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QLayout>

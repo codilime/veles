@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ui/disasm/disasmwidget.h"
+#include "ui/disasm/widget.h"
 #include "ui/dockwidget.h"
 
 namespace veles {

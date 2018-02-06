@@ -361,13 +361,11 @@ add_executable(main_ui
     ${INCLUDE_DIR}/ui/connectionmanager.h
     ${INCLUDE_DIR}/ui/color_picker_button.h
     ${INCLUDE_DIR}/ui/disasm/mocks.h
-    ${INCLUDE_DIR}/ui/disasm/disasmlabel.h
+    ${INCLUDE_DIR}/ui/disasm/label.h
     ${INCLUDE_DIR}/ui/disasm/asmgen.h
     ${INCLUDE_DIR}/ui/disasm/disasm.h
-    ${INCLUDE_DIR}/ui/disasm/disasmtab.h
-    ${INCLUDE_DIR}/ui/disasm/disasmwidget.h
-    ${INCLUDE_DIR}/ui/disasm/addresscolumn.h
-    ${INCLUDE_DIR}/ui/disasm/richtextwidget.h
+    ${INCLUDE_DIR}/ui/disasm/tab.h
+    ${INCLUDE_DIR}/ui/disasm/widget.h
     ${INCLUDE_DIR}/ui/dockwidget.h
     ${INCLUDE_DIR}/ui/dockwidget_native.h
     ${INCLUDE_DIR}/ui/hexeditwidget.h
@@ -399,14 +397,12 @@ add_executable(main_ui
     ${SRC_DIR}/ui/veles_mainwindow.cc
     ${SRC_DIR}/ui/connectionmanager.cc
     ${SRC_DIR}/ui/color_picker_button.cc
-    ${SRC_DIR}/ui/disasm/disasmtab.cc
-    ${SRC_DIR}/ui/disasm/disasmlabel.cc
+    ${SRC_DIR}/ui/disasm/tab.cc
+    ${SRC_DIR}/ui/disasm/label.cc
     ${SRC_DIR}/ui/disasm/mocks.cc
     ${SRC_DIR}/ui/disasm/asmgen.cc
     ${SRC_DIR}/ui/disasm/disasm.cc
-    ${SRC_DIR}/ui/disasm/disasmwidget.cc
-    ${SRC_DIR}/ui/disasm/addresscolumn.cc
-    ${SRC_DIR}/ui/disasm/richtextwidget.cc
+    ${SRC_DIR}/ui/disasm/widget.cc
     ${SRC_DIR}/ui/dockwidget.cc
     ${SRC_DIR}/ui/dockwidget_native.cc
     ${SRC_DIR}/ui/hexeditwidget.cc
