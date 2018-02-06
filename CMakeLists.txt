@@ -360,6 +360,10 @@ add_executable(main_ui
     ${INCLUDE_DIR}/ui/veles_mainwindow.h
     ${INCLUDE_DIR}/ui/connectionmanager.h
     ${INCLUDE_DIR}/ui/color_picker_button.h
+    ${INCLUDE_DIR}/ui/disasm/mocks.h
+    ${INCLUDE_DIR}/ui/disasm/disasmlabel.h
+    ${INCLUDE_DIR}/ui/disasm/asmgen.h
+    ${INCLUDE_DIR}/ui/disasm/disasm.h
     ${INCLUDE_DIR}/ui/disasm/disasmtab.h
     ${INCLUDE_DIR}/ui/disasm/disasmwidget.h
     ${INCLUDE_DIR}/ui/disasm/addresscolumn.h
@@ -396,6 +400,10 @@ add_executable(main_ui
     ${SRC_DIR}/ui/connectionmanager.cc
     ${SRC_DIR}/ui/color_picker_button.cc
     ${SRC_DIR}/ui/disasm/disasmtab.cc
+    ${SRC_DIR}/ui/disasm/disasmlabel.cc
+    ${SRC_DIR}/ui/disasm/mocks.cc
+    ${SRC_DIR}/ui/disasm/asmgen.cc
+    ${SRC_DIR}/ui/disasm/disasm.cc
     ${SRC_DIR}/ui/disasm/disasmwidget.cc
     ${SRC_DIR}/ui/disasm/addresscolumn.cc
     ${SRC_DIR}/ui/disasm/richtextwidget.cc

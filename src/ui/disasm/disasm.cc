@@ -4,6 +4,17 @@ namespace veles {
 namespace ui {
 namespace disasm {
 
+std::string EntryFieldStringRepresentation(EntryField* field_entry) {
+  switch (field_entry->field_type) {
+    case FieldType::STRING: {
+      auto* fvs = reinterpret_cast<FieldValueString*>(field_entry->value.get());
+      return fvs->value.toStdString();
+    }
+    default: { break; }
+  }
+  return "[CANNOT DISPLAY AS STRING]";
+}
+
 Text::Text(QString text, bool highlight) : text_{text}, highlight_{highlight} {}
 QString Text::text() { return text_; }
 bool Text::highlight() { return highlight_; }

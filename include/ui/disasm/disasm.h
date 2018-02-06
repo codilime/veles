@@ -10,6 +10,9 @@
 #include "data/bindata.h"
 #include "data/repack.h"
 
+//TODO REMOVE
+#include <iostream>
+
 namespace veles {
 namespace ui {
 namespace disasm {
@@ -215,6 +218,8 @@ struct EntryBitField : Entry {
 
   std::unique_ptr<FieldValue> value;
 };
+
+std::string EntryFieldStringRepresentation(EntryField* field_entry);
 
 using ScrollbarIndex = uint64_t;
 

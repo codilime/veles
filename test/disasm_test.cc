@@ -18,6 +18,7 @@ using veles::ui::disasm::EntryType;
 using veles::ui::disasm::FieldType;
 using veles::ui::disasm::FieldValueString;
 using veles::ui::disasm::Window;
+using veles::ui::disasm::EntryFieldStringRepresentation;
 using veles::ui::disasm::mocks::ChunkTreeFactory;
 using veles::ui::disasm::mocks::ChunkType;
 using veles::ui::disasm::mocks::ChunkNode;
@@ -26,17 +27,6 @@ using veles::ui::disasm::mocks::EntryFactory;
 using veles::ui::disasm::mocks::MockWindow;
 using veles::ui::disasm::mocks::MockBlob;
 
-std::string fieldStringRepresentation(EntryField* field_entry) {
-  switch (field_entry->field_type) {
-    case FieldType::STRING: {
-      auto* fvs = reinterpret_cast<FieldValueString*>(field_entry->value.get());
-      return fvs->value.toStdString();
-    }
-    default: { break; }
-  }
-  return "[CANNOT DISPLAY AS STRING]";
-}
-
 std::ostream& operator<<(std::ostream& os, Entry* entry) {
   switch (entry->type()) {
     case EntryType::CHUNK_BEGIN: {
@@ -44,7 +34,7 @@ std::ostream& operator<<(std::ostream& os, Entry* entry) {
       hex_print(os, ent->chunk->addr_begin);
       os << " ChunkBegin(id: " << ent->chunk->id.toStdString()
          << ", type: " << ent->chunk->type.toStdString() << ") ";
-      os << ent->chunk->text_repr->string().toStdString();
+      os << ent->chunk->text_repr.get()->string().toStdString();
       break;
     }
     case EntryType::CHUNK_END: {
@@ -59,7 +49,7 @@ std::ostream& operator<<(std::ostream& os, Entry* entry) {
     }
     case EntryType::FIELD: {
       auto* ent = reinterpret_cast<EntryField*>(entry);
-      os << fieldStringRepresentation(ent);
+      os << EntryFieldStringRepresentation(ent);
       break;
     }
     default:
