@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>223</width>
-    <height>266</height>
+    <width>297</width>
+    <height>329</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -115,6 +115,13 @@
        </layout>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="resetToDefaultsButton">
+     <property name="text">
+      <string>Reset to defaults</string>
+     </property>
     </widget>
    </item>
    <item>

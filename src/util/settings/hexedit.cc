@@ -23,9 +23,12 @@ namespace util {
 namespace settings {
 namespace hexedit {
 
+int getDefaultColumnsNumber() { return 16; }
+
 int columnsNumber() {
   QSettings settings;
-  return settings.value("hexedit.columnsNumber", 16).toInt();
+  return settings.value("hexedit.columnsNumber", getDefaultColumnsNumber())
+      .toInt();
 }
 
 void setColumnsNumber(int number) {
@@ -33,9 +36,14 @@ void setColumnsNumber(int number) {
   settings.setValue("hexedit.columnsNumber", number);
 }
 
+bool getDefaultResizeColumnsToWindowWidth() { return false; }
+
 bool resizeColumnsToWindowWidth() {
   QSettings settings;
-  return settings.value("hexedit.resizeColumnsToWindowWidth", false).toBool();
+  return settings
+      .value("hexedit.resizeColumnsToWindowWidth",
+             getDefaultResizeColumnsToWindowWidth())
+      .toBool();
 }
 
 void setResizeColumnsToWindowWidth(bool on) {
