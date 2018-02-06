@@ -256,6 +256,7 @@ void ConnectionManager::killLocalServer() {
 #else
     server_process_->terminate();
 #endif
+    server_process_->waitForFinished(1000);
   }
 }
 
