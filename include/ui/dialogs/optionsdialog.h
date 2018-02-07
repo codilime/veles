@@ -16,6 +16,7 @@
  */
 #pragma once
 
+#include <QColorDialog>
 #include <QDialog>
 #include <QtCore>
 
@@ -37,6 +38,7 @@ class OptionsDialog : public QDialog {
   Ui::OptionsDialog* ui;
   void show();
   void applyChanges();
+  void updateColorButton();
 
  public slots:
   void accept() override;
@@ -44,6 +46,8 @@ class OptionsDialog : public QDialog {
  private:
   ColorPickerButton* color_3d_begin_button_;
   ColorPickerButton* color_3d_end_button_;
+  QColorDialog* color_dialog;
+  QColorDialog* color_dialog_;
 };
 
 }  // namespace ui

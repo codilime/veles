@@ -16,6 +16,8 @@
  */
 #pragma once
 
+#include <QColor>
+
 namespace veles {
 namespace util {
 namespace settings {
@@ -25,6 +27,8 @@ int columnsNumber();
 void setColumnsNumber(int number);
 bool resizeColumnsToWindowWidth();
 void setResizeColumnsToWindowWidth(bool on);
+QColor colorOfBytes();
+void setColorOfBytes(const QColor& color);
 
 }  // namespace hexedit
 }  // namespace settings

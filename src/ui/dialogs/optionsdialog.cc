@@ -16,11 +16,17 @@
  */
 #include "ui/dialogs/optionsdialog.h"
 
+#include "include/ui/optionsdialog.h"
+
+#include <QColorDialog>
+#include <QFileDialog>
 #include <QMessageBox>
 #include <QPushButton>
 
 #include "ui/veles_mainwindow.h"
 #include "ui/velesapplication.h"
+#include "ui/hexedit.h"
+#include "ui/veles_mainwindow.h"
 #include "ui_optionsdialog.h"
 #include "util/settings/hexedit.h"
 #include "util/settings/theme.h"
@@ -35,6 +41,15 @@ OptionsDialog::OptionsDialog(QWidget* parent)
   ui->setupUi(this);
   ui->colorsBox->addItems(util::settings::theme::availableThemes());
 
+  color_dialog_ = new QColorDialog(this);
+  color_dialog_->setCurrentColor(util::settings::hexedit::colorOfBytes());
+  ui->byteColorHexEdit->setAutoFillBackground(true);
+  ui->byteColorHexEdit->setFlat(true);
+
+  connect(ui->byteColorHexEdit, &QPushButton::clicked, color_dialog_,
+          &QColorDialog::show);
+  connect(color_dialog_, &QColorDialog::colorSelected, this,
+          &OptionsDialog::updateColorButton);
   connect(ui->hexColumnsAutoCheckBox, &QCheckBox::stateChanged,
           [this](int state) {
             ui->hexColumnsSpinBox->setEnabled(state != Qt::Checked);
@@ -53,6 +68,13 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 
 OptionsDialog::~OptionsDialog() { delete ui; }
 
+void OptionsDialog::updateColorButton() {
+  QPalette pal = ui->byteColorHexEdit->palette();
+  pal.setColor(QPalette::Button, color_dialog_->currentColor());
+  ui->byteColorHexEdit->setPalette(pal);
+  ui->byteColorHexEdit->update();
+}
+
 void OptionsDialog::show() {
   ui->colorsBox->setCurrentText(util::settings::theme::currentTheme());
   Qt::CheckState checkState = Qt::Unchecked;
@@ -62,6 +84,7 @@ void OptionsDialog::show() {
   ui->hexColumnsAutoCheckBox->setCheckState(checkState);
   ui->hexColumnsSpinBox->setValue(util::settings::hexedit::columnsNumber());
   ui->hexColumnsSpinBox->setEnabled(checkState != Qt::Checked);
+  updateColorButton();
 
   QWidget::show();
 }
@@ -77,12 +100,20 @@ void OptionsDialog::applyChanges() {
   util::settings::hexedit::setResizeColumnsToWindowWidth(
       ui->hexColumnsAutoCheckBox->checkState() == Qt::Checked);
   util::settings::hexedit::setColumnsNumber(ui->hexColumnsSpinBox->value());
+  util::settings::hexedit::setColorOfBytes(color_dialog_->currentColor());
 
   util::settings::visualization::setColorBegin(
       color_3d_begin_button_->getColor());
   util::settings::visualization::setColorEnd(color_3d_end_button_->getColor());
 
   emit VelesApplication::instance()->settingsChanged();
+  for (auto main_window :
+       MainWindowWithDetachableDockWidgets::getMainWindows()) {
+    QList<HexEdit*> widgets = main_window->findChildren<HexEdit*>();
+    for (auto widget : widgets) {
+      widget->viewport()->update();
+    }
+  }
 
   if (restart_needed) {
     QMessageBox::about(
