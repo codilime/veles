@@ -21,12 +21,15 @@ namespace veles {
 namespace ui {
 namespace disasm {
 
-Rows::Rows() { setLayout(&layout_); }
+Rows::Rows() {
+  layout_ = new QVBoxLayout;
+  setLayout(layout_);
+}
 
 void Rows::generate(std::vector<std::shared_ptr<Entry>> entries) {
   for (const auto& entry : entries) {
     auto r = new Row(*entry.get());
-    this->layout_.addWidget(r);
+    this->layout_->addWidget(r);
   }
 };
 
