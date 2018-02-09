@@ -50,8 +50,8 @@ void Widget::getEntrypoint() {
 
   entrypoint_watcher_.setFuture(entrypoint_);
 
-  QObject::connect(&entrypoint_watcher_, SIGNAL(finished()), this,
-                   SLOT(getWindow()));
+  connect(&entrypoint_watcher_, &QFutureWatcher<Bookmark>::finished, this,
+          &Widget::getWindow);
 }
 
 void Widget::getWindow() {
