@@ -25,15 +25,21 @@ Widget::Widget() {
   setupMocks();
   getEntrypoint();
 
+  setWidgetResizable(true);
+
   layout_ = new QHBoxLayout;
 
-  arrows_ = new Arrows;
+  //arrows_ = new Arrows;
   rows_ = new Rows;
 
-  layout_->addWidget(arrows_);
-  layout_->addWidget(rows_);
+  //layout_->addWidget(arrows_);
+  //layout_->addWidget(rows_);
+  //setLayout(layout_);
 
-  setLayout(layout_);
+  rows_ = new Rows;
+
+  setWidget(rows_);
+  show();
 }
 
 void Widget::setupMocks() {

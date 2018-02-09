@@ -26,11 +26,15 @@ namespace veles {
 namespace ui {
 namespace disasm {
 
-class Row : public QLabel {
+class Row : public QWidget {
   Q_OBJECT
 
  public:
   explicit Row(const disasm::Entry& entry);
+
+ private:
+  QLabel* label;
+  QHBoxLayout* layout;
 };
 
 }  // namespace disasm

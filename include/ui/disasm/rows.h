@@ -30,7 +30,7 @@ namespace disasm {
 class Rows : public QWidget {
   Q_OBJECT
 
-  QVBoxLayout *layout_;
+  QVBoxLayout* layout_;
 
  public:
   Rows();

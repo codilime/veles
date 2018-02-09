@@ -23,6 +23,9 @@ namespace disasm {
 
 Rows::Rows() {
   layout_ = new QVBoxLayout;
+
+  setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
   setLayout(layout_);
 }
 

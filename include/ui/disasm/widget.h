@@ -18,6 +18,7 @@
 #pragma once
 
 #include <QObject>
+#include <QScrollArea>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 
@@ -35,7 +36,7 @@ namespace disasm {
  * disassembled code column, etc).
  * Responsible for rendering them in right position.
  */
-class Widget : public QWidget {
+class Widget : public QScrollArea {
   Q_OBJECT
 
   QHBoxLayout* layout_;
