@@ -18,10 +18,10 @@
 #pragma once
 
 #include <QWidget>
-#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QHBoxLayout>
 
-#include "disasm.h"
-#include "row.h"
+#include "ui/disasm/disasm.h"
+#include "ui/disasm/row.h"
 
 namespace veles {
 namespace ui {

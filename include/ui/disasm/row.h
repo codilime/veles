@@ -18,6 +18,7 @@
 #pragma once
 
 #include <QObject>
+#include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 
 #include "ui/disasm/disasm.h"
@@ -33,8 +34,8 @@ class Row : public QWidget {
   explicit Row(const disasm::Entry& entry);
 
  private:
-  QLabel* label;
-  QHBoxLayout* layout;
+  QLabel* label_;
+  QHBoxLayout* layout_;
 };
 
 }  // namespace disasm
