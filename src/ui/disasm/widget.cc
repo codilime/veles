@@ -25,10 +25,15 @@ Widget::Widget() {
   setupMocks();
   getEntrypoint();
 
-  layout_.addWidget(&arrows_);
-  layout_.addWidget(&rows_);
+  layout_ = new QHBoxLayout;
 
-  setLayout(&layout_);
+  arrows_ = new Arrows;
+  rows_ = new Rows;
+
+  layout_->addWidget(arrows_);
+  layout_->addWidget(rows_);
+
+  setLayout(layout_);
 }
 
 void Widget::setupMocks() {
@@ -59,7 +64,7 @@ void Widget::getWindow() {
   window_ = blob_->createWindow(entrypoint, 2, 10);
 
   auto entries = window_->entries();
-  rows_.generate(entries);
+  rows_->generate(entries);
 }
 
 }  // namespace disasm

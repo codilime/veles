@@ -38,7 +38,7 @@ namespace disasm {
 class Widget : public QWidget {
   Q_OBJECT
 
-  QHBoxLayout layout_;
+  QHBoxLayout* layout_;
 
  public slots:
   void getWindow();
@@ -56,8 +56,8 @@ class Widget : public QWidget {
   std::unique_ptr<Blob> blob_;
   std::unique_ptr<Window> window_;
 
-  Arrows arrows_;
-  Rows rows_;
+  Arrows* arrows_;
+  Rows* rows_;
 };
 
 }  // namespace disasm
