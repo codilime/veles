@@ -27,19 +27,21 @@ Widget::Widget() {
 
   setWidgetResizable(true);
 
-  layout_ = new QHBoxLayout;
-
-  //arrows_ = new Arrows;
   rows_ = new Rows;
+  arrows_ = new Arrows;
 
-  //layout_->addWidget(arrows_);
-  //layout_->addWidget(rows_);
-  //setLayout(layout_);
+  auto split_view = new QWidget;
+  auto small_lay = new QHBoxLayout;
 
-  rows_ = new Rows;
+  small_lay->setSpacing(0);
+  small_lay->setMargin(0);
 
-  setWidget(rows_);
-  show();
+  small_lay->addWidget(arrows_, 0, Qt::AlignTop);
+  small_lay->addWidget(rows_, 0, Qt::AlignTop);
+
+  split_view->setLayout(small_lay);
+
+  setWidget(split_view);
 }
 
 void Widget::setupMocks() {

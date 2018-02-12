@@ -18,6 +18,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QtWidgets/QVBoxLayout>
 
 namespace veles {
 namespace ui {
@@ -28,6 +29,10 @@ class Arrows : public QWidget {
 
  public:
   Arrows();
+ private:
+  QVBoxLayout *layout_;
+
+
 };
 
 }  // namespace disasm

@@ -22,34 +22,47 @@ namespace ui {
 namespace disasm {
 
 Row::Row(const Entry& e) {
-  label_ = new QLabel;
   layout_ = new QHBoxLayout();
+  layout_->setSpacing(0);
+  layout_->setMargin(0);
+
+  text_ = new QLabel;
+  comment_ = new QLabel;
+  address_ = new QLabel;
+
+  address_->setMaximumWidth(100);
 
   switch (e.type()) {
     case EntryType::CHUNK_BEGIN: {
       auto* ent = reinterpret_cast<EntryChunkBegin const*>(&e);
-      label_->setText(QString(ent->chunk->text_repr->string()));
+      address_->setText(QString("%1").arg(ent->chunk->addr_begin, 8, 16, QChar('0')));
+      text_->setText(QString(ent->chunk->text_repr->string() + " {"));
+      comment_->setText("; " + ent->chunk->comment);
       break;
     }
     case EntryType::CHUNK_END: {
       auto* ent = reinterpret_cast<EntryChunkEnd const*>(&e);
-      label_->setText(QString(ent->chunk->id));
+      address_->setText(QString("%1").arg(ent->chunk->addr_end, 8, 16, QChar('0')));
+      text_->setText("}");
       break;
     }
     case EntryType::OVERLAP: {
-      label_->setText("Overlap");
+      text_->setText("Overlap");
       break;
     }
     case EntryType::FIELD: {
       auto* ent = reinterpret_cast<EntryField const*>(&e);
       auto cent = const_cast<EntryField*>(ent);
-      label_->setText(QString(EntryFieldStringRepresentation(cent).c_str()));
+      text_->setText(QString(EntryFieldStringRepresentation(cent).c_str()));
       break;
     }
     default: { break; }
   }
 
-  layout_->addWidget(label_);
+  layout_->addWidget(address_);
+  layout_->addWidget(text_);
+  layout_->addWidget(comment_);
+
   setLayout(layout_);
 }
 

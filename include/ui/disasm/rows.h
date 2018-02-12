@@ -18,7 +18,7 @@
 #pragma once
 
 #include <QWidget>
-#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QVBoxLayout>
 
 #include "ui/disasm/disasm.h"
 #include "ui/disasm/row.h"

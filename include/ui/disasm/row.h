@@ -34,7 +34,10 @@ class Row : public QWidget {
   explicit Row(const disasm::Entry& entry);
 
  private:
-  QLabel* label_;
+  QLabel* address_;
+  QLabel* text_;
+  QLabel* comment_;
+
   QHBoxLayout* layout_;
 };
 

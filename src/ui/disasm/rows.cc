@@ -15,6 +15,7 @@
  *
  */
 
+#include <QPushButton>
 #include "ui/disasm/rows.h"
 
 namespace veles {
@@ -23,8 +24,8 @@ namespace disasm {
 
 Rows::Rows() {
   layout_ = new QVBoxLayout;
-
-  setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  layout_->setSpacing(0);
+  layout_->setMargin(0);
 
   setLayout(layout_);
 }
@@ -32,7 +33,7 @@ Rows::Rows() {
 void Rows::generate(std::vector<std::shared_ptr<Entry>> entries) {
   for (const auto& entry : entries) {
     auto r = new Row(*entry.get());
-    this->layout_->addWidget(r);
+    this->layout_->addWidget(r, 0, Qt::AlignTop);
   }
 };
 
