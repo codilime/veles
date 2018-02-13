@@ -17,6 +17,8 @@
 
 #include "ui/disasm/widget.h"
 
+#include "util/settings/theme.h"
+
 namespace veles {
 namespace ui {
 namespace disasm {
@@ -26,6 +28,7 @@ Widget::Widget() {
   getEntrypoint();
 
   setWidgetResizable(true);
+  setFont(util::settings::theme::font());
 
   rows_ = new Rows;
   arrows_ = new Arrows;
