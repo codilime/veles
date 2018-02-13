@@ -21,43 +21,17 @@ namespace veles {
 namespace ui {
 namespace disasm {
 
-Row::Row(const Entry& e) {
+Row::Row(int indent_level) : indent_level_{indent_level} {
   layout_ = new QHBoxLayout();
   layout_->setSpacing(0);
   layout_->setMargin(0);
 
   text_ = new QLabel;
+  text_->setIndent(indent_level * 20);
   comment_ = new QLabel;
   address_ = new QLabel;
 
   address_->setMaximumWidth(100);
-
-  switch (e.type()) {
-    case EntryType::CHUNK_BEGIN: {
-      auto* ent = reinterpret_cast<EntryChunkBegin const*>(&e);
-      address_->setText(QString("%1").arg(ent->chunk->addr_begin, 8, 16, QChar('0')));
-      text_->setText(QString(ent->chunk->text_repr->string() + " {"));
-      comment_->setText("; " + ent->chunk->comment);
-      break;
-    }
-    case EntryType::CHUNK_END: {
-      auto* ent = reinterpret_cast<EntryChunkEnd const*>(&e);
-      address_->setText(QString("%1").arg(ent->chunk->addr_end, 8, 16, QChar('0')));
-      text_->setText("}");
-      break;
-    }
-    case EntryType::OVERLAP: {
-      text_->setText("Overlap");
-      break;
-    }
-    case EntryType::FIELD: {
-      auto* ent = reinterpret_cast<EntryField const*>(&e);
-      auto cent = const_cast<EntryField*>(ent);
-      text_->setText(QString(EntryFieldStringRepresentation(cent).c_str()));
-      break;
-    }
-    default: { break; }
-  }
 
   layout_->addWidget(address_);
   layout_->addWidget(text_);
@@ -66,6 +40,28 @@ Row::Row(const Entry& e) {
   setLayout(layout_);
 }
 
+void Row::setEntry(const EntryChunkBegin *entry) {
+  address_->setText(QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
+  comment_->setText("; " + entry->chunk->comment);
+  if (entry->chunk->collapsed) {
+    text_->setText(QString(entry->chunk->text_repr->string()));
+  } else {
+    text_->setText(QString(entry->chunk->display_name + "::" + entry->chunk->type + " {"));
+  }
+}
+
+void Row::setEntry(const EntryChunkEnd *entry) {
+  address_->setText(QString("%1").arg(entry->chunk->addr_end, 8, 16, QChar('0')));
+  text_->setText("}");
+}
+
+void Row::setEntry(const EntryOverlap *entry) {
+
+}
+
+void Row::setEntry(const EntryField *entry) {
+
+}
 }  // namespace disasm
 }  // namespace ui
 }  // namespace veles

@@ -33,7 +33,6 @@ int random_int(int begin, int end);
 enum class ChunkType { FILE, SECTION, BASIC_BLOCK, INSTRUCTION, DATA, UNKNOWN };
 
 struct ChunkMeta : Chunk {
-  bool collapsed = false;
   veles::data::BinData raw_bytes;
   ChunkType meta_type = ChunkType::UNKNOWN;
 };

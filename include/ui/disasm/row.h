@@ -31,7 +31,12 @@ class Row : public QWidget {
   Q_OBJECT
 
  public:
-  explicit Row(const disasm::Entry& entry);
+  explicit Row(int indent_level);
+
+  void setEntry(const EntryChunkBegin *entry);
+  void setEntry(const EntryChunkEnd *entry);
+  void setEntry(const EntryOverlap *entry);
+  void setEntry(const EntryField *entry);
 
  private:
   QLabel* address_;
@@ -39,6 +44,8 @@ class Row : public QWidget {
   QLabel* comment_;
 
   QHBoxLayout* layout_;
+
+  int indent_level_;
 };
 
 }  // namespace disasm

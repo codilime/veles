@@ -138,6 +138,7 @@ struct Chunk {
 
   QString comment;
   uint64_t flags;
+  bool collapsed = false;
 };
 
 enum class EntryType {

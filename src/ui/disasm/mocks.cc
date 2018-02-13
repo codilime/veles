@@ -88,6 +88,7 @@ void ChunkFactory::setType(ChunkMeta* chunk, ChunkType type) const {
       break;
     case ChunkType::INSTRUCTION:
       chunk->type = "INSTRUCTION";
+      chunk->collapsed = true;
       break;
     case ChunkType::DATA:
       chunk->type = "DATA";

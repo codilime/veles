@@ -15,7 +15,6 @@
  *
  */
 
-#include <QPushButton>
 #include "ui/disasm/rows.h"
 
 namespace veles {
@@ -31,9 +30,45 @@ Rows::Rows() {
 }
 
 void Rows::generate(std::vector<std::shared_ptr<Entry>> entries) {
+  int indent_level = 0;
   for (const auto& entry : entries) {
-    auto r = new Row(*entry.get());
-    this->layout_->addWidget(r, 0, Qt::AlignTop);
+    switch (entry->type()) {
+      case EntryType::CHUNK_BEGIN: {
+        auto* ent = reinterpret_cast<EntryChunkBegin const*>(entry.get());
+        auto r = new Row(indent_level);
+        r->setEntry(ent);
+        this->layout_->addWidget(r, 0, Qt::AlignTop);
+
+        indent_level++;
+        break;
+      }
+      case EntryType::CHUNK_END: {
+        indent_level--;
+        auto* ent = reinterpret_cast<EntryChunkEnd const*>(entry.get());
+        if (ent->chunk->collapsed) {
+          break;
+        }
+        auto r = new Row(indent_level);
+        r->setEntry(ent);
+        this->layout_->addWidget(r, 0, Qt::AlignTop);
+        break;
+      }
+      case EntryType::OVERLAP: {
+        auto* ent = reinterpret_cast<EntryOverlap const*>(entry.get());
+        auto r = new Row(indent_level);
+        r->setEntry(ent);
+        this->layout_->addWidget(r, 0, Qt::AlignTop);
+        break;
+      }
+      case EntryType::FIELD: {
+        auto* ent = reinterpret_cast<EntryField const*>(entry.get());
+        auto r = new Row(indent_level);
+        r->setEntry(ent);
+        this->layout_->addWidget(r, 0, Qt::AlignTop);
+        break;
+      }
+      default: { break; }
+    }
   }
 };
 
