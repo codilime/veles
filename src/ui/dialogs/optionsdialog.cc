@@ -72,15 +72,15 @@ void OptionsDialog::show() {
 }
 
 void OptionsDialog::resetToDefaults() {
-  Qt::CheckState resposive_columns_checked =
+  Qt::CheckState auto_columns_checked =
       util::settings::hexedit::getDefaultResizeColumnsToWindowWidth()
           ? Qt::Checked
           : Qt::Unchecked;
 
-  ui->hexColumnsAutoCheckBox->setCheckState(resposive_columns_checked);
+  ui->hexColumnsAutoCheckBox->setCheckState(auto_columns_checked);
   ui->hexColumnsSpinBox->setValue(
       util::settings::hexedit::getDefaultColumnsNumber());
-  ui->hexColumnsSpinBox->setEnabled(resposive_columns_checked != Qt::Checked);
+  ui->hexColumnsSpinBox->setEnabled(auto_columns_checked != Qt::Checked);
 
   ui->colorsBox->setCurrentText(util::settings::theme::getDefaultTheme());
 
