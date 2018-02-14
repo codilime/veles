@@ -119,6 +119,9 @@
    </item>
    <item>
     <widget class="QPushButton" name="resetToDefaultsButton">
+     <property name="focusPolicy">
+      <enum>Qt::NoFocus</enum>
+     </property>
      <property name="text">
       <string>Reset to defaults</string>
      </property>
