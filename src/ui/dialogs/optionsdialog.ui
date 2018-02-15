@@ -125,6 +125,9 @@
      <property name="text">
       <string>Reset to defaults</string>
      </property>
+     <property name="autoDefault">
+      <bool>false</bool>
+     </property>
     </widget>
    </item>
    <item>
