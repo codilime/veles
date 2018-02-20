@@ -35,12 +35,14 @@ OptionsDialog::OptionsDialog(QWidget* parent)
   ui->setupUi(this);
   ui->colorsBox->addItems(util::settings::theme::availableThemes());
 
+  QPushButton* apply_button = ui->buttonBox->button(QDialogButtonBox::Apply);
+
   connect(ui->hexColumnsAutoCheckBox, &QCheckBox::stateChanged,
           [this](int state) {
             ui->hexColumnsSpinBox->setEnabled(state != Qt::Checked);
           });
-  connect(ui->buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked,
-          this, &OptionsDialog::applyChanges);
+  connect(apply_button, &QPushButton::clicked, this,
+          &OptionsDialog::applyChanges);
   connect(ui->resetToDefaultsButton, &QPushButton::clicked, this,
           &OptionsDialog::resetToDefaults);
 
@@ -51,6 +53,17 @@ OptionsDialog::OptionsDialog(QWidget* parent)
   color_3d_end_button_ = new ColorPickerButton(color_end, this);
   ui->visualizationGradientLayout->addWidget(color_3d_begin_button_);
   ui->visualizationGradientLayout->addWidget(color_3d_end_button_);
+
+  setTabOrder(ui->hexColumnsAutoCheckBox, color_3d_begin_button_);
+  setTabOrder(color_3d_begin_button_, color_3d_end_button_);
+  setTabOrder(ui->resetToDefaultsButton, apply_button);
+
+  ui->resetToDefaultsButton->setAutoDefault(true);
+  color_3d_begin_button_->setAutoDefault(false);
+  color_3d_end_button_->setAutoDefault(false);
+
+  apply_button->setDefault(false);
+  ui->buttonBox->button(QDialogButtonBox::Ok)->setDefault(true);
 }
 
 OptionsDialog::~OptionsDialog() { delete ui; }
@@ -67,6 +80,8 @@ void OptionsDialog::show() {
 
   color_3d_begin_button_->setColor(util::settings::visualization::colorBegin());
   color_3d_end_button_->setColor(util::settings::visualization::colorEnd());
+
+  ui->buttonBox->button(QDialogButtonBox::Ok)->setFocus(Qt::PopupFocusReason);
 
   QWidget::show();
 }
