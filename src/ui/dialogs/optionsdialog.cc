@@ -58,7 +58,6 @@ OptionsDialog::OptionsDialog(QWidget* parent)
   setTabOrder(color_3d_begin_button_, color_3d_end_button_);
   setTabOrder(ui->resetToDefaultsButton, apply_button);
 
-  ui->resetToDefaultsButton->setAutoDefault(true);
   color_3d_begin_button_->setAutoDefault(false);
   color_3d_end_button_->setAutoDefault(false);
 
