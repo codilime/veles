@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>223</width>
-    <height>266</height>
+    <width>297</width>
+    <height>329</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -118,7 +118,23 @@
     </widget>
    </item>
    <item>
+    <widget class="QPushButton" name="resetToDefaultsButton">
+     <property name="focusPolicy">
+      <enum>Qt::StrongFocus</enum>
+     </property>
+     <property name="text">
+      <string>Reset to defaults</string>
+     </property>
+     <property name="autoDefault">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="focusPolicy">
+      <enum>Qt::StrongFocus</enum>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -131,6 +147,10 @@
  </widget>
  <tabstops>
   <tabstop>buttonBox</tabstop>
+  <tabstop>colorsBox</tabstop>
+  <tabstop>hexColumnsSpinBox</tabstop>
+  <tabstop>hexColumnsAutoCheckBox</tabstop>
+  <tabstop>resetToDefaultsButton</tabstop>
  </tabstops>
  <resources/>
  <connections>
