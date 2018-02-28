@@ -15,6 +15,7 @@
  *
  */
 
+#include <QWidget>
 #include "ui/disasm/row.h"
 
 namespace veles {
@@ -22,6 +23,7 @@ namespace ui {
 namespace disasm {
 
 Row::Row(int indent_level) : indent_level_{indent_level} {
+//  setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   layout_ = new QHBoxLayout();
   layout_->setSpacing(0);
   layout_->setMargin(0);
