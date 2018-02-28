@@ -73,6 +73,22 @@ void Row::mouseDoubleClickEvent(QMouseEvent* event) {
   emit chunkCollapse(this->id_);
 }
 
+void Row::toggleColumn(Row::ColumnName columnName) {
+  switch (columnName) {
+    case Row::ColumnName::Address:
+      address_->setVisible(!address_->isVisible());
+      break;
+    case Row::ColumnName::Chunks:
+      text_->setVisible(!text_->isVisible());
+      break;
+    case Row::ColumnName::Comments:
+      comment_->setVisible(!comment_->isVisible());
+      break;
+    default:
+      break;
+  }
+}
+
 }  // namespace disasm
 }  // namespace ui
 }  // namespace veles
