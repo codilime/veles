@@ -31,31 +31,26 @@ Widget::Widget() {
   setWidgetResizable(true);
   setFont(util::settings::theme::font());
 
-  auto vsplit = new QVBoxLayout();
-  vsplit ->setSpacing(0);
-  vsplit ->setContentsMargins(0, 0, 0, 0);
+  arrows_ = new Arrows;
 
   rows_ = new QVBoxLayout();
   rows_->setSpacing(0);
   rows_->setContentsMargins(0, 0, 0, 0);
 
-  vsplit -> addLayout(rows_);
-//  auto placeholder = new QSpacerItem(0, 1000, QSizePolicy::Maximum, QSizePolicy::Maximum);
-  vsplit -> addStretch();
+  auto rows_with_stretch = new QVBoxLayout();
+  rows_with_stretch ->setSpacing(0);
+  rows_with_stretch ->setContentsMargins(0, 0, 0, 0);
+  rows_with_stretch -> addLayout(rows_);
+  rows_with_stretch -> addStretch();
 
-  arrows_ = new Arrows;
+  auto split_layout = new QHBoxLayout;
+  split_layout->setSpacing(0);
+  split_layout->setMargin(0);
+  split_layout->addWidget(arrows_, 0, Qt::AlignTop);
+  split_layout->addLayout(rows_with_stretch, 0);
 
   auto split_view = new QWidget;
-  auto small_lay = new QHBoxLayout;
-
-  small_lay->setSpacing(0);
-  small_lay->setMargin(0);
-
-  small_lay->addWidget(arrows_, 0, Qt::AlignTop);
-  small_lay->addLayout(vsplit, 0);
-
-  split_view->setLayout(small_lay);
-
+  split_view->setLayout(split_layout);
   setWidget(split_view);
 }
 
