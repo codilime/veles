@@ -15,9 +15,9 @@
  *
  */
 
+#include "ui/disasm/tab.h"
 #include <QToolButton>
 #include <QtWidgets/QWidgetAction>
-#include "ui/disasm/tab.h"
 
 namespace veles {
 namespace ui {
@@ -35,34 +35,38 @@ void Tab::createToolbars() {
   // TODO(malpunek): translation
   tool_bar = new QToolBar("Main Disasm Toolbar");
 
-  column_display_menu_= new QMenu();
-  column_display_menu_ -> clear();
+  column_display_menu_ = new QMenu();
+  column_display_menu_->clear();
 
-  auto toggleCommentsAction = column_display_menu_ -> addAction(QString("Comments"));
-  toggleCommentsAction -> setCheckable(true);
-  toggleCommentsAction -> setChecked(true);
-  connect(toggleCommentsAction, &QAction::changed, [&]{this -> widget.toggleColumn(Row::ColumnName::Comments);});
-  auto toggleChunksAction = column_display_menu_ -> addAction(QString("Chunks"));
-  toggleChunksAction -> setCheckable(true);
-  toggleChunksAction -> setChecked(true);
-  connect(toggleChunksAction, &QAction::changed, [&]{this -> widget.toggleColumn(Row::ColumnName::Chunks);});
-  auto toggleAdressesAction = column_display_menu_ -> addAction(QString("Adresses"));
-  toggleAdressesAction -> setCheckable(true);
-  toggleAdressesAction -> setChecked(true);
-  connect(toggleAdressesAction, &QAction::changed, [&]{this -> widget.toggleColumn(Row::ColumnName::Address);});
+  auto toggleCommentsAction =
+      column_display_menu_->addAction(QString("Comments"));
+  toggleCommentsAction->setCheckable(true);
+  toggleCommentsAction->setChecked(true);
+  connect(toggleCommentsAction, &QAction::changed,
+          [&] { this->widget.toggleColumn(Row::ColumnName::Comments); });
+  auto toggleChunksAction = column_display_menu_->addAction(QString("Chunks"));
+  toggleChunksAction->setCheckable(true);
+  toggleChunksAction->setChecked(true);
+  connect(toggleChunksAction, &QAction::changed,
+          [&] { this->widget.toggleColumn(Row::ColumnName::Chunks); });
+  auto toggleAdressesAction =
+      column_display_menu_->addAction(QString("Adresses"));
+  toggleAdressesAction->setCheckable(true);
+  toggleAdressesAction->setChecked(true);
+  connect(toggleAdressesAction, &QAction::changed,
+          [&] { this->widget.toggleColumn(Row::ColumnName::Address); });
 
   auto column_toggle = new QToolButton();
   column_toggle->setPopupMode(QToolButton::InstantPopup);
 
   // TODO(malpunek): change icon
   column_toggle->setIcon(QIcon(":/images/parse.png"));
-  column_toggle -> setMenu(column_display_menu_);
+  column_toggle->setMenu(column_display_menu_);
 
   auto widget_action = new QWidgetAction(tool_bar);
-  widget_action -> setDefaultWidget(column_toggle);
-  tool_bar -> addAction(widget_action);
+  widget_action->setDefaultWidget(column_toggle);
+  tool_bar->addAction(widget_action);
   addToolBar(tool_bar);
-
 }
 
 }  // namespace disasm
