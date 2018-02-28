@@ -33,6 +33,7 @@ class Row : public QWidget {
  public:
   explicit Row(int indent_level);
 
+  void setEntry(const EntryChunkCollapsed* entry);
   void setEntry(const EntryChunkBegin* entry);
   void setEntry(const EntryChunkEnd* entry);
   void setEntry(const EntryOverlap* entry);

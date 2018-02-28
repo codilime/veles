@@ -89,21 +89,24 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
   int indent_level = 0;
   for (const auto& entry : entries) {
     switch (entry->type()) {
+      case EntryType::CHUNK_COLLAPSED: {
+        auto* ent = reinterpret_cast<EntryChunkCollapsed const*>(entry.get());
+        auto r = new Row(indent_level);
+        r->setEntry(ent);
+        this->rows_->addWidget(r, 0, Qt::AlignTop);
+        break;
+      }
       case EntryType::CHUNK_BEGIN: {
         auto* ent = reinterpret_cast<EntryChunkBegin const*>(entry.get());
         auto r = new Row(indent_level);
         r->setEntry(ent);
         this->rows_->addWidget(r, 0, Qt::AlignTop);
-
         indent_level++;
         break;
       }
       case EntryType::CHUNK_END: {
         indent_level--;
         auto* ent = reinterpret_cast<EntryChunkEnd const*>(entry.get());
-        if (ent->chunk->collapsed) {
-          break;
-        }
         auto r = new Row(indent_level);
         r->setEntry(ent);
         this->rows_->addWidget(r, 0, Qt::AlignTop);

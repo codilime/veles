@@ -23,9 +23,9 @@ namespace ui {
 namespace disasm {
 namespace mocks {
 
-const int MAX_FILE_CHILDREN = 2;
-const int MAX_SECTION_CHILDREN = 5;
-const int MAX_BASICBLOCK_CHILDREN = 10;
+const int MAX_FILE_CHILDREN = 5;
+const int MAX_SECTION_CHILDREN = 15;
+const int MAX_BASICBLOCK_CHILDREN = 50;
 
 int random_int(int begin, int end) {
   std::uniform_int_distribution<> dis(begin, end);
@@ -228,6 +228,13 @@ const std::vector<std::shared_ptr<Entry>>& EntryFactory::getEntries() {
 }
 
 void EntryFactory::generate(ChunkNode* node) {
+  if (node->chunk()->meta_type == ChunkType::INSTRUCTION) {
+    auto entry = std::make_shared<EntryChunkCollapsed>(node->chunk());
+    entry->pos.setNum(next_bookmark_++);
+    entries_.emplace_back(entry);
+    return;
+  }
+
   // EntryBegin
   auto entry_begin = std::make_shared<EntryChunkBegin>(node->chunk());
   node->chunk()->pos_begin.setNum(next_bookmark_);
@@ -250,11 +257,14 @@ void EntryFactory::generate(ChunkNode* node) {
       default:
         break;
     }
-
     // add entries of child
     for (auto& child : node->children()) {
       generate(child.get());
     }
+  } else {  // chunk collapsed
+    auto entry = std::make_shared<EntryChunkCollapsed>(node->chunk());
+    entry->pos.setNum(next_bookmark_++);
+    entries_.emplace_back(entry);
   }
 
   // EntryEnd

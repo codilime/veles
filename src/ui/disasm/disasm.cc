@@ -75,11 +75,17 @@ const std::vector<std::unique_ptr<TextRepr>>& Sublist::children() {
 
 Entry::~Entry() {}
 
+EntryChunkCollapsed::EntryChunkCollapsed(std::shared_ptr<Chunk> c)
+    : chunk{std::move(c)} {}
+
 EntryChunkBegin::EntryChunkBegin(std::shared_ptr<Chunk> c)
     : chunk{std::move(c)} {}
 
 EntryChunkEnd::EntryChunkEnd(std::shared_ptr<Chunk> c) : chunk{std::move(c)} {}
 
+EntryType EntryChunkCollapsed::type() const {
+  return EntryType::CHUNK_COLLAPSED;
+}
 EntryType EntryChunkBegin::type() const { return EntryType::CHUNK_BEGIN; }
 EntryType EntryChunkEnd::type() const { return EntryType::CHUNK_END; }
 EntryType EntryOverlap::type() const { return EntryType::OVERLAP; }
