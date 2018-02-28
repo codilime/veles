@@ -32,11 +32,11 @@ class Tab : public IconAwareView {
 
  public:
   Tab();
+
  private:
   void createToolbars();
   QToolBar* tool_bar;
   QMenu* column_display_menu_;
-
 };
 
 }  // namespace disasm
