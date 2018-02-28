@@ -15,8 +15,8 @@
  *
  */
 
-#include <QWidget>
 #include "ui/disasm/row.h"
+#include <QWidget>
 
 namespace veles {
 namespace ui {
@@ -62,9 +62,7 @@ void Row::setEntry(const EntryChunkEnd* entry) {
 
 void Row::setEntry(const EntryOverlap* entry) {}
 
-void Row::setEntry(const EntryField *entry) {
-
-}
+void Row::setEntry(const EntryField* entry) {}
 
 void Row::toggleColumn(Row::ColumnName columnName) {
   switch (columnName) {
