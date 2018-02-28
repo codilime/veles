@@ -28,7 +28,7 @@ Widget::Widget() {
   setWidgetResizable(true);
   setFont(util::settings::theme::font());
 
-  arrows_ = new Arrows;
+  arrows_ = new ArrowsWidget(this);
 
   rows_layout_ = new QVBoxLayout();
   rows_layout_->setSpacing(0);
@@ -143,6 +143,29 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
       default: { break; }
     }
   }
+
+  // @todo(zpp) row_attach_points should be updated when toggling chunk
+  std::vector<unsigned> row_attach_points;
+  for (auto rowPtr : rows_) {
+    row_attach_points.push_back(static_cast<unsigned>(rowPtr->y()) +
+                                rowPtr->height() / 2);
+  }
+
+  auto& g = veles::util::g_mersenne_twister;
+  std::uniform_int_distribution<unsigned> arrow_count_range(5, 30);
+  std::uniform_int_distribution<unsigned> max_level_range(1, 30);
+  unsigned arrow_count = arrow_count_range(g);
+  unsigned max_level = max_level_range(g);
+  std::uniform_int_distribution<unsigned> level_range(1, max_level);
+
+  std::uniform_int_distribution<unsigned> row_range(0, rows_.size());
+  std::vector<Arrow> arrows_vec;
+  for (unsigned i = 0; i < arrow_count; i++) {
+    arrows_vec.emplace_back(row_range(g), row_range(g), level_range(g));
+  }
+
+  arrows_->updateArrows(row_attach_points, arrows_vec);
+  update();
 }
 void Widget::toggleColumn(Row::ColumnName column_name) {
   auto rows = this->findChildren<Row*>();
