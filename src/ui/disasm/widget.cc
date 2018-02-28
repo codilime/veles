@@ -16,6 +16,7 @@
  */
 
 #include "ui/disasm/widget.h"
+#include "ui/disasm/row.h"
 
 #include "util/settings/theme.h"
 
@@ -30,7 +31,18 @@ Widget::Widget() {
   setWidgetResizable(true);
   setFont(util::settings::theme::font());
 
-  rows_ = new Rows;
+  auto vsplit = new QVBoxLayout();
+  vsplit ->setSpacing(0);
+  vsplit ->setContentsMargins(0, 0, 0, 0);
+
+  rows_ = new QVBoxLayout();
+  rows_->setSpacing(0);
+  rows_->setContentsMargins(0, 0, 0, 0);
+
+  vsplit -> addLayout(rows_);
+//  auto placeholder = new QSpacerItem(0, 1000, QSizePolicy::Maximum, QSizePolicy::Maximum);
+  vsplit -> addStretch();
+
   arrows_ = new Arrows;
 
   auto split_view = new QWidget;
@@ -40,7 +52,7 @@ Widget::Widget() {
   small_lay->setMargin(0);
 
   small_lay->addWidget(arrows_, 0, Qt::AlignTop);
-  small_lay->addWidget(rows_, 0, Qt::AlignTop);
+  small_lay->addLayout(vsplit, 0);
 
   split_view->setLayout(small_lay);
 
@@ -75,8 +87,52 @@ void Widget::getWindow() {
   window_ = blob_->createWindow(entrypoint, 2, 10);
 
   auto entries = window_->entries();
-  rows_->generate(entries);
+  generateRows(entries);
 }
+
+void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
+  int indent_level = 0;
+  for (const auto& entry : entries) {
+    switch (entry->type()) {
+      case EntryType::CHUNK_BEGIN: {
+        auto* ent = reinterpret_cast<EntryChunkBegin const*>(entry.get());
+        auto r = new Row(indent_level);
+        r->setEntry(ent);
+        this->rows_->addWidget(r, 0, Qt::AlignTop);
+
+        indent_level++;
+        break;
+      }
+      case EntryType::CHUNK_END: {
+        indent_level--;
+        auto* ent = reinterpret_cast<EntryChunkEnd const*>(entry.get());
+        if (ent->chunk->collapsed) {
+          break;
+        }
+        auto r = new Row(indent_level);
+        r->setEntry(ent);
+        this->rows_->addWidget(r, 0, Qt::AlignTop);
+        break;
+      }
+      case EntryType::OVERLAP: {
+        auto* ent = reinterpret_cast<EntryOverlap const*>(entry.get());
+        auto r = new Row(indent_level);
+        r->setEntry(ent);
+        this->rows_->addWidget(r, 0, Qt::AlignTop);
+        break;
+      }
+      case EntryType::FIELD: {
+        auto* ent = reinterpret_cast<EntryField const*>(entry.get());
+        auto r = new Row(indent_level);
+        r->setEntry(ent);
+        this->rows_->addWidget(r, 0, Qt::AlignTop);
+        break;
+      }
+      default: { break; }
+    }
+  }
+}
+
 
 }  // namespace disasm
 }  // namespace ui

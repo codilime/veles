@@ -51,6 +51,7 @@ class Widget : public QScrollArea {
   void getEntrypoint();
 
  private:
+  void generateRows(std::vector<std::shared_ptr<Entry>> entries);
   QFuture<Bookmark> entrypoint_;
   QFutureWatcher<Bookmark> entrypoint_watcher_;
 
@@ -58,7 +59,8 @@ class Widget : public QScrollArea {
   std::unique_ptr<Window> window_;
 
   Arrows* arrows_;
-  Rows* rows_;
+  QVBoxLayout* rows_;
+//  Rows* rows_;
 };
 
 }  // namespace disasm
