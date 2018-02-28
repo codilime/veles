@@ -138,10 +138,12 @@ struct Chunk {
 
   QString comment;
   uint64_t flags;
+
   bool collapsed = false;
 };
 
 enum class EntryType {
+  CHUNK_COLLAPSED,
   CHUNK_BEGIN,
   CHUNK_END,
   OVERLAP,
@@ -156,6 +158,13 @@ struct Entry {
   virtual ~Entry();
 
   Bookmark pos;
+};
+
+struct EntryChunkCollapsed : Entry {
+  explicit EntryChunkCollapsed(std::shared_ptr<Chunk> c);
+  EntryType type() const override;
+
+  std::shared_ptr<Chunk> chunk;
 };
 
 struct EntryChunkBegin : Entry {

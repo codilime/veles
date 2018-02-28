@@ -42,16 +42,19 @@ Row::Row(int indent_level) : indent_level_{indent_level} {
   setLayout(layout_);
 }
 
+void Row::setEntry(const EntryChunkCollapsed* entry) {
+  address_->setText(
+      QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
+  comment_->setText("; " + entry->chunk->comment);
+  text_->setText(QString(entry->chunk->text_repr->string()));
+}
+
 void Row::setEntry(const EntryChunkBegin* entry) {
   address_->setText(
       QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
   comment_->setText("; " + entry->chunk->comment);
-  if (entry->chunk->collapsed) {
-    text_->setText(QString(entry->chunk->text_repr->string()));
-  } else {
-    text_->setText(
-        QString(entry->chunk->display_name + "::" + entry->chunk->type + " {"));
-  }
+  text_->setText(
+      QString(entry->chunk->display_name + "::" + entry->chunk->type + " {"));
 }
 
 void Row::setEntry(const EntryChunkEnd* entry) {
