@@ -25,7 +25,6 @@
 #include "ui/disasm/arrows.h"
 #include "ui/disasm/disasm.h"
 #include "ui/disasm/mocks.h"
-#include "ui/disasm/rows.h"
 
 namespace veles {
 namespace ui {
