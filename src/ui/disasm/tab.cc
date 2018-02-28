@@ -32,18 +32,29 @@ Tab::Tab() : IconAwareView("", "") {
 }
 
 void Tab::createToolbars() {
-  tool_bar = new QToolBar("Main Disasm Toolbar"); // TODO(malpunek): translation
+  // TODO(malpunek): translation
+  tool_bar = new QToolBar("Main Disasm Toolbar");
 
   column_display_menu_= new QMenu();
   column_display_menu_ -> clear();
-  column_display_menu_ -> addAction("auto");
-  column_display_menu_ -> addSeparator();
-  column_display_menu_ -> addAction(QString("Ala ma kota")) -> setCheckable(true);
-  column_display_menu_ -> addAction(QString("Ala ma kota 2")) -> setCheckable(true);
+
+  auto toggleCommentsAction = column_display_menu_ -> addAction(QString("Comments"));
+  toggleCommentsAction -> setCheckable(true);
+  toggleCommentsAction -> setChecked(true);
+  connect(toggleCommentsAction, &QAction::changed, [&]{this -> widget.toggleColumn(Row::ColumnName::Comments);});
+  auto toggleChunksAction = column_display_menu_ -> addAction(QString("Chunks"));
+  toggleChunksAction -> setCheckable(true);
+  toggleChunksAction -> setChecked(true);
+  connect(toggleChunksAction, &QAction::changed, [&]{this -> widget.toggleColumn(Row::ColumnName::Chunks);});
+  auto toggleAdressesAction = column_display_menu_ -> addAction(QString("Adresses"));
+  toggleAdressesAction -> setCheckable(true);
+  toggleAdressesAction -> setChecked(true);
+  connect(toggleAdressesAction, &QAction::changed, [&]{this -> widget.toggleColumn(Row::ColumnName::Address);});
 
   auto column_toggle = new QToolButton();
   column_toggle->setPopupMode(QToolButton::InstantPopup);
 
+  // TODO(malpunek): change icon
   column_toggle->setIcon(QIcon(":/images/parse.png"));
   column_toggle -> setMenu(column_display_menu_);
 
@@ -51,8 +62,6 @@ void Tab::createToolbars() {
   widget_action -> setDefaultWidget(column_toggle);
   tool_bar -> addAction(widget_action);
   addToolBar(tool_bar);
-
-
 
 }
 
