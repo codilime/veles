@@ -41,10 +41,13 @@ namespace disasm {
 class Widget : public QScrollArea {
   Q_OBJECT
 
+  QHBoxLayout* layout_;
+
  public slots:
   void getWindow();
   void updateRows();
   void chunkCollapse(const ChunkID& id);
+  void hideAddressColumn();
 
  public:
   Widget();

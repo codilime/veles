@@ -15,6 +15,8 @@
  *
  */
 
+#include <QToolButton>
+#include <QtWidgets/QWidgetAction>
 #include "ui/disasm/tab.h"
 
 namespace veles {
@@ -26,6 +28,32 @@ Tab::Tab() : IconAwareView("", "") {
   //  dock_address_column->setWidget(&widget);
   //  addDockWidget(Qt::LeftDockWidgetArea, dock_address_column);
   setCentralWidget(&widget);
+  createToolbars();
+}
+
+void Tab::createToolbars() {
+  tool_bar = new QToolBar("Main Disasm Toolbar"); // TODO(malpunek): translation
+
+  column_display_menu_= new QMenu();
+  column_display_menu_ -> clear();
+  column_display_menu_ -> addAction("auto");
+  column_display_menu_ -> addSeparator();
+  column_display_menu_ -> addAction(QString("Ala ma kota")) -> setCheckable(true);
+  column_display_menu_ -> addAction(QString("Ala ma kota 2")) -> setCheckable(true);
+
+  auto column_toggle = new QToolButton();
+  column_toggle->setPopupMode(QToolButton::InstantPopup);
+
+  column_toggle->setIcon(QIcon(":/images/parse.png"));
+  column_toggle -> setMenu(column_display_menu_);
+
+  auto widget_action = new QWidgetAction(tool_bar);
+  widget_action -> setDefaultWidget(column_toggle);
+  tool_bar -> addAction(widget_action);
+  addToolBar(tool_bar);
+
+
+
 }
 
 }  // namespace disasm
