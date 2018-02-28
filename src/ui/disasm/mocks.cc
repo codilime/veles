@@ -88,7 +88,6 @@ void ChunkFactory::setType(ChunkMeta* chunk, ChunkType type) const {
       break;
     case ChunkType::INSTRUCTION:
       chunk->type = "INSTRUCTION";
-      chunk->collapsed = true;
       break;
     case ChunkType::DATA:
       chunk->type = "DATA";
@@ -171,6 +170,7 @@ std::unique_ptr<ChunkNode> ChunkTreeFactory::generateTree(ChunkType type) {
   auto root = std::make_unique<ChunkNode>(chunk_factory_.generate(type));
 
   if (type == ChunkType::INSTRUCTION || type == ChunkType::DATA) {
+    root->chunk()->collapsed = true;
     return root;
   }
 
