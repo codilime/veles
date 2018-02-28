@@ -22,7 +22,94 @@ namespace veles {
 namespace ui {
 namespace disasm {
 
-Arrows::Arrows() { setFixedWidth(100); }
+std::ostream& operator<<(std::ostream& out, const Arrow& arrow) {
+  out << "(" << arrow.start_row << ", " << arrow.end_row << ") @ "
+      << arrow.level;
+  return out;
+}
+
+Arrows::Arrows(QWidget* parent) : QWidget(parent) {
+  setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
+  setFixedSize(width_, height_);
+}
+
+void Arrows::paintEvent(QPaintEvent* event) {
+  QPainter painter(this);
+
+  auto brush = painter.brush();
+  brush.setStyle(Qt::BrushStyle::SolidPattern);
+  brush.setColor(palette().color(QPalette::Text));
+  painter.setBrush(brush);
+
+  auto pen = painter.pen();
+  pen.setColor(palette().color(QPalette::Text));
+  painter.setPen(pen);
+
+  painter.fillRect(event->rect(), palette().color(QPalette::AlternateBase));
+
+  for (auto& arrow : arrows) {
+    if (arrow.level == 0) {
+      std::cerr << "Warning: unspecified level of an arrow! " << arrow
+                << std::endl;
+      continue;
+    }
+    if (arrow.start_row >= row_attach_points.size() || arrow.end_row >= row_attach_points.size()) {
+      std::cerr << "Warning: attach point not specified for start/end row! " << arrow << std::endl;
+      continue;
+    }
+
+    paintSingleArrow(arrow, painter);
+  }
+}
+
+void Arrows::updateArrows(std::vector<unsigned> _row_attach_points,
+                          std::vector<Arrow> _arrows) {
+  this->arrows = std::move(_arrows);
+  this->row_attach_points = std::move(_row_attach_points);
+
+  unsigned max_level =
+      std::max_element(arrows.begin(), arrows.end(), [](const Arrow& lhs,
+                                                        const Arrow& rhs) {
+        return lhs.level < rhs.level;
+      })->level;
+  levels = std::max(MIN_LEVELS, max_level);
+
+  unsigned max_attach_point =
+      *std::max_element(row_attach_points.begin(), row_attach_points.end());
+  height_ = max_attach_point + ARROWHEAD_HEIGHT + 1;
+
+  width_ = width();
+  points_per_level = width_ / (levels + 1);
+  setFixedSize(width_, height_);
+  update();
+}
+
+void Arrows::paintSingleArrow(Arrow& arrow, QPainter& painter) {
+  QPoint start_point = QPoint(width_, row_attach_points[arrow.start_row]);
+
+  QPoint first_turn = QPoint(width_ - (arrow.level * points_per_level),
+                             row_attach_points[arrow.start_row]);
+
+  QPoint second_turn = QPoint(width_ - (arrow.level * points_per_level),
+                              row_attach_points[arrow.end_row]);
+
+  QPoint end_point = QPoint(width_, row_attach_points[arrow.end_row]);
+
+  painter.drawLine(start_point, first_turn);
+  painter.drawLine(first_turn, second_turn);
+  painter.drawLine(second_turn, end_point);
+
+  QPoint arrowhead_points[] = {end_point,
+                               QPoint(end_point.x() - ARROWHEAD_WIDTH,
+                                      end_point.y() + ARROWHEAD_HEIGHT / 2),
+                               QPoint(end_point.x() - ARROWHEAD_WIDTH,
+                                      end_point.y() - ARROWHEAD_HEIGHT / 2)};
+
+  painter.drawConvexPolygon(arrowhead_points, 3);
+}
+
+Arrow::Arrow(unsigned start_row, unsigned end_row, unsigned int level)
+    : start_row(start_row), end_row(end_row), level(level) {}
 
 }  // namespace disasm
 }  // namespace ui
