@@ -29,7 +29,7 @@ Usually:
 * We use `#pragma once`.
 * We have to use raw pointers in many places, because of Qt.
 * We don't like the Hungarian notation used for constants, so maybe we will
-switch to CAPS_NOTATION at some point.
+  switch to CAPS_NOTATION at some point.
 
 Notice you might find some older code that doesn't conform to GCS.
 
@@ -45,21 +45,21 @@ Notice you might find some older code that doesn't conform to GCS.
   * Use `format` build target (for Linux run `make format`) relatively
     often to avoid huge "Style fix" commits.
 * When you think you're done open a GitHub PR with a clear list of what you
-did. From now on your branch is *public* and you shouldn't forcepush
-(`git push -f`) anything to it. If you really need to/want to pushforce
-*first* ask reviewers for permission.
+  did. From now on your branch is *public* and you shouldn't forcepush
+  (`git push -f`) anything to it. If you really need to/want to pushforce
+  *first* ask reviewers for permission.
 * Every PR has to pass clang-tidy checks (`lint` build target).
 * Submit fixes according to the review in new commits.
 * Once your code is accepted by reviewers, please squash your fixes
- into previous feature commits.
+  into previous feature commits.
 * Your code will be merged into master.
 
 ### File placement
 We have some rules as to where to place new files:
 * All things that depend on Qt should be placed in `ui` folder
 * There should be as few things in `util` folder as possible. `util` is only
-for pieces of code that don't belong to any existing folders and are too small
-to have their own folder
+  for pieces of code that don't belong to any existing folders and are too small
+  to have their own folder
 
 <br><br>
 Thanks for taking your time to contribute to Veles!
