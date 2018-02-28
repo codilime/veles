@@ -15,15 +15,15 @@
  *
  */
 
-#include <QWidget>
 #include "ui/disasm/row.h"
+#include <QWidget>
 
 namespace veles {
 namespace ui {
 namespace disasm {
 
 Row::Row(int indent_level) : indent_level_{indent_level} {
-//  setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+  //  setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   layout_ = new QHBoxLayout();
   layout_->setSpacing(0);
   layout_->setMargin(0);
@@ -42,28 +42,27 @@ Row::Row(int indent_level) : indent_level_{indent_level} {
   setLayout(layout_);
 }
 
-void Row::setEntry(const EntryChunkBegin *entry) {
-  address_->setText(QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
+void Row::setEntry(const EntryChunkBegin* entry) {
+  address_->setText(
+      QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
   comment_->setText("; " + entry->chunk->comment);
   if (entry->chunk->collapsed) {
     text_->setText(QString(entry->chunk->text_repr->string()));
   } else {
-    text_->setText(QString(entry->chunk->display_name + "::" + entry->chunk->type + " {"));
+    text_->setText(
+        QString(entry->chunk->display_name + "::" + entry->chunk->type + " {"));
   }
 }
 
-void Row::setEntry(const EntryChunkEnd *entry) {
-  address_->setText(QString("%1").arg(entry->chunk->addr_end, 8, 16, QChar('0')));
+void Row::setEntry(const EntryChunkEnd* entry) {
+  address_->setText(
+      QString("%1").arg(entry->chunk->addr_end, 8, 16, QChar('0')));
   text_->setText("}");
 }
 
-void Row::setEntry(const EntryOverlap *entry) {
+void Row::setEntry(const EntryOverlap* entry) {}
 
-}
-
-void Row::setEntry(const EntryField *entry) {
-
-}
+void Row::setEntry(const EntryField* entry) {}
 }  // namespace disasm
 }  // namespace ui
 }  // namespace veles

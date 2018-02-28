@@ -38,10 +38,10 @@ Widget::Widget() {
   rows_->setContentsMargins(0, 0, 0, 0);
 
   auto rows_with_stretch = new QVBoxLayout();
-  rows_with_stretch ->setSpacing(0);
-  rows_with_stretch ->setContentsMargins(0, 0, 0, 0);
-  rows_with_stretch -> addLayout(rows_);
-  rows_with_stretch -> addStretch();
+  rows_with_stretch->setSpacing(0);
+  rows_with_stretch->setContentsMargins(0, 0, 0, 0);
+  rows_with_stretch->addLayout(rows_);
+  rows_with_stretch->addStretch();
 
   auto split_layout = new QHBoxLayout;
   split_layout->setSpacing(0);
@@ -127,7 +127,6 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
     }
   }
 }
-
 
 }  // namespace disasm
 }  // namespace ui

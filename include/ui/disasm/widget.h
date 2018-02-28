@@ -59,7 +59,7 @@ class Widget : public QScrollArea {
 
   Arrows* arrows_;
   QVBoxLayout* rows_;
-//  Rows* rows_;
+  //  Rows* rows_;
 };
 
 }  // namespace disasm

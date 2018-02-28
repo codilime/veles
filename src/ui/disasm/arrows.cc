@@ -15,16 +15,14 @@
  *
  */
 
-#include <QtWidgets/QLabel>
 #include "ui/disasm/arrows.h"
+#include <QtWidgets/QLabel>
 
 namespace veles {
 namespace ui {
 namespace disasm {
 
-Arrows::Arrows() {
-  setFixedWidth(100);
-}
+Arrows::Arrows() { setFixedWidth(100); }
 
 }  // namespace disasm
 }  // namespace ui

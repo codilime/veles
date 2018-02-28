@@ -29,10 +29,9 @@ class Arrows : public QWidget {
 
  public:
   Arrows();
+
  private:
-  QVBoxLayout *layout_;
-
-
+  QVBoxLayout* layout_;
 };
 
 }  // namespace disasm

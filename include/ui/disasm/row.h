@@ -33,10 +33,10 @@ class Row : public QWidget {
  public:
   explicit Row(int indent_level);
 
-  void setEntry(const EntryChunkBegin *entry);
-  void setEntry(const EntryChunkEnd *entry);
-  void setEntry(const EntryOverlap *entry);
-  void setEntry(const EntryField *entry);
+  void setEntry(const EntryChunkBegin* entry);
+  void setEntry(const EntryChunkEnd* entry);
+  void setEntry(const EntryOverlap* entry);
+  void setEntry(const EntryField* entry);
 
  private:
   QLabel* address_;
