@@ -37,6 +37,8 @@ class Row : public QWidget {
   void setEntry(const EntryChunkEnd* entry);
   void setEntry(const EntryOverlap* entry);
   void setEntry(const EntryField* entry);
+  enum ColumnName { Address, Chunks, Comments };
+  void toggleColumn(ColumnName columnName);
 
  private:
   QLabel* address_;

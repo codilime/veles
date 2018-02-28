@@ -15,8 +15,8 @@
  *
  */
 
-#include "ui/disasm/row.h"
 #include <QWidget>
+#include "ui/disasm/row.h"
 
 namespace veles {
 namespace ui {
@@ -62,7 +62,26 @@ void Row::setEntry(const EntryChunkEnd* entry) {
 
 void Row::setEntry(const EntryOverlap* entry) {}
 
-void Row::setEntry(const EntryField* entry) {}
+void Row::setEntry(const EntryField *entry) {
+
+}
+
+void Row::toggleColumn(Row::ColumnName columnName) {
+  switch (columnName) {
+    case Row::ColumnName::Address:
+      address_->setVisible(!address_->isVisible());
+      break;
+    case Row::ColumnName::Chunks:
+      text_->setVisible(!text_->isVisible());
+      break;
+    case Row::ColumnName::Comments:
+      comment_->setVisible(!comment_->isVisible());
+      break;
+    default:
+      break;
+  }
+}
+
 }  // namespace disasm
 }  // namespace ui
 }  // namespace veles

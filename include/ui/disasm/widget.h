@@ -25,6 +25,7 @@
 #include "ui/disasm/arrows.h"
 #include "ui/disasm/disasm.h"
 #include "ui/disasm/mocks.h"
+#include "ui/disasm/row.h"
 
 namespace veles {
 namespace ui {
@@ -42,7 +43,7 @@ class Widget : public QScrollArea {
 
  public slots:
   void getWindow();
-  void hideAddressColumn();
+  void toggleColumn(Row::ColumnName columnName);
 
  public:
   Widget();

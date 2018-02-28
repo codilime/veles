@@ -127,6 +127,10 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
     }
   }
 }
+void Widget::toggleColumn(Row::ColumnName columnName) {
+    auto rows = this -> findChildren<Row *>();
+    std::for_each(rows.begin(), rows.end(), [&columnName](Row* row) { row->toggleColumn(columnName); });
+}
 
 }  // namespace disasm
 }  // namespace ui
