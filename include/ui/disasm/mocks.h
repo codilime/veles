@@ -35,6 +35,8 @@ enum class ChunkType { FILE, SECTION, BASIC_BLOCK, INSTRUCTION, DATA, UNKNOWN };
 struct ChunkMeta : Chunk {
   veles::data::BinData raw_bytes;
   ChunkType meta_type = ChunkType::UNKNOWN;
+
+  bool collapsed = false;
 };
 
 /**
