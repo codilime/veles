@@ -25,6 +25,7 @@
 #include "ui/disasm/arrows.h"
 #include "ui/disasm/disasm.h"
 #include "ui/disasm/mocks.h"
+#include "ui/disasm/row.h"
 
 namespace veles {
 namespace ui {
@@ -42,6 +43,7 @@ class Widget : public QScrollArea {
 
  public slots:
   void getWindow();
+  void updateRows();
 
  public:
   Widget();
@@ -51,6 +53,7 @@ class Widget : public QScrollArea {
 
  private:
   void generateRows(std::vector<std::shared_ptr<Entry>> entries);
+
   QFuture<Bookmark> entrypoint_;
   QFutureWatcher<Bookmark> entrypoint_watcher_;
 
@@ -58,8 +61,9 @@ class Widget : public QScrollArea {
   std::unique_ptr<Window> window_;
 
   Arrows* arrows_;
-  QVBoxLayout* rows_;
-  //  Rows* rows_;
+
+  std::vector<Row*> rows_;
+  QVBoxLayout* rows_layout_;
 };
 
 }  // namespace disasm

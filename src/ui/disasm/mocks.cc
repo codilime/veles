@@ -235,36 +235,37 @@ void EntryFactory::generate(ChunkNode* node) {
     return;
   }
 
+  if (node->chunk()->collapsed) {
+    auto entry = std::make_shared<EntryChunkCollapsed>(node->chunk());
+    entry->pos.setNum(next_bookmark_++);
+    entries_.emplace_back(entry);
+    return;
+  }
+
   // EntryBegin
   auto entry_begin = std::make_shared<EntryChunkBegin>(node->chunk());
   node->chunk()->pos_begin.setNum(next_bookmark_);
   entry_begin->pos.setNum(next_bookmark_++);
   entries_.emplace_back(entry_begin);
 
-  if (!node->chunk()->collapsed) {
-    switch (node->chunk()->meta_type) {
-      case ChunkType::DATA: {
-        auto entry = std::make_shared<EntryField>(node->chunk());
-        entry->pos.setNum(next_bookmark_++);
-        entry->field_type = FieldType::STRING;
-        entry->name = "data";
-        entry->raw_bytes = node->chunk()->raw_bytes;
-        entry->value =
-            std::make_unique<FieldValueString>(entry->raw_bytes.toString());
-        entries_.emplace_back(entry);
-        break;
-      }
-      default:
-        break;
+  switch (node->chunk()->meta_type) {
+    case ChunkType::DATA: {
+      auto entry = std::make_shared<EntryField>(node->chunk());
+      entry->pos.setNum(next_bookmark_++);
+      entry->field_type = FieldType::STRING;
+      entry->name = "data";
+      entry->raw_bytes = node->chunk()->raw_bytes;
+      entry->value =
+          std::make_unique<FieldValueString>(entry->raw_bytes.toString());
+      entries_.emplace_back(entry);
+      break;
     }
-    // add entries of child
-    for (auto& child : node->children()) {
-      generate(child.get());
-    }
-  } else {  // chunk collapsed
-    auto entry = std::make_shared<EntryChunkCollapsed>(node->chunk());
-    entry->pos.setNum(next_bookmark_++);
-    entries_.emplace_back(entry);
+    default:
+      break;
+  }
+  // add entries of child
+  for (auto& child : node->children()) {
+    generate(child.get());
   }
 
   // EntryEnd

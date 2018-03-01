@@ -33,14 +33,14 @@ Widget::Widget() {
 
   arrows_ = new Arrows;
 
-  rows_ = new QVBoxLayout();
-  rows_->setSpacing(0);
-  rows_->setContentsMargins(0, 0, 0, 0);
+  rows_layout_ = new QVBoxLayout();
+  rows_layout_->setSpacing(0);
+  rows_layout_->setContentsMargins(0, 0, 0, 0);
 
   auto rows_with_stretch = new QVBoxLayout();
   rows_with_stretch->setSpacing(0);
   rows_with_stretch->setContentsMargins(0, 0, 0, 0);
-  rows_with_stretch->addLayout(rows_);
+  rows_with_stretch->addLayout(rows_layout_);
   rows_with_stretch->addStretch();
 
   auto split_layout = new QHBoxLayout;
@@ -80,50 +80,63 @@ void Widget::getEntrypoint() {
 void Widget::getWindow() {
   Bookmark entrypoint = entrypoint_.result();
   window_ = blob_->createWindow(entrypoint, 2, 10);
+  connect(window_.get(), &Window::dataChanged, this, &Widget::updateRows);
 
   auto entries = window_->entries();
   generateRows(entries);
 }
 
+void Widget::updateRows() { generateRows(window_->entries()); }
+
 void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
+  while (rows_.size() < entries.size()) {
+    auto r = new Row();
+    rows_layout_->addWidget(r, 0, Qt::AlignTop);
+    rows_.push_back(r);
+  }
+
+  Row* row;
+  while (rows_.size() > entries.size()) {
+    row = rows_.back();
+    rows_.pop_back();
+    rows_layout_->removeWidget(row);
+    delete row;
+  }
+
   int indent_level = 0;
-  for (const auto& entry : entries) {
+  for (size_t i = 0; i < entries.size(); i++) {
+    auto entry = entries[i];
+    row = reinterpret_cast<Row*>(rows_layout_->itemAt(i)->widget());
+
+    row->setIndent(indent_level);
+    row->setWindow(window_.get());
+
     switch (entry->type()) {
       case EntryType::CHUNK_COLLAPSED: {
         auto* ent = reinterpret_cast<EntryChunkCollapsed const*>(entry.get());
-        auto r = new Row(indent_level);
-        r->setEntry(ent);
-        this->rows_->addWidget(r, 0, Qt::AlignTop);
+        row->setEntry(ent);
         break;
       }
       case EntryType::CHUNK_BEGIN: {
         auto* ent = reinterpret_cast<EntryChunkBegin const*>(entry.get());
-        auto r = new Row(indent_level);
-        r->setEntry(ent);
-        this->rows_->addWidget(r, 0, Qt::AlignTop);
+        row->setEntry(ent);
         indent_level++;
         break;
       }
       case EntryType::CHUNK_END: {
         indent_level--;
         auto* ent = reinterpret_cast<EntryChunkEnd const*>(entry.get());
-        auto r = new Row(indent_level);
-        r->setEntry(ent);
-        this->rows_->addWidget(r, 0, Qt::AlignTop);
+        row->setEntry(ent);
         break;
       }
       case EntryType::OVERLAP: {
         auto* ent = reinterpret_cast<EntryOverlap const*>(entry.get());
-        auto r = new Row(indent_level);
-        r->setEntry(ent);
-        this->rows_->addWidget(r, 0, Qt::AlignTop);
+        row->setEntry(ent);
         break;
       }
       case EntryType::FIELD: {
         auto* ent = reinterpret_cast<EntryField const*>(entry.get());
-        auto r = new Row(indent_level);
-        r->setEntry(ent);
-        this->rows_->addWidget(r, 0, Qt::AlignTop);
+        row->setEntry(ent);
         break;
       }
       default: { break; }
