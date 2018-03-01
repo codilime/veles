@@ -17,7 +17,10 @@
 
 #pragma once
 
+#include <iostream>
+#include <QMouseEvent>
 #include <QObject>
+#include <QWidget>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 
@@ -31,7 +34,10 @@ class Row : public QWidget {
   Q_OBJECT
 
  public:
-  explicit Row(int indent_level);
+  explicit Row();
+
+  void setIndent(int level);
+  void setWindow(Window* window);
 
   void setEntry(const EntryChunkCollapsed* entry);
   void setEntry(const EntryChunkBegin* entry);
@@ -39,11 +45,17 @@ class Row : public QWidget {
   void setEntry(const EntryOverlap* entry);
   void setEntry(const EntryField* entry);
 
+ protected:
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
+
  private:
+  ChunkID id_;
+
   QLabel* address_;
   QLabel* text_;
   QLabel* comment_;
 
+  Window* window_;
   QHBoxLayout* layout_;
 
   int indent_level_;
