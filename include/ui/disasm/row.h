@@ -32,6 +32,10 @@ namespace disasm {
 class Row : public QWidget {
   Q_OBJECT
 
+ public slots:
+ signals:
+  void chunkCollapse(const ChunkID& id);
+
  public:
   explicit Row();
 

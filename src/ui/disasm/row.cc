@@ -72,7 +72,7 @@ void Row::setEntry(const EntryOverlap* entry) {}
 void Row::setEntry(const EntryField* entry) {}
 
 void Row::mouseDoubleClickEvent(QMouseEvent* event) {
-  this->window_->chunkCollapseToggle(this->id_);
+  emit chunkCollapse(this->id_);
 }
 
 }  // namespace disasm

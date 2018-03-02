@@ -93,6 +93,9 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
     auto r = new Row();
     rows_layout_->addWidget(r, 0, Qt::AlignTop);
     rows_.push_back(r);
+
+    QObject::connect(r, SIGNAL(chunkCollapse(const ChunkID&)), this,
+                     SLOT(chunkCollapse(const ChunkID&)));
   }
 
   Row* row;
@@ -142,6 +145,10 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
       default: { break; }
     }
   }
+}
+
+void Widget::chunkCollapse(const ChunkID& id) {
+  window_->chunkCollapseToggle(id);
 }
 
 }  // namespace disasm
