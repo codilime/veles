@@ -41,8 +41,6 @@ Row::Row() {
 
 void Row::setIndent(int level) { text_->setIndent(level * 20); }
 
-void Row::setWindow(Window* window) { window_ = window; }
-
 void Row::setEntry(const EntryChunkCollapsed* entry) {
   id_ = entry->chunk->id;
   address_->setText(

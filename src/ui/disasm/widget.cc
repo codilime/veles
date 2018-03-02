@@ -94,8 +94,7 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
     rows_layout_->addWidget(r, 0, Qt::AlignTop);
     rows_.push_back(r);
 
-    QObject::connect(r, SIGNAL(chunkCollapse(const ChunkID&)), this,
-                     SLOT(chunkCollapse(const ChunkID&)));
+    connect(r, &Row::chunkCollapse, this, &Widget::chunkCollapse);
   }
 
   Row* row;
@@ -111,18 +110,17 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
     auto entry = entries[i];
     row = reinterpret_cast<Row*>(rows_layout_->itemAt(i)->widget());
 
-    row->setIndent(indent_level);
-    row->setWindow(window_.get());
-
     switch (entry->type()) {
       case EntryType::CHUNK_COLLAPSED: {
         auto* ent = reinterpret_cast<EntryChunkCollapsed const*>(entry.get());
         row->setEntry(ent);
+        row->setIndent(indent_level);
         break;
       }
       case EntryType::CHUNK_BEGIN: {
         auto* ent = reinterpret_cast<EntryChunkBegin const*>(entry.get());
         row->setEntry(ent);
+        row->setIndent(indent_level);
         indent_level++;
         break;
       }
@@ -130,16 +128,19 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
         indent_level--;
         auto* ent = reinterpret_cast<EntryChunkEnd const*>(entry.get());
         row->setEntry(ent);
+        row->setIndent(indent_level);
         break;
       }
       case EntryType::OVERLAP: {
         auto* ent = reinterpret_cast<EntryOverlap const*>(entry.get());
         row->setEntry(ent);
+        row->setIndent(indent_level);
         break;
       }
       case EntryType::FIELD: {
         auto* ent = reinterpret_cast<EntryField const*>(entry.get());
         row->setEntry(ent);
+        row->setIndent(indent_level);
         break;
       }
       default: { break; }
