@@ -40,7 +40,6 @@ class Row : public QWidget {
   explicit Row();
 
   void setIndent(int level);
-  void setWindow(Window* window);
 
   void setEntry(const EntryChunkCollapsed* entry);
   void setEntry(const EntryChunkBegin* entry);
@@ -58,10 +57,7 @@ class Row : public QWidget {
   QLabel* text_;
   QLabel* comment_;
 
-  Window* window_;
   QHBoxLayout* layout_;
-
-  int indent_level_;
 };
 
 }  // namespace disasm
