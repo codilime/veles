@@ -42,6 +42,7 @@ class Widget : public QScrollArea {
  public slots:
   void getWindow();
   void updateRows();
+  void chunkCollapse(const ChunkID& id);
 
  public:
   Widget();
