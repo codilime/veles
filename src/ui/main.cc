@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
   QApplication::setApplicationVersion(veles::util::version::string);
 
   QApplication::setStyle(veles::util::settings::theme::createStyle());
-  QApplication::setPalette(veles::util::settings::theme::pallete());
+  QApplication::setPalette(veles::util::settings::theme::palette());
 
   // Identify locale and load translation if available
   QString locale = QLocale::system().name();

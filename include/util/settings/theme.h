@@ -31,7 +31,7 @@ void setCurrentTheme(const QString& theme);
 QStringList availableThemes();
 const QString& getDefaultTheme();
 
-QPalette pallete();
+QPalette palette();
 QStyle* createStyle();
 QColor highlightingColor();
 QColor chunkBackground(int color_index);
