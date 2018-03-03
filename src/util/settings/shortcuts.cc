@@ -298,7 +298,7 @@ QVariant ShortcutsModel::data(const QModelIndex& index, int role) const {
       if (item->hasConflict()) {
         return QColor(Qt::red);
       }
-      return util::settings::theme::pallete().color(QPalette::Text);
+      return util::settings::theme::palette().color(QPalette::Text);
     case Qt::DecorationRole:
       if (item->isCategory() && index.column() == COLUMN_INDEX_NAME) {
         return category_ico;

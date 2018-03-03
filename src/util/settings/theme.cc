@@ -54,28 +54,28 @@ const QString& getDefaultTheme() {
   return default_theme;
 }
 
-QPalette pallete() {
-  QPalette pallete;
+QPalette palette() {
+  QPalette palette;
   if (isDark()) {
-    pallete.setColor(QPalette::Window, QColor(53, 53, 53));
-    pallete.setColor(QPalette::WindowText, Qt::white);
-    pallete.setColor(QPalette::Base, QColor(25, 25, 25));
-    pallete.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
-    pallete.setColor(QPalette::ToolTipBase, QColor(255, 255, 225));
-    pallete.setColor(QPalette::ToolTipText, Qt::black);
-    pallete.setColor(QPalette::Text, Qt::white);
-    pallete.setColor(QPalette::Button, QColor(53, 53, 53));
-    pallete.setColor(QPalette::Light, QColor(25, 25, 25));
-    pallete.setColor(QPalette::ButtonText, Qt::white);
-    pallete.setColor(QPalette::BrightText, Qt::red);
-    pallete.setColor(QPalette::Link, QColor(42, 130, 218));
-    pallete.setColor(QPalette::Highlight, QColor(42, 130, 218));
-    pallete.setColor(QPalette::HighlightedText, Qt::black);
+    palette.setColor(QPalette::Window, QColor(53, 53, 53));
+    palette.setColor(QPalette::WindowText, Qt::white);
+    palette.setColor(QPalette::Base, QColor(25, 25, 25));
+    palette.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
+    palette.setColor(QPalette::ToolTipBase, QColor(255, 255, 225));
+    palette.setColor(QPalette::ToolTipText, Qt::black);
+    palette.setColor(QPalette::Text, Qt::white);
+    palette.setColor(QPalette::Button, QColor(53, 53, 53));
+    palette.setColor(QPalette::Light, QColor(25, 25, 25));
+    palette.setColor(QPalette::ButtonText, Qt::white);
+    palette.setColor(QPalette::BrightText, Qt::red);
+    palette.setColor(QPalette::Link, QColor(42, 130, 218));
+    palette.setColor(QPalette::Highlight, QColor(42, 130, 218));
+    palette.setColor(QPalette::HighlightedText, Qt::black);
 
-    pallete.setColor(QPalette::Disabled, QPalette::Text, Qt::gray);
-    pallete.setColor(QPalette::Disabled, QPalette::ButtonText, Qt::gray);
+    palette.setColor(QPalette::Disabled, QPalette::Text, Qt::gray);
+    palette.setColor(QPalette::Disabled, QPalette::ButtonText, Qt::gray);
   }
-  return pallete;
+  return palette;
 }
 
 QStyle* createStyle() {
