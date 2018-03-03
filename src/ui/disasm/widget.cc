@@ -16,9 +16,6 @@
  */
 
 #include "ui/disasm/widget.h"
-#include "ui/disasm/row.h"
-
-#include "util/settings/theme.h"
 
 namespace veles {
 namespace ui {

@@ -22,6 +22,8 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 
+#include "util/settings/theme.h"
+
 #include "ui/disasm/arrows.h"
 #include "ui/disasm/disasm.h"
 #include "ui/disasm/mocks.h"
