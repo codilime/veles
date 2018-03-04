@@ -57,7 +57,7 @@ std::unique_ptr<ChunkMeta> ChunkFactory::generate(ChunkType type) {
   auto chk_ptr = chk.get();
 
   setID(chk_ptr);
-  setType(chk_ptr, type);
+  setMetaType(chk_ptr, type);
   setDisplayName(chk_ptr);
   setTextRepresentation(chk_ptr);
   setComment(chk_ptr);
@@ -74,7 +74,7 @@ void ChunkFactory::setDisplayName(ChunkMeta* chunk) const {
   chunk->display_name = QString("Chunk #%1").arg(chunk_id);
 }
 
-void ChunkFactory::setType(ChunkMeta* chunk, ChunkType type) const {
+void ChunkFactory::setMetaType(ChunkMeta* chunk, ChunkType type) const {
   chunk->meta_type = type;
   switch (type) {
     case ChunkType::FILE:
@@ -94,6 +94,47 @@ void ChunkFactory::setType(ChunkMeta* chunk, ChunkType type) const {
       break;
     default:
       chunk->type = "UNKNOWN";
+  }
+}
+
+void ChunkFactory::setDataType(ChunkMeta* chunk) const {
+  if (chunk->meta_type != ChunkType::DATA) {
+    return;
+  }
+
+  switch (std::rand() % 6) {
+    case 0: {
+      // UNKNOWN
+      chunk->data_type = FieldType::UNKNOWN;
+      break;
+    }
+    case 1: {
+      // FIXED
+      chunk->data_type = FieldType::FIXED;
+      break;
+    }
+    case 2: {
+      // FLOAT
+      chunk->data_type = FieldType::FLOAT;
+      break;
+    }
+    case 3: {
+      // STRING
+      chunk->data_type = FieldType::STRING;
+
+      break;
+    }
+    case 4: {
+      // REF
+      chunk->data_type = FieldType::REF;
+      break;
+    }
+    case 5: {
+      // COMPOSED
+      chunk->data_type = FieldType::COMPOSED;
+      break;
+    }
+    default: { break; }
   }
 }
 
@@ -227,6 +268,32 @@ const std::vector<std::shared_ptr<Entry>>& EntryFactory::getEntries() {
   return entries_;
 }
 
+void EntryFactory::fillEntryField(EntryField* e, ChunkMeta* chunk) {
+  switch (chunk->data_type) {
+    case FieldType::UNKNOWN: {
+      break;
+    }
+    case FieldType::FIXED: {
+      break;
+    }
+    case FieldType::FLOAT: {
+      break;
+    }
+    case FieldType::STRING: {
+      e->name = "data::string";
+      e->raw_bytes = chunk->raw_bytes;
+      e->value = std::make_unique<FieldValueString>(e->raw_bytes.toString());
+      break;
+    }
+    case FieldType::REF: {
+      break;
+    }
+    case FieldType::COMPOSED: {
+      break;
+    }
+  }
+}
+
 void EntryFactory::generate(ChunkNode* node) {
   if (node->chunk()->meta_type == ChunkType::INSTRUCTION) {
     auto entry = std::make_shared<EntryChunkCollapsed>(node->chunk());
@@ -252,11 +319,8 @@ void EntryFactory::generate(ChunkNode* node) {
     case ChunkType::DATA: {
       auto entry = std::make_shared<EntryField>(node->chunk());
       entry->pos.setNum(next_bookmark_++);
-      entry->field_type = FieldType::STRING;
       entry->name = "data";
-      entry->raw_bytes = node->chunk()->raw_bytes;
-      entry->value =
-          std::make_unique<FieldValueString>(entry->raw_bytes.toString());
+      fillEntryField(entry.get(), node->chunk().get());
       entries_.emplace_back(entry);
       break;
     }
