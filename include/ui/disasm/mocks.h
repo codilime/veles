@@ -35,6 +35,7 @@ enum class ChunkType { FILE, SECTION, BASIC_BLOCK, INSTRUCTION, DATA, UNKNOWN };
 struct ChunkMeta : Chunk {
   veles::data::BinData raw_bytes;
   ChunkType meta_type = ChunkType::UNKNOWN;
+  FieldType data_type = FieldType::UNKNOWN;
 
   bool collapsed = false;
 };
@@ -54,7 +55,8 @@ class ChunkFactory {
 
   void setID(ChunkMeta* chunk) const;
   void setDisplayName(ChunkMeta* chunk) const;
-  void setType(ChunkMeta* chunk, ChunkType type) const;
+  void setMetaType(ChunkMeta* chunk, ChunkType type) const;
+  void setDataType(ChunkMeta* chunk) const;
   void setTextRepresentation(ChunkMeta* chunk) const;
   void setComment(ChunkMeta* chunk) const;
 
@@ -102,6 +104,7 @@ class EntryFactory {
   explicit EntryFactory(ChunkNode* root);
 
   const std::vector<std::shared_ptr<Entry>>& getEntries();
+  void fillEntryField(EntryField* e, ChunkMeta* chunk);
 
  protected:
   void generate(ChunkNode* node);
