@@ -2,7 +2,6 @@
 #include <iostream>
 
 #include "ui/disasm/asmgen.h"
-#include "ui/disasm/disasm.h"
 #include "ui/disasm/mocks.h"
 
 std::ostream& hex_print(std::ostream& os, int64_t x) {
