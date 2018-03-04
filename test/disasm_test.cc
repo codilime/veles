@@ -30,15 +30,15 @@ using veles::ui::disasm::mocks::MockBlob;
 std::ostream& operator<<(std::ostream& os, Entry* entry) {
   switch (entry->type()) {
     case EntryType::CHUNK_BEGIN: {
-      auto* ent = reinterpret_cast<EntryChunkBegin*>(entry);
+      auto* ent = static_cast<EntryChunkBegin*>(entry);
       hex_print(os, ent->chunk->addr_begin);
       os << " ChunkBegin(id: " << ent->chunk->id.toStdString()
          << ", type: " << ent->chunk->type.toStdString() << ") ";
-      os << ent->chunk->text_repr.get()->string().toStdString();
+      os << ent->chunk->text_repr->string().toStdString();
       break;
     }
     case EntryType::CHUNK_END: {
-      auto* ent = reinterpret_cast<EntryChunkEnd*>(entry);
+      auto* ent = static_cast<EntryChunkEnd*>(entry);
       hex_print(os, ent->chunk->addr_end);
       os << " ChunkEnd(id: " << ent->chunk->id.toStdString() << ")";
       break;
@@ -48,7 +48,7 @@ std::ostream& operator<<(std::ostream& os, Entry* entry) {
       break;
     }
     case EntryType::FIELD: {
-      auto* ent = reinterpret_cast<EntryField*>(entry);
+      auto* ent = static_cast<EntryField*>(entry);
       os << EntryFieldStringRepresentation(ent);
       break;
     }

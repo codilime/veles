@@ -24,7 +24,7 @@ namespace disasm {
 std::string EntryFieldStringRepresentation(EntryField* field_entry) {
   switch (field_entry->field_type) {
     case FieldType::STRING: {
-      auto* fvs = reinterpret_cast<FieldValueString*>(field_entry->value.get());
+      auto* fvs = static_cast<FieldValueString*>(field_entry->value.get());
       return fvs->value.toStdString();
     }
     default: { break; }

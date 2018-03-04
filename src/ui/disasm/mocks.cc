@@ -298,7 +298,7 @@ void MockWindow::generateEntries() {
   chunk_entry_.clear();
   for (auto e : entries) {
     if (e->type() == EntryType::CHUNK_BEGIN) {
-      auto* entry_begin = reinterpret_cast<EntryChunkBegin*>(e.get());
+      auto* entry_begin = static_cast<EntryChunkBegin*>(e.get());
       chunk_entry_[entry_begin->chunk->id] = entry_begin->pos;
     }
   }

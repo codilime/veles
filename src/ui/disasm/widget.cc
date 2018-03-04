@@ -105,17 +105,17 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
   int indent_level = 0;
   for (size_t i = 0; i < entries.size(); i++) {
     auto entry = entries[i];
-    row = reinterpret_cast<Row*>(rows_layout_->itemAt(i)->widget());
+    row = static_cast<Row*>(rows_layout_->itemAt(i)->widget());
 
     switch (entry->type()) {
       case EntryType::CHUNK_COLLAPSED: {
-        auto* ent = reinterpret_cast<EntryChunkCollapsed const*>(entry.get());
+        auto* ent = static_cast<EntryChunkCollapsed const*>(entry.get());
         row->setEntry(ent);
         row->setIndent(indent_level);
         break;
       }
       case EntryType::CHUNK_BEGIN: {
-        auto* ent = reinterpret_cast<EntryChunkBegin const*>(entry.get());
+        auto* ent = static_cast<EntryChunkBegin const*>(entry.get());
         row->setEntry(ent);
         row->setIndent(indent_level);
         indent_level++;
@@ -123,19 +123,19 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
       }
       case EntryType::CHUNK_END: {
         indent_level--;
-        auto* ent = reinterpret_cast<EntryChunkEnd const*>(entry.get());
+        auto* ent = static_cast<EntryChunkEnd const*>(entry.get());
         row->setEntry(ent);
         row->setIndent(indent_level);
         break;
       }
       case EntryType::OVERLAP: {
-        auto* ent = reinterpret_cast<EntryOverlap const*>(entry.get());
+        auto* ent = static_cast<EntryOverlap const*>(entry.get());
         row->setEntry(ent);
         row->setIndent(indent_level);
         break;
       }
       case EntryType::FIELD: {
-        auto* ent = reinterpret_cast<EntryField const*>(entry.get());
+        auto* ent = static_cast<EntryField const*>(entry.get());
         row->setEntry(ent);
         row->setIndent(indent_level);
         break;
