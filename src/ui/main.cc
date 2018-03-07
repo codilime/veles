@@ -51,6 +51,11 @@ int main(int argc, char* argv[]) {
   QApplication::setStyle(veles::util::settings::theme::createStyle());
   QApplication::setPalette(veles::util::settings::theme::pallete());
 
+  QFile file(":/defaultStyle.qss");
+  file.open(QFile::ReadOnly);
+  QString styleSheet = QLatin1String(file.readAll());
+  app.setStyleSheet(styleSheet);
+
   // Identify locale and load translation if available
   QString locale = QLocale::system().name();
   QTranslator translator;

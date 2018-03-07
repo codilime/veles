@@ -1,0 +1,9 @@
+veles--ui--DockWidget::title:top  {
+    background : blue;
+    color : palette(highlighted-text);
+}
+
+veles--ui--DockWidget::title:!top  {
+    background: aqua;
+}
+

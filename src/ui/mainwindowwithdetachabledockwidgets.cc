@@ -575,6 +575,7 @@ void MainWindowWithDetachableDockWidgets::updateActiveDockWidget() {
         active_dock_widget_ == dynamic_cast<DockWidget*>(tabToDockWidget(
                                    tab_bar, tab_bar->currentIndex())) &&
         active_dock_widget_ != nullptr) {
+//      active_dock_widget_ -> wmhf(true);
       QString stylesheet =
           tab_bar_stylesheet + QString(
                                    "QTabBar::tab:selected {"
@@ -583,34 +584,34 @@ void MainWindowWithDetachableDockWidgets::updateActiveDockWidget() {
                                    "border-bottom: 0px solid palette(shadow);"
                                    "}");
       if (tab_bar->styleSheet() != stylesheet) {
-        tab_bar->setStyleSheet(stylesheet);
+//        tab_bar->setStyleSheet(stylesheet);
       }
     } else {
       if (tab_bar->styleSheet() != tab_bar_stylesheet) {
-        tab_bar->setStyleSheet(tab_bar_stylesheet);
+//        tab_bar->setStyleSheet(tab_bar_stylesheet);
       }
     }
   }
 
-  QList<DockWidget*> dock_widgets = findChildren<DockWidget*>();
-  for (auto dock_widget : dock_widgets) {
-    if (mark_active_dock_widget_ && active_dock_widget_ == dock_widget) {
-      puts(dock_widget ->styleSheet().toStdString().c_str());
-
-      auto local_style = QString("%1::title {"
-                                "background : palette(highlight);"
-                                "color : palette(highlighted-text);"
-                                "}")
-          .arg(QString(dock_widget->metaObject()->className())
-                   .replace(':', '-'));
-
-      puts(local_style.toStdString().c_str());
-
-      dock_widget->setStyleSheet(local_style);
-    } else {
-      dock_widget->setStyleSheet("");
-    }
-  }
+//  QList<DockWidget*> dock_widgets = findChildren<DockWidget*>();
+//  for (auto dock_widget : dock_widgets) {
+//    if (mark_active_dock_widget_ && active_dock_widget_ == dock_widget) {
+////      puts(dock_widget ->styleSheet().toStdString().c_str());
+////      dock_widget->titleBarWidget()->setStyle();
+//      auto local_style = QString("%1::title {"
+//                                "background : palette(highlight);"
+//                                "color : palette(highlighted-text);"
+//                                "}")
+//          .arg(QString(dock_widget->metaObject()->className())
+//                   .replace(':', '-'));
+//
+////      puts(local_style.toStdString().c_str());
+//
+//      dock_widget->setStyleSheet(local_style);
+//    } else {
+//      dock_widget->setStyleSheet("");
+//    }
+//  }
 }
 
 void MainWindowWithDetachableDockWidgets::updateDocksAndTabs() {

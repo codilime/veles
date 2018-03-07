@@ -59,6 +59,7 @@ class QProxyStyleForDockWidgetWithIconOnTitleBar : public QProxyStyle {
 
 class DockWidget : public QDockWidget {
   Q_OBJECT
+//  Q_PROPERTY(bool hacky_focus READ gmhf WRITE wmhf MEMBER mhf)
 
  public:
   DockWidget();
@@ -104,6 +105,7 @@ class DockWidget : public QDockWidget {
   QAction* dock_close_action_ = nullptr;
   QAction* next_tab_action_;
   QAction* prev_tab_action_;
+//  bool mhf = false;
 };
 
 /*****************************************************************************/
