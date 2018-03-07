@@ -16,6 +16,9 @@
  */
 
 #include "ui/disasm/row.h"
+#include <iostream>
+#include <QtWidgets/QStyleOptionFocusRect>
+#include <QtWidgets/QStylePainter>
 
 namespace veles {
 namespace ui {
@@ -46,7 +49,7 @@ void Row::setEntry(const EntryChunkCollapsed* entry) {
   address_->setText(
       QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
   comment_->setText("; " + entry->chunk->comment);
-  text_->setText(QString(entry->chunk->text_repr->string()));
+  setText(QString(entry->chunk->text_repr->string()));
 }
 
 void Row::setEntry(const EntryChunkBegin* entry) {
@@ -54,7 +57,7 @@ void Row::setEntry(const EntryChunkBegin* entry) {
   address_->setText(
       QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
   comment_->setText("; " + entry->chunk->comment);
-  text_->setText(
+  setText(
       QString(entry->chunk->display_name + "::" + entry->chunk->type + " {"));
 }
 
@@ -62,7 +65,7 @@ void Row::setEntry(const EntryChunkEnd* entry) {
   id_ = entry->chunk->id;
   address_->setText(
       QString("%1").arg(entry->chunk->addr_end, 8, 16, QChar('0')));
-  text_->setText("}");
+  setText("}");
 }
 
 void Row::setEntry(const EntryOverlap* entry) {}
@@ -87,6 +90,39 @@ void Row::toggleColumn(Row::ColumnName column_name) {
     default:
       break;
   }
+}
+void Row::enterEvent(QEvent* event) {
+  // TODO(prybicki): Make hover effect only on text_
+  auto str = text_->text();
+  text_->setText(str.prepend("<u>").append("</u>"));
+  update();
+}
+
+void Row::leaveEvent(QEvent* event) {
+  auto str = text_->text();
+  text_->setText(str.remove("<u>").remove("</u>"));
+  update();
+}
+void Row::paintEvent(QPaintEvent* event) {
+  QPainter painter(this);
+  QStylePainter stylePainter(this);
+  if (clickable && underMouse()) {
+    //    auto styleOption = QStyleOptionFocusRect();
+    //    styleOption.rect = rect();
+    //    stylePainter.drawPrimitive(QStyle::PE_FrameFocusRect, styleOption);
+  }
+}
+void Row::setClickable(bool clickable) {
+  this->clickable = clickable;
+  if (clickable)
+    text_->setCursor(Qt::PointingHandCursor);
+  else
+    text_->setCursor(Qt::ArrowCursor);
+}
+
+void Row::setText(QString str) {
+  text_->setText(str);
+  update();
 }
 
 }  // namespace disasm
