@@ -28,12 +28,12 @@ std::ostream& operator<<(std::ostream& out, const Arrow& arrow) {
   return out;
 }
 
-Arrows::Arrows(QWidget* parent) : QWidget(parent) {
+ArrowsWidget::ArrowsWidget(QWidget* parent) : QWidget(parent) {
   setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
   setFixedSize(width_, height_);
 }
 
-void Arrows::paintEvent(QPaintEvent* event) {
+void ArrowsWidget::paintEvent(QPaintEvent* event) {
   QPainter painter(this);
 
   auto brush = painter.brush();
@@ -62,7 +62,7 @@ void Arrows::paintEvent(QPaintEvent* event) {
   }
 }
 
-void Arrows::updateArrows(std::vector<unsigned> _row_attach_points,
+void ArrowsWidget::updateArrows(std::vector<unsigned> _row_attach_points,
                           std::vector<Arrow> _arrows) {
   this->arrows = std::move(_arrows);
   this->row_attach_points = std::move(_row_attach_points);
@@ -84,7 +84,7 @@ void Arrows::updateArrows(std::vector<unsigned> _row_attach_points,
   update();
 }
 
-void Arrows::paintSingleArrow(Arrow& arrow, QPainter& painter) {
+void ArrowsWidget::paintSingleArrow(Arrow& arrow, QPainter& painter) {
   QPoint start_point = QPoint(width_, row_attach_points[arrow.start_row]);
 
   QPoint first_turn = QPoint(width_ - (arrow.level * points_per_level),

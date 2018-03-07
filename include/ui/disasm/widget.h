@@ -64,7 +64,7 @@ class Widget : public QScrollArea {
   std::unique_ptr<Blob> blob_;
   std::unique_ptr<Window> window_;
 
-  Arrows* arrows_;
+  ArrowsWidget* arrows_;
 
   std::vector<Row*> rows_;
   QVBoxLayout* rows_layout_;

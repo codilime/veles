@@ -57,7 +57,7 @@ struct Arrow {
  *
  * Doc written: 7 March 2018
  */
-class Arrows : public QWidget {
+class ArrowsWidget : public QWidget {
   Q_OBJECT
 
   const unsigned ARROWHEAD_WIDTH = 10;
@@ -76,7 +76,7 @@ class Arrows : public QWidget {
   void paintSingleArrow(Arrow& arrow, QPainter& painter);
 
  public:
-  Arrows(QWidget* parent);
+  ArrowsWidget(QWidget* parent);
 
   void updateArrows(std::vector<unsigned> row_attach_points,
                     std::vector<Arrow> arrows);

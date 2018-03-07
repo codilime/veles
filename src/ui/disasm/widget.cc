@@ -30,7 +30,7 @@ Widget::Widget() {
   setWidgetResizable(true);
   setFont(util::settings::theme::font());
 
-  arrows_ = new Arrows(this);
+  arrows_ = new ArrowsWidget(this);
 
   rows_layout_ = new QVBoxLayout();
   rows_layout_->setSpacing(0);
