@@ -338,9 +338,7 @@ void EntryFactory::generate(ChunkNode* node) {
   entries_.emplace_back(entry_end);
 }
 
-MockWindow::MockWindow(std::shared_ptr<ChunkNode> root,
-                       std::shared_ptr<MockBackend> backend) {
-  root_ = std::move(root);
+MockWindow::MockWindow(std::shared_ptr<MockBackend> backend) {
   backend_ = std::move(backend);
 };
 
@@ -349,23 +347,13 @@ void MockWindow::seek(const Bookmark& pos, unsigned prev_n, unsigned next_n) {
   current_position_ = pos;
 
   auto entries = backend_->getEntries();
-
-  // find entry with given pos
-  size_t pos_i;
-  for (pos_i = 0; pos_i < entries.size(); pos_i++) {
-    if (entries[pos_i]->pos == pos) {
-      break;
-    }
-  }
-  if (pos_i == entries.size()) {
-    throw std::invalid_argument("MockWindow::seek: pos not found in entries.");
-  }
+  scrollbar_index_ = backend_->getEntryIndexByPosition(pos);
 
   // determine entries to display
   size_t i;
-  i = pos_i > prev_n ? pos_i - prev_n : 0;
+  i = scrollbar_index_ > prev_n ? scrollbar_index_ - prev_n : 0;
   entries_visible_.clear();
-  for (; i < entries.size() && i < pos_i + next_n + 1; i++) {
+  for (; i < entries.size() && i < scrollbar_index_ + next_n + 1; i++) {
     entries_visible_.push_back(std::move(entries[i]));
   }
 }
@@ -377,12 +365,12 @@ Bookmark MockWindow::currentPosition() {
 
 ScrollbarIndex MockWindow::currentScrollbarIndex() {
   std::lock_guard<std::mutex> guard(mutex_);
-  return 0;
+  return scrollbar_index_;
 }
 
 ScrollbarIndex MockWindow::maxScrollbarIndex() {
   std::lock_guard<std::mutex> guard(mutex_);
-  return backend_->getEntries().size();
+  return backend_->getEntriesSize();
 }
 
 const std::vector<Chunk>& MockWindow::breadcrumbs() {
@@ -391,6 +379,7 @@ const std::vector<Chunk>& MockWindow::breadcrumbs() {
 }
 
 const std::vector<std::shared_ptr<Entry>> MockWindow::entries() {
+  std::lock_guard<std::mutex> guard(mutex_);
   return entries_visible_;
 }
 
@@ -410,8 +399,7 @@ MockBlob::MockBlob(std::shared_ptr<ChunkNode> root) {
 std::unique_ptr<Window> MockBlob::createWindow(const Bookmark& pos,
                                                unsigned prev_n,
                                                unsigned next_n) {
-  std::unique_ptr<MockWindow> mw =
-      std::make_unique<MockWindow>(root_, backend_);
+  std::unique_ptr<MockWindow> mw = std::make_unique<MockWindow>(backend_);
   mw->seek(pos, prev_n, next_n);
 
   return std::unique_ptr<Window>(std::move(mw));
@@ -453,27 +441,45 @@ const std::vector<std::shared_ptr<Entry>> MockBackend::getEntries() {
   return entries_;
 }
 
+Bookmark MockBackend::getPositionByChunk(const ChunkID& chunk) {
+  std::lock_guard<std::mutex> guard(mutex_);
+
+  assert(chunk_entry_.find(chunk) != chunk_entry_.end());
+  return chunk_entry_[chunk];
+}
+
+ScrollbarIndex MockBackend::getEntryIndexByPosition(const Bookmark &pos) {
+  std::lock_guard<std::mutex> guard(mutex_);
+
+  auto position_ = position_index_.find(pos);
+  if (position_ == position_index_.end()) {
+    throw std::out_of_range(
+        "MockBackend::getEntryIndexByPosition: position not found");
+  }
+
+  return position_->second;
+}
+
+ScrollbarIndex MockBackend::getEntriesSize() { return entries_.size(); }
+
 void MockBackend::generateEntries() {
   std::lock_guard<std::mutex> guard(mutex_);
 
   EntryFactory ef(root_.get());
   entries_ = ef.getEntries();
 
-  // generate chunk_entry_
+  // generate chunk_entry_ and position_index_
   chunk_entry_.clear();
+  position_index_.clear();
+  size_t index = 0;
   for (const auto& e : entries_) {
     if (e->type() == EntryType::CHUNK_BEGIN) {
       auto* entry_begin = static_cast<EntryChunkBegin*>(e.get());
       chunk_entry_[entry_begin->chunk->id] = entry_begin->pos;
     }
+    position_index_[e->pos] = index;
+    index++;
   }
-}
-
-Bookmark MockBackend::getPositionByChunk(const ChunkID& chunk) {
-  std::lock_guard<std::mutex> guard(mutex_);
-
-  assert(chunk_entry_.find(chunk) != chunk_entry_.end());
-  return chunk_entry_[chunk];
 }
 
 void MockBackend::chunkCollapse(const ChunkID& chunk) {

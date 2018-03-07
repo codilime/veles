@@ -122,6 +122,8 @@ class MockBackend {
   const std::vector<std::shared_ptr<Entry>> getEntries();
   Bookmark getEntrypoint();
   Bookmark getPositionByChunk(const ChunkID& chunk);
+  ScrollbarIndex getEntryIndexByPosition(const Bookmark &pos);
+  ScrollbarIndex getEntriesSize();
 
   void chunkCollapse(const ChunkID& chunk);
 
@@ -136,12 +138,12 @@ class MockBackend {
   std::vector<std::shared_ptr<Entry>> entries_;
 
   std::map<ChunkID, Bookmark> chunk_entry_;
+  std::map<Bookmark, ScrollbarIndex> position_index_;
 };
 
 class MockWindow : public Window {
  public:
-  explicit MockWindow(std::shared_ptr<ChunkNode> root,
-                      std::shared_ptr<MockBackend> backend);
+  explicit MockWindow(std::shared_ptr<MockBackend> backend);
 
   void seek(const Bookmark& pos, unsigned prev_n, unsigned next_n) override;
 
@@ -156,10 +158,10 @@ class MockWindow : public Window {
  protected:
   std::mutex mutex_;
 
-  std::shared_ptr<ChunkNode> root_;
   std::shared_ptr<MockBackend> backend_;
 
   Bookmark current_position_;
+  ScrollbarIndex scrollbar_index_;
   std::vector<std::shared_ptr<Entry>> entries_visible_;
 };
 
