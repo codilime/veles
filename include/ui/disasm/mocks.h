@@ -120,9 +120,9 @@ class MockBackend {
   explicit MockBackend(std::shared_ptr<ChunkNode> root);
 
   const std::vector<std::shared_ptr<Entry>> getEntries();
-
   Bookmark getEntrypoint();
   Bookmark getPositionByChunk(const ChunkID& chunk);
+
   void chunkCollapse(const ChunkID& chunk);
 
   void generateEntries();
@@ -150,7 +150,8 @@ class MockWindow : public Window {
   ScrollbarIndex maxScrollbarIndex() override;
   const std::vector<Chunk>& breadcrumbs() override;
   const std::vector<std::shared_ptr<Entry>> entries() override;
-  QFuture<void> chunkCollapseToggle(const ChunkID& id) override;
+
+  QFuture<void> chunkCollapseToggle(const ChunkID& chunk) override;
 
  protected:
   std::mutex mutex_;
@@ -159,6 +160,7 @@ class MockWindow : public Window {
   std::shared_ptr<MockBackend> backend_;
 
   Bookmark current_position_;
+  std::vector<std::shared_ptr<Entry>> entries_visible_;
 };
 
 class MockBlob : public Blob {

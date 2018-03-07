@@ -347,6 +347,27 @@ MockWindow::MockWindow(std::shared_ptr<ChunkNode> root,
 void MockWindow::seek(const Bookmark& pos, unsigned prev_n, unsigned next_n) {
   std::lock_guard<std::mutex> guard(mutex_);
   current_position_ = pos;
+
+  auto entries = backend_->getEntries();
+
+  // find entry with given pos
+  size_t pos_i;
+  for (pos_i = 0; pos_i < entries.size(); pos_i++) {
+    if (entries[pos_i]->pos == pos) {
+      break;
+    }
+  }
+  if (pos_i == entries.size()) {
+    throw std::invalid_argument("MockWindow::seek: pos not found in entries.");
+  }
+
+  // determine entries to display
+  size_t i;
+  i = pos_i > prev_n ? pos_i - prev_n : 0;
+  entries_visible_.clear();
+  for (; i < entries.size() && i < pos_i + next_n + 1; i++) {
+    entries_visible_.push_back(std::move(entries[i]));
+  }
 }
 
 Bookmark MockWindow::currentPosition() {
@@ -370,13 +391,13 @@ const std::vector<Chunk>& MockWindow::breadcrumbs() {
 }
 
 const std::vector<std::shared_ptr<Entry>> MockWindow::entries() {
-  return backend_->getEntries();
+  return entries_visible_;
 }
 
-QFuture<void> MockWindow::chunkCollapseToggle(const ChunkID& id) {
+QFuture<void> MockWindow::chunkCollapseToggle(const ChunkID& chunk) {
   return QtConcurrent::run([=]() {
     std::lock_guard<std::mutex> guard(mutex_);
-    backend_->chunkCollapse(id);
+    backend_->chunkCollapse(chunk);
     emit dataChanged();
   });
 }
