@@ -76,7 +76,7 @@ void Widget::getEntrypoint() {
 
 void Widget::getWindow() {
   Bookmark entrypoint = entrypoint_.result();
-  window_ = blob_->createWindow(entrypoint, 2, 10);
+  window_ = blob_->createWindow(entrypoint, 1, 1);
   connect(window_.get(), &Window::dataChanged, this, &Widget::updateRows);
 
   auto entries = window_->entries();
