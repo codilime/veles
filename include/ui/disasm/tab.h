@@ -16,6 +16,7 @@
  */
 
 #pragma once
+
 #include <QToolBar>
 
 #include "ui/disasm/widget.h"
@@ -35,7 +36,8 @@ class Tab : public IconAwareView {
 
  private:
   void createToolbars();
-  QToolBar* tool_bar;
+
+  QToolBar* tool_bar_;
   QMenu* column_display_menu_;
 };
 

@@ -33,7 +33,7 @@ Tab::Tab() : IconAwareView("", "") {
 
 void Tab::createToolbars() {
   // TODO(malpunek): translation
-  tool_bar = new QToolBar("Main Disasm Toolbar");
+  tool_bar_ = new QToolBar("Main Disasm Toolbar");
 
   column_display_menu_ = new QMenu();
   column_display_menu_->clear();
@@ -63,10 +63,10 @@ void Tab::createToolbars() {
   column_toggle->setIcon(QIcon(":/images/parse.png"));
   column_toggle->setMenu(column_display_menu_);
 
-  auto widget_action = new QWidgetAction(tool_bar);
+  auto widget_action = new QWidgetAction(tool_bar_);
   widget_action->setDefaultWidget(column_toggle);
-  tool_bar->addAction(widget_action);
-  addToolBar(tool_bar);
+  tool_bar_->addAction(widget_action);
+  addToolBar(tool_bar_);
 }
 
 }  // namespace disasm
