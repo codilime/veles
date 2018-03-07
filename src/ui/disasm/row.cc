@@ -73,8 +73,8 @@ void Row::mouseDoubleClickEvent(QMouseEvent* event) {
   emit chunkCollapse(this->id_);
 }
 
-void Row::toggleColumn(Row::ColumnName columnName) {
-  switch (columnName) {
+void Row::toggleColumn(Row::ColumnName column_name) {
+  switch (column_name) {
     case Row::ColumnName::Address:
       address_->setVisible(!address_->isVisible());
       break;
