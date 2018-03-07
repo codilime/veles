@@ -47,7 +47,7 @@ class Row : public QWidget {
   void setEntry(const EntryOverlap* entry);
   void setEntry(const EntryField* entry);
   enum ColumnName { Address, Chunks, Comments };
-  void toggleColumn(ColumnName columnName);
+  void toggleColumn(ColumnName column_name);
 
  protected:
   void mouseDoubleClickEvent(QMouseEvent* event) override;

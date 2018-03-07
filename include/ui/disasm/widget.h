@@ -47,8 +47,7 @@ class Widget : public QScrollArea {
   void getWindow();
   void updateRows();
   void chunkCollapse(const ChunkID& id);
-  void hideAddressColumn();
-  void toggleColumn(Row::ColumnName columnName);
+  void toggleColumn(Row::ColumnName column_name);
 
  public:
   Widget();

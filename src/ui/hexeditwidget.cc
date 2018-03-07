@@ -260,7 +260,6 @@ void HexEditWidget::createToolBars() {
   parser_tool_button->setText(tr("&Parse"));
   parser_tool_button->setToolTip(tr("Parser"));
   parser_tool_button->setAutoRaise(true);
-
   auto widget_action = new QWidgetAction(tools_tool_bar_);
   widget_action->setDefaultWidget(parser_tool_button);
   tools_tool_bar_->addAction(widget_action);

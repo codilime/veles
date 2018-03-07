@@ -144,10 +144,10 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
     }
   }
 }
-void Widget::toggleColumn(Row::ColumnName columnName) {
+void Widget::toggleColumn(Row::ColumnName column_name) {
   auto rows = this->findChildren<Row*>();
   std::for_each(rows.begin(), rows.end(),
-                [&columnName](Row* row) { row->toggleColumn(columnName); });
+                [&column_name](Row* row) { row->toggleColumn(column_name); });
 }
 
 void Widget::chunkCollapse(const ChunkID& id) {
