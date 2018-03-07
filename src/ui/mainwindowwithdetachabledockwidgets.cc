@@ -595,13 +595,18 @@ void MainWindowWithDetachableDockWidgets::updateActiveDockWidget() {
   QList<DockWidget*> dock_widgets = findChildren<DockWidget*>();
   for (auto dock_widget : dock_widgets) {
     if (mark_active_dock_widget_ && active_dock_widget_ == dock_widget) {
-      dock_widget->setStyleSheet(
-          QString("%1::title {"
-                  "background : palette(highlight);"
-                  "color : palette(highlighted-text);"
-                  "}")
-              .arg(QString(dock_widget->metaObject()->className())
-                       .replace(':', '-')));
+      puts(dock_widget ->styleSheet().toStdString().c_str());
+
+      auto local_style = QString("%1::title {"
+                                "background : palette(highlight);"
+                                "color : palette(highlighted-text);"
+                                "}")
+          .arg(QString(dock_widget->metaObject()->className())
+                   .replace(':', '-'));
+
+      puts(local_style.toStdString().c_str());
+
+      dock_widget->setStyleSheet(local_style);
     } else {
       dock_widget->setStyleSheet("");
     }
