@@ -19,8 +19,10 @@
 
 #include <mutex>
 
-#include "ui/disasm/disasm.h"
 #include "util/random.h"
+
+#include "ui/disasm/asmgen.h"
+#include "ui/disasm/disasm.h"
 
 namespace veles {
 namespace ui {
@@ -113,9 +115,33 @@ class EntryFactory {
   std::vector<std::shared_ptr<Entry>> entries_;
 };
 
+class MockBackend {
+ public:
+  explicit MockBackend(std::shared_ptr<ChunkNode> root);
+
+  const std::vector<std::shared_ptr<Entry>> getEntries();
+
+  Bookmark getEntrypoint();
+  Bookmark getPositionByChunk(const ChunkID& chunk);
+  void chunkCollapse(const ChunkID& chunk);
+
+  void generateEntries();
+
+ private:
+  std::mutex mutex_;
+
+  std::shared_ptr<ChunkNode> root_;
+  Bookmark entrypoint_;
+
+  std::vector<std::shared_ptr<Entry>> entries_;
+
+  std::map<ChunkID, Bookmark> chunk_entry_;
+};
+
 class MockWindow : public Window {
  public:
-  explicit MockWindow(std::shared_ptr<ChunkNode> root);
+  explicit MockWindow(std::shared_ptr<ChunkNode> root,
+                      std::shared_ptr<MockBackend> backend);
 
   void seek(const Bookmark& pos, unsigned prev_n, unsigned next_n) override;
 
@@ -126,26 +152,13 @@ class MockWindow : public Window {
   const std::vector<std::shared_ptr<Entry>> entries() override;
   QFuture<void> chunkCollapseToggle(const ChunkID& id) override;
 
-  void runChunkCollapseToggle(const ChunkID& id);
-
-  Bookmark getPositionByChunk(const ChunkID& chunk);
-
  protected:
-  void generateEntries();
-
   std::mutex mutex_;
 
-  std::shared_ptr<ChunkNode> root_chunk_;
-
-  std::vector<std::shared_ptr<Entry>> entries_;
-  std::pair<ScrollbarIndex, ScrollbarIndex> entries_active_;
-
-  std::map<ChunkID, Bookmark> chunk_entry_;
-
-  std::vector<Bookmark> bookmarks_;
+  std::shared_ptr<ChunkNode> root_;
+  std::shared_ptr<MockBackend> backend_;
 
   Bookmark current_position_;
-  std::map<Bookmark, uint32_t> bookmark_entry_;
 };
 
 class MockBlob : public Blob {
@@ -160,21 +173,8 @@ class MockBlob : public Blob {
   QFuture<Bookmark> getPositionByChunk(const ChunkID& chunk) override;
 
  protected:
-  MockWindow* window_;
   std::shared_ptr<ChunkNode> root_;
-
-  Bookmark entrypoint_;
-};
-
-class MockBackend {
- public:
-  MockBackend();
-  MockBackend(std::shared_ptr<ChunkNode> root);
-
-  QFuture<Bookmark> getEntrypoint();
-  const std::vector<std::shared_ptr<Entry>> getEntries();
-
-  void generateEntries();
+  std::shared_ptr<MockBackend> backend_;
 };
 
 }  // namespace mocks
