@@ -166,6 +166,17 @@ class MockBlob : public Blob {
   Bookmark entrypoint_;
 };
 
+class MockBackend {
+ public:
+  MockBackend();
+  MockBackend(std::shared_ptr<ChunkNode> root);
+
+  QFuture<Bookmark> getEntrypoint();
+  const std::vector<std::shared_ptr<Entry>> getEntries();
+
+  void generateEntries();
+};
+
 }  // namespace mocks
 }  // namespace disasm
 }  // namespace ui
