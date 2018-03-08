@@ -15,8 +15,9 @@ Dock::Dock(QWidget *parent) : QWidget(parent), state(DockState::Empty) {
   stacked_layout = new QStackedLayout;
   top_layout -> addLayout(stacked_layout);
 
-  sections_layout = new QBoxLayout(QBoxLayout::LeftToRight);
-  top_layout -> addLayout(sections_layout);
+  splitter = new QSplitter(this);
+  splitter -> hide();
+  top_layout -> addWidget(splitter);
 }
 
 
@@ -42,6 +43,7 @@ void Dock::addWidget(QWidget * widget, DropArea area) {
         }
         stacked_widgets.clear();
         dock2 -> addWidget(widget);
+        splitter -> show();
         setState(DockState::Divided);
       }
       break;
@@ -74,9 +76,8 @@ void Dock::initDocks() {
   clearDocks();
   dock1 = new Dock;
   dock2 = new Dock;
-  sections_layout -> addWidget(dock1);
-  sections_layout -> addSpacerItem();
-  sections_layout -> addWidget(dock2);
+  splitter -> addWidget(dock1);
+  splitter -> addWidget(dock2);
   connect(dock1, &Dock::stateChanged, [this](DockState new_state){this -> dockStateChange(new_state, this -> dock1);});
   connect(dock1, &Dock::stateChanged, [this](DockState new_state){this -> dockStateChange(new_state, this -> dock2);});
 }

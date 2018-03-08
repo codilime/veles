@@ -80,8 +80,8 @@ int main(int argc, char* argv[]) {
   auto* dckWin = new veles::ui::Dock;
   dckWin -> showMaximized();
   dckWin -> addWidget(label);
-  dckWin -> addWidget(label2);
-//  dckWin -> addWidget(label2, veles::ui::DropArea::Left);
+//  dckWin -> addWidget(label2);
+  dckWin -> addWidget(label2, veles::ui::DropArea::Left);
 
   auto files = parser.positionalArguments();
   for (const auto& file : files) {

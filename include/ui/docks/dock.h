@@ -6,6 +6,7 @@
 #include <QtWidgets/QStackedLayout>
 #include <QtWidgets/QTabBar>
 #include <QtCore/QPointer>
+#include <QtWidgets/QSplitter>
 
 namespace veles {
 namespace ui {
@@ -54,9 +55,8 @@ class Dock : public QWidget {
 
   QVBoxLayout * top_layout;
   QStackedLayout * stacked_layout;
-  QBoxLayout * sections_layout;
+  QSplitter * splitter;
   QTabBar * tab_bar;
-  QSpacerItem split_line;
   QPointer<Dock> dock1, dock2;
 
   void updateTabBar(QWidget * added = nullptr);
