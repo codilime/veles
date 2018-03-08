@@ -18,6 +18,7 @@
 #include <QHostAddress>
 #include <QSurfaceFormat>
 #include <QTranslator>
+#include <include/ui/docks/dock.h>
 
 #include "ui/dockwidget.h"
 #include "ui/veles_mainwindow.h"
@@ -73,6 +74,14 @@ int main(int argc, char* argv[]) {
 
   auto* mainWin = new veles::ui::VelesMainWindow;
   mainWin->showMaximized();
+
+  QLabel * label = new QLabel("Ala ma kota");
+  QLabel * label2 = new QLabel("Ala ma kota3");
+  auto* dckWin = new veles::ui::Dock;
+  dckWin -> showMaximized();
+  dckWin -> addWidget(label);
+  dckWin -> addWidget(label2);
+//  dckWin -> addWidget(label2, veles::ui::DropArea::Left);
 
   auto files = parser.positionalArguments();
   for (const auto& file : files) {
