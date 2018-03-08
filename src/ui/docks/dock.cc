@@ -54,10 +54,19 @@ void Dock::addWidget(QWidget * widget, DropArea area) {
   }
 }
 
-void Dock::updateTabBar(QWidget *added) {
-  if (added) {
-    tab_bar -> addTab("Nowy tab");
-  }
+void Dock::updateTabBar(QWidget *added, const QString &label, const QIcon &icon) {
+  tab_bar -> addTab(icon, label);
+  // TODO connect close act
+  updateTabBar();
+}
+
+void Dock::updateTabBar(QWidget *added, const QString &label) {
+  tab_bar -> addTab(label);
+  //Todo connnect
+  updateTabBar();
+}
+
+void Dock::updateTabBar() {
   if (stacked_widgets.size() > 1) {
     tab_bar->show();
   } else {

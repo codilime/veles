@@ -37,7 +37,7 @@ class Dock : public QWidget {
 
   explicit Dock(QWidget *parent = nullptr);
 
-  void addWidget(QWidget * widget, DropArea area = DropArea::Center);
+  void addWidget(QWidget * widget, const QString& label, DropArea area = DropArea::Center);
   enum DockState {Empty = 0, Consistent = 1, Divided = 2};
 
   void setState(DockState state);
@@ -59,7 +59,9 @@ class Dock : public QWidget {
   QTabBar * tab_bar;
   QPointer<Dock> dock1, dock2;
 
-  void updateTabBar(QWidget * added = nullptr);
+  void updateTabBar(QWidget * added, const QString& label, const QIcon& icon);
+  void updateTabBar(QWidget * added, const QString& label);
+  void updateTabBar();
   void initDocks();
   void clearDocks();
 
