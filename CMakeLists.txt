@@ -386,6 +386,7 @@ add_executable(main_ui
     ${INCLUDE_DIR}/ui/filters/tabbareventfilter.h
     ${INCLUDE_DIR}/ui/mainwindowwithdetachabledockwidgets.h
     ${INCLUDE_DIR}/ui/velesapplication.h
+    ${INCLUDE_DIR}/ui/docks/dock.h
     ${SRC_DIR}/ui/main.cc
     ${SRC_DIR}/ui/logwidget.cc
     ${SRC_DIR}/ui/veles_mainwindow.cc
@@ -414,6 +415,7 @@ add_executable(main_ui
     ${SRC_DIR}/ui/filters/activatedockeventfilter.cc
     ${SRC_DIR}/ui/filters/tabbareventfilter.cc
     ${SRC_DIR}/ui/mainwindowwithdetachabledockwidgets.cc
+    ${SRC_DIR}/ui/docks/dock.cc
     ${RESOURCES}
     ${VISUALIZATION_SHADERS}
     ${FORMS}
