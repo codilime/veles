@@ -24,6 +24,7 @@ enum DropArea
   Sth = Top | Bottom,
   NotCenter = Sides | Sth
 };
+
 Q_DECLARE_FLAGS(DropAreas, DropArea)
 
 
@@ -37,6 +38,8 @@ class Dock : public QWidget {
 
   void addWidget(QWidget * widget, DropArea area = DropArea::Center);
   enum DockState {Empty = 0, Consistent = 1, Divided = 2};
+
+  void setState(DockState state);
 
  public slots:
   void dockStateChange(DockState new_state, Dock * child);
@@ -53,6 +56,7 @@ class Dock : public QWidget {
   QStackedLayout * stacked_layout;
   QBoxLayout * sections_layout;
   QTabBar * tab_bar;
+  QSpacerItem split_line;
   QPointer<Dock> dock1, dock2;
 
   void updateTabBar(QWidget * added = nullptr);
