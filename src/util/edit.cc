@@ -45,10 +45,10 @@ namespace util {
 
 void EditEngine::modifyBytes(size_t pos, const data::BinData& bytes,
                              bool add_to_history) {
+  assert(pos + bytes.size() <= dataSize());
   if (bytes.size() == 0) {
     return;
   }
-  assert(pos + bytes.size() <= dataSize());
 
   if (add_to_history) {
     edit_stack_data_.push_back(bytesValues(pos, bytes.size()));
@@ -113,6 +113,7 @@ void EditEngine::modifyBytes(size_t pos, const data::BinData& bytes,
 
 void EditEngine::insertBytes(size_t pos, const data::BinData& bytes,
                              bool add_to_history) {
+  assert(pos <= dataSize());
   if (bytes.size() == 0) {
     return;
   }
@@ -132,6 +133,7 @@ void EditEngine::insertBytes(size_t pos, const data::BinData& bytes,
 }
 
 void EditEngine::removeBytes(size_t pos, size_t size, bool add_to_history) {
+  assert(pos + size <= dataSize());
   if (size == 0) {
     return;
   }
@@ -151,6 +153,8 @@ void EditEngine::removeBytes(size_t pos, size_t size, bool add_to_history) {
 // for not losing local changes in deleted range.
 void EditEngine::remapOrigin(size_t origin_pos, size_t old_size,
                              size_t new_size) {
+  assert(origin_pos + old_size <= original_data_->binData().size());
+
   // This variable can be overflowed when `old_size` > `new_size`,
   // but it will be OK when we add this difference to some address.
   const size_t offset = new_size - old_size;
@@ -249,6 +253,8 @@ void EditEngine::clear() {
 }
 
 uint64_t EditEngine::byteValue(size_t pos) const {
+  assert(pos < dataSize());
+
   auto next_it = address_mapping_.upperBound(pos);
   assert(next_it != address_mapping_.cbegin());
   auto it = next_it;
@@ -262,6 +268,8 @@ uint64_t EditEngine::byteValue(size_t pos) const {
 }
 
 data::BinData EditEngine::bytesValues(size_t pos, size_t size) const {
+  assert(pos + size <= dataSize());
+
   data::BinData result = data::BinData(original_data_->binData().width(), size);
 
   const size_t end_pos = pos + size;
@@ -306,6 +314,8 @@ data::BinData EditEngine::bytesValues(size_t pos, size_t size) const {
 }
 
 std::vector<bool> EditEngine::modifiedPositions(size_t pos, size_t size) const {
+  assert(pos + size <= dataSize());
+
   std::vector<bool> result(size);
 
   const size_t end_pos = pos + size;
