@@ -78,6 +78,9 @@ class EditEngine {
    * Uploads all local changes to FileBlobModel.
    * After applying there is no local changes left.
    */
+  // TODO(catsuryuu): `applyChanges` can't upload any address translations
+  // (when doing inserts or removals).
+  // Fix when API for address translation uploads will appear.
   void applyChanges();
   /** Removes all local changes. */
   void clear();
@@ -113,6 +116,9 @@ class EditEngine {
   // `insert_or_assign`)
   // Reason: QMap uses int for container size
   QMap<size_t, EditNode> address_mapping_;
+  // This variable can be overflowed when current size is lower than original
+  // size, but it will be OK when we add back this difference to original size
+  // in 'dataSize()'.
   size_t data_size_difference_;
   bool has_changes_;
 
