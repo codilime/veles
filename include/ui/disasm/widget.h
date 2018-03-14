@@ -22,12 +22,11 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 
-#include "util/settings/theme.h"
-
 #include "ui/disasm/arrows.h"
 #include "ui/disasm/disasm.h"
 #include "ui/disasm/mocks.h"
 #include "ui/disasm/row.h"
+#include "util/settings/theme.h"
 
 namespace veles {
 namespace ui {
@@ -64,7 +63,7 @@ class Widget : public QScrollArea {
   std::unique_ptr<Blob> blob_;
   std::unique_ptr<Window> window_;
 
-  Arrows* arrows_;
+  ArrowsWidget* arrows_;
 
   std::vector<Row*> rows_;
   QVBoxLayout* rows_layout_;
