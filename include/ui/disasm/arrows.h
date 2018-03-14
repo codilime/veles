@@ -30,11 +30,11 @@ namespace ui {
 namespace disasm {
 
 struct Arrow {
-  Arrow(unsigned start_row, unsigned end_row, unsigned level = 0);
+  Arrow(int start_row, int end_row, int level = 0);
 
-  unsigned start_row;
-  unsigned end_row;
-  unsigned level;
+  int start_row;
+  int end_row;
+  int level;
   friend std::ostream& operator<<(std::ostream& out, const Arrow& arrow);
 };
 
@@ -42,7 +42,8 @@ struct Arrow {
  * This widget is able to draw arrows pointing between rows.
  * As input (updateArrows) it takes row attach points and vector of Arrow
  * objects.
- * Attach points pixel-level heights where arrows will originate or terminate.
+ * Attach points are pixel-level heights (increasing downwards)
+ * where arrows will originate or terminate.
  *
  * Arrow objects contain three fields: start_row and end_row are logical
  * rows where arrow will start and end, i.e. arrow will start at height
@@ -62,28 +63,29 @@ struct Arrow {
 class ArrowsWidget : public QWidget {
   Q_OBJECT
 
-  const unsigned ARROWHEAD_WIDTH = 10;
-  const unsigned ARROWHEAD_HEIGHT = 10;
-  const unsigned DEFAULT_WIDTH = 200;
-  const unsigned MIN_LEVELS = 8;
-
-  unsigned width_ = DEFAULT_WIDTH;
-  unsigned height_ = 0;
-  unsigned levels = MIN_LEVELS;
-  unsigned points_per_level;
-
-  std::vector<unsigned> row_attach_points;
-  std::vector<Arrow> arrows;
-
-  void paintSingleArrow(Arrow& arrow, QPainter& painter);
-
  public:
   ArrowsWidget(QWidget* parent);
 
-  void updateArrows(std::vector<unsigned> row_attach_points,
+  void updateArrows(std::vector<int> row_attach_points,
                     std::vector<Arrow> arrows);
 
   void paintEvent(QPaintEvent* event) override;
+
+ private:
+  static const int ARROWHEAD_WIDTH = 10;
+  static const int ARROWHEAD_HEIGHT = 10;
+  static const int DEFAULT_WIDTH = 200;
+  static const int MIN_LEVELS = 8;
+
+  int width_ = DEFAULT_WIDTH;
+  int height_ = 0;
+  int levels_ = MIN_LEVELS;
+  int points_per_level_;
+
+  std::vector<int> row_attach_points_;
+  std::vector<Arrow> arrows_;
+
+  void paintSingleArrow(const Arrow& arrow, QPainter& painter);
 };
 
 }  // namespace disasm

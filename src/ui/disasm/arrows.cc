@@ -22,7 +22,7 @@ namespace veles {
 namespace ui {
 namespace disasm {
 
-Arrow::Arrow(unsigned start_row, unsigned end_row, unsigned int level)
+Arrow::Arrow(int start_row, int end_row, int level)
     : start_row(start_row), end_row(end_row), level(level) {}
 
 std::ostream& operator<<(std::ostream& out, const Arrow& arrow) {
@@ -50,14 +50,14 @@ void ArrowsWidget::paintEvent(QPaintEvent* event) {
 
   painter.fillRect(event->rect(), palette().color(QPalette::AlternateBase));
 
-  for (auto& arrow : arrows) {
+  for (const auto& arrow : arrows_) {
     if (arrow.level == 0) {
       std::cerr << "Warning: unspecified level of an arrow! " << arrow
                 << std::endl;
       continue;
     }
-    if (arrow.start_row >= row_attach_points.size() ||
-        arrow.end_row >= row_attach_points.size()) {
+    if (arrow.start_row >= static_cast<int>(row_attach_points_.size()) ||
+        arrow.end_row >= static_cast<int>(row_attach_points_.size())) {
       std::cerr << "Warning: attach point not specified for start/end row! "
                 << arrow << std::endl;
       continue;
@@ -67,38 +67,38 @@ void ArrowsWidget::paintEvent(QPaintEvent* event) {
   }
 }
 
-void ArrowsWidget::updateArrows(std::vector<unsigned> _row_attach_points,
+void ArrowsWidget::updateArrows(std::vector<int> _row_attach_points,
                                 std::vector<Arrow> _arrows) {
-  this->arrows = std::move(_arrows);
-  this->row_attach_points = std::move(_row_attach_points);
+  this->arrows_ = std::move(_arrows);
+  this->row_attach_points_ = std::move(_row_attach_points);
 
-  unsigned max_level =
-      std::max_element(arrows.begin(), arrows.end(), [](const Arrow& lhs,
-                                                        const Arrow& rhs) {
+  int max_level =
+      std::max_element(arrows_.begin(), arrows_.end(), [](const Arrow& lhs,
+                                                          const Arrow& rhs) {
         return lhs.level < rhs.level;
       })->level;
-  levels = std::max(MIN_LEVELS, max_level);
+  levels_ = std::max(MIN_LEVELS, max_level);
 
-  unsigned max_attach_point =
-      *std::max_element(row_attach_points.begin(), row_attach_points.end());
+  int max_attach_point =
+      *std::max_element(row_attach_points_.begin(), row_attach_points_.end());
   height_ = max_attach_point + ARROWHEAD_HEIGHT + 1;
 
   width_ = width();
-  points_per_level = width_ / (levels + 1);
+  points_per_level_ = width_ / (levels_ + 1);
   setFixedSize(width_, height_);
   update();
 }
 
-void ArrowsWidget::paintSingleArrow(Arrow& arrow, QPainter& painter) {
-  QPoint start_point = QPoint(width_, row_attach_points[arrow.start_row]);
+void ArrowsWidget::paintSingleArrow(const Arrow& arrow, QPainter& painter) {
+  QPoint start_point = QPoint(width_, row_attach_points_[arrow.start_row]);
 
-  QPoint first_turn = QPoint(width_ - (arrow.level * points_per_level),
-                             row_attach_points[arrow.start_row]);
+  QPoint first_turn = QPoint(width_ - (arrow.level * points_per_level_),
+                             row_attach_points_[arrow.start_row]);
 
-  QPoint second_turn = QPoint(width_ - (arrow.level * points_per_level),
-                              row_attach_points[arrow.end_row]);
+  QPoint second_turn = QPoint(width_ - (arrow.level * points_per_level_),
+                              row_attach_points_[arrow.end_row]);
 
-  QPoint end_point = QPoint(width_, row_attach_points[arrow.end_row]);
+  QPoint end_point = QPoint(width_, row_attach_points_[arrow.end_row]);
 
   painter.drawLine(start_point, first_turn);
   painter.drawLine(first_turn, second_turn);
