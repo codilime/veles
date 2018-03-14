@@ -55,7 +55,9 @@ void ArrowsWidget::paintEvent(QPaintEvent* event) {
   pen.setColor(palette().color(QPalette::Text));
   painter.setPen(pen);
 
-  painter.fillRect(event->rect(), palette().color(QPalette::AlternateBase));
+  //  painter.fillRect(event->rect(), palette().color(QPalette::AlternateBase));
+
+  painter.fillRect(rect(), QColor(rand() % 256, rand() % 256, rand() % 256));
 
   for (const auto& arrow : arrows_) {
     if (arrow.level == 0) {
@@ -81,6 +83,10 @@ void ArrowsWidget::updateArrows(std::vector<int> _row_attach_points,
   this->arrows_ = std::move(_arrows);
   this->row_attach_points_ = std::move(_row_attach_points);
 
+  //  std::cout << "Update arrows got following attach points: " << std::endl;
+  //  for (auto& p : row_attach_points_) std::cout << p << ", ";
+  //  std::cout << std::endl;
+
   int max_level =
       std::max_element(arrows_.begin(), arrows_.end(), [](const Arrow& lhs,
                                                           const Arrow& rhs) {
@@ -95,6 +101,9 @@ void ArrowsWidget::updateArrows(std::vector<int> _row_attach_points,
   width_ = width();
   points_per_level_ = width_ / (levels_ + 1);
   setFixedSize(width_, height_);
+  std::cout << "Setting size: " << width_ << " x " << height_ << std::endl;
+  std::cout << "Max attach point: " << max_attach_point << std::endl;
+  std::cout << std::endl;
   update();
 }
 

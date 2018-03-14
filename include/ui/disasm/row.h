@@ -17,9 +17,11 @@
 
 #pragma once
 
+#include <iostream>
 #include <QMouseEvent>
 #include <QObject>
 #include <QWidget>
+#include <QtGui/QPainter>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 
@@ -51,6 +53,25 @@ class Row : public QWidget {
 
  protected:
   void mouseDoubleClickEvent(QMouseEvent* event) override;
+  //  QSize sizeHint() const override {
+  //    QSize size = {address_->width() + text_->width() + comment_->width(),
+  //                  text_->height()};
+  //    std::cout << "SizeHint: " << text_->width() << " x " << text_->height()
+  //              << std::endl;
+  //    return size;
+  //  }
+  //  QSize minimumSizeHint() const override {
+  //    return {address_->width() + text_->width() + comment_->width(),
+  //            text_->height()};
+  //  }
+
+  void paintEvent(QPaintEvent* event) override {
+    QPainter painter(this);
+    painter.fillRect(this->rect(),
+                     QColor(rand() % 256, rand() % 256, rand() % 256));
+    std::cout << "rect: " << rect().width() << " x " << rect().height()
+              << std::endl;
+  }
 
  private:
   ChunkID id_;

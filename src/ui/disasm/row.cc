@@ -15,6 +15,8 @@
  *
  */
 
+#include <QSizePolicy>
+
 #include "ui/disasm/row.h"
 
 namespace veles {
@@ -22,19 +24,22 @@ namespace ui {
 namespace disasm {
 
 Row::Row() {
+  setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   layout_ = new QHBoxLayout();
   layout_->setSpacing(0);
   layout_->setMargin(0);
 
-  text_ = new QLabel;
+  text_ = new QLabel("Dummy text");
   comment_ = new QLabel;
   address_ = new QLabel;
 
+  //  text_->setText("Another dummy text");
+
   address_->setMaximumWidth(100);
 
-  layout_->addWidget(address_);
+  // layout_->addWidget(address_);
   layout_->addWidget(text_);
-  layout_->addWidget(comment_);
+  // layout_->addWidget(comment_);
 
   setLayout(layout_);
 }
@@ -46,7 +51,8 @@ void Row::setEntry(const EntryChunkCollapsed* entry) {
   address_->setText(
       QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
   comment_->setText("; " + entry->chunk->comment);
-  text_->setText(QString(entry->chunk->text_repr->string()));
+  //  text_->setText(QString(entry->chunk->text_repr->string()));
+  update();
 }
 
 void Row::setEntry(const EntryChunkBegin* entry) {
@@ -54,15 +60,18 @@ void Row::setEntry(const EntryChunkBegin* entry) {
   address_->setText(
       QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
   comment_->setText("; " + entry->chunk->comment);
-  text_->setText(
-      QString(entry->chunk->display_name + "::" + entry->chunk->type + " {"));
+  //  text_->setText(
+  //      QString(entry->chunk->display_name + "::" + entry->chunk->type + "
+  //      {"));
+  update();
 }
 
 void Row::setEntry(const EntryChunkEnd* entry) {
   id_ = entry->chunk->id;
   address_->setText(
       QString("%1").arg(entry->chunk->addr_end, 8, 16, QChar('0')));
-  text_->setText("}");
+  //  text_->setText("}");
+  update();
 }
 
 void Row::setEntry(const EntryOverlap* entry) {}

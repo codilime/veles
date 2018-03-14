@@ -146,13 +146,19 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
       }
       default: { break; }
     }
+    row->adjustSize();
+    row->updateGeometry();
+    rows_layout_->update();
   }
 
   // TODO(zpp) row_attach_points_ should be updated when toggling chunk
+  std::cout << "Generating row attach points from so many rows: "
+            << rows_.size() << std::endl;
   std::vector<int> row_attach_points;
   for (auto rowPtr : rows_) {
-    row_attach_points.push_back(static_cast<int>(rowPtr->y()) +
-                                rowPtr->height() / 2);
+    row_attach_points.push_back(rowPtr->y() + rowPtr->height() / 2);
+    std::cout << "Just added attach point of row y = " << rowPtr->y()
+              << " h = " << rowPtr->height() / 2 << std::endl;
   }
 
   auto& g = veles::util::g_mersenne_twister;
