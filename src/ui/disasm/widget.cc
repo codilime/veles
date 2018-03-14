@@ -22,9 +22,6 @@ namespace ui {
 namespace disasm {
 
 Widget::Widget() {
-  setupMocks();
-  getEntrypoint();
-
   setWidgetResizable(true);
   setFont(util::settings::theme::font());
 
@@ -49,6 +46,9 @@ Widget::Widget() {
   auto split_view = new QWidget;
   split_view->setLayout(split_layout);
   setWidget(split_view);
+
+  setupMocks();
+  getEntrypoint();
 }
 
 void Widget::setupMocks() {
@@ -80,10 +80,14 @@ void Widget::getWindow() {
   connect(window_.get(), &Window::dataChanged, this, &Widget::updateRows);
 
   auto entries = window_->entries();
-  generateRows(entries);
+  updateRows();
 }
 
-void Widget::updateRows() { generateRows(window_->entries()); }
+void Widget::updateRows() {
+  generateRows(window_->entries());
+  std::cout << "Update rows" << std::endl;
+  update();
+}
 
 void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
   while (rows_.size() < entries.size()) {
@@ -158,14 +162,16 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
   int max_level = max_level_range(g);
   std::uniform_int_distribution<int> level_range(1, max_level);
 
-  std::uniform_int_distribution<int> row_range(0, rows_.size());
+  std::cout << "Randomizing " << arrow_count << " arrows on " << max_level
+            << " levels on " << rows_.size() << " rows" << std::endl;
+  std::uniform_int_distribution<int> row_range(
+      0, static_cast<int>(rows_.size()) - 1);
   std::vector<Arrow> arrows_vec;
   for (int i = 0; i < arrow_count; i++) {
     arrows_vec.emplace_back(row_range(g), row_range(g), level_range(g));
   }
 
   arrows_->updateArrows(row_attach_points, arrows_vec);
-  update();
 }
 void Widget::toggleColumn(Row::ColumnName column_name) {
   auto rows = this->findChildren<Row*>();

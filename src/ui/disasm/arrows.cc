@@ -22,6 +22,11 @@ namespace veles {
 namespace ui {
 namespace disasm {
 
+const int ArrowsWidget::ARROWHEAD_WIDTH = 10;
+const int ArrowsWidget::ARROWHEAD_HEIGHT = 10;
+const int ArrowsWidget::DEFAULT_WIDTH = 200;
+const int ArrowsWidget::MIN_LEVELS = 8;
+
 Arrow::Arrow(int start_row, int end_row, int level)
     : start_row(start_row), end_row(end_row), level(level) {}
 
@@ -31,12 +36,14 @@ std::ostream& operator<<(std::ostream& out, const Arrow& arrow) {
   return out;
 }
 
-ArrowsWidget::ArrowsWidget(QWidget* parent) : QWidget(parent) {
+ArrowsWidget::ArrowsWidget(QWidget* parent)
+    : QWidget(parent), width_(DEFAULT_WIDTH), height_(0), levels_(MIN_LEVELS) {
   setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
   setFixedSize(width_, height_);
 }
 
 void ArrowsWidget::paintEvent(QPaintEvent* event) {
+  std::lock_guard<std::mutex> lock(paint_change_mutex);
   QPainter painter(this);
 
   auto brush = painter.brush();
@@ -69,6 +76,8 @@ void ArrowsWidget::paintEvent(QPaintEvent* event) {
 
 void ArrowsWidget::updateArrows(std::vector<int> _row_attach_points,
                                 std::vector<Arrow> _arrows) {
+  std::lock_guard<std::mutex> lock(paint_change_mutex);
+
   this->arrows_ = std::move(_arrows);
   this->row_attach_points_ = std::move(_row_attach_points);
 

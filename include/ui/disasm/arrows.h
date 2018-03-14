@@ -19,6 +19,7 @@
 
 #include <iostream>
 
+#include <mutex>
 #include <QWidget>
 #include <QtGui/QPaintEvent>
 #include <QtGui/QPainter>
@@ -72,18 +73,20 @@ class ArrowsWidget : public QWidget {
   void paintEvent(QPaintEvent* event) override;
 
  private:
-  static const int ARROWHEAD_WIDTH = 10;
-  static const int ARROWHEAD_HEIGHT = 10;
-  static const int DEFAULT_WIDTH = 200;
-  static const int MIN_LEVELS = 8;
+  static const int ARROWHEAD_WIDTH;
+  static const int ARROWHEAD_HEIGHT;
+  static const int DEFAULT_WIDTH;
+  static const int MIN_LEVELS;
 
-  int width_ = DEFAULT_WIDTH;
-  int height_ = 0;
-  int levels_ = MIN_LEVELS;
+  int width_;
+  int height_;
+  int levels_;
   int points_per_level_;
 
   std::vector<int> row_attach_points_;
   std::vector<Arrow> arrows_;
+
+  std::mutex paint_change_mutex;
 
   void paintSingleArrow(const Arrow& arrow, QPainter& painter);
 };
