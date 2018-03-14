@@ -98,58 +98,59 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
     connect(r, &Row::chunkCollapse, this, &Widget::chunkCollapse);
   }
 
-  Row* row;
-  while (rows_.size() > entries.size()) {
-    row = rows_.back();
+  while (rows_.size() > 5) {
+    auto row = rows_.back();
     rows_.pop_back();
     rows_layout_->removeWidget(row);
     delete row;
   }
 
-  int indent_level = 0;
-  for (size_t i = 0; i < entries.size(); i++) {
-    auto entry = entries[i];
-    row = static_cast<Row*>(rows_layout_->itemAt(i)->widget());
-
-    switch (entry->type()) {
-      case EntryType::CHUNK_COLLAPSED: {
-        auto* ent = static_cast<EntryChunkCollapsed const*>(entry.get());
-        row->setEntry(ent);
-        row->setIndent(indent_level);
-        break;
-      }
-      case EntryType::CHUNK_BEGIN: {
-        auto* ent = static_cast<EntryChunkBegin const*>(entry.get());
-        row->setEntry(ent);
-        row->setIndent(indent_level);
-        indent_level++;
-        break;
-      }
-      case EntryType::CHUNK_END: {
-        indent_level--;
-        auto* ent = static_cast<EntryChunkEnd const*>(entry.get());
-        row->setEntry(ent);
-        row->setIndent(indent_level);
-        break;
-      }
-      case EntryType::OVERLAP: {
-        auto* ent = static_cast<EntryOverlap const*>(entry.get());
-        row->setEntry(ent);
-        row->setIndent(indent_level);
-        break;
-      }
-      case EntryType::FIELD: {
-        auto* ent = static_cast<EntryField const*>(entry.get());
-        row->setEntry(ent);
-        row->setIndent(indent_level);
-        break;
-      }
-      default: { break; }
-    }
-    row->adjustSize();
-    row->updateGeometry();
-    rows_layout_->update();
-  }
+  for (auto row : rows_) row->text_->setText("Kotek");
+  //
+  //  int indent_level = 0;
+  //  for (size_t i = 0; i < entries.size(); i++) {
+  //    auto entry = entries[i];
+  //    row = static_cast<Row*>(rows_layout_->itemAt(i)->widget());
+  //
+  //    switch (entry->type()) {
+  //      case EntryType::CHUNK_COLLAPSED: {
+  //        auto* ent = static_cast<EntryChunkCollapsed const*>(entry.get());
+  //        row->setEntry(ent);
+  //        row->setIndent(indent_level);
+  //        break;
+  //      }
+  //      case EntryType::CHUNK_BEGIN: {
+  //        auto* ent = static_cast<EntryChunkBegin const*>(entry.get());
+  //        row->setEntry(ent);
+  //        row->setIndent(indent_level);
+  //        indent_level++;
+  //        break;
+  //      }
+  //      case EntryType::CHUNK_END: {
+  //        indent_level--;
+  //        auto* ent = static_cast<EntryChunkEnd const*>(entry.get());
+  //        row->setEntry(ent);
+  //        row->setIndent(indent_level);
+  //        break;
+  //      }
+  //      case EntryType::OVERLAP: {
+  //        auto* ent = static_cast<EntryOverlap const*>(entry.get());
+  //        row->setEntry(ent);
+  //        row->setIndent(indent_level);
+  //        break;
+  //      }
+  //      case EntryType::FIELD: {
+  //        auto* ent = static_cast<EntryField const*>(entry.get());
+  //        row->setEntry(ent);
+  //        row->setIndent(indent_level);
+  //        break;
+  //      }
+  //      default: { break; }
+  //    }
+  //    row->adjustSize();
+  //    row->updateGeometry();
+  //    rows_layout_->update();
+  //  }
 
   // TODO(zpp) row_attach_points_ should be updated when toggling chunk
   std::cout << "Generating row attach points from so many rows: "
@@ -179,6 +180,7 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
 
   arrows_->updateArrows(row_attach_points, arrows_vec);
 }
+
 void Widget::toggleColumn(Row::ColumnName column_name) {
   auto rows = this->findChildren<Row*>();
   std::for_each(rows.begin(), rows.end(),

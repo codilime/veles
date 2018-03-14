@@ -19,84 +19,28 @@
 
 #include "ui/disasm/row.h"
 
+/**
+ * Zdebugować to wszystko :)
+ */
+
 namespace veles {
 namespace ui {
 namespace disasm {
 
 Row::Row() {
-  setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+  //    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   layout_ = new QHBoxLayout();
   layout_->setSpacing(0);
   layout_->setMargin(0);
 
   text_ = new QLabel("Dummy text");
-  comment_ = new QLabel;
-  address_ = new QLabel;
 
-  //  text_->setText("Another dummy text");
-
-  address_->setMaximumWidth(100);
-
-  // layout_->addWidget(address_);
   layout_->addWidget(text_);
-  // layout_->addWidget(comment_);
 
   setLayout(layout_);
 }
 
-void Row::setIndent(int level) { text_->setIndent(level * 20); }
-
-void Row::setEntry(const EntryChunkCollapsed* entry) {
-  id_ = entry->chunk->id;
-  address_->setText(
-      QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
-  comment_->setText("; " + entry->chunk->comment);
-  //  text_->setText(QString(entry->chunk->text_repr->string()));
-  update();
-}
-
-void Row::setEntry(const EntryChunkBegin* entry) {
-  id_ = entry->chunk->id;
-  address_->setText(
-      QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
-  comment_->setText("; " + entry->chunk->comment);
-  //  text_->setText(
-  //      QString(entry->chunk->display_name + "::" + entry->chunk->type + "
-  //      {"));
-  update();
-}
-
-void Row::setEntry(const EntryChunkEnd* entry) {
-  id_ = entry->chunk->id;
-  address_->setText(
-      QString("%1").arg(entry->chunk->addr_end, 8, 16, QChar('0')));
-  //  text_->setText("}");
-  update();
-}
-
-void Row::setEntry(const EntryOverlap* entry) {}
-
-void Row::setEntry(const EntryField* entry) {}
-
-void Row::mouseDoubleClickEvent(QMouseEvent* event) {
-  emit chunkCollapse(this->id_);
-}
-
-void Row::toggleColumn(Row::ColumnName column_name) {
-  switch (column_name) {
-    case Row::ColumnName::Address:
-      address_->setVisible(!address_->isVisible());
-      break;
-    case Row::ColumnName::Chunks:
-      text_->setVisible(!text_->isVisible());
-      break;
-    case Row::ColumnName::Comments:
-      comment_->setVisible(!comment_->isVisible());
-      break;
-    default:
-      break;
-  }
-}
+void Row::toggleColumn(Row::ColumnName column_name) {}
 
 }  // namespace disasm
 }  // namespace ui

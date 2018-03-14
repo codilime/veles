@@ -41,45 +41,11 @@ class Row : public QWidget {
  public:
   explicit Row();
 
-  void setIndent(int level);
-
-  void setEntry(const EntryChunkCollapsed* entry);
-  void setEntry(const EntryChunkBegin* entry);
-  void setEntry(const EntryChunkEnd* entry);
-  void setEntry(const EntryOverlap* entry);
-  void setEntry(const EntryField* entry);
   enum ColumnName { Address, Chunks, Comments };
   void toggleColumn(ColumnName column_name);
 
- protected:
-  void mouseDoubleClickEvent(QMouseEvent* event) override;
-  //  QSize sizeHint() const override {
-  //    QSize size = {address_->width() + text_->width() + comment_->width(),
-  //                  text_->height()};
-  //    std::cout << "SizeHint: " << text_->width() << " x " << text_->height()
-  //              << std::endl;
-  //    return size;
-  //  }
-  //  QSize minimumSizeHint() const override {
-  //    return {address_->width() + text_->width() + comment_->width(),
-  //            text_->height()};
-  //  }
-
-  void paintEvent(QPaintEvent* event) override {
-    QPainter painter(this);
-    painter.fillRect(this->rect(),
-                     QColor(rand() % 256, rand() % 256, rand() % 256));
-    std::cout << "rect: " << rect().width() << " x " << rect().height()
-              << std::endl;
-  }
-
- private:
-  ChunkID id_;
-
-  QLabel* address_;
+ public:
   QLabel* text_;
-  QLabel* comment_;
-
   QHBoxLayout* layout_;
 };
 
