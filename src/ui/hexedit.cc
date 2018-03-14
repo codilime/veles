@@ -964,7 +964,8 @@ void HexEdit::resetCursor() {
   viewport()->update();
 }
 
-void HexEdit::setSelection(qint64 start, qint64 size, bool set_visible) {
+void HexEdit::setSelection(qint64 start, qint64 size, bool set_visible,
+                           bool reset_pos_in_byte) {
   if (start < 0 || dataBytesCount_ == 0) {
     start = 0;
   } else if (start >= dataBytesCount_) {
@@ -983,9 +984,15 @@ void HexEdit::setSelection(qint64 start, qint64 size, bool set_visible) {
     size = -1;
   }
 
+  if (dataBytesCount_ == 0) {
+    size = 0;
+  }
+
   selection_size_ = size;
   current_position_ = start;
-  cursor_pos_in_byte_ = 0;
+  if (reset_pos_in_byte) {
+    cursor_pos_in_byte_ = 0;
+  }
   createChunkDialog_->setRange(selectionStart(), selectionEnd());
 
   if (set_visible) {
@@ -1051,11 +1058,16 @@ void HexEdit::undo() {
   if (!edit_engine_.hasUndo()) {
     return;
   }
-  setSelection(edit_engine_.undo(), 1, /*set_visible=*/true);
+  setSelection(edit_engine_.undo(), 0, /*set_visible=*/true);
   emit editStateChanged(edit_engine_.hasChanges(), edit_engine_.hasUndo());
 }
 
 void HexEdit::processEditEvent(QKeyEvent* event) {
+  if (!in_insert_mode_ && current_position_ >= dataBytesCount_) {
+    // Should be possible only when `dataBytesCount_` == 0.
+    assert(dataBytesCount_ == 0);
+    return;
+  }
   uint8_t key = static_cast<uint8_t>(event->text()[0].toLatin1());
 
   if (current_area_ == WindowArea::ASCII) {
@@ -1102,6 +1114,8 @@ void HexEdit::processEditEvent(QKeyEvent* event) {
     if (cursor_pos_in_byte_ == byteCharsCount_) {
       setSelection(current_position_ + 1, 0);
     } else {
+      setSelection(current_position_, 0, /*set_visible=*/false,
+                   /*reset_pos_in_byte=*/false);
       resetCursor();
     }
     scrollToByte(current_position_, /*minimal_change=*/true);
@@ -1308,7 +1322,7 @@ void HexEdit::newBinData() {
   if (new_position >= dataBytesCount_) {
     new_position = dataBytesCount_ - 1;
   }
-  setSelection(new_position, 1);
+  setSelection(new_position, 0);
   viewport()->update();
 }
 
