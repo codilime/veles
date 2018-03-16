@@ -3,7 +3,7 @@ matrix:
   include:
     - os: osx
       env:
-        - PKG_CONFIG_PATH=/usr/local/opt/qt/lib/pkgconfig
+        - CMAKE_PREFIX_PATH=/usr/local/opt/qt
     - os: linux
       sudo: required
 before_install:
