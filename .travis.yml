@@ -11,6 +11,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install qt5; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python; fi
 script:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker build -f test/build/Dockerfile .; fi
   - env
   - mkdir build
   - cd build
