@@ -13,9 +13,5 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install llvm --with-clang --with-clang-extra-tools; fi
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker build -f test/build/Dockerfile .; fi
-  - env
-  - mkdir build
-  - cd build
-  - cmake ..
-  - make -j2
-  - make lint
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir build ; cd build; cmake .. ; make -j2; make -j2 lint; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cpack -D CPACK_PACKAGE_FILE_NAME=veles-osx -G "DragNDrop;ZIP"; fi
