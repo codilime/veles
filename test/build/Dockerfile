@@ -21,9 +21,7 @@ RUN apt-get install -y \
     git \
     python2.7 \
     python2.7-dev \
-    python3-pip \
-    libgtest-dev \
-    google-mock
+    python3-pip
 RUN update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-5.0 10000
 RUN update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-5.0 10000
 
@@ -31,10 +29,12 @@ RUN pip3 install tox>=2.4.0
 
 COPY . /veles
 
+RUN git clone https://github.com/google/googletest /googletest
+
 RUN rm -rf /veles/build
 RUN mkdir /veles/build
 RUN cd /veles/build \
-	&& cmake -D CMAKE_BUILD_TYPE=Debug .. \
+	&& cmake -D CMAKE_BUILD_TYPE=Debug -D GOOGLETEST_SRC_PATH=/googletest .. \
 	&& cmake --build . -- -j2 \
 	&& cmake --build . --target lint -- -j2 VERBOSE=1 \
 	&& cmake --build . --target format -- -j2 VERBOSE=1 \

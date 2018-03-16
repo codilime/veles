@@ -11,8 +11,8 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install qt5; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install clang-format; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then .travis/install-osx-gtest.sh; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then git clone https://github.com/google/googletest; fi
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker build -f test/build/Dockerfile .; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir build ; cd build; cmake .. ; make -j2; make -j2 lint; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir build ; cd build; cmake .. -D GOOGLETEST_SRC_PATH=../googletest ; make -j2; make -j2 lint; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cpack -D CPACK_PACKAGE_FILE_NAME=veles-osx -G "DragNDrop;ZIP"; fi
