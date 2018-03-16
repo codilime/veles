@@ -660,12 +660,14 @@ if(WIN32)
 
   install(TARGETS main_ui RUNTIME DESTINATION ${WINDOWS_APPLICATION_OUT_DIRECTORY} COMPONENT "application")
   set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "ExecWait '\\\"$INSTDIR\\\\${WINDOWS_APPLICATION_OUT_DIRECTORY}\\\\${VCREDIST_BINARY}\\\" /install /passive'")
-  install(FILES "${OPENSSL_DLL_DIR}/libeay32.dll" "${OPENSSL_DLL_DIR}/ssleay32.dll" DESTINATION ${WINDOWS_APPLICATION_OUT_DIRECTORY} COMPONENT "application")
+  #install(FILES "${OPENSSL_DLL_DIR}/libeay32.dll" "${OPENSSL_DLL_DIR}/ssleay32.dll" DESTINATION ${WINDOWS_APPLICATION_OUT_DIRECTORY} COMPONENT "application")
+  install(FILES "${OPENSSL_DLL_DIR}/libeay32.dll" "${OPENSSL_DLL_DIR}/libssl32.dll" DESTINATION ${WINDOWS_APPLICATION_OUT_DIRECTORY} COMPONENT "application")
   add_custom_command(
       TARGET main_ui POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
           "${OPENSSL_DLL_DIR}/libeay32.dll"
-          "${OPENSSL_DLL_DIR}/ssleay32.dll"
+          #"${OPENSSL_DLL_DIR}/ssleay32.dll"
+          "${OPENSSL_DLL_DIR}/libssl32.dll"
           ${WINDOWS_APPLICATION_OUT_DIRECTORY}
       COMMENT "Copying OpenSSL DLLs"
   )

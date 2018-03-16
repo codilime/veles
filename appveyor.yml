@@ -1,0 +1,23 @@
+version: '{branch}-{build}'
+image: Visual Studio 2017
+configuration: Debug
+platform: x64
+
+before_build:
+- cmd: |-
+    mkdir build
+    cd build
+    cmake .. -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=C:/Qt/5.10.1/msvc2017_64/ -DOPENSSL_DLL_DIR=C:/OpenSSL-Win64/bin/
+#CMAKE_BUILD_TYPE
+#build_script:
+#- cmd: |-
+#    cmake --build .
+
+# build_script:
+# - cmd: |-
+#     dir
+
+build:
+    project: C:/projects/veles/build/VELES.sln
+    verbosity: minimal
+    parallel: true
