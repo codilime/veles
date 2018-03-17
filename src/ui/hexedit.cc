@@ -1077,7 +1077,7 @@ void HexEdit::processEditEvent(QKeyEvent* event) {
     } else {
       setByteValue(current_position_, key);
     }
-    setSelection(current_position_ + 1, 0);
+    setSelection(current_position_ + 1, selection_size_);
   } else {
     uint64_t nibble_val = 0;
     if (key >= '0' && key <= '9') {
@@ -1110,9 +1110,9 @@ void HexEdit::processEditEvent(QKeyEvent* event) {
 
     cursor_pos_in_byte_ += 1;
     if (cursor_pos_in_byte_ == byteCharsCount_) {
-      setSelection(current_position_ + 1, 0);
+      setSelection(current_position_ + 1, selection_size_);
     } else {
-      setSelection(current_position_, 0, /*set_visible=*/false,
+      setSelection(current_position_, selection_size_, /*set_visible=*/false,
                    /*pos_in_byte=*/cursor_pos_in_byte_);
       resetCursor();
     }
