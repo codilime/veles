@@ -65,6 +65,7 @@ class ArrowsWidget : public QWidget {
   Q_OBJECT
 
  public:
+  ArrowsWidget();
   ArrowsWidget(QWidget* parent);
 
   void updateArrows(std::vector<int> row_attach_points,
