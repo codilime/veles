@@ -46,14 +46,21 @@ class Row : public QWidget {
   void setEntry(const EntryChunkEnd* entry);
   void setEntry(const EntryOverlap* entry);
   void setEntry(const EntryField* entry);
+  void setClickable(bool clickable);
   enum ColumnName { Address, Chunks, Comments };
   void toggleColumn(ColumnName column_name);
 
  protected:
   void mouseDoubleClickEvent(QMouseEvent* event) override;
+  void enterEvent(QEvent* event) override;
+  void leaveEvent(QEvent* event) override;
+  void paintEvent(QPaintEvent* event) override;
+  void setText(QString text);
 
  private:
   ChunkID id_;
+
+  bool clickable = false;
 
   QLabel* address_;
   QLabel* text_;

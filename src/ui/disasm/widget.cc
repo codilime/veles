@@ -16,6 +16,7 @@
  */
 
 #include "ui/disasm/widget.h"
+#include <iostream>
 
 namespace veles {
 namespace ui {
@@ -116,6 +117,7 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
         auto* ent = static_cast<EntryChunkCollapsed const*>(entry.get());
         row->setEntry(ent);
         row->setIndent(indent_level);
+        row->setClickable(true);
         break;
       }
       case EntryType::CHUNK_BEGIN: {
@@ -123,6 +125,7 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
         row->setEntry(ent);
         row->setIndent(indent_level);
         indent_level++;
+        row->setClickable(true);
         break;
       }
       case EntryType::CHUNK_END: {
@@ -130,21 +133,27 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
         auto* ent = static_cast<EntryChunkEnd const*>(entry.get());
         row->setEntry(ent);
         row->setIndent(indent_level);
+        row->setClickable(true);
         break;
       }
       case EntryType::OVERLAP: {
         auto* ent = static_cast<EntryOverlap const*>(entry.get());
         row->setEntry(ent);
         row->setIndent(indent_level);
+        row->setClickable(false);
         break;
       }
       case EntryType::FIELD: {
         auto* ent = static_cast<EntryField const*>(entry.get());
         row->setEntry(ent);
         row->setIndent(indent_level);
+        row->setClickable(false);
         break;
       }
-      default: { break; }
+      default: {
+        std::cout << "KOTEK" << std::endl;
+        break;
+      }
     }
   }
 
