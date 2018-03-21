@@ -46,7 +46,7 @@ class Dock : public QWidget {
 
  public slots:
 
-  void dockStateChange(DockState new_state, Dock * child);
+  void childDockStateChange(DockState new_state, Dock *child);
   void setState(DockState state);
 
  signals:
@@ -59,10 +59,11 @@ class Dock : public QWidget {
   QStackedLayout * stacked_layout;
   QSplitter * splitter;
   TabWidget * tabWidget;
-  QPointer<Dock> dock1, dock2;
+  Dock* dock1, *dock2;
 
   void initDocks();
   void clearDocks();
+  void setFromChild(Dock * dock);
 
 };
 

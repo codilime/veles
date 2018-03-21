@@ -8,7 +8,11 @@ TabWidget::TabWidget(QWidget *parent) : QTabWidget(parent) {
   tabBar_ = new TabBar();
   setTabBar(tabBar_);
   setTabsClosable(true);
-  connect(this, &TabWidget::tabCloseRequested, [this](int index){this -> removeTab(index);} );
+  connect(this, &TabWidget::tabCloseRequested, [this](int index){
+    this -> removeTab(index);
+    if (this -> count() == 0)
+      emit emptied();
+  } );
 }
 
 std::vector<std::tuple<QWidget *, QIcon, QString>> TabWidget::tabchildren() const {

@@ -15,6 +15,8 @@ Dock::Dock(QWidget *parent) : QWidget(parent), state(DockState::Empty) {
 
   stacked_layout -> addWidget(tabWidget);
   stacked_layout -> addWidget(splitter);
+
+  connect(tabWidget, &TabWidget::emptied, this, [this](){this -> setState(DockState::Empty);});
 }
 
 
@@ -68,11 +70,16 @@ void Dock::initDocks() {
   dock2 = new Dock;
   splitter -> addWidget(dock1);
   splitter -> addWidget(dock2);
-  connect(dock1, &Dock::stateChanged, [this](DockState new_state){this -> dockStateChange(new_state, this -> dock1);});
-  connect(dock1, &Dock::stateChanged, [this](DockState new_state){this -> dockStateChange(new_state, this -> dock2);});
+  connect(dock1, &Dock::stateChanged, this, [this](DockState new_state){ this->childDockStateChange(new_state, this->dock1);});
+  connect(dock2, &Dock::stateChanged, this, [this](DockState new_state){ this->childDockStateChange(new_state, this->dock2);});
 }
-void Dock::dockStateChange(DockState new_state, Dock *child) {
+
+void Dock::childDockStateChange(DockState new_state, Dock *child) {
   if (new_state == DockState::Empty) {
+    auto sibiling = child == dock1 ? dock2:dock1;
+    setFromChild(sibiling);
+    delete sibiling;
+
     puts("Hey someone is empty!\n");
   } else {
     puts("Hey someone is NOT empty!\n");
@@ -82,7 +89,23 @@ void Dock::dockStateChange(DockState new_state, Dock *child) {
 
 void Dock::setState(Dock::DockState state) {
   Dock::state = state;
+  if (state == DockState::Empty and this -> parent() == nullptr) {
+    this->close();
+    puts("Tab Emptied\n");
+  }
   emit stateChanged(state);
+}
+
+void Dock::setFromChild(Dock *child) {
+  delete stacked_layout;
+  stacked_layout = child -> stacked_layout;
+  this -> setLayout(stacked_layout);
+
+  delete tabWidget;
+  tabWidget = child -> tabWidget;
+  connect(tabWidget, &TabWidget::emptied, this, [this](){this -> setState(DockState::Empty);});
+
+
 }
 
 } //ui
