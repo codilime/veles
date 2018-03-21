@@ -22,7 +22,6 @@ namespace ui {
 namespace disasm {
 
 Widget::Widget() {
-  setWidgetResizable(true);
   setFont(util::settings::theme::font());
 
   arrows_ = new ArrowsWidget(this);
@@ -43,12 +42,32 @@ Widget::Widget() {
   split_layout->addWidget(arrows_, 0, Qt::AlignTop);
   split_layout->addLayout(rows_with_stretch, 0);
 
+  split_layout->setSizeConstraint(QLayout::SetDefaultConstraint);
+
   auto split_view = new QWidget;
   split_view->setLayout(split_layout);
-  setWidget(split_view);
+  setViewport(split_view);
+
+  scroll_bar_ = new QScrollBar();
+  setVerticalScrollBar(scroll_bar_);
 
   setupMocks();
   getEntrypoint();
+}
+
+void Widget::scrollbarChanged(int value) {
+  if (value < 0) {
+    return;
+  }
+  scroll_bar_current_ = value;
+
+  auto pos = blob_->getPosition(value);
+  pos.waitForFinished();
+
+  auto rows_count = static_cast<unsigned int>((rowsCount() / 2) + 2);
+
+  window_->seek(pos.result(), rows_count, rows_count);
+  updateRows(window_->entries());
 }
 
 void Widget::setupMocks() {
@@ -67,29 +86,46 @@ void Widget::setupMocks() {
 
 void Widget::getEntrypoint() {
   entrypoint_ = blob_->getEntrypoint();
-
   entrypoint_watcher_.setFuture(entrypoint_);
-
   connect(&entrypoint_watcher_, &QFutureWatcher<Bookmark>::finished, this,
           &Widget::getWindow);
 }
 
+void Widget::resizeEvent(QResizeEvent*) {
+  scrollbarChanged(scroll_bar_current_);
+}
+
 void Widget::getWindow() {
+  entrypoint_.waitForFinished();
   Bookmark entrypoint = entrypoint_.result();
-  window_ = blob_->createWindow(entrypoint, 1, 1);
-  connect(window_.get(), &Window::dataChanged, this, &Widget::updateRows);
+
+  auto rows_count = static_cast<unsigned int>(rowsCount());
+  std::unique_ptr<Window> w =
+      blob_->createWindow(entrypoint, rows_count, rows_count);
+  window_ = std::make_unique<WindowCache>(std::move(w));
+
+  connect(w.get(), &Window::dataChanged, this, &Widget::renderRows);
+
+  scroll_bar_current_ = static_cast<int>(window_->currentScrollbarIndex());
+  int max_index = static_cast<int>(window_->maxScrollbarIndex());
 
   auto entries = window_->entries();
-  updateRows();
+  updateRows(entries);
+
+  setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOn);
+  scroll_bar_->setValue(scroll_bar_current_);
+  scroll_bar_->setRange(0, max_index);
+  scroll_bar_->setSingleStep(1);
+  scroll_bar_->setPageStep(10);
+  scroll_bar_->setTracking(false);
+
+  connect(verticalScrollBar(), &QScrollBar::valueChanged, this,
+          &Widget::scrollbarChanged);
 }
 
-void Widget::updateRows() {
-  generateRows(window_->entries());
-  std::cout << "Update rows" << std::endl;
-  update();
-}
+void Widget::renderRows() { updateRows(window_->entries()); }
 
-void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
+void Widget::updateRows(std::vector<std::shared_ptr<Entry>> entries) {
   while (rows_.size() < entries.size()) {
     auto r = new Row();
     rows_layout_->addWidget(r, 0, Qt::AlignTop);
@@ -151,8 +187,7 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
   // TODO(zpp) row_attach_points_ should be updated when toggling chunk
   std::vector<int> row_attach_points;
   for (auto rowPtr : rows_) {
-    row_attach_points.push_back(static_cast<int>(rowPtr->y()) +
-                                rowPtr->height() / 2);
+    row_attach_points.push_back(rowPtr->y() + rowPtr->height() / 2);
   }
 
   auto& g = veles::util::g_mersenne_twister;
@@ -172,7 +207,9 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
   }
 
   arrows_->updateArrows(row_attach_points, arrows_vec);
+  viewport()->update();
 }
+
 void Widget::toggleColumn(Row::ColumnName column_name) {
   auto rows = this->findChildren<Row*>();
   std::for_each(rows.begin(), rows.end(),
@@ -182,6 +219,8 @@ void Widget::toggleColumn(Row::ColumnName column_name) {
 void Widget::chunkCollapse(const ChunkID& id) {
   window_->chunkCollapseToggle(id);
 }
+
+int Widget::rowsCount() { return viewport()->height() / ROW_HEIGHT; }
 
 }  // namespace disasm
 }  // namespace ui

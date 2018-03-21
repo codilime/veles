@@ -71,6 +71,9 @@ namespace disasm {
  *
  * Doc written: 28 March 2018, prybicki
  */
+
+#define ROW_HEIGHT 18
+
 class Row : public QWidget {
   Q_OBJECT
 

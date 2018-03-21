@@ -17,8 +17,11 @@
 
 #pragma once
 
+#include <iostream>
+
 #include <QObject>
 #include <QScrollArea>
+#include <QScrollBar>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 
@@ -26,6 +29,7 @@
 #include "ui/disasm/disasm.h"
 #include "ui/disasm/mocks.h"
 #include "ui/disasm/row.h"
+#include "ui/disasm/window.h"
 #include "util/settings/theme.h"
 
 namespace veles {
@@ -37,14 +41,12 @@ namespace disasm {
  * disassembled code column, etc).
  * Responsible for rendering them in right position.
  */
-class Widget : public QScrollArea {
+class Widget : public QAbstractScrollArea {
   Q_OBJECT
-
-  QHBoxLayout* layout_;
 
  public slots:
   void getWindow();
-  void updateRows();
+  void renderRows();
   void chunkCollapse(const ChunkID& id);
   void toggleColumn(Row::ColumnName column_name);
 
@@ -54,19 +56,28 @@ class Widget : public QScrollArea {
   void setupMocks();
   void getEntrypoint();
 
+  void resizeEvent(QResizeEvent* event) override;
+
+ protected:
+  void scrollbarChanged(int value);
+
  private:
-  void generateRows(std::vector<std::shared_ptr<Entry>> entries);
+  int rowsCount();
+  void updateRows(std::vector<std::shared_ptr<Entry>> entries);
 
   QFuture<Bookmark> entrypoint_;
   QFutureWatcher<Bookmark> entrypoint_watcher_;
 
   std::unique_ptr<Blob> blob_;
-  std::unique_ptr<Window> window_;
+  std::unique_ptr<WindowCache> window_;
 
   ArrowsWidget* arrows_;
 
   std::vector<Row*> rows_;
   QVBoxLayout* rows_layout_;
+
+  QScrollBar* scroll_bar_;
+  int scroll_bar_current_;
 };
 
 }  // namespace disasm

@@ -22,9 +22,9 @@ namespace ui {
 namespace disasm {
 namespace mocks {
 
-const int MAX_FILE_CHILDREN = 5;
-const int MAX_SECTION_CHILDREN = 15;
-const int MAX_BASICBLOCK_CHILDREN = 50;
+const int MAX_FILE_CHILDREN = 10;
+const int MAX_SECTION_CHILDREN = 50;
+const int MAX_BASICBLOCK_CHILDREN = 500;
 
 int random_int(int begin, int end) {
   std::uniform_int_distribution<> dis(begin, end);
@@ -349,9 +349,17 @@ void MockWindow::seek(const Bookmark& pos, unsigned prev_n, unsigned next_n) {
   auto entries = backend_->getEntries();
   scrollbar_index_ = backend_->getEntryIndexByPosition(pos);
 
+  std::cerr << "MockWindow::seek: scrollbar_index_ = " << scrollbar_index_
+            << std::endl;
+
   // determine entries to display
   size_t i;
   i = scrollbar_index_ > prev_n ? scrollbar_index_ - prev_n : 0;
+
+  std::cerr << "MockWindow::seek: i.sta = " << i << std::endl;
+  std::cerr << "MockWindow::seek: i.end = " << scrollbar_index_ + next_n + 1
+            << std::endl;
+
   entries_visible_.clear();
   for (; i < entries.size() && i < scrollbar_index_ + next_n + 1; i++) {
     entries_visible_.push_back(std::move(entries[i]));
@@ -411,9 +419,16 @@ QFuture<Bookmark> MockBlob::getEntrypoint() {
 
 QFuture<Bookmark> MockBlob::getPosition(ScrollbarIndex index) {
   return QtConcurrent::run([=]() {
+    ScrollbarIndex i = index;
     auto entries = backend_->getEntries();
-    assert(entries.size() <= index);
-    return entries[index]->pos;
+    if (entries.size() < index) {
+      i = entries.size() - 1;
+    }
+    if (i < 0) {
+      i = 0;
+    }
+
+    return entries[i]->pos;
   });
 }
 

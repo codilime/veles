@@ -244,7 +244,7 @@ struct EntryBitField : Entry {
 
 std::string EntryFieldStringRepresentation(EntryField* field_entry);
 
-using ScrollbarIndex = uint64_t;
+using ScrollbarIndex = int64_t;
 
 class Window : public QObject {
   Q_OBJECT

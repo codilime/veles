@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <iostream>
+
 #include <mutex>
 
 #include "util/random.h"
