@@ -7,6 +7,8 @@
 #include <QtWidgets/QTabBar>
 #include <QtCore/QPointer>
 #include <QtWidgets/QSplitter>
+#include <QtWidgets/QTabWidget>
+#include "ui/docks/tabwidget.h"
 
 namespace veles {
 namespace ui {
@@ -37,13 +39,15 @@ class Dock : public QWidget {
 
   explicit Dock(QWidget *parent = nullptr);
 
-  void addWidget(QWidget * widget, const QString& label, DropArea area = DropArea::Center);
   enum DockState {Empty = 0, Consistent = 1, Divided = 2};
 
-  void setState(DockState state);
+  void addWidget(QWidget * widget, const QString& label, DropArea area);
+  void addWidget(QWidget * widget, const QIcon& Icon, const QString& label, DropArea area);
 
  public slots:
+
   void dockStateChange(DockState new_state, Dock * child);
+  void setState(DockState state);
 
  signals:
   void stateChanged(DockState new_state);
@@ -51,17 +55,12 @@ class Dock : public QWidget {
  private:
   DockState state;
   Qt::Orientation orientation;
-  QVector<QWidget *> stacked_widgets;
 
-  QVBoxLayout * top_layout;
   QStackedLayout * stacked_layout;
   QSplitter * splitter;
-  QTabBar * tab_bar;
+  TabWidget * tabWidget;
   QPointer<Dock> dock1, dock2;
 
-  void updateTabBar(QWidget * added, const QString& label, const QIcon& icon);
-  void updateTabBar(QWidget * added, const QString& label);
-  void updateTabBar();
   void initDocks();
   void clearDocks();
 

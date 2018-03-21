@@ -4,46 +4,43 @@ namespace veles {
 namespace ui {
 
 Dock::Dock(QWidget *parent) : QWidget(parent), state(DockState::Empty) {
-  top_layout = new QVBoxLayout();
-  setLayout(top_layout);
-
-  tab_bar = new QTabBar();
-  tab_bar -> setTabsClosable(true);
-  top_layout -> addWidget(tab_bar);
-  tab_bar -> hide();
-
   stacked_layout = new QStackedLayout;
-  top_layout -> addLayout(stacked_layout);
+  setLayout(stacked_layout);
 
+  tabWidget = new TabWidget(this);
   splitter = new QSplitter(this);
+
+  tabWidget -> hide();
   splitter -> hide();
-  top_layout -> addWidget(splitter);
+
+  stacked_layout -> addWidget(tabWidget);
+  stacked_layout -> addWidget(splitter);
 }
 
 
-void Dock::addWidget(QWidget * widget, DropArea area) {
+void Dock::addWidget(QWidget * widget, const QIcon &icon, const QString &label, DropArea area) {
   switch (this -> state) {
     case DockState::Empty:
       setState(DockState::Consistent);
-      stacked_widgets.push_back(widget);
-      stacked_layout -> addWidget(widget);
-      updateTabBar(widget);
+      tabWidget -> addTab(widget, icon, label);
+      stacked_layout -> setCurrentIndex(0);
+      tabWidget -> show();
       break;
 
     case DockState::Consistent:
       if (area & DropArea::Center) {
-        stacked_layout -> addWidget(widget);
-        stacked_widgets.push_back(widget);
-        updateTabBar(widget);
+        tabWidget -> addTab(widget, icon, label);
       } else {
+        auto first_dock_tabs = tabWidget -> tabchildren();
+        tabWidget -> clear();
+
         initDocks();
-        for (auto child_widget : stacked_widgets) {
-          stacked_layout -> removeWidget(child_widget);
-          dock1 -> addWidget(child_widget);
+        for (auto tab : first_dock_tabs) {
+          dock1 -> addWidget(std::get<0>(tab), std::get<1>(tab), std::get<2>(tab), DropArea::Center);
         }
-        stacked_widgets.clear();
-        dock2 -> addWidget(widget);
+        dock2 -> addWidget(widget, icon, label, area);
         splitter -> show();
+        stacked_layout -> setCurrentIndex(1);
         setState(DockState::Divided);
       }
       break;
@@ -54,24 +51,8 @@ void Dock::addWidget(QWidget * widget, DropArea area) {
   }
 }
 
-void Dock::updateTabBar(QWidget *added, const QString &label, const QIcon &icon) {
-  tab_bar -> addTab(icon, label);
-  // TODO connect close act
-  updateTabBar();
-}
-
-void Dock::updateTabBar(QWidget *added, const QString &label) {
-  tab_bar -> addTab(label);
-  //Todo connnect
-  updateTabBar();
-}
-
-void Dock::updateTabBar() {
-  if (stacked_widgets.size() > 1) {
-    tab_bar->show();
-  } else {
-    tab_bar -> hide();
-  }
+void Dock::addWidget(QWidget *widget, const QString &label, DropArea area) {
+  addWidget(widget, QIcon(), label, area);
 }
 
 void Dock::clearDocks() {
@@ -90,7 +71,6 @@ void Dock::initDocks() {
   connect(dock1, &Dock::stateChanged, [this](DockState new_state){this -> dockStateChange(new_state, this -> dock1);});
   connect(dock1, &Dock::stateChanged, [this](DockState new_state){this -> dockStateChange(new_state, this -> dock2);});
 }
-
 void Dock::dockStateChange(DockState new_state, Dock *child) {
   if (new_state == DockState::Empty) {
     puts("Hey someone is empty!\n");
@@ -99,6 +79,7 @@ void Dock::dockStateChange(DockState new_state, Dock *child) {
   }
 
 }
+
 void Dock::setState(Dock::DockState state) {
   Dock::state = state;
   emit stateChanged(state);

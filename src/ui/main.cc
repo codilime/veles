@@ -77,11 +77,17 @@ int main(int argc, char* argv[]) {
 
   QLabel * label = new QLabel("Ala ma kota");
   QLabel * label2 = new QLabel("Ala ma kota3");
-  auto* dckWin = new veles::ui::Dock;
-  dckWin -> showMaximized();
-  dckWin -> addWidget(label);
-//  dckWin -> addWidget(label2);
-  dckWin -> addWidget(label2, veles::ui::DropArea::Left);
+  auto* splitWin = new veles::ui::Dock;
+  splitWin -> showMaximized();
+  splitWin -> addWidget(label, "", veles::ui::DropArea::Center);
+  splitWin -> addWidget(label2, "labelka 2", veles::ui::DropArea::Left);
+
+  QLabel * label3 = new QLabel("Ala ma kota w Tabach");
+  QLabel * label4 = new QLabel("Ala ma kota3 w Tabach");
+  auto* tabWin = new veles::ui::Dock;
+  tabWin -> showMaximized();
+  tabWin -> addWidget(label3, "", veles::ui::DropArea::Center);
+  tabWin -> addWidget(label4, "labelka 2", veles::ui::DropArea::Center);
 
   auto files = parser.positionalArguments();
   for (const auto& file : files) {
