@@ -43,6 +43,7 @@ class TextRepr {
   TextRepr* parent;
 };
 
+// syntax element
 class Text : public TextRepr {
  public:
   Text(QString text, bool highlight);
