@@ -8,6 +8,7 @@ Dock::Dock(QWidget *parent) : QWidget(parent), state(DockState::Empty) {
   setLayout(stacked_layout);
 
   tabWidget = new TabWidget(this);
+  tabWidget -> setMovable(true);
   splitter = new QSplitter(this);
 
   tabWidget -> hide();
@@ -74,7 +75,7 @@ void Dock::initDocks() {
   connect(dock2, &Dock::stateChanged, this, [this](DockState new_state){ this->childDockStateChange(new_state, this->dock2);});
 }
 
-void Dock::childDockStateChange(DockState new_state, Dock *child) {
+void Dock::childDockStateChange(DockState new_state, QPointer<Dock> child) {
   if (new_state == DockState::Empty) {
     auto sibiling = child == dock1 ? dock2:dock1;
     setFromChild(sibiling);
