@@ -47,6 +47,7 @@ class Widget : public QScrollArea {
   void updateRows();
   void chunkCollapse(const ChunkID& id);
   void toggleColumn(Row::ColumnName column_name);
+  void updateArrows();
 
  public:
   Widget();
@@ -63,10 +64,14 @@ class Widget : public QScrollArea {
   std::unique_ptr<Blob> blob_;
   std::unique_ptr<Window> window_;
 
-  ArrowsWidget* arrows_;
+  ArrowsWidget* arrows_widget_;
 
   std::vector<Row*> rows_;
   QVBoxLayout* rows_layout_;
+
+ protected:
+  void paintEvent(QPaintEvent* event) override;
+  bool event(QEvent* event) override;
 };
 
 }  // namespace disasm

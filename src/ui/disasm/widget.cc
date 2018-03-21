@@ -25,11 +25,12 @@ Widget::Widget() {
   setWidgetResizable(true);
   setFont(util::settings::theme::font());
 
-  arrows_ = new ArrowsWidget(this);
+  arrows_widget_ = new ArrowsWidget;
 
   rows_layout_ = new QVBoxLayout();
   rows_layout_->setSpacing(0);
   rows_layout_->setContentsMargins(0, 0, 0, 0);
+  //  rows_layout_->addStretch();
 
   auto rows_with_stretch = new QVBoxLayout();
   rows_with_stretch->setSpacing(0);
@@ -40,7 +41,7 @@ Widget::Widget() {
   auto split_layout = new QHBoxLayout;
   split_layout->setSpacing(0);
   split_layout->setMargin(0);
-  split_layout->addWidget(arrows_, 0, Qt::AlignTop);
+  split_layout->addWidget(arrows_widget_, 0, Qt::AlignTop);
   split_layout->addLayout(rows_with_stretch, 0);
 
   auto split_view = new QWidget;
@@ -85,7 +86,6 @@ void Widget::getWindow() {
 
 void Widget::updateRows() {
   generateRows(window_->entries());
-  std::cout << "Update rows" << std::endl;
   update();
 }
 
@@ -147,7 +147,9 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
       default: { break; }
     }
   }
+}
 
+void Widget::updateArrows() {
   // TODO(zpp) row_attach_points_ should be updated when toggling chunk
   std::vector<int> row_attach_points;
   for (auto rowPtr : rows_) {
@@ -171,8 +173,9 @@ void Widget::generateRows(std::vector<std::shared_ptr<Entry>> entries) {
     arrows_vec.emplace_back(row_range(g), row_range(g), level_range(g));
   }
 
-  arrows_->updateArrows(row_attach_points, arrows_vec);
+  arrows_widget_->updateArrows(row_attach_points, arrows_vec);
 }
+
 void Widget::toggleColumn(Row::ColumnName column_name) {
   auto rows = this->findChildren<Row*>();
   std::for_each(rows.begin(), rows.end(),
@@ -181,6 +184,22 @@ void Widget::toggleColumn(Row::ColumnName column_name) {
 
 void Widget::chunkCollapse(const ChunkID& id) {
   window_->chunkCollapseToggle(id);
+}
+void Widget::paintEvent(QPaintEvent* event) {
+  static bool first = true;
+  if (first) {
+    updateArrows();
+    first = false;
+  }
+  QAbstractScrollArea::paintEvent(event);
+}
+
+bool Widget::event(QEvent* event) {
+  if (event->type() == QEvent::Paint) {
+    paintEvent(dynamic_cast<QPaintEvent*>(event));
+    return true;
+  }
+  return QScrollArea::event(event);
 }
 
 }  // namespace disasm

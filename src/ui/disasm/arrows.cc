@@ -36,6 +36,8 @@ std::ostream& operator<<(std::ostream& out, const Arrow& arrow) {
   return out;
 }
 
+ArrowsWidget::ArrowsWidget() : ArrowsWidget(nullptr) {}
+
 ArrowsWidget::ArrowsWidget(QWidget* parent)
     : QWidget(parent), width_(DEFAULT_WIDTH), height_(0), levels_(MIN_LEVELS) {
   setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
@@ -54,8 +56,6 @@ void ArrowsWidget::paintEvent(QPaintEvent* event) {
   auto pen = painter.pen();
   pen.setColor(palette().color(QPalette::Text));
   painter.setPen(pen);
-
-  painter.fillRect(event->rect(), palette().color(QPalette::AlternateBase));
 
   for (const auto& arrow : arrows_) {
     if (arrow.level == 0) {
