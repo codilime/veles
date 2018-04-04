@@ -350,7 +350,7 @@ endif()
 
 if(WIN32 AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   # Don't create console window on non-debug builds.
-  set(GUI_TYPE WIN32 include/ui/disasm/richlabel.h)
+  set(GUI_TYPE WIN32)
 endif()
 
 # Exe: Main executable
