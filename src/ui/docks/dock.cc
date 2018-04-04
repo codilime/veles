@@ -17,7 +17,10 @@ Dock::Dock(QWidget *parent) : QWidget(parent), state(DockState::Empty) {
   stacked_layout -> addWidget(tabWidget);
   stacked_layout -> addWidget(splitter);
 
-  connect(tabWidget, &TabWidget::emptied, this, [this](){this -> setState(DockState::Empty);});
+  connect(tabWidget, &TabWidget::emptied, this, [this](){
+    if (this -> state == DockState::Consistent)
+      this -> setState(DockState::Empty);
+  });
 }
 
 
@@ -34,6 +37,7 @@ void Dock::addWidget(QWidget * widget, const QIcon &icon, const QString &label, 
       if (area & DropArea::Center) {
         tabWidget -> addTab(widget, icon, label);
       } else {
+        setState(DockState::Divided);
         auto first_dock_tabs = tabWidget -> tabchildren();
         tabWidget -> clear();
 
@@ -44,7 +48,6 @@ void Dock::addWidget(QWidget * widget, const QIcon &icon, const QString &label, 
         dock2 -> addWidget(widget, icon, label, area);
         splitter -> show();
         stacked_layout -> setCurrentIndex(1);
-        setState(DockState::Divided);
       }
       break;
 
@@ -80,6 +83,7 @@ void Dock::childDockStateChange(DockState new_state, QPointer<Dock> child) {
     auto sibiling = child == dock1 ? dock2:dock1;
     setFromChild(sibiling);
     delete sibiling;
+    this -> state = DockState::Consistent;
 
     puts("Hey someone is empty!\n");
   } else {
@@ -104,10 +108,60 @@ void Dock::setFromChild(Dock *child) {
 
   delete tabWidget;
   tabWidget = child -> tabWidget;
-  connect(tabWidget, &TabWidget::emptied, this, [this](){this -> setState(DockState::Empty);});
-
+  connect(tabWidget, &TabWidget::emptied, this, [this](){
+    if (this -> state == DockState::Consistent)
+      this -> setState(DockState::Empty);
+  });
 
 }
+
+
+void Dock::mousePressEvent(QMouseEvent *event) {
+  QWidget::mousePressEvent(event);
+  if (tabWidget -> tabBar() -> rect().contains(event -> pos())) {
+    puts("Dzień dobry");
+    dragged_tab_index = tabWidget -> tabBar() -> tabAt(event -> pos());
+    if (dragged_tab_index > -1) {
+      auto tab_title = tabWidget -> tabBar() -> tabText(dragged_tab_index);
+      dragger = new QLabel(tab_title, this, Qt::Window | Qt::FramelessWindowHint);
+      dragger -> hide();
+      drag_start = event -> globalPos();
+    }
+  }
+}
+
+void Dock::mouseMoveEvent(QMouseEvent *event) {
+  QWidget::mouseMoveEvent(event);
+  if (dragger) {
+    auto covered = event -> globalPos() - drag_start;
+    auto indicator = QPoint(std::abs(covered.x()), std::abs(covered.y())) - detach_boundary;
+    if (std::max(indicator.x(), indicator.y()) > 0 and !dragger -> isVisible()) {
+      dragger -> show();
+      dragged_tab_index = tabWidget -> currentIndex();
+      dragged_widget = tabWidget -> widget(dragged_tab_index);
+      tabWidget -> removeTab(dragged_tab_index);
+    }
+    dragger->move(event->globalPos());
+
+  }
+}
+
+
+void Dock::mouseReleaseEvent(QMouseEvent * event) {
+    QWidget::mouseReleaseEvent(event);
+    if (dragger) {
+        if (dragged_widget) {
+            auto* tabWin = new veles::ui::Dock;
+            tabWin -> showMaximized();
+            tabWin -> addWidget(dragged_widget, QIcon(":/images/show_hex_edit.png"), dragger->text(), veles::ui::DropArea::Center);
+            dragged_widget->show();
+          }
+      dragger->setParent(nullptr);
+      delete dragger;
+
+    }
+  }
+
 
 } //ui
 } //veles

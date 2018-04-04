@@ -8,6 +8,9 @@
 #include <QtCore/QPointer>
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QTabWidget>
+#include <QtWidgets/QLabel>
+#include <QMouseEvent>
+
 #include "ui/docks/tabwidget.h"
 
 namespace veles {
@@ -43,6 +46,10 @@ class Dock : public QWidget {
 
   void addWidget(QWidget * widget, const QString& label, DropArea area);
   void addWidget(QWidget * widget, const QIcon& Icon, const QString& label, DropArea area);
+  void mousePressEvent(QMouseEvent *event);
+  void mouseMoveEvent(QMouseEvent *);
+  void mouseReleaseEvent(QMouseEvent *);
+
 
  public slots:
 
@@ -60,6 +67,14 @@ class Dock : public QWidget {
   QSplitter * splitter;
   TabWidget * tabWidget;
   QPointer<Dock> dock1, dock2;
+
+    //dragginh
+    QPointer<QLabel> dragger;
+    QPoint drag_start;
+    const QPoint detach_boundary = QPoint(50, 50);
+    int dragged_tab_index = -1;
+    QWidget * dragged_widget;
+
 
   void initDocks();
   void clearDocks();

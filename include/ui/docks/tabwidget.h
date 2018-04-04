@@ -13,6 +13,8 @@ class TabWidget : public QTabWidget {
  public:
   explicit TabWidget(QWidget *parent = nullptr);
   std::vector<std::tuple<QWidget *, QIcon, QString>> tabchildren() const;
+  void deleteTab(int index);
+  void tabRemoved(int index) override;
 
  signals:
   void emptied();
