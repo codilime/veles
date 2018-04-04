@@ -132,8 +132,7 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
       cursor_visible_(false),
       in_insert_mode_(false),
       edit_engine_(dataModel_) {
-  auto font = util::settings::theme::font();
-  setFont(font);
+  setFont(util::settings::theme::fixedFont());
 
   connect(dataModel_, &FileBlobModel::newBinData, this, &HexEdit::newBinData);
   connect(dataModel_, &FileBlobModel::dataChanged, this, &HexEdit::dataChanged);

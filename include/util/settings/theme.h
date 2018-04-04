@@ -38,6 +38,7 @@ QColor chunkBackground(int color_index);
 QColor editedBackground();
 QColor byteColor(uint8_t byte);
 QFont font();
+QFont fixedFont();
 
 }  // namespace theme
 }  // namespace settings

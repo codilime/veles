@@ -308,7 +308,7 @@ void HexEditWidget::createSelectionInfo() {
 
   layout->addWidget(change_edit_mode_button_);
   selection_label_ = new QLabel;
-  selection_label_->setFont(util::settings::theme::font());
+  selection_label_->setFont(util::settings::theme::fixedFont());
   selection_label_->setText("");
   selection_label_->setTextInteractionFlags(Qt::TextSelectableByMouse |
                                             Qt::TextSelectableByKeyboard);
