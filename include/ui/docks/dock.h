@@ -67,11 +67,10 @@ class Dock : public QWidget {
   TabWidget * tabWidget;
   QPointer<Dock> dock1, dock2;
 
-    //dragginh
-    QPoint drag_start;
-    const QPoint detach_boundary = QPoint(50, 50);
-    int dragged_tab_index = -1;
-
+  //dragginh
+  QPoint drag_start;
+  const QPoint detach_boundary = QPoint(50, 50);
+  int dragged_tab_index = -1;
 
   void initDocks();
   void clearDocks();

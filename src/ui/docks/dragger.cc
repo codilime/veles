@@ -1,3 +1,4 @@
+#include <QtWidgets/QtWidgets>
 #include "ui/docks/dragger.h"
 
 namespace veles {
@@ -20,10 +21,20 @@ void Dragger::mouseMoveEvent(QMouseEvent * event) {
 
 void Dragger::mouseReleaseEvent(QMouseEvent * event) {
   releaseMouse();
-  auto* tabWin = new veles::ui::Dock;
-  tabWin -> showMaximized();
-  tabWin -> addWidget(widget, tabIcon, tabText, veles::ui::DropArea::Center);
-  this -> close();
+  auto* droppedOverWidget = qApp -> widgetAt(event -> globalX() - 20, event -> globalY() - 20);
+  while (droppedOverWidget && qobject_cast<Dock*>(droppedOverWidget) == 0) {
+    droppedOverWidget = droppedOverWidget -> parentWidget();
+  }
+  if (!droppedOverWidget) {
+    auto *tabWin = new veles::ui::Dock;
+    tabWin->showMaximized();
+    tabWin->addWidget(widget, tabIcon, tabText, veles::ui::DropArea::Center);
+  } else {
+    Dock * droppedOverDock = qobject_cast<Dock *>(droppedOverWidget);
+    droppedOverDock -> addWidget(widget, tabIcon, tabText, DropArea::Left);
+  }
+  this->close();
+
 }
 
 } //ui
