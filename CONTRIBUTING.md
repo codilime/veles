@@ -62,7 +62,7 @@ We have some rules as to where to place new files:
   to have their own folder
 
 <br><br>
-Thanks for taking your time to contribute to Veles!
+Thanks for taking the time to contribute to Veles!
 
 [Google C++ Style Guide]: <https://google.github.io/styleguide/cppguide.html>
 [ms_guide]: <https://support.microsoft.com/en-us/help/13443/windows-which-operating-system>
