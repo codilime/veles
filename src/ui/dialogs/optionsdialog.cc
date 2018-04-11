@@ -68,6 +68,9 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 OptionsDialog::~OptionsDialog() { delete ui; }
 
 void OptionsDialog::show() {
+  ui->fontComboBox->setCurrentFont(util::settings::theme::font());
+  ui->fixedFontComboBox->setCurrentFont(util::settings::theme::fixedFont());
+
   ui->colorsBox->setCurrentText(util::settings::theme::theme());
   Qt::CheckState checkState = Qt::Unchecked;
   if (util::settings::hexedit::resizeColumnsToWindowWidth()) {
@@ -86,6 +89,10 @@ void OptionsDialog::show() {
 }
 
 void OptionsDialog::resetToDefaults() {
+  ui->fontComboBox->setCurrentFont(util::settings::theme::defaultFont());
+  ui->fixedFontComboBox->setCurrentFont(
+      util::settings::theme::defaultFixedFont());
+
   Qt::CheckState auto_columns_checked =
       util::settings::hexedit::defaultResizeColumnsToWindowWidth()
           ? Qt::Checked
@@ -106,11 +113,15 @@ void OptionsDialog::resetToDefaults() {
 
 void OptionsDialog::applyChanges() {
   bool restart_needed = false;
+
   QString newTheme = ui->colorsBox->currentText();
   if (newTheme != util::settings::theme::theme()) {
     veles::util::settings::theme::setTheme(newTheme);
     restart_needed = true;
   }
+
+  util::settings::theme::setFont(ui->fontComboBox->currentFont());
+  util::settings::theme::setFixedFont(ui->fixedFontComboBox->currentFont());
 
   util::settings::hexedit::setResizeColumnsToWindowWidth(
       ui->hexColumnsAutoCheckBox->checkState() == Qt::Checked);

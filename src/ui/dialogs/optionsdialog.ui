@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>297</width>
-    <height>329</height>
+    <height>344</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,6 +20,38 @@
       <string>App</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <item row="7" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLabel" name="fixedFontlabel">
+          <property name="text">
+           <string>Fixed-width font</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFontComboBox" name="fixedFontComboBox">
+          <property name="fontFilters">
+           <set>QFontComboBox::MonospacedFonts</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="3" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="fontLabel">
+          <property name="text">
+           <string>UI font</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFontComboBox" name="fontComboBox"/>
+        </item>
+       </layout>
+      </item>
       <item row="2" column="0">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
