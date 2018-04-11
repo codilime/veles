@@ -89,6 +89,8 @@ int main(int argc, char* argv[]) {
   tabWin -> addWidget(label3, QIcon(":/images/show_hex_edit.png"), "", veles::ui::DropArea::Center);
   tabWin -> addWidget(label4, QIcon(":/images/show_hex_edit.png"), "labelka 2", veles::ui::DropArea::Center);
 
+  printf("Compiled with Qt Version %s\n", QT_VERSION_STR);
+
   auto files = parser.positionalArguments();
   for (const auto& file : files) {
     mainWin->addFile(file);

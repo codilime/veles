@@ -6,7 +6,7 @@
 #include <QtWidgets/QStackedLayout>
 #include <QtWidgets/QTabBar>
 #include <QtCore/QPointer>
-#include <QtWidgets/QSplitter>
+#include <QSplitter>
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QLabel>
 #include <QMouseEvent>
@@ -46,8 +46,13 @@ class Dock : public QWidget {
 
   void addWidget(QWidget * widget, const QString& label, DropArea area);
   void addWidget(QWidget * widget, const QIcon& Icon, const QString& label, DropArea area);
-  void mousePressEvent(QMouseEvent *event);
-  void mouseMoveEvent(QMouseEvent *);
+  void mousePressEvent(QMouseEvent *event) override;
+  void mouseMoveEvent(QMouseEvent *) override;
+  void showTabs();
+  void showSplitter();
+  void becomeParent(Dock * dock1, Dock * dock2, Qt::Orientation orientation);
+  void replaceDock(Dock * replaced, Dock * replacee);
+  Dock * parentDock();
 
 
  public slots:
@@ -72,11 +77,8 @@ class Dock : public QWidget {
   const QPoint detach_boundary = QPoint(50, 50);
   int dragged_tab_index = -1;
 
-  void initDocks();
-  void clearDocks();
-  void setFromChild(Dock * dock);
-  int alalala = 0;
-
+  void printSituation();
+  void printSingle(int indent);
 };
 
 }
@@ -89,7 +91,7 @@ class Dock : public QWidget {
  *  - nie ma type safety na Dockach -> Docki czy mają 0,1,2 elementy są dalej tym samym typem. Ciężko się tym zarządza
  *
  *  Rozwiązanie: zrobić różne klasy do docków które mają jeden lub 0 elementów i dla już podzielonych docków.
- *  
+ *
  *
  *
  */

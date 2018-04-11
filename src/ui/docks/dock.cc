@@ -1,5 +1,5 @@
 #include <iostream>
-#include <include/ui/docks/dragger.h>
+#include "ui/docks/dragger.h"
 #include "ui/docks/dock.h"
 
 namespace veles {
@@ -25,6 +25,9 @@ Dock::Dock(QWidget *parent) : QWidget(parent), state(DockState::Empty) {
   });
 }
 
+void Dock::addWidget(QWidget *widget, const QString &label, DropArea area) {
+  addWidget(widget, QIcon(), label, area);
+}
 
 void Dock::addWidget(QWidget * widget, const QIcon &icon, const QString &label, DropArea area) {
   switch (this -> state) {
@@ -39,17 +42,15 @@ void Dock::addWidget(QWidget * widget, const QIcon &icon, const QString &label, 
       if (area & DropArea::Center) {
         tabWidget -> addTab(widget, icon, label);
       } else {
-        setState(DockState::Divided);
-        auto first_dock_tabs = tabWidget -> tabchildren();
-        tabWidget -> clear();
-
-        initDocks();
-        for (auto tab : first_dock_tabs) {
-          dock1 -> addWidget(std::get<0>(tab), std::get<1>(tab), std::get<2>(tab), DropArea::Center);
-        }
-        dock2 -> addWidget(widget, icon, label, area);
-        splitter -> show();
-        stacked_layout -> setCurrentIndex(1);
+        Dock * newParent = new Dock();
+        std::cout<<"Created new parent: "<<newParent<<std::endl;
+        Dock * newDock = new Dock();
+        Dock * oldParent = parentDock();
+        if (oldParent)
+          oldParent -> replaceDock(this, newParent);
+        newDock -> addWidget(widget, icon, label, area);
+        newParent -> becomeParent(this, newDock, Qt::Vertical);
+        newParent -> show();
       }
       break;
 
@@ -57,41 +58,7 @@ void Dock::addWidget(QWidget * widget, const QIcon &icon, const QString &label, 
       puts("Nie można tak!\n");
       break;
   }
-}
-
-void Dock::addWidget(QWidget *widget, const QString &label, DropArea area) {
-  addWidget(widget, QIcon(), label, area);
-}
-
-void Dock::clearDocks() {
-  if (dock1)
-    delete dock1;
-  if (dock2)
-    delete dock2;
-}
-
-void Dock::initDocks() {
-  clearDocks();
-  dock1 = new Dock;
-  dock2 = new Dock;
-  splitter -> addWidget(dock1);
-  splitter -> addWidget(dock2);
-  connect(dock1, &Dock::stateChanged, this, [this](DockState new_state){ this->childDockStateChange(new_state, this->dock1);});
-  connect(dock2, &Dock::stateChanged, this, [this](DockState new_state){ this->childDockStateChange(new_state, this->dock2);});
-}
-
-void Dock::childDockStateChange(DockState new_state, QPointer<Dock> child) {
-  if (new_state == DockState::Empty) {
-    auto sibiling = child == dock1 ? dock2:dock1;
-    setFromChild(sibiling);
-    delete sibiling;
-    this -> state = DockState::Consistent;
-
-    puts("Hey someone is empty!\n");
-  } else {
-    puts("Hey someone is NOT empty!\n");
-  }
-
+  printSituation();
 }
 
 void Dock::setState(Dock::DockState state) {
@@ -103,20 +70,29 @@ void Dock::setState(Dock::DockState state) {
   emit stateChanged(state);
 }
 
-void Dock::setFromChild(Dock *child) {
-  delete stacked_layout;
-  stacked_layout = child -> stacked_layout;
-  this -> setLayout(stacked_layout);
-
-  delete tabWidget;
-  tabWidget = child -> tabWidget;
-  connect(tabWidget, &TabWidget::emptied, this, [this](){
-    if (this -> state == DockState::Consistent)
-      this -> setState(DockState::Empty);
-  });
-
+void Dock::childDockStateChange(DockState new_state, QPointer<Dock> child) {
+  if (new_state == DockState::Empty) {
+    std::cout<<"Child dock "<<child.data()<<" of "<<this<<" emptied\n";
+    auto sibiling = child == dock1 ? dock2:dock1;
+    Dock * parentDo = parentDock();
+    if (parentDo) {
+      puts("Parent dock exists");
+      printSituation();
+      parentDo->replaceDock(this, sibiling);
+      parentDo->printSituation();
+    }
+    else {
+      puts("NO PARENT");
+      printSituation();
+      sibiling -> setParent(nullptr);
+      sibiling -> show();
+      //todo(before merge):
+      //sibiling -> move(this -> globalX(), globalY())'
+      this -> close();
+      sibiling -> printSituation();
+    }
+  }
 }
-
 
 void Dock::mousePressEvent(QMouseEvent *event) {
   if (tabWidget -> tabBar() -> rect().contains(event -> pos())) {
@@ -140,6 +116,105 @@ void Dock::mouseMoveEvent(QMouseEvent *event) {
   }
 }
 
+void Dock::showTabs() {
+  stacked_layout -> setCurrentIndex(0);
+}
+
+void Dock::showSplitter() {
+  stacked_layout -> setCurrentIndex(1);
+}
+
+void Dock::becomeParent(Dock *dock1, Dock *dock2, Qt::Orientation orientation) {
+  state = DockState::Divided;
+  this -> dock1 = dock1;
+  this  -> dock2 = dock2;
+  splitter -> addWidget(dock1);
+  splitter -> addWidget(dock2);
+  splitter -> setOrientation(orientation);
+  splitter -> show();
+  showSplitter();
+  connect(dock1, &Dock::stateChanged, this, [this](DockState new_state){ this->childDockStateChange(new_state, this->dock1);});
+  connect(dock2, &Dock::stateChanged, this, [this](DockState new_state){ this->childDockStateChange(new_state, this->dock2);});
+}
+
+void Dock::replaceDock(Dock *replaced, Dock *replacee) {
+  // todo(malpunek): Might want to use QSplitter::replaceWidget when Veles will switch to qt >= 5.9
+
+  int index = splitter -> indexOf(replaced);
+  splitter -> insertWidget(index, replacee);
+  replaced -> setParent(nullptr);
+  std::cout<<"Disconnect "<<replaced<<" and "<<this<<std::endl;
+  disconnect(replaced, 0, this, 0);
+
+  if (dock1 == replaced)
+    dock1 = replacee;
+  else
+    dock2 = replacee;
+  connect(replacee, &Dock::stateChanged, this, [this, replacee](DockState new_state){ this->childDockStateChange(new_state, replacee);});
+
+}
+
+Dock *Dock::parentDock() {
+  QWidget * result = parentWidget();
+  while (result && qobject_cast<Dock *>(result) == 0)
+    result = result -> parentWidget();
+  return qobject_cast<Dock *>(result);
+}
+
+void Dock::printSituation() {
+  Dock * top = this;
+  while (top -> parentDock()) top = top -> parentDock();
+  std::cout<<"Printing Situation\n\n";
+  top -> printSingle(0);
+}
+
+void printSpaces(int amount) {
+  for (int i = 0; i < amount; i++)
+    std::cout<<"  ";
+}
+
+void Dock::printSingle(int indent) {
+  printSpaces(indent);
+  std::cout<<"I am "<<this<<" ";
+  if (state == DockState::Empty) {
+    std::cout<<"Empty"<<std::endl;
+  } else if (state == DockState::Consistent) {
+    std::cout<<"I have a widget";
+    QLabel * label = qobject_cast<QLabel *>(this -> tabWidget -> widget(0));
+    if (label)
+      std::cout<<label -> text() . toStdString();
+    std::cout<<std::endl;
+  } else {
+    std::cout<<"I have children"<<std::endl;
+    if (dock1.data() != splitter -> widget(0)) {
+      printSpaces(indent);
+      std::cout << "Alert1! " << dock1.data() << " " << splitter->widget(0)<<std::endl;
+      dock1->printSingle(indent + 2);
+      if (qobject_cast<Dock *>(splitter->widget(0)))
+        qobject_cast<Dock *>(splitter->widget(0)) -> printSingle(indent + 2);
+      else {
+        printSpaces(indent);
+        std::cout << "NONE!" << std::endl;
+      }
+    } else {
+      dock1->printSingle(indent + 2);
+    }
+    if (dock2.data() != splitter -> widget(1)) {
+      printSpaces(indent);
+      std::cout<<"Alert2! " <<dock2.data()<<" "<<splitter -> widget(1)<<std::endl;
+      dock2 -> printSingle(indent + 2);
+      if (qobject_cast<Dock *>(splitter->widget(1)))
+        qobject_cast<Dock *>(splitter->widget(1)) -> printSingle(indent + 2);
+      else {
+        printSpaces(indent);
+        std::cout << "NONE!" << std::endl;
+      }
+    } else {
+      dock2->printSingle(indent + 2);
+    }
+    std::cout<<std::endl;
+  }
+}
 
 } //ui
 } //veles
