@@ -37,19 +37,19 @@ static QVector<QColor> chunkBackgroundColors_ = {
     QColor("#FFEB3B"), QColor("#FFAB91"), QColor("#FFC107"),
     QColor("#81C784"), QColor("#B2FF59"), QColor("#A7FFEB")};
 
-QString currentTheme() {
+QString theme() {
   QSettings settings;
-  return settings.value("theme", getDefaultTheme()).toString();
+  return settings.value("theme", defaultTheme()).toString();
 }
 
-void setCurrentTheme(const QString& theme) {
+void setTheme(const QString& theme) {
   QSettings settings;
   settings.setValue("theme", theme);
 }
 
 QStringList availableThemes() { return {"normal", g_dark_theme_str}; }
 
-const QString& getDefaultTheme() {
+const QString& defaultTheme() {
   static const QString default_theme{g_dark_theme_str};
   return default_theme;
 }
@@ -79,7 +79,7 @@ QPalette palette() {
 }
 
 QStyle* createStyle() {
-  if (currentTheme() == g_dark_theme_str) {
+  if (theme() == g_dark_theme_str) {
     return QStyleFactory::create("Fusion");
   }
   return nullptr;
@@ -134,7 +134,7 @@ QFont fixedFont() {
 
 static bool isDark() {
   if (!isDarkCached_) {
-    isDark_ = currentTheme() == g_dark_theme_str;
+    isDark_ = theme() == g_dark_theme_str;
     isDarkCached_ = true;
   }
   return isDark_;
