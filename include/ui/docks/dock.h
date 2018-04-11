@@ -81,3 +81,15 @@ class Dock : public QWidget {
 
 }
 } //veles
+
+
+/*
+ *
+ * Problem:
+ *  - nie ma type safety na Dockach -> Docki czy mają 0,1,2 elementy są dalej tym samym typem. Ciężko się tym zarządza
+ *
+ *  Rozwiązanie: zrobić różne klasy do docków które mają jeden lub 0 elementów i dla już podzielonych docków.
+ *  
+ *
+ *
+ */
