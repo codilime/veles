@@ -38,50 +38,32 @@ const QString Row::blank_style_ = "color: white";
 const QString Row::string_style_ = "color: #dd0";
 
 Row::Row() {
+  setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Fixed);
+  setFixedHeight(20);
+
   layout_ = new QHBoxLayout();
-  layout_->setSpacing(10);
+  layout_->setSpacing(0);
   layout_->setMargin(0);
 
   address_ = new QLabel;
-  address_->setStyleSheet(address_style_);
-  address_->setMaximumWidth(100);
+  address_->setFixedWidth(120);
 
   comment_ = new QLabel;
-  comment_->setStyleSheet(comment_style_);
 
   text_layout_ = new QHBoxLayout();
-  indent_label_ = new QLabel;
-  indent_label_->setSizePolicy(QSizePolicy::Policy::Fixed,
-                               QSizePolicy::Policy::Fixed);
-  text_layout_->addWidget(indent_label_);
+  text_layout_->setSpacing(0);
   clearText();  // clean text_layout_
 
-  text_widget_ = new QWidget;
-  text_widget_->setFixedWidth(42 * 20);
-  text_widget_->setLayout(text_layout_);
-
-  // here is magic: try to change following number and observe what happens
-  // i think reason may be that we have somewhat ill-formed hierarchy of widgets and
-  // layouts
-  // starting in main widget, through columns, rows, text and its elements
-  // i think we need to learn very well which objects influences the size of the
-  // others
-  // and then construct this hierarchy properly
-  // ** other reason (more likely imho) is that we have missing sizeHint() in a few places,
-  // namely here in Row and in text_widget_
-  // lack of sizeHint() may cause weird qt behavior
-  text_widget_->setFixedHeight(42);
-
   layout_->addWidget(address_);
-  layout_->addWidget(text_widget_);
+  layout_->addLayout(text_layout_);
+  layout_->addStretch();
   layout_->addWidget(comment_);
 
   setLayout(layout_);
 }
 
 void Row::setIndent(int level) {
-  dynamic_cast<QLabel*>(text_layout_->itemAt(0)->widget())
-      ->setIndent(level * 20);
+  text_layout_->setContentsMargins(level * 20,0,0,0);
 }
 
 template <typename T>
@@ -96,7 +78,7 @@ bool Row::is(TextRepr* ptr) {
 
 void Row::clearText() {
   QLayoutItem* item;
-  while ((item = text_layout_->takeAt(1)) != nullptr) delete item;
+  while ((item = text_layout_->takeAt(0)) != nullptr) delete item;
   setIndent(0);
 }
 
@@ -113,8 +95,8 @@ void Row::generateTextLabels(TextRepr* repr, QBoxLayout& layout) {
   }
 
   QLabel* label = new QLabel;
-  label->setText(repr->string());
   label->setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
+  label->setText(repr->string());
 
   if (is<Keyword>(repr)) {
     Keyword* keyword = to<Keyword>(repr);
@@ -175,18 +157,22 @@ void Row::setEntry(const EntryChunkCollapsed* entry) {
 }
 
 void Row::setEntry(const EntryChunkBegin* entry) {
+  clearText();
   address_->setText(
       QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
-  //  comment_->setText("; " + entry->chunk->comment);
-  dynamic_cast<QLabel*>(text_layout_->itemAt(0)->widget())
-      ->setText(QString(entry->chunk->display_name + "::" + entry->chunk->type +
-                        " {"));
+  comment_->setText("; " + entry->chunk->comment);
+  auto label = new QLabel();
+  label->setText(QString(entry->chunk->display_name + "::" + entry->chunk->type + " {"));
+  text_layout_->addWidget(label);
 }
 
 void Row::setEntry(const EntryChunkEnd* entry) {
   address_->setText(
       QString("%1").arg(entry->chunk->addr_end, 8, 16, QChar('0')));
-  dynamic_cast<QLabel*>(text_layout_->itemAt(0)->widget())->setText("}");
+  clearText();
+  auto label = new QLabel();
+  label->setText("}");
+  text_layout_->addWidget(label);
 }
 
 void Row::setEntry(const EntryOverlap* entry) {}
