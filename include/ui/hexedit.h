@@ -183,6 +183,7 @@ class HexEdit : public QAbstractScrollArea {
   util::EditEngine edit_engine_;
 
   void recalculateValues();
+  void resetFontCache();
   void initParseMenu();
   void adjustBytesPerRowToWindowSize();
   QRect bytePosToRect(qint64 pos, bool ascii = false, qint64 char_pos = 0);
@@ -230,6 +231,7 @@ class HexEdit : public QAbstractScrollArea {
   void resetCursor();
 
  private slots:
+  void reloadSettings();
   void copyToClipboard(util::encoders::IEncoder* enc = nullptr);
   void pasteFromClipboard(util::encoders::IDecoder* enc = nullptr);
 };

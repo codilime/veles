@@ -58,8 +58,7 @@ const QColor& defaultColorBegin() {
 }
 
 QColor colorBegin() {
-  auto v =
-      QSettings().value("visualization.color_begin", defaultColorBegin());
+  auto v = QSettings().value("visualization.color_begin", defaultColorBegin());
   return v.value<QColor>();
 }
 

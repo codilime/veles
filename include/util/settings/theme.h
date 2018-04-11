@@ -26,10 +26,10 @@ namespace util {
 namespace settings {
 namespace theme {
 
-QString currentTheme();
-void setCurrentTheme(const QString& theme);
 QStringList availableThemes();
 const QString& defaultTheme();
+QString theme();
+void setTheme(const QString& theme);
 
 QPalette palette();
 QStyle* createStyle();
@@ -37,8 +37,12 @@ QColor highlightingColor();
 QColor chunkBackground(int color_index);
 QColor editedBackground();
 QColor byteColor(uint8_t byte);
+QFont defaultFont();
 QFont font();
+void setFont(const QFont& font);
+QFont defaultFixedFont();
 QFont fixedFont();
+void setFixedFont(const QFont& font);
 
 }  // namespace theme
 }  // namespace settings

@@ -17,8 +17,11 @@
 #include "util/settings/theme.h"
 
 #include <QFont>
+#include <QFontDatabase>
 #include <QSettings>
 #include <QStyleFactory>
+
+#include "ui/velesapplication.h"
 
 namespace veles {
 namespace util {
@@ -37,6 +40,13 @@ static QVector<QColor> chunkBackgroundColors_ = {
     QColor("#FFEB3B"), QColor("#FFAB91"), QColor("#FFC107"),
     QColor("#81C784"), QColor("#B2FF59"), QColor("#A7FFEB")};
 
+QStringList availableThemes() { return {"normal", g_dark_theme_str}; }
+
+const QString& defaultTheme() {
+  static const QString default_theme{g_dark_theme_str};
+  return default_theme;
+}
+
 QString theme() {
   QSettings settings;
   return settings.value("theme", defaultTheme()).toString();
@@ -45,13 +55,6 @@ QString theme() {
 void setTheme(const QString& theme) {
   QSettings settings;
   settings.setValue("theme", theme);
-}
-
-QStringList availableThemes() { return {"normal", g_dark_theme_str}; }
-
-const QString& defaultTheme() {
-  static const QString default_theme{g_dark_theme_str};
-  return default_theme;
 }
 
 QPalette palette() {
@@ -119,9 +122,24 @@ QColor byteColor(uint8_t byte) {
   return colorInvertedIfDark(QColor(red, green, blue));
 }
 
-QFont font() { return QFont{}; }
+QFont defaultFont() {
+  return QFontDatabase::systemFont(QFontDatabase::GeneralFont);
+}
 
-QFont fixedFont() {
+QFont font() {
+  QSettings settings;
+  QFont res;
+  res.fromString(settings.value("font", defaultFont()).toString());
+  return res;
+}
+
+void setFont(const QFont& font) {
+  QSettings settings;
+  settings.setValue("font", font.toString());
+  veles::ui::VelesApplication::instance()->setFont(font);
+}
+
+QFont defaultFixedFont() {
 #if defined(Q_OS_WIN32)
   return QFont("Courier", 10);
 #elif defined(Q_OS_MAC)
@@ -130,6 +148,18 @@ QFont fixedFont() {
 #else
   return QFont("Monospace", 10);
 #endif
+}
+
+QFont fixedFont() {
+  QSettings settings;
+  QFont res;
+  res.fromString(settings.value("fixedFont", defaultFixedFont()).toString());
+  return res;
+}
+
+void setFixedFont(const QFont& font) {
+  QSettings settings;
+  settings.setValue("fixedFont", font.toString());
 }
 
 static bool isDark() {

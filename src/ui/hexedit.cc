@@ -26,6 +26,7 @@
 #include <QPainter>
 #include <QScrollBar>
 
+#include "ui/velesapplication.h"
 #include "util/encoders/factory.h"
 #include "util/misc.h"
 #include "util/random.h"
@@ -42,6 +43,19 @@ static const qint64 verticalAreaSpaceWidth_ = 15;
 static const qint64 startMargin_ = 10;
 static const qint64 endMargin_ = 10;
 static const qint64 cursor_blink_time_ = 500;
+
+void HexEdit::resetFontCache() {
+  for (size_t i = 0; i < array_size(hex_text_cache_); i++) {
+    hex_text_cache_[i].setPerformanceHint(QStaticText::ModerateCaching);
+    hex_text_cache_[i].setText(hexRepresentationFromByte(i));
+    hex_text_cache_[i].setTextFormat(Qt::PlainText);
+  }
+  for (size_t i = 0; i < array_size(ascii_text_cache_); i++) {
+    ascii_text_cache_[i].setPerformanceHint(QStaticText::ModerateCaching);
+    ascii_text_cache_[i].setText(asciiRepresentationFromByte(i));
+    ascii_text_cache_[i].setTextFormat(Qt::PlainText);
+  }
+}
 
 void HexEdit::recalculateValues() {
   charWidth_ = fontMetrics().width(QLatin1Char('2'));
@@ -132,8 +146,6 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
       cursor_visible_(false),
       in_insert_mode_(false),
       edit_engine_(dataModel_) {
-  setFont(util::settings::theme::fixedFont());
-
   connect(dataModel_, &FileBlobModel::newBinData, this, &HexEdit::newBinData);
   connect(dataModel_, &FileBlobModel::dataChanged, this, &HexEdit::dataChanged);
 
@@ -142,19 +154,10 @@ HexEdit::HexEdit(FileBlobModel* dataModel, QItemSelectionModel* selectionModel,
             &HexEdit::modelSelectionChanged);
   }
 
-  recalculateValues();
-
-  // Initialize hex & ASCII text cache.
-  for (size_t i = 0; i < array_size(hex_text_cache_); i++) {
-    hex_text_cache_[i].setPerformanceHint(QStaticText::ModerateCaching);
-    hex_text_cache_[i].setText(hexRepresentationFromByte(i));
-    hex_text_cache_[i].setTextFormat(Qt::PlainText);
-  }
-  for (size_t i = 0; i < array_size(ascii_text_cache_); i++) {
-    ascii_text_cache_[i].setPerformanceHint(QStaticText::ModerateCaching);
-    ascii_text_cache_[i].setText(asciiRepresentationFromByte(i));
-    ascii_text_cache_[i].setTextFormat(Qt::PlainText);
-  }
+  reloadSettings();
+  connect(ui::VelesApplication::instance(),
+          &ui::VelesApplication::settingsChanged, this,
+          &HexEdit::reloadSettings);
 
   connect(verticalScrollBar(), &QAbstractSlider::valueChanged, this,
           &HexEdit::recalculateValues);
@@ -1161,6 +1164,14 @@ void HexEdit::setSelectionEnd(qint64 bytePos) {
 
 void HexEdit::mouseMoveEvent(QMouseEvent* event) {
   setSelectionEnd(pointToBytePos(event->pos()));
+}
+
+void HexEdit::reloadSettings() {
+  // Be careful about dependencies here! The order of these calls is very
+  // important.
+  setFont(util::settings::theme::fixedFont());
+  recalculateValues();
+  resetFontCache();
 }
 
 void HexEdit::copyToClipboard(util::encoders::IEncoder* enc) {
