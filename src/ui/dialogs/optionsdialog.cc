@@ -68,7 +68,7 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 OptionsDialog::~OptionsDialog() { delete ui; }
 
 void OptionsDialog::show() {
-  ui->colorsBox->setCurrentText(util::settings::theme::currentTheme());
+  ui->colorsBox->setCurrentText(util::settings::theme::theme());
   Qt::CheckState checkState = Qt::Unchecked;
   if (util::settings::hexedit::resizeColumnsToWindowWidth()) {
     checkState = Qt::Checked;
@@ -87,28 +87,28 @@ void OptionsDialog::show() {
 
 void OptionsDialog::resetToDefaults() {
   Qt::CheckState auto_columns_checked =
-      util::settings::hexedit::getDefaultResizeColumnsToWindowWidth()
+      util::settings::hexedit::defaultResizeColumnsToWindowWidth()
           ? Qt::Checked
           : Qt::Unchecked;
 
   ui->hexColumnsAutoCheckBox->setCheckState(auto_columns_checked);
   ui->hexColumnsSpinBox->setValue(
-      util::settings::hexedit::getDefaultColumnsNumber());
+      util::settings::hexedit::defaultColumnsNumber());
   ui->hexColumnsSpinBox->setEnabled(auto_columns_checked != Qt::Checked);
 
-  ui->colorsBox->setCurrentText(util::settings::theme::getDefaultTheme());
+  ui->colorsBox->setCurrentText(util::settings::theme::defaultTheme());
 
   color_3d_begin_button_->setColor(
-      util::settings::visualization::getDefaultColorBegin());
+      util::settings::visualization::defaultColorBegin());
   color_3d_end_button_->setColor(
-      util::settings::visualization::getDefaultColorEnd());
+      util::settings::visualization::defaultColorEnd());
 }
 
 void OptionsDialog::applyChanges() {
   bool restart_needed = false;
   QString newTheme = ui->colorsBox->currentText();
-  if (newTheme != util::settings::theme::currentTheme()) {
-    veles::util::settings::theme::setCurrentTheme(newTheme);
+  if (newTheme != util::settings::theme::theme()) {
+    veles::util::settings::theme::setTheme(newTheme);
     restart_needed = true;
   }
 

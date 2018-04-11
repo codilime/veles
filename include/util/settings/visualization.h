@@ -32,11 +32,11 @@ void setAutoBrightness(bool autoBrightness);
 int brightness();
 void setBrightness(int brightness);
 
-const QColor& getDefaultColorBegin();
+const QColor& defaultColorBegin();
 QColor colorBegin();
 void setColorBegin(const QColor& color);
 
-const QColor& getDefaultColorEnd();
+const QColor& defaultColorEnd();
 QColor colorEnd();
 void setColorEnd(const QColor& color);
 

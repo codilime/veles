@@ -52,14 +52,14 @@ void setBrightness(int brightness) {
   QSettings().setValue("visualization.brightness", brightness);
 }
 
-const QColor& getDefaultColorBegin() {
+const QColor& defaultColorBegin() {
   static const QColor color_begin{255, 127, 0};
   return color_begin;
 }
 
 QColor colorBegin() {
   auto v =
-      QSettings().value("visualization.color_begin", getDefaultColorBegin());
+      QSettings().value("visualization.color_begin", defaultColorBegin());
   return v.value<QColor>();
 }
 
@@ -67,13 +67,13 @@ void setColorBegin(const QColor& color) {
   QSettings().setValue("visualization.color_begin", color);
 }
 
-const QColor& getDefaultColorEnd() {
+const QColor& defaultColorEnd() {
   static const QColor color_end{0, 127, 255};
   return color_end;
 }
 
 QColor colorEnd() {
-  auto v = QSettings().value("visualization.color_end", getDefaultColorEnd());
+  auto v = QSettings().value("visualization.color_end", defaultColorEnd());
   return v.value<QColor>();
 }
 
