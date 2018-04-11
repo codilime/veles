@@ -85,7 +85,6 @@ class Row : public QWidget {
 
  protected:
   void mouseDoubleClickEvent(QMouseEvent* event) override;
-  void paintEvent(QPaintEvent* event) override;
 
  private:
   ChunkID id_;

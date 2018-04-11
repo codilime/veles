@@ -1,0 +1,53 @@
+veles--ui--disasm--Widget QLabel {
+    font: 12px 'monospace';
+}
+
+veles--ui--disasm--Widget QLabel#address {
+  color: purple;
+  font: bold;
+}
+
+veles--ui--disasm--Widget QLabel#opcode {
+  color: green;
+}
+
+veles--ui--disasm--Widget QLabel#modifier {
+  color: cyan;
+}
+
+veles--ui--disasm--Widget QLabel#label {
+  color: purple;
+}
+
+veles--ui--disasm--Widget QLabel#text {
+  color: cyan;
+}
+
+veles--ui--disasm--Widget QLabel#texthighlighted {
+  color: cyan;
+}
+
+veles--ui--disasm--Widget QLabel#texthighlighted {
+  color: cyan;
+}
+
+veles--ui--disasm--Widget QLabel#register {
+  color: red;
+}
+
+veles--ui--disasm--Widget QLabel#comment {
+  color: blue;
+  font: italic bold;
+}
+
+veles--ui--disasm--Widget QLabel#number {
+  color: #dd0;
+}
+
+veles--ui--disasm--Widget QLabel#blank {
+  color: white;
+}
+
+veles--ui--disasm--Widget QLabel#string {
+  color: #dd0;
+}

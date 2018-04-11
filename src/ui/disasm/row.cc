@@ -24,18 +24,6 @@ namespace veles {
 namespace ui {
 namespace disasm {
 
-// mwk style
-const QString Row::address_style_ = "color: purple; font: bold";
-const QString Row::opcode_style_ = "color: green";
-const QString Row::modifier_style_ = "color: cyan";
-const QString Row::label_style_ = "color: purple";
-const QString Row::text_style_ = "color: cyan";
-const QString Row::text_style_highlighted_ = "color: cyan; font: bold";
-const QString Row::register_style_ = "color: red";
-const QString Row::comment_style_ = "color: blue; font: italic bold";
-const QString Row::number_style_ = "color: #dd0";
-const QString Row::blank_style_ = "color: white";
-const QString Row::string_style_ = "color: #dd0";
 
 Row::Row() {
   setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Fixed);
@@ -47,8 +35,10 @@ Row::Row() {
 
   address_ = new QLabel;
   address_->setFixedWidth(120);
+  address_->setObjectName("address");
 
   comment_ = new QLabel;
+  comment_->setObjectName("comment");
 
   text_layout_ = new QHBoxLayout();
   text_layout_->setSpacing(0);
@@ -77,8 +67,13 @@ bool Row::is(TextRepr* ptr) {
 }
 
 void Row::clearText() {
-  QLayoutItem* item;
-  while ((item = text_layout_->takeAt(0)) != nullptr) delete item;
+  while (text_layout_->count() > 0) {
+      auto item = text_layout_->takeAt(0);
+      if (item->widget()) {
+          delete item->widget();
+      }
+      delete item;
+  }
   setIndent(0);
 }
 
@@ -101,42 +96,43 @@ void Row::generateTextLabels(TextRepr* repr, QBoxLayout& layout) {
   if (is<Keyword>(repr)) {
     Keyword* keyword = to<Keyword>(repr);
 
-    if (keyword->keywordType() == KeywordType::OPCODE)
-      label->setStyleSheet(opcode_style_);
-    if (keyword->keywordType() == KeywordType::MODIFIER)
-      label->setStyleSheet(modifier_style_);
-    if (keyword->keywordType() == KeywordType::LABEL)
-      label->setStyleSheet(label_style_);
-    if (keyword->keywordType() == KeywordType::REGISTER)
-      label->setStyleSheet(register_style_);
+    if (keyword->keywordType() == KeywordType::OPCODE) {
+      label->setObjectName("opcode");
+    }
+    if (keyword->keywordType() == KeywordType::MODIFIER) {
+      label->setObjectName("modifier");
+    }
+    if (keyword->keywordType() == KeywordType::LABEL) {
+      label->setObjectName("label");
+    }
+    if (keyword->keywordType() == KeywordType::REGISTER) {
+      label->setObjectName("register");
+    }
     layout.addWidget(label, Qt::AlignLeft);
     return;
   }
 
   if (is<Text>(repr)) {
     Text* text = to<Text>(repr);
-    label->setStyleSheet(text->highlight() ? text_style_highlighted_
-                                           : text_style_);
+    label->setObjectName("text");
     layout.addWidget(label, Qt::AlignLeft);
     return;
   }
 
   if (is<Blank>(repr)) {
-    label->setStyleSheet(blank_style_);
+    label->setObjectName("blank");
     layout.addWidget(label, Qt::AlignLeft);
     return;
   }
 
   if (is<Number>(repr)) {
-    label->setStyleSheet(number_style_);
+    label->setObjectName("number");
     layout.addWidget(label, Qt::AlignLeft);
     return;
   }
 
   if (is<String>(repr)) {
-    // assuming String::string() returns representation already enclosed in
-    // quotes
-    label->setStyleSheet(string_style_);
+    label->setObjectName("string");
     layout.addWidget(label, Qt::AlignLeft);
     return;
   }
@@ -154,6 +150,7 @@ void Row::setEntry(const EntryChunkCollapsed* entry) {
 
   TextRepr* text_repr = entry->chunk->text_repr.get();
   generateTextLabels(text_repr, *text_layout_);
+  this->id_ = entry->chunk->id;
 }
 
 void Row::setEntry(const EntryChunkBegin* entry) {
@@ -164,6 +161,7 @@ void Row::setEntry(const EntryChunkBegin* entry) {
   auto label = new QLabel();
   label->setText(QString(entry->chunk->display_name + "::" + entry->chunk->type + " {"));
   text_layout_->addWidget(label);
+  this->id_ = entry->chunk->id;
 }
 
 void Row::setEntry(const EntryChunkEnd* entry) {
@@ -173,6 +171,7 @@ void Row::setEntry(const EntryChunkEnd* entry) {
   auto label = new QLabel();
   label->setText("}");
   text_layout_->addWidget(label);
+  this->id_ = entry->chunk->id;
 }
 
 void Row::setEntry(const EntryOverlap* entry) {}
@@ -200,18 +199,6 @@ void Row::toggleColumn(Row::ColumnName column_name) {
     default:
       break;
   }
-}
-void Row::paintEvent(QPaintEvent* event) {
-  QPainter painter(this);
-
-  // debug frame around text_widget_
-  // really worth to see it
-//  auto rect = event->rect();
-//  rect.setWidth(rect.width() - 1);
-//  rect.setHeight(rect.height() - 1);
-//  painter.setBrush(Qt::NoBrush);
-//  painter.setPen(Qt::blue);
-//  painter.drawRect(rect);
 }
 
 }  // namespace disasm

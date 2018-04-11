@@ -65,6 +65,12 @@ int main(int argc, char* argv[]) {
   qRegisterMetaType<veles::client::NetworkClient::ConnectionStatus>(
       "veles::client::NetworkClient::ConnectionStatus");
 
+  // Load stylesheet
+  QFile styleFile(":/style.qss");
+  styleFile.open(QFile::ReadOnly);
+  QString style(styleFile.readAll());
+  app.setStyleSheet(style);
+
   QCommandLineParser parser;
   parser.addHelpOption();
   parser.addVersionOption();
