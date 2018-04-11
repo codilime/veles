@@ -21,7 +21,12 @@ void Dragger::mouseMoveEvent(QMouseEvent * event) {
 
 void Dragger::mouseReleaseEvent(QMouseEvent * event) {
   releaseMouse();
-  auto* droppedOverWidget = qApp -> widgetAt(event -> globalX() - 20, event -> globalY() - 20);
+  auto windows = qApp -> allWindows();
+  for (auto window: windows) {
+    if (window -> mapToGlobal(0,0))
+
+  }
+//      -> widgetAt(event -> globalX() - 20, event -> globalY() - 20);
   while (droppedOverWidget && qobject_cast<Dock*>(droppedOverWidget) == 0) {
     droppedOverWidget = droppedOverWidget -> parentWidget();
   }
