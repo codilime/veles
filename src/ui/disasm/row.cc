@@ -194,7 +194,7 @@ void Row::toggleColumn(Row::ColumnName column_name) {
                     ->isVisible()));
       break;
     case Row::ColumnName::Comments:
-      //      comment_->setVisible(!comment_->isVisible());
+      comment_->setVisible(!comment_->isVisible());
       break;
     default:
       break;
