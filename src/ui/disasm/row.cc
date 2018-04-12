@@ -95,17 +95,21 @@ void Row::generateTextLabels(TextRepr* repr, QBoxLayout* layout) {
   if (is<Keyword>(repr)) {
     Keyword* keyword = to<Keyword>(repr);
 
-    if (keyword->keywordType() == KeywordType::OPCODE) {
-      label->setObjectName("opcode");
-    }
-    if (keyword->keywordType() == KeywordType::MODIFIER) {
-      label->setObjectName("modifier");
-    }
-    if (keyword->keywordType() == KeywordType::LABEL) {
-      label->setObjectName("label");
-    }
-    if (keyword->keywordType() == KeywordType::REGISTER) {
-      label->setObjectName("register");
+    switch (keyword->keywordType()) {
+      case KeywordType::OPCODE:
+        label->setObjectName("opcode");
+        break;
+      case KeywordType::MODIFIER:
+        label->setObjectName("modifier");
+        break;
+      case KeywordType::LABEL:
+        label->setObjectName("label");
+        break;
+      case KeywordType::REGISTER:
+        label->setObjectName("register");
+        break;
+      default:
+        break;
     }
     layout->addWidget(label, Qt::AlignLeft);
     return;
