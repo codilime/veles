@@ -25,6 +25,8 @@
 #include "kaitai/png_parser.h"
 #include "kaitai/quicktime_mov_parser.h"
 #include "kaitai/zip_parser.h"
+#include "parser/uniff.h"
+#include "parser/unogg.h"
 #include "parser/unpng.h"
 #include "parser/unpyc.h"
 
@@ -64,6 +66,8 @@ dbif::ObjectHandle makeSubBlob(const dbif::ObjectHandle& parent,
 
 QList<Parser*> createAllParsers() {
   QList<Parser*> res;
+  res.append(new IffParser());
+  res.append(new OggParser());
   res.append(new PycParser());
   res.append(new PngParser());
   res.append(new kaitai::ZipParser());
