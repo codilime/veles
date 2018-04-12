@@ -24,7 +24,6 @@ namespace veles {
 namespace ui {
 namespace disasm {
 
-
 Row::Row() {
   setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Fixed);
   setFixedHeight(20);
@@ -53,7 +52,7 @@ Row::Row() {
 }
 
 void Row::setIndent(int level) {
-  text_layout_->setContentsMargins(level * 20,0,0,0);
+  text_layout_->setContentsMargins(level * 20, 0, 0, 0);
 }
 
 template <typename T>
@@ -68,16 +67,16 @@ bool Row::is(TextRepr* ptr) {
 
 void Row::clearText() {
   while (text_layout_->count() > 0) {
-      auto item = text_layout_->takeAt(0);
-      if (item->widget()) {
-          delete item->widget();
-      }
-      delete item;
+    auto item = text_layout_->takeAt(0);
+    if (item->widget()) {
+      delete item->widget();
+    }
+    delete item;
   }
   setIndent(0);
 }
 
-void Row::generateTextLabels(TextRepr* repr, QBoxLayout *layout) {
+void Row::generateTextLabels(TextRepr* repr, QBoxLayout* layout) {
   if (repr == nullptr)
     std::cerr << "Row is sad, row can't into null pointers in TextRepr ;("
               << std::endl;
@@ -159,7 +158,8 @@ void Row::setEntry(const EntryChunkBegin* entry) {
       QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
   comment_->setText("; " + entry->chunk->comment);
   auto label = new QLabel();
-  label->setText(QString(entry->chunk->display_name + "::" + entry->chunk->type + " {"));
+  label->setText(
+      QString(entry->chunk->display_name + "::" + entry->chunk->type + " {"));
   text_layout_->addWidget(label);
   this->id_ = entry->chunk->id;
 }

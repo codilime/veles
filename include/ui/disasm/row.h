@@ -29,7 +29,6 @@ namespace veles {
 namespace ui {
 namespace disasm {
 
-
 /**
  * Row consists of three elements: address label, text widget, comment label.
  * They are placed in this order in horizontal box layout.
@@ -38,27 +37,36 @@ namespace disasm {
  *
  * Row content is set (by main widget) via overloaded setEntry(*) methods.
  * Text repr interpretation is done whenever EntryChunkCollapsed is provided,
- * because for this moment the most of visually important chunks are of this type.
+ * because for this moment the most of visually important chunks are of this
+ * type.
  *
  * Result of text repr interpretation is stored as labels in text_layout_.
  * The very first QLabel in this layout is for making indent and
  * it is not deleted by calling clearText(). The indent is zeroed of course.
  *
- * The interpretation is done inside method generateTextLabels, which establishes
+ * The interpretation is done inside method generateTextLabels, which
+ * establishes
  * subclass type of given TextRepr and appends new label with appropriate style
  * to given layout (text_layout_). In case of Sublist (subclass of TextRepr) it
  * calls itself recursively for all children.
  *
- * Adding text_layout_ directly to row's main horizontal layout results in misaligned
- * comment labels. Therefore text_layout_ is enclosed with text_widget_ so we can set
- * fixed width and therefore align all comment labels. Unfortunately text_widget_
- * causes much worse visual effect. See comment in Row ctor and debug frames (see paintEvent).
+ * Adding text_layout_ directly to row's main horizontal layout results in
+ * misaligned
+ * comment labels. Therefore text_layout_ is enclosed with text_widget_ so we
+ * can set
+ * fixed width and therefore align all comment labels. Unfortunately
+ * text_widget_
+ * causes much worse visual effect. See comment in Row ctor and debug frames
+ * (see paintEvent).
  *
- * To implement clickable elements (registers) we need to create class inheriting QLabel
- * and implement handlers for enterEvent and leaveEvent which will change appearance of the label.
+ * To implement clickable elements (registers) we need to create class
+ * inheriting QLabel
+ * and implement handlers for enterEvent and leaveEvent which will change
+ * appearance of the label.
  * To change cursor to prompt clickability following code may be used:
  * label->setCursor(Qt::PointingHandCursor);
- * It will cause that cursor will automatically change whenever cursor is above this label.
+ * It will cause that cursor will automatically change whenever cursor is above
+ * this label.
  * The same solution was used on branch wip/disasm/clickables
  *
  * Doc written: 28 March 2018, prybicki
@@ -97,11 +105,12 @@ class Row : public QWidget {
 
   QHBoxLayout* layout_;
 
-  // deletes all QLabels from text_layout except indent widget, which indent is zeroed.
+  // deletes all QLabels from text_layout except indent widget, which indent is
+  // zeroed.
   void clearText();
 
   // traverse repr tree and append labels with correct style to the layout
-  void generateTextLabels(TextRepr* repr, QBoxLayout *layout);
+  void generateTextLabels(TextRepr* repr, QBoxLayout* layout);
 
   // wrapper for dynamic_cast to T
   template <typename T>
