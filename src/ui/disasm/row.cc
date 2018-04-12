@@ -201,10 +201,7 @@ void Row::toggleColumn(Row::ColumnName column_name) {
       address_->setVisible(!address_->isVisible());
       break;
     case Row::ColumnName::Chunks:
-      dynamic_cast<QLabel*>(text_layout_->itemAt(0)->widget())
-          ->setVisible(
-              !(dynamic_cast<QLabel*>(text_layout_->itemAt(0)->widget())
-                    ->isVisible()));
+      text_widget_->setVisible(!text_widget_->isVisible());
       break;
     case Row::ColumnName::Comments:
       comment_->setVisible(!comment_->isVisible());
