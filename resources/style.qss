@@ -3,12 +3,12 @@ veles--ui--disasm--Widget QLabel {
 }
 
 veles--ui--disasm--Widget QLabel#address {
-  color: purple;
+  color: #ECF0F1;
   font: bold;
 }
 
 veles--ui--disasm--Widget QLabel#opcode {
-  color: green;
+  color: #3498DB;
 }
 
 veles--ui--disasm--Widget QLabel#modifier {
@@ -32,11 +32,11 @@ veles--ui--disasm--Widget QLabel#texthighlighted {
 }
 
 veles--ui--disasm--Widget QLabel#register {
-  color: red;
+  color: #E74C3C;
 }
 
 veles--ui--disasm--Widget QLabel#comment {
-  color: blue;
+  color: #2980B9;
   font: italic bold;
 }
 
