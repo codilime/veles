@@ -77,7 +77,7 @@ void Row::clearText() {
   setIndent(0);
 }
 
-void Row::generateTextLabels(TextRepr* repr, QBoxLayout& layout) {
+void Row::generateTextLabels(TextRepr* repr, QBoxLayout *layout) {
   if (repr == nullptr)
     std::cerr << "Row is sad, row can't into null pointers in TextRepr ;("
               << std::endl;
@@ -108,32 +108,32 @@ void Row::generateTextLabels(TextRepr* repr, QBoxLayout& layout) {
     if (keyword->keywordType() == KeywordType::REGISTER) {
       label->setObjectName("register");
     }
-    layout.addWidget(label, Qt::AlignLeft);
+    layout->addWidget(label, Qt::AlignLeft);
     return;
   }
 
   if (is<Text>(repr)) {
     Text* text = to<Text>(repr);
     label->setObjectName("text");
-    layout.addWidget(label, Qt::AlignLeft);
+    layout->addWidget(label, Qt::AlignLeft);
     return;
   }
 
   if (is<Blank>(repr)) {
     label->setObjectName("blank");
-    layout.addWidget(label, Qt::AlignLeft);
+    layout->addWidget(label, Qt::AlignLeft);
     return;
   }
 
   if (is<Number>(repr)) {
     label->setObjectName("number");
-    layout.addWidget(label, Qt::AlignLeft);
+    layout->addWidget(label, Qt::AlignLeft);
     return;
   }
 
   if (is<String>(repr)) {
     label->setObjectName("string");
-    layout.addWidget(label, Qt::AlignLeft);
+    layout->addWidget(label, Qt::AlignLeft);
     return;
   }
 
@@ -149,7 +149,7 @@ void Row::setEntry(const EntryChunkCollapsed* entry) {
   clearText();
 
   TextRepr* text_repr = entry->chunk->text_repr.get();
-  generateTextLabels(text_repr, *text_layout_);
+  generateTextLabels(text_repr, text_layout_);
   this->id_ = entry->chunk->id;
 }
 

@@ -101,7 +101,7 @@ class Row : public QWidget {
   void clearText();
 
   // traverse repr tree and append labels with correct style to the layout
-  void generateTextLabels(TextRepr* repr, QBoxLayout& layout);
+  void generateTextLabels(TextRepr* repr, QBoxLayout *layout);
 
   // wrapper for dynamic_cast to T
   template <typename T>
