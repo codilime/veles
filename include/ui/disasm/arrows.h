@@ -65,7 +65,7 @@ class ArrowsWidget : public QWidget {
   Q_OBJECT
 
  public:
-  ArrowsWidget(QWidget* parent);
+  explicit ArrowsWidget(QWidget* parent);
 
   void updateArrows(std::vector<int> row_attach_points,
                     std::vector<Arrow> arrows);
@@ -88,7 +88,7 @@ class ArrowsWidget : public QWidget {
 
   std::mutex paint_change_mutex;
 
-  void paintSingleArrow(const Arrow& arrow, QPainter& painter);
+  void paintSingleArrow(const Arrow& arrow, QPainter* painter);
 };
 
 }  // namespace disasm

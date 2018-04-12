@@ -70,7 +70,7 @@ void ArrowsWidget::paintEvent(QPaintEvent* event) {
       continue;
     }
 
-    paintSingleArrow(arrow, painter);
+    paintSingleArrow(arrow, &painter);
   }
 }
 
@@ -98,7 +98,7 @@ void ArrowsWidget::updateArrows(std::vector<int> _row_attach_points,
   update();
 }
 
-void ArrowsWidget::paintSingleArrow(const Arrow& arrow, QPainter& painter) {
+void ArrowsWidget::paintSingleArrow(const Arrow& arrow, QPainter* painter) {
   QPoint start_point = QPoint(width_, row_attach_points_[arrow.start_row]);
 
   QPoint first_turn = QPoint(width_ - (arrow.level * points_per_level_),
@@ -109,9 +109,9 @@ void ArrowsWidget::paintSingleArrow(const Arrow& arrow, QPainter& painter) {
 
   QPoint end_point = QPoint(width_, row_attach_points_[arrow.end_row]);
 
-  painter.drawLine(start_point, first_turn);
-  painter.drawLine(first_turn, second_turn);
-  painter.drawLine(second_turn, end_point);
+  painter->drawLine(start_point, first_turn);
+  painter->drawLine(first_turn, second_turn);
+  painter->drawLine(second_turn, end_point);
 
   QPoint arrowhead_points[] = {end_point,
                                QPoint(end_point.x() - ARROWHEAD_WIDTH,
@@ -119,7 +119,7 @@ void ArrowsWidget::paintSingleArrow(const Arrow& arrow, QPainter& painter) {
                                QPoint(end_point.x() - ARROWHEAD_WIDTH,
                                       end_point.y() - ARROWHEAD_HEIGHT / 2)};
 
-  painter.drawConvexPolygon(arrowhead_points, 3);
+  painter->drawConvexPolygon(arrowhead_points, 3);
 }
 
 }  // namespace disasm
