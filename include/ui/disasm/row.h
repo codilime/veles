@@ -74,21 +74,21 @@ namespace disasm {
 class Row : public QWidget {
   Q_OBJECT
 
- public slots:
  signals:
   void chunkCollapse(const ChunkID& id);
 
  public:
-  explicit Row();
+  enum ColumnName { Address, Chunks, Comments };
 
-  void setIndent(int level);
+  explicit Row();
 
   void setEntry(const EntryChunkCollapsed* entry);
   void setEntry(const EntryChunkBegin* entry);
   void setEntry(const EntryChunkEnd* entry);
   void setEntry(const EntryOverlap* entry);
   void setEntry(const EntryField* entry);
-  enum ColumnName { Address, Chunks, Comments };
+
+  void setIndent(int level);
   void toggleColumn(ColumnName column_name);
 
  protected:
@@ -98,41 +98,25 @@ class Row : public QWidget {
   ChunkID id_;
 
   QLabel* address_;
-  QLabel* indent_label_;
   QWidget* text_widget_;
   QHBoxLayout* text_layout_;
   QLabel* comment_;
 
   QHBoxLayout* layout_;
 
-  // deletes all QLabels from text_layout except indent widget, which indent is
-  // zeroed.
+  // Remove all text labels in middle column
   void clearText();
 
-  // traverse repr tree and append labels with correct style to the layout
+  // Traverse repr tree and append labels with correct style to the layout
   void generateTextLabels(TextRepr* repr, QBoxLayout* layout);
 
-  // wrapper for dynamic_cast to T
+  // Wrapper for dynamic_cast to T
   template <typename T>
   T* to(TextRepr* ptr);
 
-  // wrapper for checking if we can dynamic_cast to T
+  // Wrapper for checking if we can dynamic_cast to T
   template <typename T>
   bool is(TextRepr* ptr);
-
-  static const QString address_style_;
-  static const QString comment_style_;
-
-  static const QString opcode_style_;
-  static const QString modifier_style_;
-  static const QString register_style_;
-  static const QString label_style_;
-  static const QString text_style_;
-
-  static const QString number_style_;
-  static const QString blank_style_;
-  static const QString string_style_;
-  static const QString text_style_highlighted_;
 };
 
 }  // namespace disasm

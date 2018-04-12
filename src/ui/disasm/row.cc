@@ -26,26 +26,30 @@ namespace disasm {
 
 Row::Row() {
   setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Fixed);
-  setFixedHeight(20);
+  setFixedHeight(18);
 
   layout_ = new QHBoxLayout();
-  layout_->setSpacing(0);
+  layout_->setSpacing(10);
   layout_->setMargin(0);
 
   address_ = new QLabel;
-  address_->setFixedWidth(120);
+  address_->setFixedWidth(80);
   address_->setObjectName("address");
 
   comment_ = new QLabel;
   comment_->setObjectName("comment");
 
+  text_widget_ = new QWidget;
   text_layout_ = new QHBoxLayout();
   text_layout_->setSpacing(0);
+  text_widget_->setLayout(text_layout_);
+  text_widget_->setFixedWidth(400);
   clearText();  // clean text_layout_
 
+  auto byte_label = new QLabel("ff dd cc aa");
+
   layout_->addWidget(address_);
-  layout_->addLayout(text_layout_);
-  layout_->addStretch();
+  layout_->addWidget(text_widget_);
   layout_->addWidget(comment_);
 
   setLayout(layout_);
@@ -153,6 +157,7 @@ void Row::setEntry(const EntryChunkCollapsed* entry) {
 
   TextRepr* text_repr = entry->chunk->text_repr.get();
   generateTextLabels(text_repr, text_layout_);
+  text_layout_->addStretch();
   this->id_ = entry->chunk->id;
 }
 
@@ -162,9 +167,11 @@ void Row::setEntry(const EntryChunkBegin* entry) {
       QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
   comment_->setText("; " + entry->chunk->comment);
   auto label = new QLabel();
+  label->setObjectName("chunkheader");
   label->setText(
       QString(entry->chunk->display_name + "::" + entry->chunk->type + " {"));
   text_layout_->addWidget(label);
+  text_layout_->addStretch();
   this->id_ = entry->chunk->id;
 }
 
@@ -174,7 +181,9 @@ void Row::setEntry(const EntryChunkEnd* entry) {
   clearText();
   auto label = new QLabel();
   label->setText("}");
+  comment_->clear();
   text_layout_->addWidget(label);
+  text_layout_->addStretch();
   this->id_ = entry->chunk->id;
 }
 
