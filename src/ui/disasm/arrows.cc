@@ -81,6 +81,10 @@ void ArrowsWidget::updateArrows(std::vector<int> _row_attach_points,
   this->arrows_ = std::move(_arrows);
   this->row_attach_points_ = std::move(_row_attach_points);
 
+
+  if (this->arrows_.size() == 0 || this->row_attach_points_.size() == 0)
+      return;
+
   int max_level =
       std::max_element(arrows_.begin(), arrows_.end(), [](const Arrow& lhs,
                                                           const Arrow& rhs) {

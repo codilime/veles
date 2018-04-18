@@ -129,6 +129,22 @@ void Widget::renderRows() {
   updateRows(window_->entries());
 }
 
+ChunkID get_target(TextRepr *repr)
+{
+    if(dynamic_cast<Sublist*>(repr) != nullptr) {
+        auto sublist = dynamic_cast<Sublist*>(repr);
+        for (const auto& chld : sublist->children()) {
+            auto ret = get_target(chld.get());
+            if (ret != "")
+                return ret;
+        }
+    } else if (dynamic_cast<Keyword*>(repr) != nullptr) {
+        auto keyword = dynamic_cast<Keyword*>(repr);
+        return keyword->chunkID();
+    }
+    return "";
+}
+
 void Widget::updateRows(std::vector<std::shared_ptr<Entry>> entries) {
   while (rows_.size() < entries.size()) {
     auto r = new Row();
@@ -138,18 +154,19 @@ void Widget::updateRows(std::vector<std::shared_ptr<Entry>> entries) {
     connect(r, &Row::chunkCollapse, this, &Widget::chunkCollapse);
   }
 
-  Row* row;
   while (rows_.size() > entries.size()) {
-    row = rows_.back();
+    Row* row = rows_.back();
     rows_.pop_back();
     rows_layout_->removeWidget(row);
     delete row;
   }
 
+  std::map<ChunkID, int> row_mapping;
+
   int indent_level = 0;
   for (size_t i = 0; i < entries.size(); i++) {
     auto entry = entries[i];
-    row = static_cast<Row*>(rows_layout_->itemAt(i)->widget());
+    auto row = static_cast<Row*>(rows_layout_->itemAt(i)->widget());
 
     switch (entry->type()) {
       case EntryType::CHUNK_COLLAPSED: {
@@ -160,6 +177,7 @@ void Widget::updateRows(std::vector<std::shared_ptr<Entry>> entries) {
       }
       case EntryType::CHUNK_BEGIN: {
         auto* ent = static_cast<EntryChunkBegin const*>(entry.get());
+        row_mapping[ent->chunk->id] = i;
         row->setEntry(ent);
         row->setIndent(indent_level);
         indent_level++;
@@ -188,26 +206,25 @@ void Widget::updateRows(std::vector<std::shared_ptr<Entry>> entries) {
     }
   }
 
+  std::vector<Arrow> arrows_vec;
+  for (size_t i = 0; i < entries.size(); i++) {
+    auto entry = entries[i];
+    if (entry->type() == EntryType::CHUNK_COLLAPSED) {
+      auto* ent = static_cast<EntryChunkCollapsed const*>(entry.get());
+      auto target = get_target(ent->chunk->text_repr.get());
+      if (target == "") continue;
+      if (row_mapping.find(target) == row_mapping.end())
+          continue;
+      auto arr = Arrow(i, row_mapping[target], rand() % 5 +1);
+      std::cerr << arr << std::endl;
+      arrows_vec.emplace_back(arr);
+    }
+  }
+
   // TODO(zpp) row_attach_points_ should be updated when toggling chunk
   std::vector<int> row_attach_points;
   for (auto rowPtr : rows_) {
     row_attach_points.push_back(rowPtr->y() + rowPtr->height() / 2);
-  }
-
-  auto& g = veles::util::g_mersenne_twister;
-  std::uniform_int_distribution<int> arrow_count_range(5, 30);
-  std::uniform_int_distribution<int> max_level_range(1, 30);
-  int arrow_count = arrow_count_range(g);
-  int max_level = max_level_range(g);
-  std::uniform_int_distribution<int> level_range(1, max_level);
-
-  std::cout << "Randomizing " << arrow_count << " arrows on " << max_level
-            << " levels on " << rows_.size() << " rows" << std::endl;
-  std::uniform_int_distribution<int> row_range(
-      0, static_cast<int>(rows_.size()) - 1);
-  std::vector<Arrow> arrows_vec;
-  for (int i = 0; i < arrow_count; i++) {
-    arrows_vec.emplace_back(row_range(g), row_range(g), level_range(g));
   }
 
   arrows_->updateArrows(row_attach_points, arrows_vec);
