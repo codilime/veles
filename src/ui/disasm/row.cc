@@ -152,38 +152,47 @@ void Row::generateTextLabels(TextRepr* repr, QBoxLayout* layout) {
 void Row::setEntry(const EntryChunkCollapsed* entry) {
   address_->setText(
       QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
-  comment_->setText("; " + entry->chunk->comment);
-  clearText();
+  if (!entry->chunk->comment.isEmpty()) {
+    comment_->setText("; " + entry->chunk->comment);
+  }
 
+  clearText();
   TextRepr* text_repr = entry->chunk->text_repr.get();
   generateTextLabels(text_repr, text_layout_);
   text_layout_->addStretch();
+
   this->id_ = entry->chunk->id;
 }
 
 void Row::setEntry(const EntryChunkBegin* entry) {
-  clearText();
   address_->setText(
       QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
-  comment_->setText("; " + entry->chunk->comment);
+  if (!entry->chunk->comment.isEmpty()) {
+    comment_->setText("; " + entry->chunk->comment);
+  }
+
+  clearText();
   auto label = new QLabel();
   label->setObjectName("chunkheader");
   label->setText(
       QString(entry->chunk->display_name + "::" + entry->chunk->type + " {"));
   text_layout_->addWidget(label);
   text_layout_->addStretch();
+
   this->id_ = entry->chunk->id;
 }
 
 void Row::setEntry(const EntryChunkEnd* entry) {
   address_->setText(
       QString("%1").arg(entry->chunk->addr_end, 8, 16, QChar('0')));
+  comment_->clear();
+
   clearText();
   auto label = new QLabel();
   label->setText("}");
-  comment_->clear();
   text_layout_->addWidget(label);
   text_layout_->addStretch();
+
   this->id_ = entry->chunk->id;
 }
 
