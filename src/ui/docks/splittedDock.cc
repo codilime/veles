@@ -1,29 +1,34 @@
 #include <iostream>
 #include "ui/docks/dragger.h"
-#include "ui/docks/dock.h"
+#include "ui/docks/splittedDock.h"
 
 namespace veles {
 namespace ui {
 
-Dock::Dock(QWidget *parent) : QWidget(parent), state(DockState::Empty) {
-  stacked_layout = new QStackedLayout;
-  setLayout(stacked_layout);
-
-  tabWidget = new TabWidget(this);
-  tabWidget -> setMovable(true);
+SplittedDock::SplittedDock(QWidget *parent, Qt::Orientation orientation) :
+    QWidget(parent), orientation(orientation) {
   splitter = new QSplitter(this);
-
-  tabWidget -> hide();
-  splitter -> hide();
-
-  stacked_layout -> addWidget(tabWidget);
+  splitter -> setOrientation(orientation);
   stacked_layout -> addWidget(splitter);
-
-  connect(tabWidget, &TabWidget::emptied, this, [this](){
-    if (this -> state == DockState::Consistent)
-      this -> setState(DockState::Empty);
-  });
 }
+
+QWidget * SplittedDock::replaceWidget(QWidget * newWidget, int index) {
+  QWidget * old = splitter -> widget(index);
+  old -> hide();
+  //old -> setParent(nullptr);
+  splitter -> insertWidget(index, newWidget);
+  return old;
+}
+
+void SplittedDock::addTabbedDock(QWidget* dock, int index) {
+  splitter-> insertWidget(index, dock);
+}
+
+void SplitteDock::addDockable(Dockable *dockable, DropArea area) {
+  dockables.push_back(dockable);
+}
+
+void Dock::split(dock)
 
 void Dock::addWidget(QWidget *widget, const QString &label, DropArea area) {
   addWidget(widget, QIcon(), label, area);
@@ -94,27 +99,7 @@ void Dock::childDockStateChange(DockState new_state, QPointer<Dock> child) {
   }
 }
 
-void Dock::mousePressEvent(QMouseEvent *event) {
-  if (tabWidget -> tabBar() -> rect().contains(event -> pos())) {
-    dragged_tab_index = tabWidget -> tabBar() -> tabAt(event -> pos());
-    if (dragged_tab_index > -1) {
-      drag_start = event -> globalPos();
-    }
-  } else {
-    dragged_tab_index = -1;
-  }
-}
 
-void Dock::mouseMoveEvent(QMouseEvent *event) {
-  if (dragged_tab_index > -1) {
-    auto covered = event -> globalPos() - drag_start;
-    auto indicator = QPoint(std::abs(covered.x()), std::abs(covered.y())) - detach_boundary;
-    if (std::max(indicator.x(), indicator.y()) > 0) {
-      (void) new Dragger(tabWidget -> tabText(dragged_tab_index), tabWidget -> tabIcon(dragged_tab_index), tabWidget -> widget(dragged_tab_index));
-      tabWidget->removeTab(dragged_tab_index);
-    }
-  }
-}
 
 void Dock::showTabs() {
   stacked_layout -> setCurrentIndex(0);
@@ -215,6 +200,7 @@ void Dock::printSingle(int indent) {
     std::cout<<std::endl;
   }
 }
+
 
 } //ui
 } //veles

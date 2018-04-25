@@ -18,7 +18,7 @@
 #include <QHostAddress>
 #include <QSurfaceFormat>
 #include <QTranslator>
-#include <include/ui/docks/dock.h>
+#include <include/ui/docks/splittedDock.h>
 
 #include "ui/dockwidget.h"
 #include "ui/veles_mainwindow.h"

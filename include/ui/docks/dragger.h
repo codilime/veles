@@ -12,7 +12,7 @@
 #include <QMouseEvent>
 
 #include "ui/docks/tabwidget.h"
-#include "ui/docks/dock.h"
+#include "ui/docks/splittedDock.h"
 
 
 namespace veles {
@@ -24,7 +24,7 @@ class Dragger : public QWidget {
 
  public:
 
-  explicit Dragger(QString text, QIcon icon, QWidget *draggedWidget);
+  explicit Dragger(Dock * origin, QString text, QIcon icon, QWidget *draggedWidget);
 
   void mouseMoveEvent(QMouseEvent * event) override;
   void mouseReleaseEvent(QMouseEvent * event) override;
@@ -36,6 +36,7 @@ class Dragger : public QWidget {
   QIcon tabIcon;
   QWidget* widget;
   QLabel* label;
+  Dock * origin;
 
 };
 

@@ -4,16 +4,20 @@
 namespace veles {
 namespace ui {
 
-Dragger::Dragger(QString labelText, QIcon icon, QWidget* draggedWidget) :
+Dragger::Dragger(Dock * origin, QString labelText, QIcon icon, QWidget* draggedWidget) :
     QWidget(nullptr, Qt::Window | Qt::FramelessWindowHint /*| Qt::X11BypassWindowManagerHint  |  Qt::WindowStaysOnTopHint | Qt::Tool*/),
     tabText(labelText), tabIcon(icon), widget(draggedWidget) {
-  grabMouse();
+  origin -> releaseMouse();
+  if (origin -> state == Dock::DockState::Consistent and origin -> tabWidget -> count() == 1)
+    origin -> hide;
+  this -> origin = origin;
   this -> setLayout(mainLayout);
   label = new QLabel(labelText);
   mainLayout -> addWidget(label);
 //  this -> setWindowModality(Qt::ApplicationModal);
   label -> show();
   this -> show();
+  grabMouse();
 }
 
 void Dragger::mouseMoveEvent(QMouseEvent * event) {
@@ -43,6 +47,7 @@ void Dragger::mouseReleaseEvent(QMouseEvent * event) {
     droppedOverDock -> addWidget(widget, tabIcon, tabText, DropArea::Left);
   }
   this->close();
+
 
 }
 void Dragger::changeEvent(QEvent *event) {

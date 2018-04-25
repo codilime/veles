@@ -390,6 +390,7 @@ add_executable(main_ui
     ${INCLUDE_DIR}/ui/docks/tabwidget.h
     ${INCLUDE_DIR}/ui/docks/tabbar.h
     ${INCLUDE_DIR}/ui/docks/dragger.h
+    ${INCLUDE_DIR}/ui/docks/dockable.h
     ${SRC_DIR}/ui/main.cc
     ${SRC_DIR}/ui/logwidget.cc
     ${SRC_DIR}/ui/veles_mainwindow.cc
@@ -422,6 +423,7 @@ add_executable(main_ui
     ${SRC_DIR}/ui/docks/tabwidget.cc
     ${SRC_DIR}/ui/docks/tabbar.cc
     ${SRC_DIR}/ui/docks/dragger.cc
+    ${SRC_DIR}/ui/docks/dockable.cc
     ${RESOURCES}
     ${VISUALIZATION_SHADERS}
     ${FORMS}
