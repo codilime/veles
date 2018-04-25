@@ -5,27 +5,31 @@ namespace veles {
 namespace ui {
 
 Dragger::Dragger(QString labelText, QIcon icon, QWidget* draggedWidget) :
-    QWidget(nullptr, Qt::Window | Qt::FramelessWindowHint),
+    QWidget(nullptr, Qt::Window | Qt::FramelessWindowHint /*| Qt::X11BypassWindowManagerHint  |  Qt::WindowStaysOnTopHint | Qt::Tool*/),
     tabText(labelText), tabIcon(icon), widget(draggedWidget) {
   grabMouse();
   this -> setLayout(mainLayout);
   label = new QLabel(labelText);
   mainLayout -> addWidget(label);
+//  this -> setWindowModality(Qt::ApplicationModal);
   label -> show();
   this -> show();
 }
 
 void Dragger::mouseMoveEvent(QMouseEvent * event) {
   this -> move(event->globalPos());
+//  if (event -> globalX() % 10 == 0)
+//    this -> activateWindow();
 }
 
 void Dragger::mouseReleaseEvent(QMouseEvent * event) {
   releaseMouse();
-  auto windows = qApp -> allWindows();
-  for (auto window: windows) {
-    if (window -> mapToGlobal(0,0))
-
-  }
+  auto* droppedOverWidget = qApp -> widgetAt(event -> globalX() - 20, event -> globalY() - 20);
+//  auto windows = qApp -> allWindows();
+//  for (auto window: windows) {
+//    if (window -> mapToGlobal(0,0))
+//
+//  }
 //      -> widgetAt(event -> globalX() - 20, event -> globalY() - 20);
   while (droppedOverWidget && qobject_cast<Dock*>(droppedOverWidget) == 0) {
     droppedOverWidget = droppedOverWidget -> parentWidget();
@@ -40,6 +44,13 @@ void Dragger::mouseReleaseEvent(QMouseEvent * event) {
   }
   this->close();
 
+}
+void Dragger::changeEvent(QEvent *event) {
+  if (event -> type() == QEvent::ActivationChange) {
+    puts("Activation change");
+  } else if (event -> type() == QEvent::MouseTrackingChange) {
+    puts("Mouse Tracking change");
+  }
 }
 
 } //ui

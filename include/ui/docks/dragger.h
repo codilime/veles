@@ -28,6 +28,7 @@ class Dragger : public QWidget {
 
   void mouseMoveEvent(QMouseEvent * event) override;
   void mouseReleaseEvent(QMouseEvent * event) override;
+  void changeEvent(QEvent * event) override;
 
   QHBoxLayout * mainLayout = new QHBoxLayout();
 

@@ -84,10 +84,12 @@ int main(int argc, char* argv[]) {
 
   QLabel * label3 = new QLabel("Ala ma kota w Tabach");
   QLabel * label4 = new QLabel("Ala ma kota3 w Tabach");
+  QLabel * label5 = new QLabel("Ala ma kota4 w Tabach");
   auto* tabWin = new veles::ui::Dock;
   tabWin -> showMaximized();
   tabWin -> addWidget(label3, QIcon(":/images/show_hex_edit.png"), "", veles::ui::DropArea::Center);
   tabWin -> addWidget(label4, QIcon(":/images/show_hex_edit.png"), "labelka 2", veles::ui::DropArea::Center);
+  tabWin -> addWidget(label5, QIcon(":/images/show_hex_edit.png"), "labelka 4", veles::ui::DropArea::Center);
 
   printf("Compiled with Qt Version %s\n", QT_VERSION_STR);
 
