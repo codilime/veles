@@ -122,7 +122,7 @@ class MockBackend {
   const std::vector<std::shared_ptr<Entry>> getEntries();
   Bookmark getEntrypoint();
   Bookmark getPositionByChunk(const ChunkID& chunk);
-  ScrollbarIndex getEntryIndexByPosition(const Bookmark &pos);
+  ScrollbarIndex getEntryIndexByPosition(const Bookmark& pos);
   ScrollbarIndex getEntriesSize();
 
   void chunkCollapse(const ChunkID& chunk);

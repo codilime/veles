@@ -448,7 +448,7 @@ Bookmark MockBackend::getPositionByChunk(const ChunkID& chunk) {
   return chunk_entry_[chunk];
 }
 
-ScrollbarIndex MockBackend::getEntryIndexByPosition(const Bookmark &pos) {
+ScrollbarIndex MockBackend::getEntryIndexByPosition(const Bookmark& pos) {
   std::lock_guard<std::mutex> guard(mutex_);
 
   auto position_ = position_index_.find(pos);
