@@ -96,103 +96,7 @@ set(TEST_DIR ${CMAKE_SOURCE_DIR}/test)
 
 include_directories(${INCLUDE_DIR})
 
-# Veles build rules
-# Lib: veles_base
-add_library(veles_base
-    ${INCLUDE_DIR}/util/icons.h
-    ${INCLUDE_DIR}/util/concurrency/threadpool.h
-    ${INCLUDE_DIR}/util/sampling/isampler.h
-    ${INCLUDE_DIR}/util/sampling/uniform_sampler.h
-    ${INCLUDE_DIR}/util/sampling/fake_sampler.h
-    ${INCLUDE_DIR}/util/settings/connection_client.h
-    ${INCLUDE_DIR}/util/settings/hexedit.h
-    ${INCLUDE_DIR}/util/settings/shortcuts.h
-    ${INCLUDE_DIR}/util/settings/theme.h
-    ${INCLUDE_DIR}/util/settings/visualization.h
-
-    ${INCLUDE_DIR}/util/encoders/base64_encoder.h
-    ${INCLUDE_DIR}/util/encoders/c_data_encoder.h
-    ${INCLUDE_DIR}/util/encoders/c_string_encoder.h
-    ${INCLUDE_DIR}/util/encoders/factory.h
-    ${INCLUDE_DIR}/util/encoders/hex_encoder.h
-    ${INCLUDE_DIR}/util/encoders/idecoder.h
-    ${INCLUDE_DIR}/util/encoders/iencoder.h
-    ${INCLUDE_DIR}/util/encoders/text_encoder.h
-    ${INCLUDE_DIR}/util/encoders/url_encoder.h
-
-    ${INCLUDE_DIR}/util/int_bytes.h
-    ${INCLUDE_DIR}/util/edit.h
-    ${INCLUDE_DIR}/util/string_utils.h
-    ${INCLUDE_DIR}/util/math.h
-    ${INCLUDE_DIR}/util/misc.h
-
-    ${SRC_DIR}/util/icons.cc
-    ${SRC_DIR}/util/concurrency/threadpool.cc
-    ${SRC_DIR}/util/sampling/isampler.cc
-    ${SRC_DIR}/util/sampling/uniform_sampler.cc
-    ${SRC_DIR}/util/sampling/fake_sampler.cc
-    ${SRC_DIR}/util/settings/connection_client.cc
-    ${SRC_DIR}/util/settings/hexedit.cc
-    ${SRC_DIR}/util/settings/shortcuts.cc
-    ${SRC_DIR}/util/settings/theme.cc
-    ${SRC_DIR}/util/settings/visualization.cc
-
-    ${SRC_DIR}/util/encoders/base64_encoder.cc
-    ${SRC_DIR}/util/encoders/c_data_encoder.cc
-    ${SRC_DIR}/util/encoders/c_string_encoder.cc
-    ${SRC_DIR}/util/encoders/factory.cc
-    ${SRC_DIR}/util/encoders/hex_encoder.cc
-    ${SRC_DIR}/util/encoders/text_encoder.cc
-    ${SRC_DIR}/util/encoders/url_encoder.cc
-
-    ${SRC_DIR}/util/edit.cc
-    ${SRC_DIR}/util/string_utils.cc
-    ${SRC_DIR}/util/math.cc
-    ${SRC_DIR}/util/misc.cc
-    ${SRC_DIR}/util/version.cc
-    ${SRC_DIR}/util/random.cc
-)
-
-qt5_use_modules(veles_base Core Gui Widgets)
-target_link_libraries(veles_base ${ADDITIONAL_LINK_LIBRARIES})
-
-# Lib: veles_visualization
-
-qt5_wrap_ui(VISUALIZATION_FORMS
-    ${SRC_DIR}/visualization/selectrangedialog.ui
-    ${SRC_DIR}/visualization/samplingmethoddialog.ui
-)
-
 qt5_add_resources(VISUALIZATION_SHADERS ${SRC_DIR}/visualization/shaders/shaders.qrc)
-add_library(veles_visualization
-    ${INCLUDE_DIR}/visualization/panel.h
-    ${INCLUDE_DIR}/visualization/base.h
-    ${INCLUDE_DIR}/visualization/digram.h
-    ${INCLUDE_DIR}/visualization/trigram.h
-    ${INCLUDE_DIR}/visualization/minimap.h
-    ${INCLUDE_DIR}/visualization/minimap_panel.h
-    ${INCLUDE_DIR}/visualization/selectrangedialog.h
-    ${INCLUDE_DIR}/visualization/manipulator.h
-    ${INCLUDE_DIR}/visualization/samplingmethoddialog.h
-    ${SRC_DIR}/visualization/panel.cc
-    ${SRC_DIR}/visualization/base.cc
-    ${SRC_DIR}/visualization/digram.cc
-    ${SRC_DIR}/visualization/trigram.cc
-    ${SRC_DIR}/visualization/minimap.cc
-    ${SRC_DIR}/visualization/minimap_panel.cc
-    ${SRC_DIR}/visualization/selectrangedialog.cc
-    ${SRC_DIR}/visualization/manipulator.cc
-    ${SRC_DIR}/visualization/samplingmethoddialog.cc
-    ${VISUALIZATION_FORMS}
-    ${VISUALIZATION_SHADERS}
-)
-
-qt5_use_modules(veles_visualization Core Gui Widgets)
-# This a temporary "hack" to fix concurrent build fail - veles_visualization
-# actually depends on main_ui which also depends on veles_visualization
-# and veles_data, which in turn generates new C++ files - in future we should refactor
-# this file to avoid such cyclic dependency between veles_visualization and main_ui
-target_link_libraries(veles_visualization veles_data)
 
 set(MSGPACK_CPP_FWD_HEADER "${CMAKE_CURRENT_BINARY_DIR}/fwd_models.h")
 set(MSGPACK_CPP_HEADER "${CMAKE_CURRENT_BINARY_DIR}/models.h")
@@ -230,97 +134,8 @@ add_custom_command(OUTPUT ${MSGPACK_CPP_HEADER} ${MSGPACK_CPP_SOURCE} ${MSGPACK_
     VERBATIM
 )
 
-# Lib: veles_data
-add_library(veles_data
-    ${MSGPACK_CPP_FWD_HEADER}
-    ${MSGPACK_CPP_HEADER}
-    ${INCLUDE_DIR}/data/bindata.h
-    ${INCLUDE_DIR}/data/field.h
-    ${INCLUDE_DIR}/data/nodeid.h
-    ${INCLUDE_DIR}/data/repack.h
-    ${INCLUDE_DIR}/data/types.h
-    ${INCLUDE_DIR}/network/msgpackobject.h
-    ${INCLUDE_DIR}/proto/exceptions.h
-    ${MSGPACK_CPP_SOURCE}
-    ${SRC_DIR}/data/bindata.cc
-    ${SRC_DIR}/data/nodeid.cc
-    ${SRC_DIR}/data/repack.cc
-    ${SRC_DIR}/network/msgpackobject.cc
-)
-
-qt5_use_modules(veles_data Core)
-add_dependencies(veles_data msgpack-c)
-target_link_libraries(veles_data veles_base)
-
-# Lib: veles_dbif
-add_library(veles_dbif
-    ${INCLUDE_DIR}/dbif/error.h
-    ${INCLUDE_DIR}/dbif/info.h
-    ${INCLUDE_DIR}/dbif/method.h
-    ${INCLUDE_DIR}/dbif/promise.h
-    ${INCLUDE_DIR}/dbif/types.h
-    ${INCLUDE_DIR}/dbif/universe.h
-    ${SRC_DIR}/dbif/dbif.cc
-)
-
-qt5_use_modules(veles_dbif Core)
-target_link_libraries(veles_dbif veles_data)
-
-file(GLOB kaitai_headers "${INCLUDE_DIR}/kaitai/*.h")
-file(GLOB kaitai_sources "${SRC_DIR}/kaitai/*.cc")
-
-# Lib: parser
-add_library(parser
-    ${INCLUDE_DIR}/parser/parser.h
-    ${INCLUDE_DIR}/parser/stream.h
-    ${INCLUDE_DIR}/parser/unpyc.h
-    ${INCLUDE_DIR}/parser/unpng.h
-    ${INCLUDE_DIR}/parser/utils.h
-    ${kaitai_headers}
-    ${SRC_DIR}/parser/parser.cc
-    ${SRC_DIR}/parser/unpyc.cc
-    ${SRC_DIR}/parser/unpng.cc
-    ${SRC_DIR}/parser/utils.cc
-    ${kaitai_sources}
-)
-
-qt5_use_modules(parser Core)
-add_dependencies(parser zlib)
-target_link_libraries(parser veles_dbif ${ZLIB_LIBRARIES})
-
-add_library(veles_network
-    ${INCLUDE_DIR}/network/msgpackwrapper.h
-)
-
-target_link_libraries(veles_network veles_data)
-qt5_use_modules(veles_network Core Network Widgets)
-
-
-# Lib: veles_db
-add_library(veles_db
-    ${INCLUDE_DIR}/db/getter.h
-    ${INCLUDE_DIR}/db/universe.h
-    ${SRC_DIR}/db/universe.cc
-)
-
-# Lib: veles_client
-add_library(veles_client
-    ${INCLUDE_DIR}/client/node.h
-    ${INCLUDE_DIR}/client/nodetree.h
-    ${INCLUDE_DIR}/client/networkclient.h
-    ${INCLUDE_DIR}/client/dbif.h
-    ${SRC_DIR}/client/nodetree.cc
-    ${SRC_DIR}/client/networkclient.cc
-    ${SRC_DIR}/client/dbif.cc
-)
-
-add_dependencies(veles_client openssl)
-qt5_use_modules(veles_client Core Network)
-target_link_libraries(veles_client veles_base veles_data veles_network veles_db)
-
-qt5_use_modules(veles_db Core)
-add_dependencies(veles_db veles_network)
-target_link_libraries(veles_db veles_dbif parser)
+file(GLOB KAITAI_HEADERS "${INCLUDE_DIR}/kaitai/*.h")
+file(GLOB KAITAI_SOURCES "${SRC_DIR}/kaitai/*.cc")
 
 # Resources
 qt5_add_resources(RESOURCES resources/veles.qrc)
@@ -335,6 +150,8 @@ qt5_wrap_ui(FORMS
     ${SRC_DIR}/ui/dialogs/searchdialog.ui
     ${SRC_DIR}/ui/shortcutselection.ui
     ${SRC_DIR}/ui/shortcutssettings.ui
+    ${SRC_DIR}/visualization/selectrangedialog.ui
+    ${SRC_DIR}/visualization/samplingmethoddialog.ui
 )
 
 if(WIN32)
@@ -353,72 +170,191 @@ if(WIN32 AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   set(GUI_TYPE WIN32)
 endif()
 
-# Exe: Main executable
-add_executable(main_ui
-    ${GUI_TYPE}
-    ${INCLUDE_DIR}/ui/logwidget.h
-    ${INCLUDE_DIR}/ui/veles_mainwindow.h
-    ${INCLUDE_DIR}/ui/connectionmanager.h
+add_library(veles_base
+    ${INCLUDE_DIR}/client/dbif.h
+    ${INCLUDE_DIR}/client/networkclient.h
+    ${INCLUDE_DIR}/client/node.h
+    ${INCLUDE_DIR}/client/nodetree.h
+    ${INCLUDE_DIR}/data/bindata.h
+    ${INCLUDE_DIR}/data/field.h
+    ${INCLUDE_DIR}/data/nodeid.h
+    ${INCLUDE_DIR}/data/repack.h
+    ${INCLUDE_DIR}/data/types.h
+    ${INCLUDE_DIR}/db/getter.h
+    ${INCLUDE_DIR}/db/universe.h
+    ${INCLUDE_DIR}/dbif/error.h
+    ${INCLUDE_DIR}/dbif/info.h
+    ${INCLUDE_DIR}/dbif/method.h
+    ${INCLUDE_DIR}/dbif/promise.h
+    ${INCLUDE_DIR}/dbif/types.h
+    ${INCLUDE_DIR}/dbif/universe.h
+    ${INCLUDE_DIR}/network/msgpackobject.h
+    ${INCLUDE_DIR}/network/msgpackwrapper.h
+    ${INCLUDE_DIR}/parser/parser.h
+    ${INCLUDE_DIR}/parser/stream.h
+    ${INCLUDE_DIR}/parser/unpng.h
+    ${INCLUDE_DIR}/parser/unpyc.h
+    ${INCLUDE_DIR}/parser/utils.h
+    ${INCLUDE_DIR}/proto/exceptions.h
     ${INCLUDE_DIR}/ui/color_picker_button.h
+    ${INCLUDE_DIR}/ui/connectionmanager.h
+    ${INCLUDE_DIR}/ui/databaseinfo.h
+    ${INCLUDE_DIR}/ui/dialogs/connectiondialog.h
+    ${INCLUDE_DIR}/ui/dialogs/createchunkdialog.h
+    ${INCLUDE_DIR}/ui/dialogs/gotoaddressdialog.h
+    ${INCLUDE_DIR}/ui/dialogs/optionsdialog.h
+    ${INCLUDE_DIR}/ui/dialogs/searchdialog.h
     ${INCLUDE_DIR}/ui/dockwidget.h
     ${INCLUDE_DIR}/ui/dockwidget_native.h
-    ${INCLUDE_DIR}/ui/hexeditwidget.h
-    ${INCLUDE_DIR}/ui/nodetreewidget.h
-    ${INCLUDE_DIR}/ui/nodewidget.h
-    ${INCLUDE_DIR}/ui/dialogs/optionsdialog.h
-    ${INCLUDE_DIR}/ui/hexedit.h
-    ${INCLUDE_DIR}/ui/dialogs/searchdialog.h
-    ${INCLUDE_DIR}/ui/dialogs/gotoaddressdialog.h
-    ${INCLUDE_DIR}/ui/slice.h
     ${INCLUDE_DIR}/ui/fileblobitem.h
-    ${INCLUDE_DIR}/ui/rootfileblobitem.h
-    ${INCLUDE_DIR}/ui/subchunkfileblobitem.h
-    ${INCLUDE_DIR}/ui/simplefileblobitem.h
     ${INCLUDE_DIR}/ui/fileblobmodel.h
-    ${INCLUDE_DIR}/ui/dialogs/createchunkdialog.h
-    ${INCLUDE_DIR}/ui/databaseinfo.h
-    ${INCLUDE_DIR}/ui/spinbox.h
-    ${INCLUDE_DIR}/ui/spinboxvalidator.h
-    ${INCLUDE_DIR}/ui/dialogs/connectiondialog.h
-    ${INCLUDE_DIR}/ui/shortcutedit.h
-    ${INCLUDE_DIR}/ui/shortcutssettings.h
     ${INCLUDE_DIR}/ui/filters/activatedockeventfilter.h
     ${INCLUDE_DIR}/ui/filters/tabbareventfilter.h
+    ${INCLUDE_DIR}/ui/hexedit.h
+    ${INCLUDE_DIR}/ui/hexeditwidget.h
+    ${INCLUDE_DIR}/ui/logwidget.h
     ${INCLUDE_DIR}/ui/mainwindowwithdetachabledockwidgets.h
+    ${INCLUDE_DIR}/ui/nodetreewidget.h
+    ${INCLUDE_DIR}/ui/nodewidget.h
+    ${INCLUDE_DIR}/ui/rootfileblobitem.h
+    ${INCLUDE_DIR}/ui/shortcutedit.h
+    ${INCLUDE_DIR}/ui/shortcutssettings.h
+    ${INCLUDE_DIR}/ui/simplefileblobitem.h
+    ${INCLUDE_DIR}/ui/slice.h
+    ${INCLUDE_DIR}/ui/spinbox.h
+    ${INCLUDE_DIR}/ui/spinboxvalidator.h
+    ${INCLUDE_DIR}/ui/subchunkfileblobitem.h
+    ${INCLUDE_DIR}/ui/veles_mainwindow.h
     ${INCLUDE_DIR}/ui/velesapplication.h
-    ${SRC_DIR}/ui/main.cc
-    ${SRC_DIR}/ui/logwidget.cc
-    ${SRC_DIR}/ui/veles_mainwindow.cc
-    ${SRC_DIR}/ui/connectionmanager.cc
+    ${INCLUDE_DIR}/util/concurrency/threadpool.h
+    ${INCLUDE_DIR}/util/edit.h
+    ${INCLUDE_DIR}/util/encoders/base64_encoder.h
+    ${INCLUDE_DIR}/util/encoders/c_data_encoder.h
+    ${INCLUDE_DIR}/util/encoders/c_string_encoder.h
+    ${INCLUDE_DIR}/util/encoders/factory.h
+    ${INCLUDE_DIR}/util/encoders/hex_encoder.h
+    ${INCLUDE_DIR}/util/encoders/idecoder.h
+    ${INCLUDE_DIR}/util/encoders/iencoder.h
+    ${INCLUDE_DIR}/util/encoders/text_encoder.h
+    ${INCLUDE_DIR}/util/encoders/url_encoder.h
+    ${INCLUDE_DIR}/util/icons.h
+    ${INCLUDE_DIR}/util/int_bytes.h
+    ${INCLUDE_DIR}/util/math.h
+    ${INCLUDE_DIR}/util/misc.h
+    ${INCLUDE_DIR}/util/sampling/fake_sampler.h
+    ${INCLUDE_DIR}/util/sampling/isampler.h
+    ${INCLUDE_DIR}/util/sampling/uniform_sampler.h
+    ${INCLUDE_DIR}/util/settings/connection_client.h
+    ${INCLUDE_DIR}/util/settings/hexedit.h
+    ${INCLUDE_DIR}/util/settings/shortcuts.h
+    ${INCLUDE_DIR}/util/settings/theme.h
+    ${INCLUDE_DIR}/util/settings/visualization.h
+    ${INCLUDE_DIR}/util/string_utils.h
+    ${INCLUDE_DIR}/visualization/base.h
+    ${INCLUDE_DIR}/visualization/digram.h
+    ${INCLUDE_DIR}/visualization/manipulator.h
+    ${INCLUDE_DIR}/visualization/minimap.h
+    ${INCLUDE_DIR}/visualization/minimap_panel.h
+    ${INCLUDE_DIR}/visualization/panel.h
+    ${INCLUDE_DIR}/visualization/samplingmethoddialog.h
+    ${INCLUDE_DIR}/visualization/selectrangedialog.h
+    ${INCLUDE_DIR}/visualization/trigram.h
+    
+    ${SRC_DIR}/client/dbif.cc
+    ${SRC_DIR}/client/networkclient.cc
+    ${SRC_DIR}/client/nodetree.cc
+    ${SRC_DIR}/data/bindata.cc
+    ${SRC_DIR}/data/nodeid.cc
+    ${SRC_DIR}/data/repack.cc
+    ${SRC_DIR}/db/universe.cc
+    ${SRC_DIR}/dbif/dbif.cc
+    ${SRC_DIR}/network/msgpackobject.cc
+    ${SRC_DIR}/parser/parser.cc
+    ${SRC_DIR}/parser/unpng.cc
+    ${SRC_DIR}/parser/unpyc.cc
+    ${SRC_DIR}/parser/utils.cc
     ${SRC_DIR}/ui/color_picker_button.cc
+    ${SRC_DIR}/ui/connectionmanager.cc
+    ${SRC_DIR}/ui/databaseinfo.cc
+    ${SRC_DIR}/ui/dialogs/connectiondialog.cc
+    ${SRC_DIR}/ui/dialogs/createchunkdialog.cc
+    ${SRC_DIR}/ui/dialogs/gotoaddressdialog.cc
+    ${SRC_DIR}/ui/dialogs/optionsdialog.cc
+    ${SRC_DIR}/ui/dialogs/searchdialog.cc
     ${SRC_DIR}/ui/dockwidget.cc
     ${SRC_DIR}/ui/dockwidget_native.cc
-    ${SRC_DIR}/ui/hexeditwidget.cc
-    ${SRC_DIR}/ui/nodetreewidget.cc
-    ${SRC_DIR}/ui/nodewidget.cc
-    ${SRC_DIR}/ui/dialogs/optionsdialog.cc
-    ${SRC_DIR}/ui/hexedit.cc
-    ${SRC_DIR}/ui/dialogs/searchdialog.cc
-    ${SRC_DIR}/ui/dialogs/gotoaddressdialog.cc
     ${SRC_DIR}/ui/fileblobitem.cc
-    ${SRC_DIR}/ui/subchunkfileblobitem.cc
-    ${SRC_DIR}/ui/rootfileblobitem.cc
     ${SRC_DIR}/ui/fileblobmodel.cc
-    ${SRC_DIR}/ui/dialogs/createchunkdialog.cc
-    ${SRC_DIR}/ui/databaseinfo.cc
-    ${SRC_DIR}/ui/spinbox.cc
-    ${SRC_DIR}/ui/spinboxvalidator.cc
-    ${SRC_DIR}/ui/dialogs/connectiondialog.cc
-    ${SRC_DIR}/ui/shortcutedit.cc
-    ${SRC_DIR}/ui/shortcutssettings.cc
     ${SRC_DIR}/ui/filters/activatedockeventfilter.cc
     ${SRC_DIR}/ui/filters/tabbareventfilter.cc
+    ${SRC_DIR}/ui/hexedit.cc
+    ${SRC_DIR}/ui/hexeditwidget.cc
+    ${SRC_DIR}/ui/logwidget.cc
+    ${SRC_DIR}/ui/main.cc
     ${SRC_DIR}/ui/mainwindowwithdetachabledockwidgets.cc
-    ${RESOURCES}
-    ${VISUALIZATION_SHADERS}
+    ${SRC_DIR}/ui/nodetreewidget.cc
+    ${SRC_DIR}/ui/nodewidget.cc
+    ${SRC_DIR}/ui/rootfileblobitem.cc
+    ${SRC_DIR}/ui/shortcutedit.cc
+    ${SRC_DIR}/ui/shortcutssettings.cc
+    ${SRC_DIR}/ui/spinbox.cc
+    ${SRC_DIR}/ui/spinboxvalidator.cc
+    ${SRC_DIR}/ui/subchunkfileblobitem.cc
+    ${SRC_DIR}/ui/veles_mainwindow.cc
+    ${SRC_DIR}/util/concurrency/threadpool.cc
+    ${SRC_DIR}/util/edit.cc
+    ${SRC_DIR}/util/encoders/base64_encoder.cc
+    ${SRC_DIR}/util/encoders/c_data_encoder.cc
+    ${SRC_DIR}/util/encoders/c_string_encoder.cc
+    ${SRC_DIR}/util/encoders/factory.cc
+    ${SRC_DIR}/util/encoders/hex_encoder.cc
+    ${SRC_DIR}/util/encoders/text_encoder.cc
+    ${SRC_DIR}/util/encoders/url_encoder.cc
+    ${SRC_DIR}/util/icons.cc
+    ${SRC_DIR}/util/math.cc
+    ${SRC_DIR}/util/misc.cc
+    ${SRC_DIR}/util/random.cc
+    ${SRC_DIR}/util/sampling/fake_sampler.cc
+    ${SRC_DIR}/util/sampling/isampler.cc
+    ${SRC_DIR}/util/sampling/uniform_sampler.cc
+    ${SRC_DIR}/util/settings/connection_client.cc
+    ${SRC_DIR}/util/settings/hexedit.cc
+    ${SRC_DIR}/util/settings/shortcuts.cc
+    ${SRC_DIR}/util/settings/theme.cc
+    ${SRC_DIR}/util/settings/visualization.cc
+    ${SRC_DIR}/util/string_utils.cc
+    ${SRC_DIR}/util/version.cc
+    ${SRC_DIR}/visualization/base.cc
+    ${SRC_DIR}/visualization/digram.cc
+    ${SRC_DIR}/visualization/manipulator.cc
+    ${SRC_DIR}/visualization/minimap.cc
+    ${SRC_DIR}/visualization/minimap_panel.cc
+    ${SRC_DIR}/visualization/panel.cc
+    ${SRC_DIR}/visualization/samplingmethoddialog.cc
+    ${SRC_DIR}/visualization/selectrangedialog.cc
+    ${SRC_DIR}/visualization/trigram.cc
+
+    ${KAITAI_HEADERS}
+    ${MSGPACK_CPP_FWD_HEADER}
+    ${MSGPACK_CPP_HEADER}
+    ${MSGPACK_CPP_SOURCE}
+    ${KAITAI_SOURCES}
     ${FORMS}
-    ${ICONS}
 )
+
+# Exe: Main executable
+add_executable(main_exe
+    ${GUI_TYPE}
+    ${RESOURCES}
+    ${ICONS}
+    ${VISUALIZATION_SHADERS}
+)
+
+qt5_use_modules(veles_base Core Gui Widgets Network)
+
+target_link_libraries(main_exe veles_base Qt5::Widgets ${ZLIB_LIBRARIES} ${ADDITIONAL_LINK_LIBRARIES})
+set_target_properties(main_exe PROPERTIES OUTPUT_NAME "veles")
+add_dependencies(main_exe openssl zlib msgpack-c)
 
 set(GENERATED_MOC_FILES
     ${CMAKE_SOURCE_DIR}/moc_base.cpp
@@ -442,8 +378,6 @@ set(GENERATED_MOC_FILES
 )
 
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${GENERATED_MOC_FILES})
-
-qt5_use_modules(main_ui Core Gui Widgets)
 
 if(GTEST_FOUND AND GMOCK_FOUND)
   include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
@@ -469,9 +403,7 @@ if(GTEST_FOUND AND GMOCK_FOUND)
       ${TEST_DIR}/util/edit.cc
   )
 
-  qt5_use_modules(run_test Core)
-
-  target_link_libraries(run_test veles_db veles_base veles_network ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES})
+  target_link_libraries(run_test veles_base ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES})
 
   add_custom_command(TARGET run_test
       COMMENT "Running tests"
@@ -481,10 +413,6 @@ if(GTEST_FOUND AND GMOCK_FOUND)
 else()
   message("gtest and/or gmock not found - tests won't be built")
 endif()
-
-
-target_link_libraries(main_ui veles_base veles_db veles_network veles_client veles_visualization Qt5::Widgets parser)
-set_target_properties(main_ui PROPERTIES OUTPUT_NAME "veles")
 
 # Post-build: linting
 
@@ -541,14 +469,10 @@ if(CLANG_TIDY)
   endforeach()
 
   # Get includes from the main file.
-  get_property(LINT_INC_DIRS TARGET main_ui PROPERTY INCLUDE_DIRECTORIES)
-
-  # Get includes from the network library (QNetwork and friends).
-  get_property(LINT_VELES_NETWORK_DIRS TARGET veles_network PROPERTY INCLUDE_DIRECTORIES)
-
-  # Join the lists of the includes.
-  list(APPEND LINT_INC_DIRS ${LINT_VELES_NETWORK_DIRS})
-
+  get_property(LINT_INC_DIRS TARGET main_exe PROPERTY INCLUDE_DIRECTORIES)
+  get_property(LINT_INC_DIRS_BASE TARGET veles_base PROPERTY INCLUDE_DIRECTORIES)
+  list(APPEND LINT_INC_DIRS ${LINT_INC_DIRS_BASE})
+  
   if(APPLE)
     # macOS hack - remove surplus include directories
     # TODO(mkow): Use FILTER (requires CMake >= 3.6):
@@ -587,7 +511,6 @@ if(CLANG_TIDY)
           ${MSGPACK_CPP_HEADER}
           ${MSGPACK_EXTRACT_PATH}
           ${FORMS}
-          ${VISUALIZATION_FORMS}
   )
 
   # foreach is needed so maximum command line length is not reached.
@@ -633,7 +556,7 @@ if(CMAKE_HOST_UNIX AND NOT CMAKE_HOST_APPLE)
       python3 (>= 3.5.0), python3-venv (>= 3.5.0), python3-dev (>= 3.5.0),
       openssl (>= 1.0.0), libffi-dev, libssl-dev (>= 1.0.0)"
   )
-  install(TARGETS main_ui RUNTIME DESTINATION bin COMPONENT "application")
+  install(TARGETS main_exe RUNTIME DESTINATION bin COMPONENT "application")
 
   install(FILES "${PROJECT_SOURCE_DIR}/resources/install/veles.desktop" DESTINATION share/applications/ COMPONENT "application")
   install(FILES "${PROJECT_SOURCE_DIR}/resources/icons/veles.ico" DESTINATION share/veles/ COMPONENT "application")
@@ -641,28 +564,28 @@ endif()
 
 # Windows
 if(WIN32)
-  set_target_properties(main_ui PROPERTIES WIN32 TRUE)
+  set_target_properties(main_exe PROPERTIES WIN32 TRUE)
   # Run winddeployqt if it can be found
   find_program(WINDEPLOYQT_EXECUTABLE NAMES windeployqt HINTS ${QTDIR} ENV QT PATH_SUFFIXES bin)
   add_custom_command(
-      TARGET main_ui POST_BUILD
+      TARGET main_exe POST_BUILD
       COMMENT "Ensuring Qt dependencies"
-      COMMAND ${WINDEPLOYQT_EXECUTABLE} ${WINDEPLOYQT_ARGS} $<TARGET_FILE:main_ui>
-      DEPENDS $<TARGET_FILE:main_ui>
+      COMMAND ${WINDEPLOYQT_EXECUTABLE} ${WINDEPLOYQT_ARGS} $<TARGET_FILE:main_exe>
+      DEPENDS $<TARGET_FILE:main_exe>
   )
   # Copy winddeployqt output to the directory with the main UI binary.
   install(DIRECTORY ${WIN_DEPLOY_DIR} DESTINATION ${WINDOWS_APPLICATION_OUT_DIRECTORY} COMPONENT "application")
   add_custom_command(
-      TARGET main_ui POST_BUILD
+      TARGET main_exe POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_directory "${WIN_DEPLOY_DIR}" "${WINDOWS_APPLICATION_OUT_DIRECTORY}"
-      DEPENDS $<TARGET_FILE:main_ui>
+      DEPENDS $<TARGET_FILE:main_exe>
   )
 
-  install(TARGETS main_ui RUNTIME DESTINATION ${WINDOWS_APPLICATION_OUT_DIRECTORY} COMPONENT "application")
+  install(TARGETS main_exe RUNTIME DESTINATION ${WINDOWS_APPLICATION_OUT_DIRECTORY} COMPONENT "application")
   set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "ExecWait '\\\"$INSTDIR\\\\${WINDOWS_APPLICATION_OUT_DIRECTORY}\\\\${VCREDIST_BINARY}\\\" /install /passive'")
   install(FILES "${OPENSSL_DLL_DIR}/libeay32.dll" "${OPENSSL_DLL_DIR}/ssleay32.dll" DESTINATION ${WINDOWS_APPLICATION_OUT_DIRECTORY} COMPONENT "application")
   add_custom_command(
-      TARGET main_ui POST_BUILD
+      TARGET main_exe POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
           "${OPENSSL_DLL_DIR}/libeay32.dll"
           "${OPENSSL_DLL_DIR}/ssleay32.dll"
@@ -694,14 +617,14 @@ if(APPLE)
       ENV QT
       PATH_SUFFIXES "5.7/clang_64/bin"
   )
-  add_custom_command(TARGET main_ui POST_BUILD
+  add_custom_command(TARGET main_exe POST_BUILD
       COMMENT "Ensuring Qt dependencies"
-      COMMAND ${MACDEPLOYQT_EXECUTABLE} ARGS ${CMAKE_CURRENT_BINARY_DIR}/\${CONFIGURATION}/$<TARGET_PROPERTY:main_ui,OUTPUT_NAME>.app ${MACDEPLOYQT_ARGS}
-      DEPENDS $<TARGET_FILE:main_ui>
+      COMMAND ${MACDEPLOYQT_EXECUTABLE} ARGS ${CMAKE_CURRENT_BINARY_DIR}/\${CONFIGURATION}/$<TARGET_PROPERTY:main_exe,OUTPUT_NAME>.app ${MACDEPLOYQT_ARGS}
+      DEPENDS $<TARGET_FILE:main_exe>
   )
-  set_target_properties(main_ui PROPERTIES MACOSX_BUNDLE TRUE)
-  set_target_properties(main_ui PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/resources/MacOSXBundleInfo.plist.in)
-  install(TARGETS main_ui BUNDLE DESTINATION "./" COMPONENT "application")
+  set_target_properties(main_exe PROPERTIES MACOSX_BUNDLE TRUE)
+  set_target_properties(main_exe PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/resources/MacOSXBundleInfo.plist.in)
+  install(TARGETS main_exe BUNDLE DESTINATION "./" COMPONENT "application")
   set(CPACK_PACKAGE_EXECUTABLES "veles.app" "VELES")
 endif()
 
