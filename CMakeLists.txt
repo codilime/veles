@@ -72,7 +72,7 @@ endif()
 if(WIN32)
   set(WINDOWS_APPLICATION_OUT_DIRECTORY "Veles UI")
   # Overwrite default Debug/Release/RelWithDebInfo/MinSizeRel application directory.
-  # We can't use CMAKE_RUNTIME_OUTPUT_DIRECTORY, because it appends config type do the path.
+  # We can't use CMAKE_RUNTIME_OUTPUT_DIRECTORY, because it appends config type to the path.
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${WINDOWS_APPLICATION_OUT_DIRECTORY})
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${WINDOWS_APPLICATION_OUT_DIRECTORY})
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${WINDOWS_APPLICATION_OUT_DIRECTORY})
