@@ -356,29 +356,6 @@ target_link_libraries(main_exe veles_base Qt5::Widgets ${ZLIB_LIBRARIES} ${ADDIT
 set_target_properties(main_exe PROPERTIES OUTPUT_NAME "veles")
 add_dependencies(main_exe openssl zlib msgpack-c)
 
-set(GENERATED_MOC_FILES
-    ${CMAKE_SOURCE_DIR}/moc_base.cpp
-    ${CMAKE_SOURCE_DIR}/moc_commands.cpp
-    ${CMAKE_SOURCE_DIR}/moc_digram.cpp
-    ${CMAKE_SOURCE_DIR}/moc_veles_mainwindow.cpp
-    ${CMAKE_SOURCE_DIR}/moc_connectionmanager.cpp
-    ${CMAKE_SOURCE_DIR}/moc_dockwidget.cpp
-    ${CMAKE_SOURCE_DIR}/moc_hexeditwidget.cpp
-    ${CMAKE_SOURCE_DIR}/moc_nodetreewidget.cpp
-    ${CMAKE_SOURCE_DIR}/moc_nodewidget.cpp
-    ${CMAKE_SOURCE_DIR}/moc_logwidget.cpp
-    ${CMAKE_SOURCE_DIR}/moc_optionsdialog.cpp
-    ${CMAKE_SOURCE_DIR}/moc_hexedit.cpp
-    ${CMAKE_SOURCE_DIR}/moc_searchdialog.cpp
-    ${CMAKE_SOURCE_DIR}/moc_trigram.cpp
-    ${CMAKE_SOURCE_DIR}/moc_manipulator.cpp
-    ${CMAKE_SOURCE_DIR}/moc_connectiondialog.cpp
-    ${CMAKE_SOURCE_DIR}/moc_networkclient.cpp
-    ${CMAKE_SOURCE_DIR}/moc_dbif.cpp
-)
-
-set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${GENERATED_MOC_FILES})
-
 if(GTEST_FOUND AND GMOCK_FOUND)
   include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
   add_executable(run_test
