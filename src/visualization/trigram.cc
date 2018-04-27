@@ -830,8 +830,9 @@ QVector3D TrigramWidget::calcScreenPosForLabel(
   float length = label_pos.length();
   float factor = length >= 50.f ? 1.f : length / 50.f;
   label_pos.normalize();
-  label_pos *= factor * 1.2 * std::sqrt((.5f * width) * (.5f * width) +
-                                        (.5f * height) * (.5f * height));
+  label_pos *= factor * 1.2 *
+               std::sqrt((.5f * width) * (.5f * width) +
+                         (.5f * height) * (.5f * height));
   label_pos += pos_on_screen - QVector3D(width >> 1, height >> 1, 0.f);
   return label_pos;
 }

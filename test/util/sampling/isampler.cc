@@ -21,10 +21,10 @@
 namespace veles {
 namespace util {
 
+using testing::_;
+using testing::Expectation;
 using testing::Mock;
 using testing::Return;
-using testing::Expectation;
-using testing::_;
 
 /*****************************************************************************/
 /* Helpers */

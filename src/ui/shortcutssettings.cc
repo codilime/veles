@@ -24,13 +24,12 @@
 namespace veles {
 namespace ui {
 
-using util::settings::shortcuts::ShortcutType;
 using util::settings::shortcuts::ShortcutsModel;
+using util::settings::shortcuts::ShortcutType;
 
 ShortcutsDialog::ShortcutsDialog(QWidget* parent)
-    : QDialog(parent,
-              Qt::WindowTitleHint | Qt::WindowSystemMenuHint |
-                  Qt::WindowCloseButtonHint),
+    : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint |
+                          Qt::WindowCloseButtonHint),
       ui_(new Ui::ShortcutsDialog),
       shortcut_selection_(new ShortcutEditDialog(this)),
       model_(ShortcutsModel::getShortcutsModel()),
@@ -158,9 +157,8 @@ void ShortcutsDialog::showShortcutSelectionDialog(const QModelIndex& index) {
 }
 
 ShortcutEditDialog::ShortcutEditDialog(QWidget* parent)
-    : QDialog(parent,
-              Qt::WindowTitleHint | Qt::WindowSystemMenuHint |
-                  Qt::WindowCloseButtonHint),
+    : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint |
+                          Qt::WindowCloseButtonHint),
       ui(new Ui::ShortcutEditDialog) {
   ui->setupUi(this);
   ui->conflictLabel->setStyleSheet("QLabel { color : red; }");

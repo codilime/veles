@@ -27,8 +27,9 @@ GoToAddressDialog::GoToAddressDialog(QWidget* parent)
     : QDialog(parent), ui_(new Ui::GoToAddressDialog) {
   ui_->setupUi(this);
 
-  connect(ui_->addrFormat, static_cast<void (QComboBox::*)(const QString&)>(
-                               &QComboBox::currentIndexChanged),
+  connect(ui_->addrFormat,
+          static_cast<void (QComboBox::*)(const QString&)>(
+              &QComboBox::currentIndexChanged),
           this, &GoToAddressDialog::formatChanged);
 
   formatChanged(ui_->addrFormat->currentText());
