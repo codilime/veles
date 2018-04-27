@@ -35,7 +35,7 @@ namespace client {
 class NodeTree;
 class NetworkClient;
 
-typedef std::set<std::string> Tags;
+using Tags = std::set<std::string>;
 
 /*****************************************************************************/
 /* Node */

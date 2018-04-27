@@ -31,7 +31,7 @@ namespace ui {
 #include <windows.h>
 #include <winuser.h>
 
-void stopTabBarDragging(QTabBar* object) {
+void stopTabBarDragging(QTabBar* /*object*/) {
   INPUT event;
   event.type = INPUT_MOUSE;
   event.mi.dx = 0;
@@ -42,7 +42,7 @@ void stopTabBarDragging(QTabBar* object) {
   SendInput(1, &event, sizeof(INPUT));
 }
 
-void startDockDragging(QDockWidget* object) {
+void startDockDragging(QDockWidget* /*object*/) {
   INPUT event;
   event.type = INPUT_MOUSE;
   event.mi.dx = 0;
@@ -59,8 +59,8 @@ void startDockDragging(QDockWidget* object) {
 /* Other platforms - not supported yet... */
 /*****************************************************************************/
 
-void stopTabBarDragging(QTabBar* object) {}
-void startDockDragging(QDockWidget* object) {}
+void stopTabBarDragging(QTabBar* /*object*/) {}
+void startDockDragging(QDockWidget* /*object*/) {}
 
 #endif
 

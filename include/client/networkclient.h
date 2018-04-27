@@ -40,8 +40,8 @@ const QString SCHEME_SSL("veles+ssl");
 
 class NodeTree;
 
-typedef std::pair<bool, std::shared_ptr<std::string>> pair_str;
-typedef std::shared_ptr<proto::MsgpackMsg> msg_ptr;
+using pair_str = std::pair<bool, std::shared_ptr<std::string>>;
+using msg_ptr = std::shared_ptr<proto::MsgpackMsg>;
 
 /*****************************************************************************/
 /* NetworkClient */
@@ -92,7 +92,7 @@ class NetworkClient : public QObject {
   virtual void handleBroadcastRunMessage(const msg_ptr& msg);
   virtual void handlePluginHandlerUnregisteredMessage(const msg_ptr& msg);
 
-  typedef void (NetworkClient::*MessageHandler)(const msg_ptr&);
+  using MessageHandler = void (NetworkClient::*)(const msg_ptr&);
 
  signals:
   void connectionStatusChanged(ConnectionStatus connection_status);

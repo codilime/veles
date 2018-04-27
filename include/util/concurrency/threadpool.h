@@ -28,7 +28,7 @@ namespace threadpool {
  * topics (worker groups).
  */
 
-typedef std::function<void()> Task;
+using Task = std::function<void()>;
 
 enum class SchedulingResult {
   SCHEDULED,

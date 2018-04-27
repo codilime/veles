@@ -52,7 +52,7 @@ class VisualizationWidget : public QOpenGLWidget,
   struct AdditionalResampleData {
     virtual ~AdditionalResampleData() {}
   };
-  typedef std::shared_ptr<AdditionalResampleData> AdditionalResampleDataPtr;
+  using AdditionalResampleDataPtr = std::shared_ptr<AdditionalResampleData>;
 
   void refreshVisualization(
       const AdditionalResampleDataPtr& ad = AdditionalResampleDataPtr());

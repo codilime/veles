@@ -68,7 +68,7 @@ struct ChunkDataItemQuery {
   ChunkDataItemQuery(uint64_t children_qid, uint64_t data_items_qid,
                      const QPointer<dbif::InfoPromise>& promise,
                      const data::NodeID& id, bool sub);
-  typedef std::map<data::NodeID, std::shared_ptr<proto::Node>> ChildrenMap;
+  using ChildrenMap = std::map<data::NodeID, std::shared_ptr<proto::Node>>;
 
   bool ready();
 
@@ -92,8 +92,8 @@ class NCWrapper : public QObject {
   Q_OBJECT
 
  public:
-  typedef std::map<data::NodeID, NCObjectHandle> ChildrenMap;
-  typedef void (NCWrapper::*MessageHandler)(const msg_ptr&);
+  using ChildrenMap = std::map<data::NodeID, NCObjectHandle>;
+  using MessageHandler = void (NCWrapper::*)(const msg_ptr&);
 
   explicit NCWrapper(NetworkClient* network_client, QObject* parent = nullptr);
   static dbif::ObjectType typeFromTags(

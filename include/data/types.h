@@ -22,7 +22,7 @@ namespace veles {
 
 namespace dbif {
 class ObjectHandleBase;
-typedef QSharedPointer<ObjectHandleBase> ObjectHandle;
+using ObjectHandle = QSharedPointer<ObjectHandleBase>;
 }  // namespace dbif
 
 namespace data {

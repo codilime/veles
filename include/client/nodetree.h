@@ -24,7 +24,7 @@
 namespace veles {
 namespace client {
 
-typedef std::shared_ptr<proto::MsgpackMsg> msg_ptr;
+using msg_ptr = std::shared_ptr<proto::MsgpackMsg>;
 
 /*****************************************************************************/
 /* NodeTree */

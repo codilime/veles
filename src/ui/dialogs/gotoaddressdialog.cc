@@ -53,7 +53,7 @@ void GoToAddressDialog::formatChanged(const QString& format) {
 
 qint64 GoToAddressDialog::address() { return ui_->addrValue->value(); }
 
-void GoToAddressDialog::showEvent(QShowEvent* event) {
+void GoToAddressDialog::showEvent(QShowEvent* /*event*/) {
   ui_->addrValue->setFocus(Qt::OtherFocusReason);
 }
 

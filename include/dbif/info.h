@@ -44,15 +44,15 @@ struct BlobDataReply;
 struct ChunkDataReply;
 
 struct DescriptionRequest : InfoRequest {
-  typedef DescriptionReply ReplyType;
+  using ReplyType = DescriptionReply;
 };
 
 struct ChildrenRequest : InfoRequest {
-  typedef ChildrenReply ReplyType;
+  using ReplyType = ChildrenReply;
 };
 
 struct ParsersListRequest : InfoRequest {
-  typedef ParsersListReply ReplyType;
+  using ReplyType = ParsersListReply;
 };
 
 struct BlobDataRequest : InfoRequest {
@@ -60,11 +60,11 @@ struct BlobDataRequest : InfoRequest {
   const uint64_t end;
   explicit BlobDataRequest(uint64_t start, uint64_t end)
       : start(start), end(end) {}
-  typedef BlobDataReply ReplyType;
+  using ReplyType = BlobDataReply;
 };
 
 struct ChunkDataRequest : InfoRequest {
-  typedef ChunkDataReply ReplyType;
+  using ReplyType = ChunkDataReply;
 };
 
 // Replies

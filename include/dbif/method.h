@@ -50,7 +50,7 @@ struct RootCreateFileBlobFromDataRequest : MethodRequest {
   explicit RootCreateFileBlobFromDataRequest(data::BinData&& data,
                                              const QString& path)
       : data(data), path(path) {}
-  typedef CreatedReply ReplyType;
+  using ReplyType = CreatedReply;
 };
 
 struct ChunkCreateRequest : MethodRequest {
@@ -67,7 +67,7 @@ struct ChunkCreateRequest : MethodRequest {
         parent_chunk(parent_chunk),
         start(start),
         end(end) {}
-  typedef CreatedReply ReplyType;
+  using ReplyType = CreatedReply;
 };
 
 struct ChunkCreateSubBlobRequest : MethodRequest {
@@ -78,23 +78,23 @@ struct ChunkCreateSubBlobRequest : MethodRequest {
       : data(data), name(name) {}
   explicit ChunkCreateSubBlobRequest(data::BinData&& data, const QString& name)
       : data(data), name(name) {}
-  typedef CreatedReply ReplyType;
+  using ReplyType = CreatedReply;
 };
 
 struct DeleteRequest : MethodRequest {
-  typedef NullReply ReplyType;
+  using ReplyType = NullReply;
 };
 
 struct SetNameRequest : MethodRequest {
   QString name;
   explicit SetNameRequest(const QString& name) : name(name) {}
-  typedef NullReply ReplyType;
+  using ReplyType = NullReply;
 };
 
 struct SetCommentRequest : MethodRequest {
   QString comment;
   explicit SetCommentRequest(const QString& comment) : comment(comment) {}
-  typedef NullReply ReplyType;
+  using ReplyType = NullReply;
 };
 
 struct ChangeDataRequest : MethodRequest {
@@ -105,7 +105,7 @@ struct ChangeDataRequest : MethodRequest {
       : start(start), end(end), data(data) {}
   ChangeDataRequest(uint64_t start, uint64_t end, data::BinData&& data)
       : start(start), end(end), data(data) {}
-  typedef NullReply ReplyType;
+  using ReplyType = NullReply;
 };
 
 struct SetChunkBoundsRequest : MethodRequest {
@@ -113,7 +113,7 @@ struct SetChunkBoundsRequest : MethodRequest {
   const uint64_t end;
   explicit SetChunkBoundsRequest(uint64_t start, uint64_t end)
       : start(start), end(end) {}
-  typedef NullReply ReplyType;
+  using ReplyType = NullReply;
 };
 
 struct SetChunkParseRequest : MethodRequest {
@@ -123,7 +123,7 @@ struct SetChunkParseRequest : MethodRequest {
   SetChunkParseRequest(uint64_t start, uint64_t end,
                        std::vector<data::ChunkDataItem> items)
       : start(start), end(end), items(items) {}
-  typedef NullReply ReplyType;
+  using ReplyType = NullReply;
 };
 
 struct BlobParseRequest : MethodRequest {
@@ -133,7 +133,7 @@ struct BlobParseRequest : MethodRequest {
   explicit BlobParseRequest(QString parser_id = "", uint64_t start = 0,
                             ObjectHandle parent_chunk = ObjectHandle())
       : parser_id(parser_id), start(start), parent_chunk(parent_chunk) {}
-  typedef NullReply ReplyType;
+  using ReplyType = NullReply;
 };
 
 // Replies
