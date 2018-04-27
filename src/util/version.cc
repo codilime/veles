@@ -26,16 +26,15 @@ const unsigned release = 0;
 const unsigned patch = 1;
 const QString codename = "SWOND";
 const QString string =
-    patch > 0
-        ? QString("%1.%2.%3.%4.%5")
-              .arg(QString("%1").arg(year),
-                   QString("%1").arg(month, 2, 10, QChar('0')),
-                   QString("%1").arg(release), QString("%1").arg(patch),
-                   codename)
-        : QString("%1.%2.%3.%4")
-              .arg(QString("%1").arg(year),
-                   QString("%1").arg(month, 2, 10, QChar('0')),
-                   QString("%1").arg(release), codename);
+    patch > 0 ? QString("%1.%2.%3.%4.%5")
+                    .arg(QString("%1").arg(year),
+                         QString("%1").arg(month, 2, 10, QChar('0')),
+                         QString("%1").arg(release), QString("%1").arg(patch),
+                         codename)
+              : QString("%1.%2.%3.%4")
+                    .arg(QString("%1").arg(year),
+                         QString("%1").arg(month, 2, 10, QChar('0')),
+                         QString("%1").arg(release), codename);
 
 }  // namespace version
 }  // namespace util

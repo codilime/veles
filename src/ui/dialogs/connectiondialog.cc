@@ -84,9 +84,10 @@ ConnectionDialog::ConnectionDialog(QWidget* parent)
   connect(ui_->load_defaults_button, &QPushButton::clicked, this,
           &ConnectionDialog::loadDefaultValues);
   connect(this, &QDialog::accepted, this, &ConnectionDialog::dialogAccepted);
-  connect(ui_->profile, static_cast<void (QComboBox::*)(int)>(
-                            &QComboBox::currentIndexChanged),
-          this, &ConnectionDialog::profileChanged);
+  connect(
+      ui_->profile,
+      static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+      this, &ConnectionDialog::profileChanged);
   connect(ui_->profile, &QComboBox::editTextChanged, this,
           &ConnectionDialog::profileNameEdited);
   connect(ui_->remove_profile_button, &QPushButton::clicked, this,

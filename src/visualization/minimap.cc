@@ -312,7 +312,10 @@ void VisualizationMinimap::initShaders() {
 void VisualizationMinimap::initGeometry() {
   square_vertex_.create();
   QVector2D v[] = {
-      {0, 0}, {0, 1}, {1, 0}, {1, 1},
+      {0, 0},
+      {0, 1},
+      {1, 0},
+      {1, 1},
   };
   square_vertex_.bind();
   square_vertex_.allocate(v, sizeof v);

@@ -373,14 +373,15 @@ void VelesMainWindow::createFileBlob(const QString& file_name) {
   auto promise =
       database_->asyncRunMethod<dbif::RootCreateFileBlobFromDataRequest>(
           this, data, file_name);
-  connect(promise, &dbif::MethodResultPromise::gotResult, [this, file_name](
-                                                              dbif::PMethodReply
-                                                                  reply) {
-    createHexEditTab(
-        file_name.isEmpty() ? "untitled" : file_name,
-        reply.dynamicCast<dbif::RootCreateFileBlobFromDataRequest::ReplyType>()
-            ->object);
-  });
+  connect(promise, &dbif::MethodResultPromise::gotResult,
+          [this, file_name](dbif::PMethodReply reply) {
+            createHexEditTab(
+                file_name.isEmpty() ? "untitled" : file_name,
+                reply
+                    .dynamicCast<
+                        dbif::RootCreateFileBlobFromDataRequest::ReplyType>()
+                    ->object);
+          });
 
   connect(promise, &dbif::MethodResultPromise::gotError,
           [this, file_name](dbif::PError error) {

@@ -21,8 +21,8 @@
 #include "gtest/gtest.h"
 
 using testing::AllOf;
-using testing::Ne;
 using testing::ContainerEq;
+using testing::Ne;
 
 namespace veles {
 namespace data {
