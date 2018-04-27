@@ -1,7 +1,7 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 RUN apt-get update \
-	&& apt-get install -y \
+    && apt-get install -y \
     cmake \
     zlib1g-dev \
     qtbase5-dev \
@@ -11,9 +11,9 @@ RUN apt-get update \
     python3-dev \
     libffi-dev \
     libssl-dev \
-    clang-tidy-3.9 \
-    clang-format-3.9 \
-    libclang-common-3.9-dev \
+    clang-tidy-6.0 \
+    clang-format-6.0 \
+    libclang-common-6.0-dev \
     # python tests dependencies
     git \
     python2.7 \
