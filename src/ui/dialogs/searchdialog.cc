@@ -227,7 +227,7 @@ qint64 SearchDialog::findPrevious(bool include_overlapping, bool interactive) {
   return idx;
 }
 
-void SearchDialog::showEvent(QShowEvent* event) {
+void SearchDialog::showEvent(QShowEvent* /*event*/) {
   ui->cbFind->setFocus(Qt::OtherFocusReason);
 }
 

@@ -46,7 +46,7 @@ const std::map<QString, VisualizationPanel::ESampler>
 
 VisualizationPanel::VisualizationPanel(
     ui::MainWindowWithDetachableDockWidgets* main_window,
-    const QSharedPointer<ui::FileBlobModel>& data_model, QWidget* parent)
+    const QSharedPointer<ui::FileBlobModel>& data_model, QWidget* /*parent*/)
     : veles::ui::IconAwareView("Visualization", ":/images/trigram_icon.png"),
       sampler_type_(k_default_sampler),
       visualization_type_(k_default_visualization),
