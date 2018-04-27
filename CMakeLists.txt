@@ -500,7 +500,10 @@ if(CLANG_TIDY)
         ${LINT_TARGET_NAME}
         COMMAND
             ${CLANG_TIDY}
-            -header-filter=${INCLUDE_DIR}  # regex
+            # Test dir has some headers inside, don't skip them.
+            "\"-header-filter=((${INCLUDE_DIR})|(${TEST_DIR}))[/\\].*\""
+            # TODO(mkow): Uncomment after upgrading LLVM.
+            #-quiet
             ${LINT_SOURCE_FILE}
             --
             ${LINT_CXX_FLAGS}
