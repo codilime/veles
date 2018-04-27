@@ -1,22 +1,15 @@
 ---
 # No idea how to fold this line without breaking clang-tidy.
-Checks: 'clang-diagnostic-*,clang-analyzer-*,google-*,performace-*,bugprone-*,cert-*,misc-*,readability-*,modernize-*,-cert-err58-cpp,-misc-unused-parameters,-misc-misplaced-widening-cast,-modernize-use-using,-modernize-pass-by-value,-modernize-use-equals-default,-modernize-raw-string-literal,-modernize-use-equals-delete,-modernize-use-default-member-init,-modernize-use-emplace,-modernize-use-bool-literals,-readability-braces-around-statements,-misc-suspicious-enum-usage,-readability-redundant-declaration'
+Checks: 'clang-diagnostic-*,clang-analyzer-*,google-*,performace-*,bugprone-*,cert-*,misc-*,readability-*,modernize-*,-cert-err58-cpp,-misc-misplaced-widening-cast,-modernize-pass-by-value,-modernize-use-equals-default,-modernize-raw-string-literal,-modernize-use-equals-delete,-modernize-use-default-member-init,-modernize-use-emplace,-readability-braces-around-statements,-misc-suspicious-enum-usage'
 ...
 
-# Blacklisted checks:
+# Disabled checks:
 # - cert-err58-cpp:
 #     We use many QString globals which theoretically can throw in constructors
 #     (and we're fine with that).
-# - misc-unused-parameters:
-#     Generates many false-positives, will be reenabled after
-#     https://bugs.llvm.org/show_bug.cgi?id=32212 get fixed (in 5.0.0).
 # - misc-misplaced-widening-cast:
 #     Too many warnings when using Qt (e.g. in
 #     `static_cast<Qt::ItemDataRole>(Qt::UserRole + 1)` ).
-# - modernize-use-using:
-#     Crashes on Windows in current release. Fixed in
-#     http://llvm.org/viewvc/llvm-project?view=revision&revision=292229 which
-#     will be included in 5.0.0.
 # - modernize-use-equals-default:
 #     Doesn't work well with our Variant-like union in msgpackobject.h.
 # - modernize-raw-string-literal
@@ -29,11 +22,7 @@ Checks: 'clang-diagnostic-*,clang-analyzer-*,google-*,performace-*,bugprone-*,ce
 #     Sometimes it is more readable to set some members in a constructor.
 # - modernize-use-emplace
 #     Warns also about push_back(SomeFactory::create()).
-# - modernize-use-bool-literals:
-#     Bug in 4.0.1: Q_INIT_RESOURCE(veles) triggers a warning.
 # - readability-braces-around-statements:
 #     There are parts of the code where short `if(A) B;` is preferred.
 # - misc-suspicious-enum-usage:
 #     Incompatible with Qt (e.g. QKeySequence(Qt::CTRL | Qt::Key_G)).
-# - readability-redundant-declaration:
-#     Broken, will be reenabled after https://bugs.llvm.org/show_bug.cgi?id=32749 get fixed.
