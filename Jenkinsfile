@@ -321,7 +321,7 @@ builders['clang-format'] = { node ('ubuntu-16.04'){
           checkout scm
           sh """#!/bin/bash -ex
             set -o pipefail
-            for i in clang-format clang-format-4.0 clang-format-3.9 clang-format-3.8 ; do
+            for i in clang-format clang-format-6.0 ; do
               if hash \$i 2>/dev/null ; then
                 CLANG_FORMAT=\$i
                 break
