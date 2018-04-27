@@ -175,9 +175,9 @@ builders['msvc2015_64'] = { node('windows'){
 }
 
 
-builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
+builders['ubuntu-18.04'] = { node ('ubuntu-18.04'){
     timestamps {
-      stage('checkout ubuntu 16.04') {
+      stage('checkout ubuntu 18.04') {
         try {
           checkout scm
           sh 'rm -Rf build'
@@ -187,8 +187,8 @@ builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
         }
       }
       parallel(
-        "build ubuntu 16.04": {
-          stage('ubuntu 16.04') {
+        "build ubuntu 18.04": {
+          stage('ubuntu 18.04') {
             try {
               dir ("build") {
                 def branch = getBranch()
@@ -222,13 +222,13 @@ builders['ubuntu-16.04'] = { node ('ubuntu-16.04'){
               }
               sh 'rm -Rf build'
             } catch (error) {
-              post_stage_failure(env.JOB_NAME, "ubuntu-16.04-amd64", env.BUILD_ID, env.BUILD_URL)
+              post_stage_failure(env.JOB_NAME, "ubuntu-18.04-amd64", env.BUILD_ID, env.BUILD_URL)
               throw error
             }
           }
         },
-        "python tests - Linux ubuntu 16.04": {
-          stage('python tests - Linux ubuntu 16.04') {
+        "python tests - Linux ubuntu 18.04": {
+          stage('python tests - Linux ubuntu 18.04') {
             try {
               dir('python') {
                 sh "./run_tests.sh"
@@ -314,7 +314,7 @@ builders['macosx'] = { node ('macosx'){
   }
 }
 
-builders['clang-format'] = { node ('ubuntu-16.04'){
+builders['clang-format'] = { node ('ubuntu-18.04'){
     timestamps {
       try {
         stage('clang format') {
