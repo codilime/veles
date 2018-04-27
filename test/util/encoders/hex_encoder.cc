@@ -50,7 +50,7 @@ TEST(HexEncoder, validate) {
   auto test = [&encoder](const QByteArray& bytes) {
     EXPECT_EQ(encoder.decode(encoder.encode(bytes)), bytes);
   };
-  auto test_str = [&encoder, &test](const QString& str) {
+  auto test_str = [&test](const QString& str) {
     QByteArray bytes = str.toLatin1();
     test(bytes);
   };
