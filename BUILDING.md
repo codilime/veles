@@ -26,7 +26,7 @@ On Ubuntu it can be done like this:
 ```bash
 apt-get install cmake zlib1g-dev qtbase5-dev g++ python3 python3-venv \
     python3-dev python3-msgpack python3-openssl libffi-dev libssl-dev \
-    clang-tidy-4.0 clang-format-4.0 libclang-common-4.0-dev
+    clang-tidy-6.0 clang-format-6.0 libclang-common-6.0-dev
 ```
 
 To build:
@@ -181,7 +181,7 @@ If you want to run tests you will also need `Google Test`:
 Enabling auto code formatting (build target `format`) and static analysis
 (target `lint`):
 
-1. Install [LLVM 4.0.1](https://releases.llvm.org/download.html#4.0.1).
+1. Install [LLVM 6.0.0](https://releases.llvm.org/download.html#6.0.0).
 2. Set `CLANG_TOOLS_PATH` to a folder containing clang-format and clang-tidy
 (e.g. `C:\Program Files\LLVM\bin`).
 

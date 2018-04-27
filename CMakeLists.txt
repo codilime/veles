@@ -394,7 +394,7 @@ endif()
 # Post-build: linting
 
 message(STATUS "Looking for clang-format")
-find_program(CLANG_FORMAT NAMES clang-format clang-format-4.0 clang-format-3.9 clang-format-3.8 clang-format-3.7 clang-format-3.6 clang-format-3.5 HINTS ${CLANG_TOOLS_PATH})
+find_program(CLANG_FORMAT NAMES clang-format-6.0 clang-format HINTS ${CLANG_TOOLS_PATH})
 
 if(CLANG_FORMAT)
   message(STATUS "Looking for clang-format - found")
@@ -419,7 +419,7 @@ endif()
 
 
 message(STATUS "Looking for clang-tidy")
-find_program(CLANG_TIDY NAMES clang-tidy clang-tidy-4.0 clang-tidy-3.9 clang-tidy-3.8 clang-tidy-3.7 clang-tidy-3.6 clang-tidy-3.5 HINTS ${CLANG_TOOLS_PATH})
+find_program(CLANG_TIDY NAMES clang-tidy-6.0 clang-tidy HINTS ${CLANG_TOOLS_PATH})
 
 if(CLANG_TIDY)
   # Generate 'lint' target.
@@ -502,8 +502,7 @@ if(CLANG_TIDY)
             ${CLANG_TIDY}
             # Test dir has some headers inside, don't skip them.
             "\"-header-filter=((${INCLUDE_DIR})|(${TEST_DIR}))[/\\].*\""
-            # TODO(mkow): Uncomment after upgrading LLVM.
-            #-quiet
+            -quiet
             ${LINT_SOURCE_FILE}
             --
             ${LINT_CXX_FLAGS}
