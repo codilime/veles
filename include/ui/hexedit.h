@@ -116,17 +116,17 @@ class HexEdit : public QAbstractScrollArea {
   quint64 byte_max_value_;
   /** Number of pixels between two bytes in hex view (calculated from char
    * width) */
-  qint64 spaceAfterByte_;
+  int spaceAfterByte_;
   /** Number of pixels between two bytes in ASCII view (calculated from char
    * width) */
-  qint64 spaceAfterAsciiByte_;
+  int spaceAfterAsciiByte_;
   /** Width of single character in pixels */
-  qint64 charWidth_;
+  int charWidth_;
   /** Height of single character in pixels */
-  qint64 charHeight_;
+  int charHeight_;
   /** Number of pixels between two bytes (vertically) in hex view (calculated
    * from char height)  */
-  qint64 verticalByteBorderMargin_;
+  int verticalByteBorderMargin_;
   /** Number of bytes (8 bit) used to represent offset addr */
   qint64 addressBytes_;
   /** Width in pixels of address area */

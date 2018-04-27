@@ -136,7 +136,7 @@ QFont font() {
 void setFont(const QFont& font) {
   QSettings settings;
   settings.setValue("font", font.toString());
-  veles::ui::VelesApplication::instance()->setFont(font);
+  veles::ui::VelesApplication::setFont(font);
 }
 
 QFont defaultFixedFont() {
