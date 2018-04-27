@@ -47,7 +47,7 @@ class CreateChunkDialog : public QDialog {
 
  public slots:
   void accept() override;
-  virtual void updateBinDataSize();
+  void updateBinDataSize();
 
  private:
   FileBlobModel* chunksModel_;
