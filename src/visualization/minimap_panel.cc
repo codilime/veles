@@ -28,7 +28,7 @@ namespace visualization {
 
 const float k_minimum_auto_selection_size = 0.1f;
 
-typedef VisualizationMinimap::MinimapMode MinimapMode;
+using MinimapMode = VisualizationMinimap::MinimapMode;
 
 MinimapPanel::MinimapPanel(QWidget* parent)
     : QWidget(parent), select_range_dialog_(new SelectRangeDialog(this)) {

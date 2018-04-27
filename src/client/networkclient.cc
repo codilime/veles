@@ -500,7 +500,7 @@ void NetworkClient::newDataAvailable() {
   }
 }
 
-void NetworkClient::socketError(QAbstractSocket::SocketError socketError) {
+void NetworkClient::socketError(QAbstractSocket::SocketError /*socketError*/) {
   setConnectionStatus(ConnectionStatus::NotConnected);
   if (output() != nullptr && client_socket_ != nullptr) {
     *output() << "NetworkClient: Socket error - "

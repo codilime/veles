@@ -29,10 +29,10 @@
 namespace veles {
 namespace util {
 
-typedef std::recursive_mutex SamplerMutex;
-typedef std::condition_variable_any SamplerConditionVariable;
-typedef std::function<void()> ResampleCallback;
-typedef int ResampleCallbackId;
+using SamplerMutex = std::recursive_mutex;
+using SamplerConditionVariable = std::condition_variable_any;
+using ResampleCallback = std::function<void()>;
+using ResampleCallbackId = int;
 
 /**
  * Abstract interface for Sampler classes.

@@ -30,11 +30,11 @@ struct MethodReply;
 struct Error;
 class InfoPromise;
 class MethodResultPromise;
-typedef QSharedPointer<InfoRequest> PInfoRequest;
-typedef QSharedPointer<InfoReply> PInfoReply;
-typedef QSharedPointer<MethodRequest> PMethodRequest;
-typedef QSharedPointer<MethodReply> PMethodReply;
-typedef QSharedPointer<Error> PError;
+using PInfoRequest = QSharedPointer<InfoRequest>;
+using PInfoReply = QSharedPointer<InfoReply>;
+using PMethodRequest = QSharedPointer<MethodRequest>;
+using PMethodReply = QSharedPointer<MethodReply>;
+using PError = QSharedPointer<Error>;
 
 enum ObjectType {
   ROOT,
