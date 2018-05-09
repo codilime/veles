@@ -144,6 +144,7 @@ add_library(veles_base
     ${SRC_DIR}/util/encoders/hex_encoder.cc
     ${SRC_DIR}/util/encoders/text_encoder.cc
     ${SRC_DIR}/util/encoders/url_encoder.cc
+    ${SRC_DIR}/ui/disasm/gf100.cc
 
     ${SRC_DIR}/util/edit.cc
     ${SRC_DIR}/util/string_utils.cc
@@ -365,6 +366,7 @@ add_executable(main_ui
     ${INCLUDE_DIR}/ui/disasm/asmgen.h
     ${INCLUDE_DIR}/ui/disasm/disasm.h
     ${INCLUDE_DIR}/ui/disasm/tab.h
+    ${INCLUDE_DIR}/ui/disasm/gf100.h
     ${INCLUDE_DIR}/ui/disasm/arrows.h
     ${INCLUDE_DIR}/ui/disasm/widget.h
     ${INCLUDE_DIR}/ui/disasm/window.h
