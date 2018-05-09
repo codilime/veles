@@ -55,3 +55,7 @@ veles--ui--disasm--Widget QLabel#string {
 veles--ui--disasm--Widget QLabel[highlight="true"] {
   background-color: #484848;
 }
+
+veles--ui--disasm--Widget QLabel:focus {
+   background-color: #111;
+ }
