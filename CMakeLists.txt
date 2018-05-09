@@ -43,7 +43,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 set(CMAKE_INSTALL_RPATH ".")
-if(CMAKE_COMPILER_IS_GNUCXX)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")  # All warnings
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")  # For clang-tidy
   set(ADDITIONAL_LINK_LIBRARIES "pthread")
@@ -259,7 +259,7 @@ add_library(veles_base
     ${INCLUDE_DIR}/visualization/samplingmethoddialog.h
     ${INCLUDE_DIR}/visualization/selectrangedialog.h
     ${INCLUDE_DIR}/visualization/trigram.h
-    
+
     ${SRC_DIR}/client/dbif.cc
     ${SRC_DIR}/client/networkclient.cc
     ${SRC_DIR}/client/nodetree.cc
