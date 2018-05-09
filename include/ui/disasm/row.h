@@ -29,6 +29,8 @@ namespace veles {
 namespace ui {
 namespace disasm {
 
+class Widget;
+
 /**
  * Row consists of three elements: address label, text widget, comment label.
  * They are placed in this order in horizontal box layout.
@@ -74,29 +76,29 @@ namespace disasm {
 
 #define ROW_HEIGHT 18
 
-
 class Label : public QLabel {
-
   Q_OBJECT
 
   Q_PROPERTY(bool highlight READ highlight WRITE setHighlight)
 
  public:
-  explicit Label(TextRepr * repr, QWidget * parent = nullptr);
-  static bool sameReprClass(const TextRepr &lhs, const TextRepr &rhs);
+  explicit Label(TextRepr* repr, QWidget* parent = nullptr);
+  static bool sameReprClass(const TextRepr& lhs, const TextRepr& rhs);
   void setHighlight(bool new_value);
   bool highlight() const;
 
  public slots:
-  void resetHighlight(const TextRepr* new_repr);
+  void syncHighlight(const TextRepr* new_repr);
+  void resetHighlight();
 
  protected:
-  void mouseDoubleClickEvent(QMouseEvent* event) override;
+  void mouseReleaseEvent(QMouseEvent* event) override;
 
  private:
-  bool highlight_ = false;
-  TextRepr * repr_;
+  ::veles::ui::disasm::Widget* getWidget();
 
+  bool highlight_ = false;
+  TextRepr* repr_;
 };
 
 class Row : public QWidget {
