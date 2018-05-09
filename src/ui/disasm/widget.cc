@@ -222,6 +222,11 @@ void Widget::chunkCollapse(const ChunkID& id) {
 
 int Widget::rowsCount() { return viewport()->height() / ROW_HEIGHT; }
 
+void Widget::selectionChange(const TextRepr *repr) {
+  emit labelSelectionChange(repr);
+
+}
+
 }  // namespace disasm
 }  // namespace ui
 }  // namespace veles

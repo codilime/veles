@@ -74,6 +74,31 @@ namespace disasm {
 
 #define ROW_HEIGHT 18
 
+
+class Label : public QLabel {
+
+  Q_OBJECT
+
+  Q_PROPERTY(bool highlight READ highlight WRITE setHighlight)
+
+ public:
+  explicit Label(TextRepr * repr, QWidget * parent = nullptr);
+  static bool sameReprClass(const TextRepr &lhs, const TextRepr &rhs);
+  void setHighlight(bool new_value);
+  bool highlight() const;
+
+ public slots:
+  void resetHighlight(const TextRepr* new_repr);
+
+ protected:
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
+
+ private:
+  bool highlight_ = false;
+  TextRepr * repr_;
+
+};
+
 class Row : public QWidget {
   Q_OBJECT
 
@@ -115,11 +140,13 @@ class Row : public QWidget {
 
   // Wrapper for dynamic_cast to T
   template <typename T>
-  T* to(TextRepr* ptr);
+  static T* to(const TextRepr* ptr);
 
   // Wrapper for checking if we can dynamic_cast to T
   template <typename T>
-  bool is(TextRepr* ptr);
+  static bool is(const TextRepr* ptr);
+
+  friend class ::veles::ui::disasm::Label;
 };
 
 }  // namespace disasm

@@ -19,10 +19,100 @@
 #include <iostream>
 #include <QtGui/QPainter>
 #include <QtWidgets/QLayout>
+#include <ui/disasm/widget.h>
 
 namespace veles {
 namespace ui {
 namespace disasm {
+
+Label::Label(TextRepr *repr, QWidget *parent) : QLabel(repr -> string(), parent), repr_(repr) {
+  setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
+  setTextInteractionFlags(Qt::TextSelectableByMouse);
+  setText(repr->string());
+
+  if (Row::is<Keyword>(repr)) {
+    Keyword* keyword = Row::to<Keyword>(repr);
+
+    switch (keyword->keywordType()) {
+      case KeywordType::OPCODE:
+        setObjectName("opcode");
+        break;
+      case KeywordType::MODIFIER:
+        setObjectName("modifier");
+        break;
+      case KeywordType::LABEL:
+        setObjectName("label");
+        break;
+      case KeywordType::REGISTER:
+        setObjectName("register");
+        break;
+      default:
+        break;
+    }
+    return;
+  }
+
+  if (Row::is<Text>(repr)) {
+    setObjectName("text");
+    return;
+  }
+
+  if (Row::is<Blank>(repr)) {
+    setObjectName("blank");
+    return;
+  }
+
+  if (Row::is<Number>(repr)) {
+    setObjectName("number");
+    return;
+  }
+
+  if (Row::is<String>(repr)) {
+    setObjectName("string");
+    return;
+  }
+
+  setText(":(");
+  std::cerr << "Please add implementation for missing TextRepr subclasses."
+            << std::endl;
+  
+}
+
+void Label::mouseDoubleClickEvent(QMouseEvent* event) {
+  QWidget * par = this -> parentWidget();
+  while (par and !qobject_cast<Widget *>(par)) {
+    par = par -> parentWidget();
+  }
+  auto * widget = qobject_cast<Widget *>(par);
+  widget -> selectionChange(repr_);
+}
+
+void Label::resetHighlight(const TextRepr* new_repr) {
+  if (highlight_ != sameReprClass(*new_repr, *repr_)) {
+    setHighlight(!highlight());
+    // https://wiki.qt.io/Dynamic_Properties_and_Stylesheets -> Limitations
+    style() -> unpolish(this);
+    style() -> polish(this);
+  }
+}
+
+bool Label::sameReprClass(const TextRepr &lhs, const TextRepr &rhs) {
+  return lhs . string() == rhs . string();
+  if (Row::is<Keyword>(&lhs) and Row::is<Keyword>(&rhs)) {
+    auto new_l = Row::to<Keyword>(&lhs);
+    auto new_r = Row::to<Keyword>(&rhs);
+    return new_l->keywordType() == new_r -> keywordType();
+  }
+  return false;
+}
+
+void Label::setHighlight(bool new_value) {
+  highlight_ = new_value;
+}
+
+bool Label::highlight() const {
+  return highlight_;
+}
 
 Row::Row() {
   setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Fixed);
@@ -60,12 +150,12 @@ void Row::setIndent(int level) {
 }
 
 template <typename T>
-T* Row::to(TextRepr* ptr) {
-  return dynamic_cast<T*>(ptr);
+T* Row::to(const TextRepr* ptr) {
+  return dynamic_cast<T*>(const_cast<TextRepr *>(ptr));
 }
 
 template <typename T>
-bool Row::is(TextRepr* ptr) {
+bool Row::is(const TextRepr* ptr) {
   return to<T>(ptr) != nullptr;
 }
 
@@ -92,61 +182,17 @@ void Row::generateTextLabels(TextRepr* repr, QBoxLayout* layout) {
     return;
   }
 
-  QLabel* label = new QLabel;
-  label->setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
-  label->setText(repr->string());
+  Label* label = new Label(repr);
+  layout->addWidget(label, Qt::AlignLeft);
 
-  if (is<Keyword>(repr)) {
-    Keyword* keyword = to<Keyword>(repr);
-
-    switch (keyword->keywordType()) {
-      case KeywordType::OPCODE:
-        label->setObjectName("opcode");
-        break;
-      case KeywordType::MODIFIER:
-        label->setObjectName("modifier");
-        break;
-      case KeywordType::LABEL:
-        label->setObjectName("label");
-        break;
-      case KeywordType::REGISTER:
-        label->setObjectName("register");
-        break;
-      default:
-        break;
-    }
-    layout->addWidget(label, Qt::AlignLeft);
-    return;
+  QWidget * par = this -> parentWidget();
+  while (par and !qobject_cast<Widget *>(par)) {
+    par = par -> parentWidget();
   }
+  auto widget = qobject_cast<Widget *>(par);
 
-  if (is<Text>(repr)) {
-    Text* text = to<Text>(repr);
-    label->setObjectName("text");
-    layout->addWidget(label, Qt::AlignLeft);
-    return;
-  }
+  connect(widget, &Widget::labelSelectionChange, label, &Label::resetHighlight);
 
-  if (is<Blank>(repr)) {
-    label->setObjectName("blank");
-    layout->addWidget(label, Qt::AlignLeft);
-    return;
-  }
-
-  if (is<Number>(repr)) {
-    label->setObjectName("number");
-    layout->addWidget(label, Qt::AlignLeft);
-    return;
-  }
-
-  if (is<String>(repr)) {
-    label->setObjectName("string");
-    layout->addWidget(label, Qt::AlignLeft);
-    return;
-  }
-
-  label->setText(":(");
-  std::cerr << "Please add implementation for missing TextRepr subclasses."
-            << std::endl;
 }
 
 void Row::setEntry(const EntryChunkCollapsed* entry) {

@@ -44,6 +44,10 @@ namespace disasm {
 class Widget : public QAbstractScrollArea {
   Q_OBJECT
 
+
+ signals:
+  void labelSelectionChange(const TextRepr *);
+
  public slots:
   void getWindow();
   void renderRows();
@@ -55,6 +59,7 @@ class Widget : public QAbstractScrollArea {
 
   void setupMocks();
   void getEntrypoint();
+  void selectionChange(const TextRepr* repr);
 
   void resizeEvent(QResizeEvent* event) override;
 

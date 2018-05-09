@@ -41,7 +41,7 @@ Keyword::Keyword(QString text, KeywordType kc, ChunkID link)
     : text_{text}, keyword_type_{kc}, link_{link} {}
 QString Keyword::string() const { return text_; }
 QString Keyword::text() const { return text_; }
-KeywordType Keyword::keywordType() { return keyword_type_; }
+KeywordType Keyword::keywordType() const { return keyword_type_; }
 const ChunkID Keyword::chunkID() const { return link_; }
 
 QString Blank::string() const { return " "; }
