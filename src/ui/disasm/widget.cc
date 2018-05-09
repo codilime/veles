@@ -16,6 +16,7 @@
  */
 
 #include "ui/disasm/widget.h"
+#include "ui/disasm/gf100.h"
 
 namespace veles {
 namespace ui {
@@ -71,16 +72,8 @@ void Widget::scrollbarChanged(int value) {
 }
 
 void Widget::setupMocks() {
-  mocks::ChunkTreeFactory ctf;
-
-  std::unique_ptr<mocks::ChunkNode> root =
-      ctf.generateTree(mocks::ChunkType::FILE);
-  ctf.setAddresses(root.get(), 0, 0x1000);
-
-  std::shared_ptr<mocks::ChunkNode> sroot{root.release()};
-
-  std::unique_ptr<mocks::MockBlob> mb =
-      std::make_unique<mocks::MockBlob>(sroot);
+  auto mockmap = std::make_shared<mocks::Mock_test_map>();
+  auto mb = std::make_unique<mocks::MockBlob>(std::unique_ptr<mocks::ChunkNode>(mockmap->gibRoot()));
   blob_ = std::unique_ptr<Blob>(std::move(mb));
 }
 
