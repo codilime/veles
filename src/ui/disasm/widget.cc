@@ -218,6 +218,7 @@ void Widget::toggleColumn(Row::ColumnName column_name) {
 
 void Widget::chunkCollapse(const ChunkID& id) {
   window_->chunkCollapseToggle(id);
+  scrollbarChanged(scroll_bar_current_);
 }
 
 int Widget::rowsCount() { return viewport()->height() / ROW_HEIGHT; }
