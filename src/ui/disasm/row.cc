@@ -16,18 +16,18 @@
  */
 
 #include "ui/disasm/row.h"
+#include <ui/disasm/widget.h>
 #include <iostream>
 #include <QtGui/QPainter>
 #include <QtWidgets/QLayout>
-#include <ui/disasm/widget.h>
 
 namespace veles {
 namespace ui {
 namespace disasm {
 
-Label::Label(TextRepr *repr, QWidget *parent) : QLabel(repr -> string(), parent), repr_(repr) {
+Label::Label(TextRepr* repr, QWidget* parent)
+    : QLabel(repr->string(), parent), repr_(repr) {
   setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
-  setTextInteractionFlags(Qt::TextSelectableByMouse);
   setText(repr->string());
 
   if (Row::is<Keyword>(repr)) {
@@ -75,44 +75,48 @@ Label::Label(TextRepr *repr, QWidget *parent) : QLabel(repr -> string(), parent)
   setText(":(");
   std::cerr << "Please add implementation for missing TextRepr subclasses."
             << std::endl;
-  
 }
 
-void Label::mouseDoubleClickEvent(QMouseEvent* event) {
-  QWidget * par = this -> parentWidget();
-  while (par and !qobject_cast<Widget *>(par)) {
-    par = par -> parentWidget();
+Widget* Label::getWidget() {
+  QWidget* par = this->parentWidget();
+  while (par and !qobject_cast<Widget*>(par)) {
+    par = par->parentWidget();
   }
-  auto * widget = qobject_cast<Widget *>(par);
-  widget -> selectionChange(repr_);
+  return qobject_cast<Widget*>(par);
 }
 
-void Label::resetHighlight(const TextRepr* new_repr) {
-  if (highlight_ != sameReprClass(*new_repr, *repr_)) {
+void Label::mouseReleaseEvent(QMouseEvent* event) {
+  getWidget()->selectionChange(repr_);
+  QLabel::mouseReleaseEvent(event);
+}
+
+void Label::resetHighlight() {
+  syncHighlight(getWidget()->current_selection());
+}
+
+void Label::syncHighlight(const TextRepr* repr) {
+  if (!repr) return;
+  if (highlight_ != sameReprClass(*repr, *repr_)) {
     setHighlight(!highlight());
     // https://wiki.qt.io/Dynamic_Properties_and_Stylesheets -> Limitations
-    style() -> unpolish(this);
-    style() -> polish(this);
+    style()->unpolish(this);
+    style()->polish(this);
   }
 }
 
-bool Label::sameReprClass(const TextRepr &lhs, const TextRepr &rhs) {
-  return lhs . string() == rhs . string();
+bool Label::sameReprClass(const TextRepr& lhs, const TextRepr& rhs) {
+  return lhs.string() == rhs.string();
   if (Row::is<Keyword>(&lhs) and Row::is<Keyword>(&rhs)) {
     auto new_l = Row::to<Keyword>(&lhs);
     auto new_r = Row::to<Keyword>(&rhs);
-    return new_l->keywordType() == new_r -> keywordType();
+    return new_l->keywordType() == new_r->keywordType();
   }
   return false;
 }
 
-void Label::setHighlight(bool new_value) {
-  highlight_ = new_value;
-}
+void Label::setHighlight(bool new_value) { highlight_ = new_value; }
 
-bool Label::highlight() const {
-  return highlight_;
-}
+bool Label::highlight() const { return highlight_; }
 
 Row::Row() {
   setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Fixed);
@@ -151,7 +155,7 @@ void Row::setIndent(int level) {
 
 template <typename T>
 T* Row::to(const TextRepr* ptr) {
-  return dynamic_cast<T*>(const_cast<TextRepr *>(ptr));
+  return dynamic_cast<T*>(const_cast<TextRepr*>(ptr));
 }
 
 template <typename T>
@@ -184,15 +188,15 @@ void Row::generateTextLabels(TextRepr* repr, QBoxLayout* layout) {
 
   Label* label = new Label(repr);
   layout->addWidget(label, Qt::AlignLeft);
+  label->resetHighlight();
 
-  QWidget * par = this -> parentWidget();
-  while (par and !qobject_cast<Widget *>(par)) {
-    par = par -> parentWidget();
+  QWidget* par = this->parentWidget();
+  while (par and !qobject_cast<Widget*>(par)) {
+    par = par->parentWidget();
   }
-  auto widget = qobject_cast<Widget *>(par);
+  auto widget = qobject_cast<Widget*>(par);
 
-  connect(widget, &Widget::labelSelectionChange, label, &Label::resetHighlight);
-
+  connect(widget, &Widget::labelSelectionChange, label, &Label::syncHighlight);
 }
 
 void Row::setEntry(const EntryChunkCollapsed* entry) {
