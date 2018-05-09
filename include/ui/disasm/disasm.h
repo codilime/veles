@@ -66,7 +66,7 @@ class Keyword : public TextRepr {
 
   QString string() const override;
   QString text() const;
-  KeywordType keywordType();
+  KeywordType keywordType() const;
   const ChunkID chunkID() const;
 
  private:

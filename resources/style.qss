@@ -51,3 +51,7 @@ veles--ui--disasm--Widget QLabel#blank {
 veles--ui--disasm--Widget QLabel#string {
   color: #dd0;
 }
+
+veles--ui--disasm--Widget QLabel[highlight="true"] {
+  background-color: #484848;
+}
