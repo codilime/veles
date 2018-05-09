@@ -22,6 +22,7 @@
 #include <QWidget>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
 
 #include "ui/disasm/disasm.h"
 
@@ -101,6 +102,21 @@ class Label : public QLabel {
   TextRepr* repr_;
 };
 
+class CommentLabel : public QLabel {
+ Q_OBJECT
+
+ public:
+  explicit CommentLabel(Chunk* chunk = nullptr, QWidget* parent = nullptr);
+  void setChunk(Chunk* chunk);
+
+ protected:
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
+  void keyPressEvent(QKeyEvent* event) override;
+ private:
+  Chunk* chunk_;
+
+};
+
 class Row : public QWidget {
   Q_OBJECT
 
@@ -130,7 +146,7 @@ class Row : public QWidget {
   QLabel* address_;
   QWidget* text_widget_;
   QHBoxLayout* text_layout_;
-  QLabel* comment_;
+  CommentLabel* comment_;
 
   QHBoxLayout* layout_;
 

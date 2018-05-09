@@ -20,6 +20,7 @@
 #include <iostream>
 #include <QtGui/QPainter>
 #include <QtWidgets/QLayout>
+#include <QTextDocument>
 
 namespace veles {
 namespace ui {
@@ -130,7 +131,7 @@ Row::Row() {
   address_->setFixedWidth(80);
   address_->setObjectName("address");
 
-  comment_ = new QLabel;
+  comment_ = new CommentLabel;
   comment_->setObjectName("comment");
 
   text_widget_ = new QWidget;
@@ -203,7 +204,7 @@ void Row::setEntry(const EntryChunkCollapsed* entry) {
   address_->setText(
       QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
   if (!entry->chunk->comment.isEmpty()) {
-    comment_->setText("; " + entry->chunk->comment);
+    comment_->setChunk(entry->chunk.get());
   }
 
   clearText();
@@ -218,7 +219,7 @@ void Row::setEntry(const EntryChunkBegin* entry) {
   address_->setText(
       QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
   if (!entry->chunk->comment.isEmpty()) {
-    comment_->setText("; " + entry->chunk->comment);
+    comment_->setChunk(entry->chunk.get());
   }
 
   clearText();
@@ -268,6 +269,42 @@ void Row::toggleColumn(Row::ColumnName column_name) {
     default:
       break;
   }
+}
+
+CommentLabel::CommentLabel(Chunk* chunk, QWidget *parent) : QLabel(parent), chunk_(chunk) {
+  setTextInteractionFlags(Qt::TextEditorInteraction);
+}
+
+void CommentLabel::mouseDoubleClickEvent(QMouseEvent *event) {
+  QLabel::mouseDoubleClickEvent(event);
+}
+void CommentLabel::keyPressEvent(QKeyEvent* event) {
+
+  if (chunk_) {
+
+    QTextDocument *td = this->findChild<QTextDocument *>();
+    if(td){
+      chunk_->comment = td->toPlainText();  // >= Qt 5.9
+      // td->toPlainText();
+      // td->toHtml();
+    }
+
+//    std::cout<<text().toStdString()<<std::endl;
+  }
+  if (event -> key() == Qt::Key_Space) {
+    clearFocus();
+    event -> accept();
+    std::cout<<text().toStdString()<<std::endl;
+
+    return;
+  }
+  QLabel::keyPressEvent(event);
+}
+
+void CommentLabel::setChunk(Chunk *chunk) {
+  chunk_ = chunk;
+  if (chunk_)
+    setText(chunk->comment);
 }
 
 }  // namespace disasm
