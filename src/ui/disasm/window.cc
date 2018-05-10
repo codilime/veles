@@ -4,7 +4,9 @@ namespace veles {
 namespace ui {
 namespace disasm {
 
-WindowCache::WindowCache(std::shared_ptr<Window> window) : window_(window) {}
+WindowCache::WindowCache(std::shared_ptr<Window> window) : window_(window) {
+    connect(window_.get(), &Window::dataChanged, this, &WindowCache::newData);
+}
 
 void WindowCache::seek(const veles::ui::disasm::Bookmark& pos, unsigned prev_n,
                        unsigned next_n) {
@@ -12,6 +14,10 @@ void WindowCache::seek(const veles::ui::disasm::Bookmark& pos, unsigned prev_n,
 }
 
 Bookmark WindowCache::currentPosition() { return window_->currentPosition(); }
+
+void WindowCache::newData() {
+    emit dataChanged();
+}
 
 ScrollbarIndex WindowCache::currentScrollbarIndex() {
   return window_->currentScrollbarIndex();

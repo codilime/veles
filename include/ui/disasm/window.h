@@ -24,6 +24,9 @@ class WindowCache : public Window {
   const std::vector<std::shared_ptr<Entry>> entries() override;
   QFuture<void> chunkCollapseToggle(const ChunkID& id) override;
 
+ private slots:
+  void newData();
+
  private:
   int entries_prefetch_factor_;
   int viewport_height_;

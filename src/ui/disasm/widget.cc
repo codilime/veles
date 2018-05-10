@@ -104,7 +104,7 @@ void Widget::getWindow() {
       blob_->createWindow(entrypoint, rows_count, rows_count);
   window_ = std::make_unique<WindowCache>(std::move(w));
 
-  connect(w.get(), &Window::dataChanged, this, &Widget::renderRows);
+  connect(window_.get(), &WindowCache::dataChanged, this, &Widget::renderRows);
 
   scroll_bar_current_ = static_cast<int>(window_->currentScrollbarIndex());
   int max_index = static_cast<int>(window_->maxScrollbarIndex());
@@ -123,7 +123,11 @@ void Widget::getWindow() {
           &Widget::scrollbarChanged);
 }
 
-void Widget::renderRows() { updateRows(window_->entries()); }
+void Widget::renderRows() {
+  int max_index = static_cast<int>(window_->maxScrollbarIndex());
+  scroll_bar_->setRange(0, max_index);
+  updateRows(window_->entries());
+}
 
 void Widget::updateRows(std::vector<std::shared_ptr<Entry>> entries) {
   while (rows_.size() < entries.size()) {
