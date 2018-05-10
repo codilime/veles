@@ -57,6 +57,11 @@ String::String(QString text) : text_{text} {}
 QString String::string() const { return text_; }
 QString String::text() { return text_; }
 
+Sublist::Sublist(std::initializer_list<TextRepr*> children) {
+  for (auto ptr : children) {
+    children_.emplace_back(std::unique_ptr<TextRepr>(ptr));
+  }
+}
 Sublist::Sublist(std::vector<std::unique_ptr<TextRepr>> children)
     : children_(std::move(children)) {}
 Sublist::Sublist() : children_(){};

@@ -113,6 +113,7 @@ class String : public TextRepr {
 class Sublist : public TextRepr {
  public:
   explicit Sublist(std::vector<std::unique_ptr<TextRepr>> children);
+  explicit Sublist(std::initializer_list<TextRepr*> children);
   explicit Sublist();
 
   QString string() const override;

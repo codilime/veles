@@ -73,9 +73,11 @@ class ChunkFactory {
 class ChunkNode {
  public:
   explicit ChunkNode(std::unique_ptr<ChunkMeta> chunk);
+  explicit ChunkNode(ChunkMeta* chunk);
 
   void setParent(ChunkNode* parent);
   void addChild(std::unique_ptr<ChunkNode> child);
+  void addChild(ChunkNode* child);
 
   const std::vector<std::unique_ptr<ChunkNode>>& children() const;
   ChunkNode* parent();
@@ -119,6 +121,7 @@ class EntryFactory {
 
 class MockBackend {
  public:
+  explicit MockBackend();
   explicit MockBackend(std::shared_ptr<ChunkNode> root);
 
   const std::vector<std::shared_ptr<Entry>> getEntries();

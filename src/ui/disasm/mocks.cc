@@ -164,9 +164,16 @@ void ChunkFactory::setComment(ChunkMeta* chunk) const {
 ChunkNode::ChunkNode(std::unique_ptr<ChunkMeta> chunk)
     : chunk_{std::move(chunk)} {}
 
+ChunkNode::ChunkNode(ChunkMeta* chunk)
+: chunk_{std::unique_ptr<ChunkMeta>(chunk)} {}
+
 void ChunkNode::setParent(ChunkNode* parent) {
   chunk_->parent_id = parent->chunk()->id;
   parent_ = parent;
+}
+
+void ChunkNode::addChild(ChunkNode* child) {
+  children_.emplace_back(std::unique_ptr<ChunkNode>(child));
 }
 
 void ChunkNode::addChild(std::unique_ptr<ChunkNode> child) {
@@ -436,6 +443,8 @@ QFuture<Bookmark> MockBlob::getPositionByChunk(const ChunkID& chunk) {
   return QtConcurrent::run(
       [=]() { return backend_->getPositionByChunk(chunk); });
 }
+
+MockBackend::MockBackend() {}
 
 MockBackend::MockBackend(std::shared_ptr<ChunkNode> root) {
   root_ = std::move(root);
