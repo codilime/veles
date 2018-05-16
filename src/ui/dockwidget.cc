@@ -424,6 +424,12 @@ void DockWidget::createSplitActions() {
           &DockWidget::splitVertically);
   addAction(split_vertically_action_);
 }
+bool DockWidget::active_dock() const {
+  return active_dock_;
+}
+void DockWidget::setActiveDock(bool active_dock) {
+  active_dock_ = active_dock;
+}
 
 /*****************************************************************************/
 /* IconAwareView */

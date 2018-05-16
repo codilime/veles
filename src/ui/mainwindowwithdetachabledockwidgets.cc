@@ -488,6 +488,7 @@ void MainWindowWithDetachableDockWidgets::childAddedNotify(QObject* child) {
 
   auto tab_bar = dynamic_cast<QTabBar*>(child);
   if (tab_bar != nullptr) {
+    tab_bar -> setDrawBase(false);
     tab_bar->installEventFilter(tab_bar_event_filter_);
   }
 }
@@ -553,58 +554,17 @@ void MainWindowWithDetachableDockWidgets::
 void MainWindowWithDetachableDockWidgets::updateActiveDockWidget() {
   QApplication::processEvents();
 
-  QString tab_bar_stylesheet = QString(
-      "QTabBar::tab {"
-      "background : palette(window);"
-      "color : palette(window-text);"
-      "border-top-left-radius: 4px;"
-      "border-top-right-radius: 4px;"
-      "border: 1px solid palette(shadow);"
-      "padding: 4px;"
-      "}"
-      "QTabBar::tab:selected {"
-      "border-bottom: 0px solid palette(shadow);"
-      "}"
-      "QTabBar::tab:!selected {"
-      "margin-top: 2px;"
-      "}");
-
-  QList<QTabBar*> tab_bars = findChildren<QTabBar*>();
-  for (auto tab_bar : tab_bars) {
-    if (mark_active_dock_widget_ && dock_widgets_with_no_title_bars_ &&
-        active_dock_widget_ == dynamic_cast<DockWidget*>(tabToDockWidget(
-                                   tab_bar, tab_bar->currentIndex())) &&
-        active_dock_widget_ != nullptr) {
-      QString stylesheet =
-          tab_bar_stylesheet + QString(
-                                   "QTabBar::tab:selected {"
-                                   "background : palette(highlight);"
-                                   "color : palette(highlighted-text);"
-                                   "border-bottom: 0px solid palette(shadow);"
-                                   "}");
-      if (tab_bar->styleSheet() != stylesheet) {
-        tab_bar->setStyleSheet(stylesheet);
-      }
-    } else {
-      if (tab_bar->styleSheet() != tab_bar_stylesheet) {
-        tab_bar->setStyleSheet(tab_bar_stylesheet);
-      }
-    }
-  }
-
   QList<DockWidget*> dock_widgets = findChildren<DockWidget*>();
   for (auto dock_widget : dock_widgets) {
-    // if (mark_active_dock_widget_ && active_dock_widget_ == dock_widget) {
-    //  dock_widget->setStyleSheet(
-    //      QString("%1::title {"
-    //              "background : palette(highlight);"
-    //              "color : palette(highlighted-text);"
-    //              "}")
-    //          .arg(QString(dock_widget->metaObject()->className())
-    //                   .replace(':', '-')));
-    //} else {
-    //  dock_widget->setStyleSheet("");
-    //}
+     if (mark_active_dock_widget_ && active_dock_widget_ == dock_widget) {
+      dock_widget -> setProperty("active_dock", true);
+       style()->unpolish(this);
+       style()->polish(this);
+    } else if (dock_widget -> property("active_dock") == true){
+      dock_widget -> setProperty("active_dock", false);
+       style()->unpolish(this);
+       style()->polish(this);
+    }
   }
 }
 

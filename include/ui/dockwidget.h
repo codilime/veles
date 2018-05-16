@@ -60,12 +60,16 @@ class QProxyStyleForDockWidgetWithIconOnTitleBar : public QProxyStyle {
 class DockWidget : public QDockWidget {
   Q_OBJECT
 
+  Q_PROPERTY(bool active_dock READ active_dock WRITE setActiveDock)
+
  public:
   DockWidget();
   ~DockWidget() override;
   const QAction* maximizeHereAction();
   static DockWidget* getParentDockWidget(QObject* obj);
   void addCloseAction();
+  bool active_dock() const;
+  void setActiveDock(bool active_dock);
 
  public slots:
   void displayContextMenu(const QPoint& pos);
@@ -104,6 +108,9 @@ class DockWidget : public QDockWidget {
   QAction* dock_close_action_ = nullptr;
   QAction* next_tab_action_;
   QAction* prev_tab_action_;
+ private:
+
+  bool active_dock_;
 };
 
 /*****************************************************************************/
