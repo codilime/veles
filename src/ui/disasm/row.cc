@@ -18,9 +18,9 @@
 #include "ui/disasm/row.h"
 #include <ui/disasm/widget.h>
 #include <iostream>
+#include <QTextDocument>
 #include <QtGui/QPainter>
 #include <QtWidgets/QLayout>
-#include <QTextDocument>
 
 namespace veles {
 namespace ui {
@@ -203,9 +203,7 @@ void Row::generateTextLabels(TextRepr* repr, QBoxLayout* layout) {
 void Row::setEntry(const EntryChunkCollapsed* entry) {
   address_->setText(
       QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
-  if (!entry->chunk->comment.isEmpty()) {
-    comment_->setChunk(entry->chunk.get());
-  }
+  comment_->setChunk(entry->chunk.get());
 
   clearText();
   TextRepr* text_repr = entry->chunk->text_repr.get();
@@ -218,9 +216,7 @@ void Row::setEntry(const EntryChunkCollapsed* entry) {
 void Row::setEntry(const EntryChunkBegin* entry) {
   address_->setText(
       QString("%1").arg(entry->chunk->addr_begin, 8, 16, QChar('0')));
-  if (!entry->chunk->comment.isEmpty()) {
-    comment_->setChunk(entry->chunk.get());
-  }
+  comment_->setChunk(entry->chunk.get());
 
   clearText();
   auto label = new QLabel();
@@ -271,40 +267,37 @@ void Row::toggleColumn(Row::ColumnName column_name) {
   }
 }
 
-CommentLabel::CommentLabel(Chunk* chunk, QWidget *parent) : QLabel(parent), chunk_(chunk) {
+CommentLabel::CommentLabel(Chunk* chunk, QWidget* parent)
+    : QLabel(parent), chunk_(chunk) {
   setTextInteractionFlags(Qt::TextEditorInteraction);
 }
 
-void CommentLabel::mouseDoubleClickEvent(QMouseEvent *event) {
+void CommentLabel::mouseDoubleClickEvent(QMouseEvent* event) {
   QLabel::mouseDoubleClickEvent(event);
 }
 void CommentLabel::keyPressEvent(QKeyEvent* event) {
-
-  if (chunk_) {
-
-    QTextDocument *td = this->findChild<QTextDocument *>();
-    if(td){
-      chunk_->comment = td->toPlainText();  // >= Qt 5.9
-      // td->toPlainText();
-      // td->toHtml();
-    }
-
-//    std::cout<<text().toStdString()<<std::endl;
-  }
-  if (event -> key() == Qt::Key_Space) {
+  if (event->key() == Qt::Key_Return or event->key() == Qt::Key_Enter) {
     clearFocus();
-    event -> accept();
-    std::cout<<text().toStdString()<<std::endl;
-
+    parentWidget()->setFocus();
     return;
   }
   QLabel::keyPressEvent(event);
 }
+void CommentLabel::focusOutEvent(QFocusEvent* event) {
+  if (chunk_) {
+    QTextDocument* td = this->findChild<QTextDocument*>();
+    if (td) {
+      chunk_->comment = td->toPlainText();
+    }
+  }
+  QLabel::focusOutEvent(event);
+}
 
-void CommentLabel::setChunk(Chunk *chunk) {
+void CommentLabel::setChunk(Chunk* chunk) {
+  if (hasFocus()) parentWidget()->setFocus();
   chunk_ = chunk;
-  if (chunk_)
-    setText(chunk->comment);
+  if (chunk_) setText(chunk->comment);
+  if (text().isEmpty()) setText(QString(" "));
 }
 
 }  // namespace disasm

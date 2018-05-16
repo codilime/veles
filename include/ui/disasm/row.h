@@ -103,7 +103,7 @@ class Label : public QLabel {
 };
 
 class CommentLabel : public QLabel {
- Q_OBJECT
+  Q_OBJECT
 
  public:
   explicit CommentLabel(Chunk* chunk = nullptr, QWidget* parent = nullptr);
@@ -112,9 +112,11 @@ class CommentLabel : public QLabel {
  protected:
   void mouseDoubleClickEvent(QMouseEvent* event) override;
   void keyPressEvent(QKeyEvent* event) override;
+  void focusOutEvent(QFocusEvent* event) override;
+
  private:
   Chunk* chunk_;
-
+  QWidget* previosly_focused_;
 };
 
 class Row : public QWidget {
