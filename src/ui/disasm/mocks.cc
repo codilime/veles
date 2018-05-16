@@ -426,9 +426,10 @@ QFuture<Bookmark> MockBlob::getEntrypoint() {
 
 QFuture<Bookmark> MockBlob::getPosition(ScrollbarIndex index) {
   return QtConcurrent::run([=]() {
+
     ScrollbarIndex i = index;
     auto entries = backend_->getEntries();
-    if (entries.size() < index) {
+    if (entries.size() <= index) {
       i = entries.size() - 1;
     }
     if (i < 0) {
