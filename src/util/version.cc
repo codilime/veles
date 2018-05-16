@@ -20,11 +20,11 @@ namespace veles {
 namespace util {
 namespace version {
 
-const unsigned year = 2017;
-const unsigned month = 6;
+const unsigned year = 2018;
+const unsigned month = 5;
 const unsigned release = 0;
-const unsigned patch = 1;
-const QString codename = "SWOND";
+const unsigned patch = 0;
+const QString codename = "TIF";
 const QString string =
     patch > 0 ? QString("%1.%2.%3.%4.%5")
                     .arg(QString("%1").arg(year),
