@@ -1,5 +1,56 @@
 # Veles changelog
 
+## 2018.05.0.TIF (2018-05-18)
+
+### Major features and changes:
+
+  * Added editing support to hex view (it's still an experimental feature
+    because of problems with the Veles backend).
+
+### Minor features and changes:
+
+  * A lot of compatibility fixes for macOS:
+    * Fixed TLS cert validation problems.
+    * Enable high-DPI support.
+    * Fixed-width fonts work correctly now.
+    * Fixed CMAKE_OSX_DEPLOYMENT_TARGET, which prevented Veles from being run on
+      some macOS versions.
+  * Hex view:
+    * Added 'Save chunk to file' and 'Select chunk' commands.
+    * Performance of hex view rendering has been greatly improved.
+    * The number of hex columns is now changeable from the hex view tab and
+      adjustable per-tab.
+    * Two new buttons in the search dialog: "Find Previous" and "Replace
+      Previous".
+    * Added more keyboard shortcuts.
+    * Partially visible rows are now rendered.
+    * Added 'Save as...' option.
+  * Visualizations:
+    * Trigram view can now use orthogonal projection.
+    * Points in the trigram view are now scaled properly.
+    * Current visualization settings are now highlighted in the UI.
+    * Axes can now be hidden.
+    * Trigram colors are now changeable in the options dialog.
+    * Axes are now smoothly animated when changing coordinate system.
+  * Added "Apply" and "Reset to defaults" button to the options dialog.
+  * Default theme was changed to dark.
+  * UI fonts are now selectable.
+  * Corrected invalid verification of TLS cert when connecting to the backend
+    (valid certificates with non-matching fingerprint are not accepted anymore).
+  * Fixed connecting when a local server is already running.
+
+### Bugfixes:
+
+  * Fixed autoscrolling when moving cursor.
+  * Fixed multiple rendering glitches in the hex view.
+  * Fixed a glitch in the trigram view (manipulator quaternions were not
+    normalized).
+  * Fixed minimap crash on small files.
+  * Hovered item in the database view wasn't highlighted in dark theme.
+  * Fixed cursor movement in server URL field in the connection dialog.
+  * We now wait for a local server to exit when Veles is closed.
+  * Empty files are now correctly handled.
+
 ## 2017.06.0.1 (2017-06-26)
 
 ### Bugfix
