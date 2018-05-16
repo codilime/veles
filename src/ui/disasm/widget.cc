@@ -65,10 +65,22 @@ void Widget::scrollbarChanged(int value) {
   auto pos = blob_->getPosition(value);
   pos.waitForFinished();
 
-  auto rows_count = static_cast<unsigned int>((rowsCount() / 2) + 2);
+  goTo(pos.result());
+}
 
-  window_->seek(pos.result(), rows_count, rows_count);
+void Widget::goTo(const Bookmark& position) {
+  auto rows_count = static_cast<unsigned int>((rowsCount() / 2) + 2);
+  window_ -> seek(position, rows_count, rows_count);
   updateRows(window_->entries());
+}
+
+void Widget::goToChunk(const ChunkID& id) {
+//  auto x = blob_ -> getPosition(20);
+  std::cerr<<blob_.get()<<std::endl;
+//  std::cerr<<x<<std::endl;
+  auto x = blob_ -> getPositionByChunk(id);
+  x.waitForFinished();
+  goTo(x.result());
 }
 
 void Widget::setupMocks() {

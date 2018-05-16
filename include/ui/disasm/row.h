@@ -94,6 +94,7 @@ class Label : public QLabel {
 
  protected:
   void mouseReleaseEvent(QMouseEvent* event) override;
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
 
  private:
   ::veles::ui::disasm::Widget* getWidget();

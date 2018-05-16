@@ -61,6 +61,8 @@ class Widget : public QAbstractScrollArea {
   void selectionChange(const TextRepr* repr);
   const TextRepr* current_selection();
   void resizeEvent(QResizeEvent* event) override;
+  void goTo(const Bookmark& position);
+  void goToChunk(const ChunkID& id);
 
  protected:
   void scrollbarChanged(int value);
