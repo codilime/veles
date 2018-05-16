@@ -165,7 +165,7 @@ ChunkNode::ChunkNode(std::unique_ptr<ChunkMeta> chunk)
     : chunk_{std::move(chunk)} {}
 
 ChunkNode::ChunkNode(ChunkMeta* chunk)
-: chunk_{std::unique_ptr<ChunkMeta>(chunk)} {}
+    : chunk_{std::unique_ptr<ChunkMeta>(chunk)} {}
 
 void ChunkNode::setParent(ChunkNode* parent) {
   chunk_->parent_id = parent->chunk()->id;

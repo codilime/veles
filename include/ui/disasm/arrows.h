@@ -33,6 +33,9 @@ namespace disasm {
 struct Arrow {
   Arrow(int start_row, int end_row, int level = 0);
 
+  int distance() const;
+  bool intersects(const Arrow& arrow) const;
+
   int start_row;
   int end_row;
   int level;
@@ -89,6 +92,7 @@ class ArrowsWidget : public QWidget {
   std::mutex paint_change_mutex;
 
   void paintSingleArrow(const Arrow& arrow, QPainter* painter);
+  void calculateLevels();
 };
 
 }  // namespace disasm

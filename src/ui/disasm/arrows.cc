@@ -30,6 +30,24 @@ const int ArrowsWidget::MIN_LEVELS = 8;
 Arrow::Arrow(int start_row, int end_row, int level)
     : start_row(start_row), end_row(end_row), level(level) {}
 
+int Arrow::distance() const {
+  return std::abs(this->start_row - this->end_row);
+}
+
+bool Arrow::intersects(const Arrow& arrow) const {
+  auto a_start_row = this->start_row;
+  auto a_end_row = this->end_row;
+  auto b_start_row = arrow.start_row;
+  auto b_end_row = arrow.end_row;
+  if (a_start_row > a_end_row) {
+    std::swap(a_start_row, a_end_row);
+  }
+  if (b_start_row > b_end_row) {
+    std::swap(b_start_row, b_end_row);
+  }
+  return (b_end_row > a_start_row && b_start_row < a_end_row);
+}
+
 std::ostream& operator<<(std::ostream& out, const Arrow& arrow) {
   out << "(" << arrow.start_row << ", " << arrow.end_row << ") @ "
       << arrow.level;
@@ -74,6 +92,26 @@ void ArrowsWidget::paintEvent(QPaintEvent* event) {
   }
 }
 
+void ArrowsWidget::calculateLevels() {
+  if (arrows_.size() == 0) return;
+  std::sort(arrows_.begin(), arrows_.end(),
+            [](auto& a, auto& b) { return a.distance() < b.distance(); });
+  arrows_[0].level = 1;
+  for (auto arr = arrows_.begin(); arr != arrows_.end(); arr++) {
+    int min_cross = 0;
+    for (auto nxt = arrows_.begin(); nxt != arr; nxt++) {
+      if (arr->intersects(*nxt)) {
+        min_cross = std::max(nxt->level, min_cross);
+      }
+    }
+    arr->level = min_cross + 1;
+  }
+
+  for (auto& arr : arrows_) {
+    std::cerr << arr << std::endl;
+  }
+}
+
 void ArrowsWidget::updateArrows(std::vector<int> _row_attach_points,
                                 std::vector<Arrow> _arrows) {
   std::lock_guard<std::mutex> lock(paint_change_mutex);
@@ -81,9 +119,9 @@ void ArrowsWidget::updateArrows(std::vector<int> _row_attach_points,
   this->arrows_ = std::move(_arrows);
   this->row_attach_points_ = std::move(_row_attach_points);
 
+  if (this->arrows_.size() == 0 || this->row_attach_points_.size() == 0) return;
 
-  if (this->arrows_.size() == 0 || this->row_attach_points_.size() == 0)
-      return;
+  calculateLevels();
 
   int max_level =
       std::max_element(arrows_.begin(), arrows_.end(), [](const Arrow& lhs,

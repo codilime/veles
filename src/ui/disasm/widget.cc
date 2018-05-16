@@ -129,20 +129,18 @@ void Widget::renderRows() {
   updateRows(window_->entries());
 }
 
-ChunkID get_target(TextRepr *repr)
-{
-    if(dynamic_cast<Sublist*>(repr) != nullptr) {
-        auto sublist = dynamic_cast<Sublist*>(repr);
-        for (const auto& chld : sublist->children()) {
-            auto ret = get_target(chld.get());
-            if (ret != "")
-                return ret;
-        }
-    } else if (dynamic_cast<Keyword*>(repr) != nullptr) {
-        auto keyword = dynamic_cast<Keyword*>(repr);
-        return keyword->chunkID();
+ChunkID get_target(TextRepr* repr) {
+  if (dynamic_cast<Sublist*>(repr) != nullptr) {
+    auto sublist = dynamic_cast<Sublist*>(repr);
+    for (const auto& chld : sublist->children()) {
+      auto ret = get_target(chld.get());
+      if (ret != "") return ret;
     }
-    return "";
+  } else if (dynamic_cast<Keyword*>(repr) != nullptr) {
+    auto keyword = dynamic_cast<Keyword*>(repr);
+    return keyword->chunkID();
+  }
+  return "";
 }
 
 void Widget::updateRows(std::vector<std::shared_ptr<Entry>> entries) {
@@ -213,10 +211,8 @@ void Widget::updateRows(std::vector<std::shared_ptr<Entry>> entries) {
       auto* ent = static_cast<EntryChunkCollapsed const*>(entry.get());
       auto target = get_target(ent->chunk->text_repr.get());
       if (target == "") continue;
-      if (row_mapping.find(target) == row_mapping.end())
-          continue;
-      auto arr = Arrow(i, row_mapping[target], rand() % 5 +1);
-      std::cerr << arr << std::endl;
+      if (row_mapping.find(target) == row_mapping.end()) continue;
+      auto arr = Arrow(i, row_mapping[target]);
       arrows_vec.emplace_back(arr);
     }
   }
