@@ -34,7 +34,7 @@
   * Added more keyboard shortcuts:
     * Ctrl + PgUp/PgDn for tab navigation.
     * Ctrl + Up/Down for hex view scrolling.
-    * + / - for changing hex columns number.
+    * \+ / - for changing hex columns number.
   * Added "Apply" and "Reset to defaults" button to the options dialog.
   * Default theme was changed to dark.
   * UI fonts are now selectable.
