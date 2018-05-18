@@ -19,15 +19,15 @@ import sqlite3
 
 import six
 
-from veles.proto import msgpackwrap
+from veles.proto import msgpackwrap, check
 from veles.schema.nodeid import NodeID
-from veles.proto.node import Node, PosFilter
+from veles.proto.node import TriggerState, Node, PosFilter
 from veles.proto.exceptions import WritePastEndError
 from veles.util.bigint import bigint_encode, bigint_decode
 
 
 DB_APP_ID = int('veles', 36)
-DB_VERSION = 2
+DB_VERSION = 3
 DB_BINDATA_PAGE_SIZE = 0x10000
 
 DB_SCHEMA = [
@@ -71,6 +71,79 @@ DB_SCHEMA = [
             data BLOB NOT NULL,
             PRIMARY KEY (id, name, page)
         )
+    """, """
+        CREATE TABLE trigger(
+            tid INTEGER NOT NULL PRIMARY KEY,
+            nid BLOB NOT NULL REFERENCES node(id),
+            name VARCHAR NOT NULL,
+            state VARCHAR NOT NULL,
+            exception BLOB,
+            UNIQUE (nid, name),
+            CHECK (state IN ('pending', 'done', 'exception'))
+        )
+    """, """
+        CREATE INDEX trigger_pending ON trigger(name)
+        WHERE state = 'pending'
+    """, """
+        CREATE TABLE trigger_check_node(
+            tid INTEGER NOT NULL REFERENCES trigger(tid),
+            nid BLOB NOT NULL,
+            mode VARCHAR NOT NULL,
+            PRIMARY KEY (tid, nid),
+            CHECK (mode IN ('present', 'pos', 'parent', 'tags'))
+        )
+    """, """
+        CREATE INDEX trigger_check_node_idx
+        ON trigger_check_node(nid, mode)
+    """, """
+        CREATE TABLE trigger_check_node_name(
+            tid INTEGER NOT NULL REFERENCES trigger(tid),
+            nid BLOB NOT NULL REFERENCES node(id),
+            name VARCHAR NOT NULL,
+            mode VARCHAR NOT NULL,
+            PRIMARY KEY (tid, nid, name),
+            CHECK (mode IN ('tag', 'attr', 'data', 'bindata_size', 'trigger'))
+        )
+    """, """
+        CREATE INDEX trigger_check_node_name_idx
+        ON trigger_check_node_name(nid, name, mode)
+    """, """
+        CREATE TABLE trigger_check_node_bindata(
+            tid INTEGER NOT NULL REFERENCES trigger(tid),
+            nid BLOB NOT NULL REFERENCES node(id),
+            name VARCHAR NOT NULL,
+            start BLOB NOT NULL,
+            end BLOB NULL,
+            PRIMARY KEY (tid, nid, name, start)
+        )
+    """, """
+        CREATE INDEX trigger_check_node_bindata_idx
+        ON trigger_check_node_bindata(nid, name, start)
+    """, """
+        CREATE INDEX trigger_check_node_bindata_tid
+        ON trigger_check_node_bindata(tid)
+    """, """
+        CREATE TABLE trigger_check_list(
+            tclid INTEGER NOT NULL PRIMARY KEY,
+            tid INTEGER NOT NULL REFERENCES trigger(tid),
+            nid BLOB NULL REFERENCES node(id),
+            pos_start_from BLOB NULL,
+            pos_start_to BLOB NULL,
+            pos_end_from BLOB NULL,
+            pos_end_to BLOB NULL
+        )
+    """, """
+        CREATE INDEX trigger_check_list_idx
+        ON trigger_check_list(nid)
+    """, """
+        CREATE INDEX trigger_check_list_tid
+        ON trigger_check_list(tid)
+    """, """
+        CREATE TABLE trigger_check_list_tag(
+            tclid INTEGER NOT NULL REFERENCES trigger_check_list(tclid),
+            name VARCHAR NOT NULL,
+            PRIMARY KEY (tclid, name)
+        )
     """
 ]
 
@@ -79,7 +152,7 @@ DB_SCHEMA = [
 #
 # - link support
 # - xref support
-# - trigger model
+# - trigger busting
 
 if six.PY3:
     def buffer(x):
@@ -179,12 +252,16 @@ class DbBackend:
             key: page * DB_BINDATA_PAGE_SIZE + lastlen
             for key, page, lastlen in c.fetchall()
         }
+        c.execute("""
+            SELECT name, state FROM trigger WHERE nid = ?
+        """, (raw_id,))
+        triggers = {k: TriggerState(v) for k, v in c.fetchall()}
         return Node(id=id, parent=parent,
                     pos_start=db_bigint_decode(pos_start),
                     pos_end=db_bigint_decode(pos_end), tags=tags, attr=attr,
-                    data=data, bindata=bindata)
+                    data=data, bindata=bindata, triggers=triggers)
 
-    def create(self, node, commit=True):
+    def create(self, node):
         if not isinstance(node, Node):
             raise TypeError('node has wrong type')
         if node.id == NodeID.root_id:
@@ -215,10 +292,8 @@ class DbBackend:
             (raw_id, key, buffer(self.packer.pack(val)))
             for key, val in node.attr.items()
         ])
-        if commit:
-            self.commit()
 
-    def set_pos(self, id, pos_start, pos_end, commit=True):
+    def set_pos(self, id, pos_start, pos_end):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if (not isinstance(pos_start, six.integer_types)
@@ -238,10 +313,8 @@ class DbBackend:
             db_bigint_encode(pos_end),
             raw_id
         ))
-        if commit:
-            self.commit()
 
-    def set_parent(self, id, parent_id, commit=True):
+    def set_parent(self, id, parent_id):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if not isinstance(parent_id, NodeID):
@@ -257,10 +330,8 @@ class DbBackend:
             SET parent = ?
             WHERE id = ?
         """, (raw_parent, raw_id))
-        if commit:
-            self.commit()
 
-    def add_tag(self, id, tag, commit=True):
+    def add_tag(self, id, tag):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if not isinstance(tag, six.text_type):
@@ -274,10 +345,8 @@ class DbBackend:
         c.execute("""
             INSERT INTO node_tag (id, name) VALUES (?, ?)
         """, (raw_id, tag))
-        if commit:
-            self.commit()
 
-    def del_tag(self, id, tag, commit=True):
+    def del_tag(self, id, tag):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if not isinstance(tag, six.text_type):
@@ -288,10 +357,8 @@ class DbBackend:
             DELETE FROM node_tag
             WHERE id = ? AND name = ?
         """, (raw_id, tag))
-        if commit:
-            self.commit()
 
-    def set_attr(self, id, key, val, commit=True):
+    def set_attr(self, id, key, val):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if not isinstance(key, six.text_type):
@@ -305,8 +372,6 @@ class DbBackend:
             c.execute("""
                 INSERT INTO node_attr (id, name, data) VALUES (?, ?, ?)
             """, (raw_id, key, buffer(self.packer.pack(val))))
-        if commit:
-            self.commit()
 
     def get_data(self, id, key):
         if not isinstance(id, NodeID):
@@ -324,7 +389,7 @@ class DbBackend:
         (data,), = rows
         return self._load(data)
 
-    def set_data(self, id, key, data, commit=True):
+    def set_data(self, id, key, data):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         if not isinstance(key, six.text_type):
@@ -338,8 +403,6 @@ class DbBackend:
             c.execute("""
                 INSERT INTO node_data (id, name, data) VALUES (?, ?, ?)
             """, (raw_id, key, buffer(self.packer.pack(data))))
-        if commit:
-            self.commit()
 
     def get_bindata(self, id, key, start=0, end=None):
         if not isinstance(id, NodeID):
@@ -378,7 +441,7 @@ class DbBackend:
         data = b''.join(bytes(x) for x, in c.fetchall())
         return data[start:end]
 
-    def set_bindata(self, id, key, start, data, truncate=False, commit=True):
+    def set_bindata(self, id, key, start, data, truncate=False):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         start = operator.index(start)
@@ -460,11 +523,211 @@ class DbBackend:
             ) for page in six.moves.range(page_first, page_end)
         ])
 
-        # We're done here.
-        if commit:
-            self.commit()
+    def find_trigger(self, nid, key):
+        raw_id = buffer(nid.bytes)
+        c = self.db.cursor()
+        c.execute("""
+            SELECT tid FROM trigger WHERE nid = ? AND name = ?
+        """, (raw_id, key))
+        rows = c.fetchall()
+        if not rows:
+            return None
+        (tid,), = rows
+        return tid
 
-    def delete(self, id, commit=True):
+    def add_trigger(self, nid, key):
+        tid = self.find_trigger(nid, key)
+        if tid is not None:
+            return tid
+        raw_id = buffer(nid.bytes)
+        c = self.db.cursor()
+        c.execute("""
+            INSERT INTO trigger(nid, name, state)
+            VALUES (?, ?, ?)
+        """, (raw_id, key, 'pending'))
+        return c.lastrowid
+
+    def bust_trigger(self, tid):
+        c = self.db.cursor()
+        c.execute("""
+            DELETE FROM trigger_check_node WHERE tid = ?
+        """, (tid,))
+        c.execute("""
+            DELETE FROM trigger_check_node_name WHERE tid = ?
+        """, (tid,))
+        c.execute("""
+            DELETE FROM trigger_check_node_bindata WHERE tid = ?
+        """, (tid,))
+        c.execute("""
+            DELETE FROM trigger_check_list_tag
+            WHERE tclid IN (
+                SELECT tclid
+                FROM trigger_check_list
+                WHERE tid = ?
+            )
+        """, (tid,))
+        c.execute("""
+            DELETE FROM trigger_check_list WHERE tid = ?
+        """, (tid,))
+        c.execute("""
+            UPDATE trigger
+            SET state = 'pending', exception = NULL
+            WHERE tid = ?
+        """, (tid,))
+
+    def bust_triggers_all(self, nid):
+        raw_id = buffer(nid.bytes)
+        c = self.db.cursor()
+        c.execute("""
+            SELECT tid FROM trigger_check_node
+            WHERE nid = ?
+            UNION SELECT tid FROM trigger_check_node_name
+            WHERE nid = ?
+            UNION SELECT tid FROM trigger_check_node_bindata
+            WHERE nid = ?
+            UNION SELECT tid FROM trigger_check_list
+            WHERE nid = ?
+        """, (raw_id, raw_id, raw_id, raw_id))
+        tids = {tid for tid, in c.fetchall()}
+        for tid in tids:
+            self.bust_trigger(tid)
+
+    def bust_triggers_node(self, nid, mode):
+        raw_id = buffer(nid.bytes)
+        c = self.db.cursor()
+        c.execute("""
+            SELECT tid FROM trigger_check_node
+            WHERE nid = ? AND mode = ?
+        """, (raw_id, mode))
+        tids = {tid for tid, in c.fetchall()}
+        for tid in tids:
+            self.bust_trigger(tid)
+
+    def bust_triggers_node_name(self, nid, mode, name):
+        raw_id = buffer(nid.bytes)
+        c = self.db.cursor()
+        c.execute("""
+            SELECT tid FROM trigger_check_node_name
+            WHERE nid = ? AND mode = ? AND name = ?
+        """, (raw_id, mode, name))
+        tids = {tid for tid, in c.fetchall()}
+        for tid in tids:
+            self.bust_trigger(tid)
+
+    def _trigger_check_node(self, tid, ch, mode):
+        raw_id = buffer(ch.node.bytes)
+        c = self.db.cursor()
+        c.execute("""
+            INSERT INTO trigger_check_node (tid, nid, mode)
+            VALUES (?, ?, ?)
+        """, (
+            tid, raw_id, mode,
+        ))
+
+    def _trigger_check_node_name(self, tid, ch, mode):
+        raw_id = buffer(ch.node.bytes)
+        if isinstance(ch, check.CheckTag):
+            name = ch.tag
+        else:
+            name = ch.key
+        c = self.db.cursor()
+        c.execute("""
+            INSERT INTO trigger_check_node_name (tid, nid, name, mode)
+            VALUES (?, ?, ?, ?)
+        """, (
+            tid, raw_id, name, mode,
+        ))
+
+    def _trigger_check_node_bindata(self, tid, ch, mode):
+        raw_id = buffer(ch.node.bytes)
+        c = self.db.cursor()
+        c.execute("""
+            INSERT INTO trigger_check_node_bindata (tid, nid, name, start, end)
+            VALUES (?, ?, ?, ?, ?)
+        """, (
+            tid, raw_id, ch.key,
+            db_bigint_encode(ch.start),
+            db_bigint_encode(ch.end),
+        ))
+
+    def _trigger_check_list(self, tid, ch, mode):
+        if ch.parent == NodeID.root_id:
+            raw_id = None
+        else:
+            raw_id = buffer(ch.parent.bytes)
+        c = self.db.cursor()
+        c.execute("""
+            INSERT INTO trigger_check_list (
+                tid, nid,
+                pos_start_from,
+                pos_start_to,
+                pos_end_from,
+                pos_end_to
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            tid, raw_id,
+            db_bigint_encode(ch.pos_filter.start_from),
+            db_bigint_encode(ch.pos_filter.start_to),
+            db_bigint_encode(ch.pos_filter.end_from),
+            db_bigint_encode(ch.pos_filter.end_to),
+        ))
+        tclid = c.lastrowid
+        c.executemany("""
+            INSERT INTO trigger_check_list_tag (tclid, name)
+            VALUES (?, ?)
+        """, [
+            (tclid, tag)
+            for tag in ch.tags
+        ])
+
+    def mark_trigger(self, nid, key, exception, checks):
+        tid = self.find_trigger(nid, key)
+        c = self.db.cursor()
+        if tid is None:
+            return
+        if exception is None:
+            c.execute("""
+                UPDATE trigger
+                SET state = 'done', exception = NULL
+                WHERE tid = ?
+            """, (tid,))
+        else:
+            c.execute("""
+                UPDATE trigger
+                SET state = 'exception', exception = ?
+                WHERE tid = ?
+            """, (buffer(self.packer.pack(exception.dump()), tid))
+        handlers = {
+            check.CheckGone: (self._trigger_check_node, 'present'),
+            check.CheckParent: (self._trigger_check_node, 'parent'),
+            check.CheckPos: (self._trigger_check_node, 'pos'),
+            check.CheckTags: (self._trigger_check_node, 'tags'),
+            check.CheckTag: (self._trigger_check_node_name, 'tag'),
+            check.CheckAttr: (self._trigger_check_node_name, 'attr'),
+            check.CheckData: (self._trigger_check_node_name, 'data'),
+            check.CheckBinDataSize:
+                (self._trigger_check_node_name, 'bindata_size'),
+            check.CheckBinData: (self._trigger_check_node_bindata, None),
+            check.CheckTrigger: (self._trigger_check_node_name, 'trigger'),
+            check.CheckList: (self._trigger_check_list, None),
+        }
+        for ch in checks:
+            handler, mode = handlers[type(ch)]
+            handler(tid, ch, mode)
+
+    def del_trigger(self, nid, key):
+        tid = self.find_trigger(nid, key)
+        if tid is None:
+            return None
+        self.bust_trigger(tid)
+        c = self.db.cursor()
+        c.execute("""
+            DELETE FROM trigger WHERE tid = ?
+        """, (tid,))
+        return tid
+
+    def delete(self, id):
         if not isinstance(id, NodeID):
             raise TypeError('node id has wrong type')
         raw_id = buffer(id.bytes)
@@ -482,10 +745,19 @@ class DbBackend:
             DELETE FROM node_bindata WHERE id = ?
         """, (raw_id,))
         c.execute("""
+            SELECT tid FROM trigger
+            WHERE nid = ?
+        """, (raw_id,))
+        tids = {tid for tid, in c.fetchall()}
+        for tid in tids:
+            self.bust_trigger(tid)
+        c.execute("""
+            DELETE FROM trigger WHERE nid = ?
+        """, (raw_id,))
+        c.execute("""
             DELETE FROM node WHERE id = ?
         """, (raw_id,))
-        if commit:
-            self.commit()
+        return tids
 
     def list(self, parent, tags=frozenset(), pos_filter=PosFilter()):
         if not isinstance(parent, NodeID):
@@ -527,6 +799,25 @@ class DbBackend:
         c = self.db.cursor()
         c.execute(stmt, args)
         return {NodeID(bytes(x)) for x, in c.fetchall()}
+
+    def get_pending_triggers(self, skip=set(), limit=1):
+        c = self.db.cursor()
+        if skip:
+            skip_str = "AND tid NOT IN ({})".format(
+                ', '.join('?' for x in skip))
+        else:
+            skip_str = ''
+        c.execute("""
+            SELECT tid, nid, name
+            FROM trigger
+            WHERE state = 'pending'
+            {}
+            LIMIT ?
+        """ + skip_str, list(skip) + [limit])
+        return {
+            (tid, nid, name)
+            for tid, nid, name in c.fetchall()
+        }
 
     def begin(self):
         if six.PY3:

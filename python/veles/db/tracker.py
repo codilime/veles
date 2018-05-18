@@ -21,7 +21,7 @@ except ImportError:
 
 from veles.schema.nodeid import NodeID
 from veles.proto import operation, check
-from veles.proto.node import Node, PosFilter
+from veles.proto.node import TriggerState, Node, PosFilter
 from veles.proto.exceptions import (
     ObjectGoneError,
     ObjectExistsError,
@@ -63,6 +63,7 @@ class DbTracker(object):
         self.nodes = weakref.WeakValueDictionary()
         self.get_cached_node = lru_cache(maxsize=DB_CACHE_SIZE)(
             self._get_cached_node)
+        self.triggers_gone_callbacks = set()
 
     def _get_cached_node(self, nid):
         try:
@@ -184,9 +185,10 @@ class DbTracker(object):
             id=dbnode.id, parent=op.parent,
             pos_start=op.pos_start, pos_end=op.pos_end,
             tags=op.tags, attr=op.attr, data=set(op.data),
-            bindata={x: len(y) for x, y in op.bindata.items()}
+            bindata={x: len(y) for x, y in op.bindata.items()},
+            triggers={x: TriggerState.pending for x in op.triggers},
         )
-        self.db.create(dbnode.node, commit=False)
+        self.db.create(dbnode.node)
         dbnode.parent = parent
         for key, val in op.data.items():
             self.db.set_data(dbnode.id, key, val)
@@ -195,6 +197,8 @@ class DbTracker(object):
             self.db.set_bindata(dbnode.id, key, 0, val)
             for sub in dbnode.bindata_subs.get(key, set()):
                 xact.bindata_changed(sub)
+        for key in op.triggers:
+            self.db.add_trigger(dbnode.id, key)
 
     def _op_delete(self, xact, op, dbnode):
         if dbnode.node is None:
@@ -203,7 +207,7 @@ class DbTracker(object):
             subnode = self.get_cached_node(oid)
             xact.save(subnode)
             self._op_delete(xact, op, subnode)
-        self.db.delete(dbnode.id, commit=False)
+        xact.triggers_gone |= self.db.delete(dbnode.id)
         dbnode.node = None
         dbnode.parent = None
 
@@ -220,7 +224,7 @@ class DbTracker(object):
             if cur.id == dbnode.id:
                 raise ParentCycleError()
             cur = cur.parent
-        self.db.set_parent(dbnode.id, parent.id, commit=False)
+        self.db.set_parent(dbnode.id, parent.id)
         dbnode.node.parent = parent.id
         dbnode.parent = parent
 
@@ -230,7 +234,7 @@ class DbTracker(object):
         if (op.pos_start == dbnode.node.pos_start and
                 op.pos_end == dbnode.node.pos_end):
             return
-        self.db.set_pos(dbnode.id, op.pos_start, op.pos_end, commit=False)
+        self.db.set_pos(dbnode.id, op.pos_start, op.pos_end)
         dbnode.node.pos_start = op.pos_start
         dbnode.node.pos_end = op.pos_end
 
@@ -239,7 +243,7 @@ class DbTracker(object):
             raise ObjectGoneError()
         if op.tag in dbnode.node.tags:
             return
-        self.db.add_tag(dbnode.id, op.tag, commit=False)
+        self.db.add_tag(dbnode.id, op.tag)
         dbnode.node.tags.add(op.tag)
 
     def _op_del_tag(self, xact, op, dbnode):
@@ -247,7 +251,7 @@ class DbTracker(object):
             raise ObjectGoneError()
         if op.tag not in dbnode.node.tags:
             return
-        self.db.del_tag(dbnode.id, op.tag, commit=False)
+        self.db.del_tag(dbnode.id, op.tag)
         dbnode.node.tags.remove(op.tag)
 
     def _op_set_attr(self, xact, op, dbnode):
@@ -255,7 +259,7 @@ class DbTracker(object):
             raise ObjectGoneError()
         if dbnode.node.attr.get(op.key) == op.data:
             return
-        self.db.set_attr(dbnode.id, op.key, op.data, commit=False)
+        self.db.set_attr(dbnode.id, op.key, op.data)
         if op.data is None:
             del dbnode.node.attr[op.key]
         else:
@@ -264,8 +268,8 @@ class DbTracker(object):
     def _op_set_data(self, xact, op, dbnode):
         if dbnode.node is None:
             raise ObjectGoneError()
-        self.db.set_data(dbnode.id, op.key, op.data, commit=False)
         xact.set_data(dbnode, op.key, op.data)
+        self.db.set_data(dbnode.id, op.key, op.data)
         if op.data is None and op.key in dbnode.node.data:
             dbnode.node.data.remove(op.key)
         elif op.data is not None and op.key not in dbnode.node.data:
@@ -275,7 +279,7 @@ class DbTracker(object):
         if dbnode.node is None:
             raise ObjectGoneError()
         self.db.set_bindata(dbnode.id, op.key, op.start, op.data,
-                            op.truncate, commit=False)
+                            op.truncate)
         old_len = dbnode.node.bindata.get(op.key, 0)
         if op.truncate:
             new_len = op.start + len(op.data)
@@ -298,14 +302,20 @@ class DbTracker(object):
     def _op_add_trigger(self, xact, op, dbnode):
         if dbnode.node is None:
             raise ObjectGoneError()
-        # XXX
-        raise NotImplementedError
+        if op.trigger in dbnode.node.triggers:
+            return
+        self.db.add_trigger(dbnode.id, op.trigger)
+        dbnode.node.triggers[op.trigger] = TriggerState.pending
 
     def _op_del_trigger(self, xact, op, dbnode):
         if dbnode.node is None:
             raise ObjectGoneError()
-        # XXX
-        raise NotImplementedError
+        if op.trigger not in dbnode.node.triggers:
+            return
+        tid = self.db.del_trigger(dbnode.id, op.trigger)
+        assert tid is not None
+        del dbnode.node.triggers[op.trigger]
+        xact.triggers_gone.add(tid)
 
     def transaction(self, checks, ops):
         if not self.checks_ok(checks):
@@ -328,6 +338,18 @@ class DbTracker(object):
                 dbnode = self.get_cached_node(op.node)
                 xact.save(dbnode)
                 handlers[type(op)](xact, op, dbnode)
+
+    def _triggers_gone(self, tids):
+        if not tids:
+            return
+        for cb in self.triggers_gone_callbacks:
+            cb(tids)
+
+    def register_triggers_gone_callback(self, cb):
+        self.triggers_gone_callbacks.add(cb)
+
+    def unregister_triggers_gone_callback(self, cb):
+        self.triggers_gone_callbacks.remove(cb)
 
     # subscribers
 
