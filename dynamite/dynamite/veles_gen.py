@@ -95,7 +95,10 @@ def make_prefixer(pref):
     return doit
 
 def qsurround(s):
-    return '"' + s + '"'
+    if isinstance(s, str):
+        return '"' + s + '"'
+    else:
+        return qsurround(str(s))
 
 
 class ChunkLink:
@@ -220,6 +223,7 @@ class Chunk:
 
 class VelesCppGen:
 
+
     def __init__(self, filename, template, forest, data, flat_bundles=True):
         self.flat_bundles = flat_bundles
         self.cpp_template = template
@@ -228,6 +232,7 @@ class VelesCppGen:
         self.chunks = []
         self.text_repr = []
         self.links = {}
+        self.next_bmark = 0
 
         t = TextRepr.make_text("File Chunk", False)
         self.text_repr.append(t)
@@ -238,10 +243,22 @@ class VelesCppGen:
         for tree in forest.trees:
             self.process_block(tree.root, self.file_chunk)
 
-
-
         self.fix_chunk(self.file_chunk)
         self.file_chunk.children.sort(key=lambda chk: chk.addr_beg)
+        self.build_bookmarks(self.file_chunk)
+
+    def build_bookmarks(self, chunk):
+        if not chunk.children:
+            chunk.pos_beg = self.next_bmark
+            chunk.pos_end = self.next_bmark + 2
+            self.next_bmark += 2
+        else:
+            chunk.pos_beg = self.next_bmark
+            self.next_bmark += 1
+            for child in chunk.children:
+                self.build_bookmarks(child)
+            self.next_bmark +=1
+            self.pos_end = self.next_bmark
 
     def fix_chunk(self, chunk):
         if chunk.addr_beg is None or chunk.addr_end is None:
