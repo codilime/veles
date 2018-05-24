@@ -43,6 +43,7 @@ Label::Label(TextRepr* repr, QWidget* parent)
         break;
       case KeywordType::LABEL:
         setObjectName("label");
+        jump_target_ = keyword->chunkID();
         break;
       case KeywordType::REGISTER:
         setObjectName("register");
@@ -90,6 +91,16 @@ void Label::mouseReleaseEvent(QMouseEvent* event) {
   getWidget()->selectionChange(repr_);
   QLabel::mouseReleaseEvent(event);
 }
+
+void Label::mouseDoubleClickEvent(QMouseEvent* event) {
+  if (objectName() == QString("label")) {
+    Row * row = qobject_cast<Row *>(parentWidget() -> parentWidget());
+    Widget * widget = qobject_cast<Widget *>(row -> parentWidget() -> parentWidget());
+    widget -> goToChunk(jump_target_);
+  }
+  else QLabel::mouseDoubleClickEvent(event);
+}
+
 
 void Label::resetHighlight() {
   syncHighlight(getWidget()->current_selection());

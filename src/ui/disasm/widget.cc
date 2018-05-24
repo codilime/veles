@@ -64,10 +64,20 @@ void Widget::scrollbarChanged(int value) {
   auto pos = blob_->getPosition(value);
   pos.waitForFinished();
 
-  auto rows_count = static_cast<unsigned int>((rowsCount() / 2) + 2);
+  goTo(pos.result());
+}
 
-  window_->seek(pos.result(), rows_count, rows_count);
-  updateRows(window_->entries());
+void Widget::goTo(const Bookmark& position) {
+  auto rows_count = static_cast<unsigned int>((rowsCount() / 2) + 2);
+  std::cout << "seeking: " << position.toStdString() << std::endl;
+  window_ -> seek(position, rows_count, rows_count);
+  renderRows();
+}
+
+void Widget::goToChunk(const ChunkID& id) {
+  auto x = blob_ -> getPositionByChunk(id);
+  x.waitForFinished();
+  goTo(x.result());
 }
 
 void Widget::setupMocks() {
@@ -114,7 +124,7 @@ void Widget::getWindow() {
 
   setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOn);
   scroll_bar_->setValue(scroll_bar_current_);
-  scroll_bar_->setRange(0, max_index);
+  scroll_bar_->setRange(0, max_index - 1);
   scroll_bar_->setSingleStep(1);
   scroll_bar_->setPageStep(10);
   scroll_bar_->setTracking(false);
@@ -125,7 +135,9 @@ void Widget::getWindow() {
 
 void Widget::renderRows() {
   int max_index = static_cast<int>(window_->maxScrollbarIndex());
-  scroll_bar_->setRange(0, max_index);
+  auto scroll_bar_current_ = static_cast<int>(window_->currentScrollbarIndex());
+  scroll_bar_->setRange(0, max_index - 1);
+  scroll_bar_->setValue(scroll_bar_current_);
   updateRows(window_->entries());
 }
 

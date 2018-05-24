@@ -266,7 +266,9 @@ std::unique_ptr<ChunkNode> ChunkTreeFactory::generateTree(ChunkType type) {
   return root;
 }
 
-EntryFactory::EntryFactory(ChunkNode* root) : next_bookmark_{0} {
+EntryFactory::EntryFactory(ChunkNode* root, bool ignore_collapsed = false) :
+    ignore_collapsed_{ignore_collapsed}{
+  generateBookmarkMap(root);
   generate(root);
 }
 
@@ -300,31 +302,59 @@ void EntryFactory::fillEntryField(EntryField* e, ChunkMeta* chunk) {
   }
 }
 
+std::map<ChunkID, Bookmark>&& EntryFactory::getBookmarkMap()
+{
+    return std::move(bookmark_map_);
+}
+
+void EntryFactory::generateBookmarkMap(ChunkNode *node) {
+  if (node == nullptr) {
+      return;
+  }
+  bool is_parent_collapsed = false;
+  ChunkNode *parent = node->parent();
+  while (parent != nullptr) {
+    if (parent->chunk()->collapsed) {
+        is_parent_collapsed = true;
+        break;
+    }
+    parent = parent->parent();
+  }
+  if (!is_parent_collapsed) {
+    bookmark_map_[node->chunk()->id] = node->chunk()->pos_begin;
+  } else {
+    bookmark_map_[node->chunk()->id] = parent->chunk()->pos_begin;
+  }
+  for (const auto& child : node->children()) {
+      generateBookmarkMap(child.get());
+  }
+}
+
 void EntryFactory::generate(ChunkNode* node) {
   if (node->chunk()->meta_type == ChunkType::INSTRUCTION) {
     auto entry = std::make_shared<EntryChunkCollapsed>(node->chunk());
-    entry->pos.setNum(next_bookmark_++);
+    entry->pos = node->chunk()->pos_begin;
     entries_.emplace_back(entry);
     return;
   }
 
-  if (node->chunk()->collapsed) {
+  if (!ignore_collapsed_ && node->chunk()->collapsed) {
     auto entry = std::make_shared<EntryChunkCollapsed>(node->chunk());
-    entry->pos.setNum(next_bookmark_++);
+    entry->pos = node->chunk()->pos_begin;
     entries_.emplace_back(entry);
     return;
   }
+
 
   // EntryBegin
   auto entry_begin = std::make_shared<EntryChunkBegin>(node->chunk());
-  node->chunk()->pos_begin.setNum(next_bookmark_);
-  entry_begin->pos.setNum(next_bookmark_++);
+  entry_begin->pos = node->chunk()->pos_begin;
   entries_.emplace_back(entry_begin);
 
   switch (node->chunk()->meta_type) {
     case ChunkType::DATA: {
       auto entry = std::make_shared<EntryField>(node->chunk());
-      entry->pos.setNum(next_bookmark_++);
+      entry->pos = node->chunk()->pos_begin;
       entry->name = "data";
       fillEntryField(entry.get(), node->chunk().get());
       entries_.emplace_back(entry);
@@ -340,8 +370,7 @@ void EntryFactory::generate(ChunkNode* node) {
 
   // EntryEnd
   auto entry_end = std::make_shared<EntryChunkEnd>(node->chunk());
-  entry_end->pos.setNum(next_bookmark_);
-  node->chunk()->pos_end.setNum(next_bookmark_++);
+  entry_end->pos = node->chunk()->pos_end;
   entries_.emplace_back(entry_end);
 }
 
@@ -426,17 +455,7 @@ QFuture<Bookmark> MockBlob::getEntrypoint() {
 
 QFuture<Bookmark> MockBlob::getPosition(ScrollbarIndex index) {
   return QtConcurrent::run([=]() {
-
-    ScrollbarIndex i = index;
-    auto entries = backend_->getEntries();
-    if (entries.size() <= index) {
-      i = entries.size() - 1;
-    }
-    if (i < 0) {
-      i = 0;
-    }
-
-    return entries[i]->pos;
+    return backend_->getPosition(index);
   });
 }
 
@@ -451,9 +470,20 @@ MockBackend::MockBackend(std::shared_ptr<ChunkNode> root) {
   root_ = std::move(root);
   generateEntries();
 
+  EntryFactory ef(root_.get(), true);
+  flat_entries_ = ef.getEntries();
+  for (const auto& entry : flat_entries_) {
+      std::cerr << entry->pos.toStdString() << std::endl;
+  }
+
   if (!entries_.empty()) {
     entrypoint_ = entries_[entries_.size() / 2]->pos;
   }
+}
+
+Bookmark MockBackend::getPosition(ScrollbarIndex idx)
+{
+    return entries_[idx]->pos;
 }
 
 Bookmark MockBackend::getEntrypoint() {
@@ -468,21 +498,13 @@ const std::vector<std::shared_ptr<Entry>> MockBackend::getEntries() {
 
 Bookmark MockBackend::getPositionByChunk(const ChunkID& chunk) {
   std::lock_guard<std::mutex> guard(mutex_);
-
   assert(chunk_entry_.find(chunk) != chunk_entry_.end());
   return chunk_entry_[chunk];
 }
 
 ScrollbarIndex MockBackend::getEntryIndexByPosition(const Bookmark& pos) {
   std::lock_guard<std::mutex> guard(mutex_);
-
-  auto position_ = position_index_.find(pos);
-  if (position_ == position_index_.end()) {
-    throw std::out_of_range(
-        "MockBackend::getEntryIndexByPosition: position not found");
-  }
-
-  return position_->second;
+  return position_index_[pos];
 }
 
 ScrollbarIndex MockBackend::getEntriesSize() { return entries_.size(); }
@@ -490,20 +512,15 @@ ScrollbarIndex MockBackend::getEntriesSize() { return entries_.size(); }
 void MockBackend::generateEntries() {
   std::lock_guard<std::mutex> guard(mutex_);
 
-  EntryFactory ef(root_.get());
+  // rebuild entry stream based on current
+  // collapse configuration
+  EntryFactory ef(root_.get(), false);
+  chunk_entry_ = std::move(ef.getBookmarkMap());
   entries_ = ef.getEntries();
 
-  // generate chunk_entry_ and position_index_
-  chunk_entry_.clear();
-  position_index_.clear();
-  size_t index = 0;
-  for (const auto& e : entries_) {
-    if (e->type() == EntryType::CHUNK_BEGIN) {
-      auto* entry_begin = static_cast<EntryChunkBegin*>(e.get());
-      chunk_entry_[entry_begin->chunk->id] = entry_begin->pos;
-    }
-    position_index_[e->pos] = index;
-    index++;
+  // rebuild bookmark -> scrollbar index cache
+  for (int i = 0; i < entries_.size(); i++) {
+      position_index_[entries_[i]->pos] = i;
   }
 }
 
