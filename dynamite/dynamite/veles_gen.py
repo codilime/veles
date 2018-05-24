@@ -250,15 +250,15 @@ class VelesCppGen:
     def build_bookmarks(self, chunk):
         if not chunk.children:
             chunk.pos_beg = self.next_bmark
-            chunk.pos_end = self.next_bmark + 2
+            chunk.pos_end = self.next_bmark + 1
             self.next_bmark += 2
         else:
             chunk.pos_beg = self.next_bmark
             self.next_bmark += 1
             for child in chunk.children:
                 self.build_bookmarks(child)
-            self.next_bmark +=1
-            self.pos_end = self.next_bmark
+            chunk.pos_end = self.next_bmark
+            self.next_bmark += 1
 
     def fix_chunk(self, chunk):
         if chunk.addr_beg is None or chunk.addr_end is None:

@@ -100,6 +100,7 @@ class Label : public QLabel {
   ::veles::ui::disasm::Widget* getWidget();
 
   bool highlight_ = false;
+  ChunkID jump_target_;
   TextRepr* repr_;
 };
 

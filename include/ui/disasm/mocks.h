@@ -107,16 +107,18 @@ class ChunkTreeFactory {
  */
 class EntryFactory {
  public:
-  explicit EntryFactory(ChunkNode* root);
+  explicit EntryFactory(ChunkNode* root, bool ignore_collapsed);
 
   const std::vector<std::shared_ptr<Entry>>& getEntries();
   void fillEntryField(EntryField* e, ChunkMeta* chunk);
+  std::map<ChunkID, Bookmark>&& getBookmarkMap();
 
  protected:
   void generate(ChunkNode* node);
 
-  int next_bookmark_;
   std::vector<std::shared_ptr<Entry>> entries_;
+  std::map<ChunkID, Bookmark> bookmark_map_;
+  bool ignore_collapsed_;
 };
 
 class MockBackend {
@@ -127,6 +129,7 @@ class MockBackend {
   const std::vector<std::shared_ptr<Entry>> getEntries();
   Bookmark getEntrypoint();
   Bookmark getPositionByChunk(const ChunkID& chunk);
+  Bookmark getPosition(ScrollbarIndex idx);
   ScrollbarIndex getEntryIndexByPosition(const Bookmark& pos);
   ScrollbarIndex getEntriesSize();
 
@@ -141,6 +144,7 @@ class MockBackend {
   Bookmark entrypoint_;
 
   std::vector<std::shared_ptr<Entry>> entries_;
+  std::vector<std::shared_ptr<Entry>> flat_entries_;
 
   std::map<ChunkID, Bookmark> chunk_entry_;
   std::map<Bookmark, ScrollbarIndex> position_index_;
