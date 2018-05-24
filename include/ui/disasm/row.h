@@ -94,11 +94,13 @@ class Label : public QLabel {
 
  protected:
   void mouseReleaseEvent(QMouseEvent* event) override;
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
 
  private:
   ::veles::ui::disasm::Widget* getWidget();
 
   bool highlight_ = false;
+  ChunkID jump_target_;
   TextRepr* repr_;
 };
 
