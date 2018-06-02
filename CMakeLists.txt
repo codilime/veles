@@ -16,6 +16,12 @@ if(APPLE)
 endif()
 
 project(VELES C CXX)
+
+find_package(Qt5Core)
+find_package(Qt5Gui)
+find_package(Qt5Widgets)
+find_package(Qt5Network)
+
 if(WIN32)
   if(CMAKE_SIZEOF_VOID_P EQUAL 4)
     message(FATAL_ERROR "Windows 32-bit is not supported due to performance problems in msgpack")
@@ -154,8 +160,7 @@ add_library(veles_base
     ${SRC_DIR}/util/random.cc
 )
 
-qt5_use_modules(veles_base Core Gui Widgets)
-target_link_libraries(veles_base ${ADDITIONAL_LINK_LIBRARIES})
+target_link_libraries(veles_base ${ADDITIONAL_LINK_LIBRARIES} Qt5::Core Qt5::Gui Qt5::Widgets)
 
 # Lib: veles_visualization
 
@@ -188,12 +193,11 @@ add_library(veles_visualization
     ${VISUALIZATION_SHADERS}
 )
 
-qt5_use_modules(veles_visualization Core Gui Widgets)
 # This a temporary "hack" to fix concurrent build fail - veles_visualization
 # actually depends on main_ui which also depends on veles_visualization
 # and veles_data, which in turn generates new C++ files - in future we should refactor
 # this file to avoid such cyclic dependency between veles_visualization and main_ui
-target_link_libraries(veles_visualization veles_data)
+target_link_libraries(veles_visualization veles_data Qt5::Core Qt5::Gui Qt5::Widgets)
 
 set(MSGPACK_CPP_FWD_HEADER "${CMAKE_CURRENT_BINARY_DIR}/fwd_models.h")
 set(MSGPACK_CPP_HEADER "${CMAKE_CURRENT_BINARY_DIR}/models.h")
@@ -249,9 +253,8 @@ add_library(veles_data
     ${SRC_DIR}/network/msgpackobject.cc
 )
 
-qt5_use_modules(veles_data Core)
 add_dependencies(veles_data msgpack-c)
-target_link_libraries(veles_data veles_base)
+target_link_libraries(veles_data veles_base Qt5::Core)
 
 # Lib: veles_dbif
 add_library(veles_dbif
@@ -264,8 +267,7 @@ add_library(veles_dbif
     ${SRC_DIR}/dbif/dbif.cc
 )
 
-qt5_use_modules(veles_dbif Core)
-target_link_libraries(veles_dbif veles_data)
+target_link_libraries(veles_dbif veles_data Qt5::Core)
 
 file(GLOB kaitai_headers "${INCLUDE_DIR}/kaitai/*.h")
 file(GLOB kaitai_sources "${SRC_DIR}/kaitai/*.cc")
@@ -285,16 +287,14 @@ add_library(parser
     ${kaitai_sources}
 )
 
-qt5_use_modules(parser Core)
 add_dependencies(parser zlib)
-target_link_libraries(parser veles_dbif ${ZLIB_LIBRARIES})
+target_link_libraries(parser veles_dbif ${ZLIB_LIBRARIES} Qt5::Core)
 
 add_library(veles_network
     ${INCLUDE_DIR}/network/msgpackwrapper.h
 )
 
-target_link_libraries(veles_network veles_data)
-qt5_use_modules(veles_network Core Network Widgets)
+target_link_libraries(veles_network veles_data Qt5::Core Qt5::Network Qt5::Widgets)
 
 
 # Lib: veles_db
@@ -316,12 +316,10 @@ add_library(veles_client
 )
 
 add_dependencies(veles_client openssl)
-qt5_use_modules(veles_client Core Network)
-target_link_libraries(veles_client veles_base veles_data veles_network veles_db)
+target_link_libraries(veles_client veles_base veles_data veles_network veles_db Qt5::Core Qt5::Network)
 
-qt5_use_modules(veles_db Core)
 add_dependencies(veles_db veles_network)
-target_link_libraries(veles_db veles_dbif parser)
+target_link_libraries(veles_db veles_dbif parser Qt5::Core)
 
 # Resources
 qt5_add_resources(RESOURCES resources/veles.qrc)
@@ -461,47 +459,7 @@ set(GENERATED_MOC_FILES
 
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${GENERATED_MOC_FILES})
 
-qt5_use_modules(main_ui Core Gui Widgets)
-
-if(GTEST_FOUND AND GMOCK_FOUND)
-  include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
-  add_executable(run_test
-      ${TEST_DIR}/run_test.cc
-      ${TEST_DIR}/data/bindata.cc
-      ${TEST_DIR}/data/copybits.cc
-      ${TEST_DIR}/data/nodeid.cc
-      ${TEST_DIR}/data/repack.cc
-      ${TEST_DIR}/network/msgpackobject.cc
-      ${TEST_DIR}/network/model.cc
-      ${TEST_DIR}/util/encoders/base64_encoder.cc
-      ${TEST_DIR}/util/encoders/c_data_encoder.cc
-      ${TEST_DIR}/util/encoders/c_string_encoder.cc
-      ${TEST_DIR}/util/encoders/hex_encoder.cc
-      ${TEST_DIR}/util/encoders/text_encoder.cc
-      ${TEST_DIR}/util/encoders/url_encoder.cc
-      ${TEST_DIR}/util/encoders/factory.cc
-      ${TEST_DIR}/util/sampling/mock_sampler.h
-      ${TEST_DIR}/util/sampling/isampler.cc
-      ${TEST_DIR}/util/sampling/uniform_sampler.cc
-      ${TEST_DIR}/util/int_bytes.cc
-      ${TEST_DIR}/util/edit.cc
-  )
-
-  qt5_use_modules(run_test Core)
-
-  target_link_libraries(run_test veles_db veles_base veles_network ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES})
-
-  add_custom_command(TARGET run_test
-      COMMENT "Running tests"
-      COMMAND $<TARGET_FILE:run_test> "--gtest_output=xml:results.xml"
-      DEPENDS $<TARGET_FILE:run_test>
-  )
-else()
-  message("gtest and/or gmock not found - tests won't be built")
-endif()
-
-
-target_link_libraries(main_ui veles_base veles_db veles_network veles_client veles_visualization Qt5::Widgets parser)
+target_link_libraries(main_ui veles_base veles_db veles_network veles_client veles_visualization Qt5::Widgets Qt5::Core Qt5::Gui parser)
 set_target_properties(main_ui PROPERTIES OUTPUT_NAME "veles")
 
 # Post-build: linting
@@ -737,18 +695,3 @@ set(CPACK_MONOLITHIC_INSTALL)
 set(CPACK_STRIP_FILES false)
 include(CPack)
 
-
-add_executable(disasm_test
-    ${MSGPACK_CPP_HEADER}
-    ${INCLUDE_DIR}/ui/disasm/disasm.h
-    ${INCLUDE_DIR}/ui/disasm/mocks.h
-    ${INCLUDE_DIR}/ui/disasm/asmgen.h
-    ${SRC_DIR}/ui/disasm/disasm.cc
-    ${SRC_DIR}/data/bindata.cc
-    ${SRC_DIR}/ui/disasm/mocks.cc
-    ${SRC_DIR}/ui/disasm/asmgen.cc
-    ${SRC_DIR}/util/random.cc
-    ${TEST_DIR}/disasm_test.cc
-)
-add_dependencies(disasm_test msgpack-c)
-qt5_use_modules(disasm_test Core)
