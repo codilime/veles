@@ -10,3 +10,6 @@ CMakeSettings.json
 *.vsp
 *.vspx
 *.psess
+
+# Disasm
+src/ui/disasm/gf100.cc
