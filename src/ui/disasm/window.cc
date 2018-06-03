@@ -4,9 +4,7 @@ namespace veles {
 namespace ui {
 namespace disasm {
 
-WindowCache::WindowCache(std::shared_ptr<Window> window) : window_(window) {
-  connect(window_.get(), &Window::dataChanged, this, &WindowCache::newData);
-}
+WindowCache::WindowCache(std::shared_ptr<Window> window) : window_(window) {}
 
 void WindowCache::seek(const veles::ui::disasm::Bookmark& pos, unsigned prev_n,
                        unsigned next_n) {
@@ -35,6 +33,10 @@ const std::vector<std::shared_ptr<Entry>> WindowCache::entries() {
 
 QFuture<void> WindowCache::chunkCollapseToggle(const ChunkID& id) {
   return window_->chunkCollapseToggle(id);
+}
+
+void WindowCache::setScrollBarIndex(int index) {
+  scroll_bar_window_index_ = index;
 }
 }
 }

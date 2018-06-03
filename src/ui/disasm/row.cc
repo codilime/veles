@@ -94,13 +94,12 @@ void Label::mouseReleaseEvent(QMouseEvent* event) {
 
 void Label::mouseDoubleClickEvent(QMouseEvent* event) {
   if (objectName() == QString("label")) {
-    Row * row = qobject_cast<Row *>(parentWidget() -> parentWidget());
-    Widget * widget = qobject_cast<Widget *>(row -> parentWidget() -> parentWidget());
-    widget -> goToChunk(jump_target_);
-  }
-  else QLabel::mouseDoubleClickEvent(event);
+    Row* row = qobject_cast<Row*>(parentWidget()->parentWidget());
+    Widget* widget = qobject_cast<Widget*>(row->parentWidget()->parentWidget());
+    widget->goToChunk(jump_target_);
+  } else
+    QLabel::mouseDoubleClickEvent(event);
 }
-
 
 void Label::resetHighlight() {
   syncHighlight(getWidget()->current_selection());

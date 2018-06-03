@@ -49,20 +49,20 @@ QString Blank::string() const { return " "; }
 Number::Number(qint64 value, unsigned bit_width, unsigned base)
     : value_{value}, bit_width_{bit_width}, base_{base} {}
 QString Number::string() const {
-    QString prefix;
-    switch (base_) {
-        case 16:
-            prefix = "0x";
-            break;
-        case 8:
-            prefix = "0";
-            break;
-        case 2:
-            prefix = "0b";
-            break;
-    }
+  QString prefix;
+  switch (base_) {
+    case 16:
+      prefix = "0x";
+      break;
+    case 8:
+      prefix = "0";
+      break;
+    case 2:
+      prefix = "0b";
+      break;
+  }
 
-    return prefix + QString::number(value_, base_);
+  return prefix + QString::number(value_, base_);
 };
 const qint64 Number::value() { return value_; }
 const unsigned Number::bit_width() { return bit_width_; }

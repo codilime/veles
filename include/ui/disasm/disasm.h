@@ -252,6 +252,7 @@ class Window : public QObject {
 
  public:
   virtual void seek(const Bookmark& pos, unsigned prev_n, unsigned next_n) = 0;
+  virtual void seekPosition(const Bookmark &pos) = 0;
   virtual Bookmark currentPosition() = 0;
   virtual ScrollbarIndex currentScrollbarIndex() = 0;
   virtual ScrollbarIndex maxScrollbarIndex() = 0;

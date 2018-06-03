@@ -22,6 +22,20 @@ namespace veles {
 namespace ui {
 namespace disasm {
 
+ChunkID get_target(TextRepr* repr) {
+  if (dynamic_cast<Sublist*>(repr) != nullptr) {
+    auto sublist = dynamic_cast<Sublist*>(repr);
+    for (const auto& chld : sublist->children()) {
+      auto ret = get_target(chld.get());
+      if (ret != "") return ret;
+    }
+  } else if (dynamic_cast<Keyword*>(repr) != nullptr) {
+    auto keyword = dynamic_cast<Keyword*>(repr);
+    return keyword->chunkID();
+  }
+  return "";
+}
+
 Widget::Widget() {
   setFont(util::settings::theme::font());
 
@@ -40,6 +54,7 @@ Widget::Widget() {
   auto split_layout = new QHBoxLayout;
   split_layout->setSpacing(0);
   split_layout->setMargin(0);
+  split_layout->setMargin(0);
   split_layout->addWidget(arrows_, 0, Qt::AlignTop);
   split_layout->addLayout(rows_with_stretch, 0);
 
@@ -56,34 +71,136 @@ Widget::Widget() {
   getEntrypoint();
 }
 
-void Widget::scrollbarChanged(int value) {
-  if (value < 0) {
-    return;
-  }
-  scroll_bar_current_ = value;
-
-  auto pos = blob_->getPosition(value);
-  pos.waitForFinished();
-
-  goTo(pos.result());
+void Widget::scrollbarChanged(int scroll_index) {
+  scroll_bar_index_ = getIndexByScrollbarValue(scroll_index);
+  entriesRenderAtIndex(scroll_index);
 }
 
-void Widget::goTo(const Bookmark& position) {
-  auto rows_count = static_cast<unsigned int>((rowsCount() / 2) + 2);
-  std::cout << "seeking: " << position.toStdString() << std::endl;
-  window_ -> seek(position, rows_count, rows_count);
+void Widget::entriesRenderAtIndex(int scroll_index) {
+  std::cout << "widget::entriesRenderAtIndex: scroll: " << scroll_index << " < "
+            << scroll_bar_max_index_ << " , window: " << window_index_ << " < "
+            << window_max_index_ << std::endl;
+  if (entriesFetchMaybe(scroll_index)) {
+    return;
+  }
+
   renderRows();
 }
 
 void Widget::goToChunk(const ChunkID& id) {
-  auto x = blob_ -> getPositionByChunk(id);
+  auto x = blob_->getPositionByChunk(id);
   x.waitForFinished();
-  goTo(x.result());
+  entriesSeek(x.result());
+}
+
+std::pair<int, int> Widget::entriesRange(int index, int extend_factor) {
+  std::pair<int, int> entries_index_range;
+
+  auto rows_count = static_cast<unsigned int>(rowsCount());
+  int prev_n = (rows_count / 2) * extend_factor;
+  int next_n = (rows_count / 2) * extend_factor;
+
+  prev_n += 1;
+  next_n += 1;
+
+  if (index < prev_n) {
+    next_n += prev_n - index;
+    entries_index_range.first = 0;
+  } else {
+    entries_index_range.first = index - prev_n;
+  }
+
+  if (window_max_index_ < index + next_n) {
+    entries_index_range.second = window_max_index_;
+  } else {
+    entries_index_range.second = index + next_n;
+  }
+
+  return entries_index_range;
+};
+
+std::pair<int, int> Widget::entriesRangeToPrevNext(int index,
+                                                   std::pair<int, int> range) {
+  range.first = index - range.first;
+  range.second = range.second - index;
+  return range;
+};
+
+bool Widget::entriesFetchMaybe(int index) {
+  auto max_difference = rowsCount() * ENTRIES_PREFETCH_DIFFERENCE;
+
+  std::cout << "widget::entriesFetchMaybe:: Window: " << window_index_
+            << std::endl;
+  std::cout << "widget::entriesFetchMaybe:: MAX_DIFFERENCE: "
+            << abs(window_index_ - index) << " > " << max_difference
+            << std::endl;
+  if (abs(window_index_ - index) > max_difference) {
+    window_index_ = index;
+    entriesSeekByIndex(index);
+    return true;
+  }
+
+  return false;
+}
+
+void Widget::entriesSeekByIndex(int index) {
+  auto pos = blob_->getPosition(index);
+  pos.waitForFinished();
+
+  entriesSeek(pos.result());
+}
+
+void Widget::entriesSeek(const Bookmark& bookmark) {
+  auto rows_count = static_cast<unsigned int>(rowsCount());
+  auto prefetch_count = rows_count * ENTRIES_PREFETCH_FACTOR;
+
+  window_->seek(bookmark, prefetch_count, prefetch_count);
+}
+
+void Widget::entriesFetch() {
+  std::cout << std::endl << "widget::entriesFetch" << std::endl;
+
+  window_max_index_ = static_cast<int>(window_->maxScrollbarIndex() - 1);
+  window_index_ = static_cast<int>(window_->currentScrollbarIndex());
+  scroll_bar_max_index_ = getScrollbarMaxValue(window_max_index_);
+  scroll_bar_index_ = getScrollbarValueByIndex(window_index_);
+
+  entries_ = window_->entries();
+
+  std::cout << "widget::entriesFetch | WINDOW : 0 <= " << window_index_
+            << " <= " << window_max_index_ << std::endl;
+  std::cout << "widget::entriesFetch | SCROLL : 0 <= " << scroll_bar_index_
+            << " <= " << scroll_bar_max_index_ << std::endl;
+  std::cout << "widget::entriesFetch | ENTRIES: = " << entries_.size()
+            << std::endl;
+
+  scroll_bar_->setValue(scroll_bar_index_);
+  scroll_bar_->setRange(0, scroll_bar_max_index_);
+
+  auto entries_range_ =
+      entriesRange(window_index_, ENTRIES_PREFETCH_DIFFERENCE);
+  entriesRangeUpdate(window_index_, entries_range_);
+
+  auto pos = window_->currentPosition();
+  bool found = false;
+
+  for (size_t i = 0; i < entries_.size() && !found; i++) {
+    if (entries_[i]->pos == pos) {
+      entries_window_index_ = i;
+      found = true;
+    }
+  }
+  if (!found) {
+    entries_window_index_ = 0;
+  }
+
+  std::cout << "widget::entriesFetch DONE" << std::endl;
 }
 
 void Widget::setupMocks() {
   auto mockmap = std::make_shared<mocks::Mock_test_map>();
-  auto mb = std::make_unique<mocks::MockBlob>(std::unique_ptr<mocks::ChunkNode>(mockmap->gibRoot()));
+  auto mb = std::make_unique<mocks::MockBlob>(
+      std::unique_ptr<mocks::ChunkNode>(mockmap->gibRoot()));
   blob_ = std::unique_ptr<Blob>(std::move(mb));
 }
 
@@ -95,61 +212,51 @@ void Widget::getEntrypoint() {
 }
 
 void Widget::resizeEvent(QResizeEvent*) {
-  scrollbarChanged(scroll_bar_current_);
+  scroll_bar_max_index_ = getScrollbarMaxValue(window_max_index_);
+  scroll_bar_->setRange(0, scroll_bar_max_index_);
+
+  entriesRenderAtIndex(scroll_bar_index_);
+}
+
+void Widget::dataChanged() {
+  entriesFetch();
+  renderRows();
 }
 
 void Widget::getWindow() {
   entrypoint_.waitForFinished();
   Bookmark entrypoint = entrypoint_.result();
 
-  auto rows_count = static_cast<unsigned int>(rowsCount());
-  std::unique_ptr<Window> w =
-      blob_->createWindow(entrypoint, rows_count, rows_count);
-  window_ = std::make_unique<WindowCache>(std::move(w));
-
-  connect(window_.get(), &WindowCache::dataChanged, this, &Widget::renderRows);
-
-  scroll_bar_current_ = static_cast<int>(window_->currentScrollbarIndex());
-  int max_index = static_cast<int>(window_->maxScrollbarIndex());
-
-  auto entries = window_->entries();
-  updateRows(entries);
+  auto prefetch_count = prefetchCount(ENTRIES_PREFETCH_FACTOR);
+  window_ = blob_->createWindow(entrypoint, prefetch_count, prefetch_count);
 
   setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOn);
-  scroll_bar_->setValue(scroll_bar_current_);
-  scroll_bar_->setRange(0, max_index - 1);
   scroll_bar_->setSingleStep(1);
   scroll_bar_->setPageStep(10);
   scroll_bar_->setTracking(false);
 
+  entriesFetch();
+  renderRows();
+
+  connect(window_.get(), &Window::dataChanged, this, &Widget::dataChanged);
   connect(verticalScrollBar(), &QScrollBar::valueChanged, this,
           &Widget::scrollbarChanged);
 }
 
 void Widget::renderRows() {
-  int max_index = static_cast<int>(window_->maxScrollbarIndex());
-  auto scroll_bar_current_ = static_cast<int>(window_->currentScrollbarIndex());
-  scroll_bar_->setRange(0, max_index - 1);
-  scroll_bar_->setValue(scroll_bar_current_);
-  updateRows(window_->entries());
-}
+  auto index = scroll_bar_index_;
+  std::cout << "widget::renderRows: scroll: " << index << std::endl;
 
-ChunkID get_target(TextRepr* repr) {
-  if (dynamic_cast<Sublist*>(repr) != nullptr) {
-    auto sublist = dynamic_cast<Sublist*>(repr);
-    for (const auto& chld : sublist->children()) {
-      auto ret = get_target(chld.get());
-      if (ret != "") return ret;
-    }
-  } else if (dynamic_cast<Keyword*>(repr) != nullptr) {
-    auto keyword = dynamic_cast<Keyword*>(repr);
-    return keyword->chunkID();
+  auto range = entriesRange(index, 1);
+  std::cout << "widget::renderRows: viewport: " << range.first << " -> "
+            << index << " -> " << range.second << std::endl;
+
+  auto rows_count = range.second - range.first + 1;
+  if (entries_.size() < rows_count) {
+    rows_count = static_cast<int>(entries_.size());
   }
-  return "";
-}
 
-void Widget::updateRows(std::vector<std::shared_ptr<Entry>> entries) {
-  while (rows_.size() < entries.size()) {
+  while (rows_.size() < rows_count) {
     auto r = new Row();
     rows_layout_->addWidget(r, 0, Qt::AlignTop);
     rows_.push_back(r);
@@ -157,8 +264,9 @@ void Widget::updateRows(std::vector<std::shared_ptr<Entry>> entries) {
     connect(r, &Row::chunkCollapse, this, &Widget::chunkCollapse);
   }
 
-  while (rows_.size() > entries.size()) {
-    Row* row = rows_.back();
+  Row* row;
+  while (rows_.size() > rows_count) {
+    row = rows_.back();
     rows_.pop_back();
     rows_layout_->removeWidget(row);
     delete row;
@@ -167,9 +275,21 @@ void Widget::updateRows(std::vector<std::shared_ptr<Entry>> entries) {
   std::map<ChunkID, int> row_mapping;
 
   int indent_level = 0;
-  for (size_t i = 0; i < entries.size(); i++) {
-    auto entry = entries[i];
-    auto row = static_cast<Row*>(rows_layout_->itemAt(i)->widget());
+
+  auto relative_range = entriesRangeToPrevNext(index, range);
+  std::cout << "widget::renderRows: relative: " << range.first << " -> "
+            << range.second << std::endl;
+
+  int i = (static_cast<int>(entries_window_index_) -
+           (window_index_ - scroll_bar_index_)) -
+          relative_range.first;
+
+  std::cout << " 0 <= " << i;
+  int item_i = 0;
+  for (; 0 <= i && i < entries_.size() && item_i < rows_.size();
+       i++, item_i++) {
+    auto entry = entries_[i];
+    row = static_cast<Row*>(rows_layout_->itemAt(item_i)->widget());
 
     switch (entry->type()) {
       case EntryType::CHUNK_COLLAPSED: {
@@ -208,10 +328,11 @@ void Widget::updateRows(std::vector<std::shared_ptr<Entry>> entries) {
       default: { break; }
     }
   }
+  std::cout << " -> " << i << " < " << entries_.size() << std::endl;
 
   std::vector<Arrow> arrows_vec;
-  for (size_t i = 0; i < entries.size(); i++) {
-    auto entry = entries[i];
+  for (size_t i = 0; i < entries_.size(); i++) {
+    auto entry = entries_[i];
     if (entry->type() == EntryType::CHUNK_COLLAPSED) {
       auto* ent = static_cast<EntryChunkCollapsed const*>(entry.get());
       auto target = get_target(ent->chunk->text_repr.get());
@@ -227,9 +348,13 @@ void Widget::updateRows(std::vector<std::shared_ptr<Entry>> entries) {
   for (auto rowPtr : rows_) {
     row_attach_points.push_back(rowPtr->y() + rowPtr->height() / 2);
   }
-
   arrows_->updateArrows(row_attach_points, arrows_vec);
+
   viewport()->update();
+
+  auto pos = blob_->getPosition(scroll_bar_index_);
+  pos.waitForFinished();
+  window_->seekPosition(pos);
 }
 
 void Widget::toggleColumn(Row::ColumnName column_name) {
@@ -239,8 +364,11 @@ void Widget::toggleColumn(Row::ColumnName column_name) {
 }
 
 void Widget::chunkCollapse(const ChunkID& id) {
+  auto pos = blob_->getPositionByChunk(id);
+  pos.waitForFinished();
+
+  window_->seekPosition(pos.result());
   window_->chunkCollapseToggle(id);
-  scrollbarChanged(scroll_bar_current_);
 }
 
 int Widget::rowsCount() { return viewport()->height() / ROW_HEIGHT; }
@@ -249,7 +377,60 @@ void Widget::selectionChange(const TextRepr* repr) {
   current_selection_ = repr;
   emit labelSelectionChange(repr);
 }
+
 const TextRepr* Widget::current_selection() { return current_selection_; }
+
+void Widget::entriesRangeUpdate(int index, std::pair<int, int> range) {
+  entries_range_index_.first = index - range.first;
+  entries_range_index_.second = index + range.second;
+
+  if (entries_range_index_.first < 0) {
+    entries_range_index_.first = 0;
+  }
+  if (window_max_index_ < entries_range_index_.second) {
+    entries_range_index_.second = window_max_index_;
+  }
+}
+
+unsigned int Widget::prefetchCount(int factor) {
+  return static_cast<unsigned int>(rowsCount()) * factor;
+}
+
+int Widget::getScrollbarValueByIndex(int index) {
+  auto value = index;
+  if (value > scroll_bar_max_index_) {
+    value = scroll_bar_max_index_;
+  }
+
+  value = value - (rowsCount() / 2) - 1;
+  if (value < 0) {
+    value = 0;
+  }
+  return value;
+}
+
+int Widget::getIndexByScrollbarValue(int scrollbar_index) {
+  auto index = scrollbar_index;
+  if (index > window_max_index_) {
+    index = window_max_index_;
+  }
+
+  index = index + (rowsCount() / 2) + 1;
+
+  if (index < 0) {
+    index = 0;
+  }
+
+  return index;
+}
+
+int Widget::getScrollbarMaxValue(int max_window_index) {
+  auto index = max_window_index - rowsCount() - 1;
+  if (index < 0) {
+    index = 0;
+  }
+  return index;
+}
 
 }  // namespace disasm
 }  // namespace ui

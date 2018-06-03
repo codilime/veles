@@ -24,7 +24,7 @@ namespace mocks {
 
 const int MAX_FILE_CHILDREN = 10;
 const int MAX_SECTION_CHILDREN = 50;
-const int MAX_BASICBLOCK_CHILDREN = 500;
+const int MAX_BASICBLOCK_CHILDREN = 100;
 
 int random_int(int begin, int end) {
   std::uniform_int_distribution<> dis(begin, end);
@@ -266,8 +266,8 @@ std::unique_ptr<ChunkNode> ChunkTreeFactory::generateTree(ChunkType type) {
   return root;
 }
 
-EntryFactory::EntryFactory(ChunkNode* root, bool ignore_collapsed = false) :
-    ignore_collapsed_{ignore_collapsed}{
+EntryFactory::EntryFactory(ChunkNode* root, bool ignore_collapsed = false)
+    : ignore_collapsed_{ignore_collapsed} {
   generateBookmarkMap(root);
   generate(root);
 }
@@ -302,21 +302,20 @@ void EntryFactory::fillEntryField(EntryField* e, ChunkMeta* chunk) {
   }
 }
 
-std::map<ChunkID, Bookmark>&& EntryFactory::getBookmarkMap()
-{
-    return std::move(bookmark_map_);
+std::map<ChunkID, Bookmark>&& EntryFactory::getBookmarkMap() {
+  return std::move(bookmark_map_);
 }
 
-void EntryFactory::generateBookmarkMap(ChunkNode *node) {
+void EntryFactory::generateBookmarkMap(ChunkNode* node) {
   if (node == nullptr) {
-      return;
+    return;
   }
   bool is_parent_collapsed = false;
-  ChunkNode *parent = node->parent();
+  ChunkNode* parent = node->parent();
   while (parent != nullptr) {
     if (parent->chunk()->collapsed) {
-        is_parent_collapsed = true;
-        break;
+      is_parent_collapsed = true;
+      break;
     }
     parent = parent->parent();
   }
@@ -326,7 +325,7 @@ void EntryFactory::generateBookmarkMap(ChunkNode *node) {
     bookmark_map_[node->chunk()->id] = parent->chunk()->pos_begin;
   }
   for (const auto& child : node->children()) {
-      generateBookmarkMap(child.get());
+    generateBookmarkMap(child.get());
   }
 }
 
@@ -344,7 +343,6 @@ void EntryFactory::generate(ChunkNode* node) {
     entries_.emplace_back(entry);
     return;
   }
-
 
   // EntryBegin
   auto entry_begin = std::make_shared<EntryChunkBegin>(node->chunk());
@@ -379,27 +377,48 @@ MockWindow::MockWindow(std::shared_ptr<MockBackend> backend) {
 };
 
 void MockWindow::seek(const Bookmark& pos, unsigned prev_n, unsigned next_n) {
-  std::lock_guard<std::mutex> guard(mutex_);
+  mutex_.lock();
   current_position_ = pos;
 
-  auto entries = backend_->getEntries();
+  last_prev_n_ = prev_n;
+  last_next_n_ = next_n;
+
+  generateEntries(prev_n, next_n);
   scrollbar_index_ = backend_->getEntryIndexByPosition(pos);
 
-  std::cerr << "MockWindow::seek: scrollbar_index_ = " << scrollbar_index_
-            << std::endl;
+  mutex_.unlock();
+
+  emit dataChanged();
+}
+
+void MockWindow::seekPosition(const Bookmark &pos) {
+  mutex_.lock();
+  current_position_ = pos;
+  scrollbar_index_ = backend_->getEntryIndexByPosition(pos);
+  mutex_.unlock();
+}
+
+void MockWindow::generateEntries(unsigned prev_n, unsigned next_n) {
+  auto entries = backend_->getEntries();
+
+  std::cout << "window::generateEntries: POS INDEX: "
+            << scrollbar_index_ - prev_n << " < " << scrollbar_index_ << " < "
+            << scrollbar_index_ + next_n << " . ";
 
   // determine entries to display
-  size_t i;
-  i = scrollbar_index_ > prev_n ? scrollbar_index_ - prev_n : 0;
+  auto i = static_cast<int>(scrollbar_index_ - prev_n);
+  if (i < 0) {
+    i = 0;
+  }
 
-  std::cerr << "MockWindow::seek: i.sta = " << i << std::endl;
-  std::cerr << "MockWindow::seek: i.end = " << scrollbar_index_ + next_n + 1
-            << std::endl;
+  std::cout << "ENTRIES: " << i;
 
   entries_visible_.clear();
   for (; i < entries.size() && i < scrollbar_index_ + next_n + 1; i++) {
     entries_visible_.push_back(std::move(entries[i]));
   }
+
+  std::cout << " -> " << i << std::endl;
 }
 
 Bookmark MockWindow::currentPosition() {
@@ -429,8 +448,11 @@ const std::vector<std::shared_ptr<Entry>> MockWindow::entries() {
 
 QFuture<void> MockWindow::chunkCollapseToggle(const ChunkID& chunk) {
   return QtConcurrent::run([=]() {
-    std::lock_guard<std::mutex> guard(mutex_);
+    mutex_.lock();
     backend_->chunkCollapse(chunk);
+    generateEntries(last_prev_n_, last_next_n_);
+    mutex_.unlock();
+
     emit dataChanged();
   });
 }
@@ -454,9 +476,8 @@ QFuture<Bookmark> MockBlob::getEntrypoint() {
 }
 
 QFuture<Bookmark> MockBlob::getPosition(ScrollbarIndex index) {
-  return QtConcurrent::run([=]() {
-    return backend_->getPosition(index);
-  });
+  std::cout << "Blob::getPosition(" << index << ")" << std::endl;
+  return QtConcurrent::run([=]() { return backend_->getPosition(index); });
 }
 
 QFuture<Bookmark> MockBlob::getPositionByChunk(const ChunkID& chunk) {
@@ -473,7 +494,7 @@ MockBackend::MockBackend(std::shared_ptr<ChunkNode> root) {
   EntryFactory ef(root_.get(), true);
   flat_entries_ = ef.getEntries();
   for (const auto& entry : flat_entries_) {
-      std::cerr << entry->pos.toStdString() << std::endl;
+    std::cerr << entry->pos.toStdString() << std::endl;
   }
 
   if (!entries_.empty()) {
@@ -481,9 +502,10 @@ MockBackend::MockBackend(std::shared_ptr<ChunkNode> root) {
   }
 }
 
-Bookmark MockBackend::getPosition(ScrollbarIndex idx)
-{
-    return entries_[idx]->pos;
+Bookmark MockBackend::getPosition(ScrollbarIndex idx) {
+  std::lock_guard<std::mutex> guard(mutex_);
+  assert(idx < entries_.size());
+  return entries_[idx]->pos;
 }
 
 Bookmark MockBackend::getEntrypoint() {
@@ -519,8 +541,9 @@ void MockBackend::generateEntries() {
   entries_ = ef.getEntries();
 
   // rebuild bookmark -> scrollbar index cache
+  position_index_.clear();
   for (int i = 0; i < entries_.size(); i++) {
-      position_index_[entries_[i]->pos] = i;
+    position_index_[entries_[i]->pos] = i;
   }
 }
 

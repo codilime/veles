@@ -26,10 +26,13 @@ class WindowCache : public Window {
 
  private slots:
   void newData();
+  void setScrollBarIndex(int index);
 
  private:
   int entries_prefetch_factor_;
-  int viewport_height_;
+
+  int scroll_bar_index_;
+  int scroll_bar_window_index_;
 
   std::vector<std::shared_ptr<Entry>> entries_;
   std::shared_ptr<Window> window_;
