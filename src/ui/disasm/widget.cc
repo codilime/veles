@@ -286,7 +286,7 @@ void Widget::renderRows() {
 
   std::cout << " 0 <= " << i;
   int item_i = 0;
-  for (; 0 <= i && i < entries_.size() && item_i < rows_.size();
+  for (; 0 <= i &&i  < entries_.size() && item_i < rows_.size();
        i++, item_i++) {
     auto entry = entries_[i];
     row = static_cast<Row*>(rows_layout_->itemAt(item_i)->widget());
@@ -300,7 +300,7 @@ void Widget::renderRows() {
       }
       case EntryType::CHUNK_BEGIN: {
         auto* ent = static_cast<EntryChunkBegin const*>(entry.get());
-        row_mapping[ent->chunk->id] = i;
+        row_mapping[ent->chunk->id] = item_i;
         row->setEntry(ent);
         row->setIndent(indent_level);
         indent_level++;
@@ -328,17 +328,24 @@ void Widget::renderRows() {
       default: { break; }
     }
   }
+
   std::cout << " -> " << i << " < " << entries_.size() << std::endl;
 
+  i = (static_cast<int>(entries_window_index_) -
+           (window_index_ - scroll_bar_index_)) -
+          relative_range.first;
+  item_i = 0;
+
   std::vector<Arrow> arrows_vec;
-  for (size_t i = 0; i < entries_.size(); i++) {
+  for (; 0 <= i &&i  < entries_.size() && item_i < rows_.size();
+         i++, item_i++) {
     auto entry = entries_[i];
     if (entry->type() == EntryType::CHUNK_COLLAPSED) {
       auto* ent = static_cast<EntryChunkCollapsed const*>(entry.get());
       auto target = get_target(ent->chunk->text_repr.get());
       if (target == "") continue;
       if (row_mapping.find(target) == row_mapping.end()) continue;
-      auto arr = Arrow(i, row_mapping[target]);
+      auto arr = Arrow(item_i, row_mapping[target]);
       arrows_vec.emplace_back(arr);
     }
   }
