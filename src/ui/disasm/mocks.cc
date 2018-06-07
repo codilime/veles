@@ -401,24 +401,16 @@ void MockWindow::seekPosition(const Bookmark &pos) {
 void MockWindow::generateEntries(unsigned prev_n, unsigned next_n) {
   auto entries = backend_->getEntries();
 
-  std::cout << "window::generateEntries: POS INDEX: "
-            << scrollbar_index_ - prev_n << " < " << scrollbar_index_ << " < "
-            << scrollbar_index_ + next_n << " . ";
-
   // determine entries to display
   auto i = static_cast<int>(scrollbar_index_ - prev_n);
   if (i < 0) {
     i = 0;
   }
 
-  std::cout << "ENTRIES: " << i;
-
   entries_visible_.clear();
   for (; i < entries.size() && i < scrollbar_index_ + next_n + 1; i++) {
     entries_visible_.push_back(std::move(entries[i]));
   }
-
-  std::cout << " -> " << i << std::endl;
 }
 
 Bookmark MockWindow::currentPosition() {
@@ -480,7 +472,6 @@ QFuture<Bookmark> MockBlob::getEntrypoint() {
 }
 
 QFuture<Bookmark> MockBlob::getPosition(ScrollbarIndex index) {
-  std::cout << "Blob::getPosition(" << index << ")" << std::endl;
   return QtConcurrent::run([=]() { return backend_->getPosition(index); });
 }
 
@@ -497,10 +488,6 @@ MockBackend::MockBackend(std::shared_ptr<ChunkNode> root) {
 
   EntryFactory ef(root_.get(), true);
   flat_entries_ = ef.getEntries();
-  for (const auto& entry : flat_entries_) {
-    std::cerr << entry->pos.toStdString() << std::endl;
-  }
-
   if (!entries_.empty()) {
     entrypoint_ = entries_[entries_.size() / 2]->pos;
   }

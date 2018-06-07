@@ -77,9 +77,6 @@ void Widget::scrollbarChanged(int scroll_index) {
 }
 
 void Widget::entriesRenderAtIndex(int scroll_index) {
-  std::cout << "widget::entriesRenderAtIndex: scroll: " << scroll_index << " < "
-            << scroll_bar_max_index_ << " , window: " << window_index_ << " < "
-            << window_max_index_ << std::endl;
   if (entriesFetchMaybe(scroll_index)) {
     return;
   }
@@ -129,11 +126,6 @@ std::pair<int, int> Widget::entriesRangeToPrevNext(int index,
 bool Widget::entriesFetchMaybe(int index) {
   auto max_difference = rowsCount() * ENTRIES_PREFETCH_DIFFERENCE;
 
-  std::cout << "widget::entriesFetchMaybe:: Window: " << window_index_
-            << std::endl;
-  std::cout << "widget::entriesFetchMaybe:: MAX_DIFFERENCE: "
-            << abs(window_index_ - index) << " > " << max_difference
-            << std::endl;
   if (abs(window_index_ - index) > max_difference) {
     window_index_ = index;
     entriesSeekByIndex(index);
@@ -158,21 +150,12 @@ void Widget::entriesSeek(const Bookmark& bookmark) {
 }
 
 void Widget::entriesFetch() {
-  std::cout << std::endl << "widget::entriesFetch" << std::endl;
-
   window_max_index_ = static_cast<int>(window_->maxScrollbarIndex() - 1);
   window_index_ = static_cast<int>(window_->currentScrollbarIndex());
   scroll_bar_max_index_ = getScrollbarMaxValue(window_max_index_);
   scroll_bar_index_ = getScrollbarValueByIndex(window_index_);
 
   entries_ = window_->entries();
-
-  std::cout << "widget::entriesFetch | WINDOW : 0 <= " << window_index_
-            << " <= " << window_max_index_ << std::endl;
-  std::cout << "widget::entriesFetch | SCROLL : 0 <= " << scroll_bar_index_
-            << " <= " << scroll_bar_max_index_ << std::endl;
-  std::cout << "widget::entriesFetch | ENTRIES: = " << entries_.size()
-            << std::endl;
 
   scroll_bar_->setValue(scroll_bar_index_);
   scroll_bar_->setRange(0, scroll_bar_max_index_);
@@ -193,8 +176,6 @@ void Widget::entriesFetch() {
   if (!found) {
     entries_window_index_ = 0;
   }
-
-  std::cout << "widget::entriesFetch DONE" << std::endl;
 }
 
 void Widget::setupMocks() {
@@ -245,11 +226,7 @@ void Widget::getWindow() {
 
 void Widget::renderRows() {
   auto index = scroll_bar_index_;
-  std::cout << "widget::renderRows: scroll: " << index << std::endl;
-
   auto range = entriesRange(index, 1);
-  std::cout << "widget::renderRows: viewport: " << range.first << " -> "
-            << index << " -> " << range.second << std::endl;
 
   auto rows_count = range.second - range.first + 1;
   if (entries_.size() < rows_count) {
@@ -275,14 +252,9 @@ void Widget::renderRows() {
   std::map<ChunkID, int> row_mapping;
 
   auto relative_range = entriesRangeToPrevNext(index, range);
-  std::cout << "widget::renderRows: relative: " << range.first << " -> "
-            << range.second << std::endl;
-
   int i = (static_cast<int>(entries_window_index_) -
            (window_index_ - scroll_bar_index_)) -
           relative_range.first;
-
-  std::cout << " 0 <= " << i;
 
   int indent_level = 0;
   if (0 <= i && i < entries_.size()) {
@@ -333,8 +305,6 @@ void Widget::renderRows() {
       default: { break; }
     }
   }
-
-  std::cout << " -> " << i << " < " << entries_.size() << std::endl;
 
   i = (static_cast<int>(entries_window_index_) -
            (window_index_ - scroll_bar_index_)) -

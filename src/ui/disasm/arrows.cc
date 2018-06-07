@@ -106,10 +106,6 @@ void ArrowsWidget::calculateLevels() {
     }
     arr->level = min_cross + 1;
   }
-
-  for (auto& arr : arrows_) {
-    std::cerr << arr << std::endl;
-  }
 }
 
 void ArrowsWidget::updateArrows(std::vector<int> _row_attach_points,
