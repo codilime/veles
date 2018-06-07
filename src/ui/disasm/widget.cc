@@ -274,8 +274,6 @@ void Widget::renderRows() {
 
   std::map<ChunkID, int> row_mapping;
 
-  int indent_level = 0;
-
   auto relative_range = entriesRangeToPrevNext(index, range);
   std::cout << "widget::renderRows: relative: " << range.first << " -> "
             << range.second << std::endl;
@@ -285,8 +283,14 @@ void Widget::renderRows() {
           relative_range.first;
 
   std::cout << " 0 <= " << i;
+
+  int indent_level = 0;
+  if (0 <= i && i < entries_.size()) {
+    indent_level = window_->entryIndentation(entries_[i]->pos);
+  }
+
   int item_i = 0;
-  for (; 0 <= i &&i  < entries_.size() && item_i < rows_.size();
+  for (; 0 <= i && i < entries_.size() && item_i < rows_.size();
        i++, item_i++) {
     auto entry = entries_[i];
     row = static_cast<Row*>(rows_layout_->itemAt(item_i)->widget());
@@ -307,7 +311,8 @@ void Widget::renderRows() {
         break;
       }
       case EntryType::CHUNK_END: {
-        indent_level--;
+        if (0 < item_i)
+          indent_level--;
         auto* ent = static_cast<EntryChunkEnd const*>(entry.get());
         row->setEntry(ent);
         row->setIndent(indent_level);

@@ -457,6 +457,10 @@ QFuture<void> MockWindow::chunkCollapseToggle(const ChunkID& chunk) {
   });
 }
 
+int MockWindow::entryIndentation(Bookmark pos) {
+  return backend_->getEntryIndentation(pos);
+}
+
 MockBlob::MockBlob(std::shared_ptr<ChunkNode> root) {
   root_ = std::move(root);
   backend_ = std::make_shared<MockBackend>(root_);
@@ -518,6 +522,17 @@ const std::vector<std::shared_ptr<Entry>> MockBackend::getEntries() {
   return entries_;
 }
 
+int MockBackend::getEntryIndentation(Bookmark pos) {
+  std::lock_guard<std::mutex> guard(mutex_);
+
+  if (position_index_.find(pos) == position_index_.end()) {
+    return 0;
+  }
+
+  auto i = position_index_[pos];
+  return entry_indentation_[i];
+}
+
 Bookmark MockBackend::getPositionByChunk(const ChunkID& chunk) {
   std::lock_guard<std::mutex> guard(mutex_);
   assert(chunk_entry_.find(chunk) != chunk_entry_.end());
@@ -544,6 +559,27 @@ void MockBackend::generateEntries() {
   position_index_.clear();
   for (int i = 0; i < entries_.size(); i++) {
     position_index_[entries_[i]->pos] = i;
+  }
+
+  // rebuild entry_indentation
+  entry_indentation_.clear();
+  int indent = 0;
+  for (int i = 0; i < entries_.size(); i++) {
+    switch (entries_[i]->type()) {
+      case EntryType::CHUNK_BEGIN: {
+        entry_indentation_.emplace_back(indent);
+        indent++;
+        break;
+      }
+      case EntryType::CHUNK_END: {
+        indent--;
+        entry_indentation_.emplace_back(indent);
+        break;
+      }
+      default: {
+        entry_indentation_.emplace_back(indent);
+      }
+    }
   }
 }
 

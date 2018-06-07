@@ -259,6 +259,7 @@ class Window : public QObject {
   virtual const std::vector<Chunk>& breadcrumbs() = 0;
   virtual const std::vector<std::shared_ptr<Entry>> entries() = 0;
   virtual QFuture<void> chunkCollapseToggle(const ChunkID& id) = 0;
+  virtual int entryIndentation(Bookmark pos) = 0;
 
   virtual ~Window(){};
 

@@ -128,6 +128,7 @@ class MockBackend {
   explicit MockBackend(std::shared_ptr<ChunkNode> root);
 
   const std::vector<std::shared_ptr<Entry>> getEntries();
+  int getEntryIndentation(Bookmark pos);
   Bookmark getEntrypoint();
   Bookmark getPositionByChunk(const ChunkID& chunk);
   Bookmark getPosition(ScrollbarIndex idx);
@@ -146,6 +147,7 @@ class MockBackend {
 
   std::vector<std::shared_ptr<Entry>> entries_;
   std::vector<std::shared_ptr<Entry>> flat_entries_;
+  std::vector<int> entry_indentation_;
 
   std::map<ChunkID, Bookmark> chunk_entry_;
   std::map<Bookmark, ScrollbarIndex> position_index_;
@@ -165,6 +167,7 @@ class MockWindow : public Window {
   const std::vector<std::shared_ptr<Entry>> entries() override;
 
   QFuture<void> chunkCollapseToggle(const ChunkID& chunk) override;
+  int entryIndentation(Bookmark pos) override;
 
  protected:
   void generateEntries(unsigned prev_n, unsigned next_n);
