@@ -158,7 +158,9 @@ void ChunkFactory::setTextRepresentation(ChunkMeta* chunk) const {
 }
 
 void ChunkFactory::setComment(ChunkMeta* chunk) const {
-  chunk->comment = QString("Comment about chunk #%1").arg(chunk_id);
+  if (std::rand() % 5 == 0) {
+    chunk->comment = QString("Comment about chunk #%1").arg(chunk_id);
+  }
 }
 
 ChunkNode::ChunkNode(std::unique_ptr<ChunkMeta> chunk)
