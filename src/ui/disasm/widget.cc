@@ -180,8 +180,7 @@ void Widget::entriesFetch() {
 
 void Widget::setupMocks() {
   auto mockmap = std::make_shared<mocks::Mock_test_map>();
-  auto mb = std::make_unique<mocks::MockBlob>(
-      std::unique_ptr<mocks::ChunkNode>(mockmap->gibRoot()));
+  auto mb = std::make_unique<mocks::MockBlob>(std::unique_ptr<mocks::ChunkNode>(mockmap->gibRoot()));
   blob_ = std::unique_ptr<Blob>(std::move(mb));
 }
 

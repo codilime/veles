@@ -34,7 +34,7 @@ namespace mocks {
 // Random int in range [begin, end]
 int random_int(int begin, int end);
 
-enum class ChunkType { FILE, SECTION, BASIC_BLOCK, INSTRUCTION, DATA, UNKNOWN };
+enum class ChunkType { FILE, SECTION, FUNCTION, BASIC_BLOCK, INSTRUCTION, DATA, UNKNOWN };
 
 struct ChunkMeta : Chunk {
   veles::data::BinData raw_bytes;
