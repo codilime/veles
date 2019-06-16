@@ -14,6 +14,7 @@
 
 import msgpack
 import six
+import sys
 
 from veles.data.bindata import BinData
 from veles.compatibility import pep487
@@ -32,7 +33,7 @@ class MsgpackWrapper(pep487.NewObject):
         self.packer = msgpack.Packer(
             use_bin_type=True, default=MsgpackWrapper.pack_obj)
         self.unpacker = msgpack.Unpacker(
-            encoding='utf-8', ext_hook=MsgpackWrapper.load_obj)
+            encoding='utf-8', ext_hook=MsgpackWrapper.load_obj, max_buffer_size=sys.maxsize)
 
     @classmethod
     def pack_obj(cls, obj):
